@@ -1,1 +1,217 @@
-requirements: []
+requirements:
+  - id: REQ-001
+    title: Đăng ký và đăng nhập bằng tài khoản
+    description: Người dùng tạo tài khoản, đăng nhập và duy trì phiên làm việc an toàn.
+    status: accepted
+    priority: must
+    milestone: M1
+    area: identity
+    sources: [mentor-architecture-full, mentor-architecture-lite, mentor-demo]
+  - id: REQ-002
+    title: Phân quyền theo vai trò người chơi, chủ tiệm, quản trị
+    description: Một người dùng có thể vừa là người chơi vừa là chủ tiệm; quản trị là vai trò riêng.
+    status: accepted
+    priority: must
+    milestone: M1
+    area: identity
+    sources: [mentor-brief, mentor-architecture-full]
+  - id: REQ-003
+    title: Tạo và chỉnh nhân vật
+    description: Người chơi tạo nhân vật trước khi vào thế giới, có hồ sơ hiển thị với người khác.
+    status: draft
+    priority: must
+    milestone: M1
+    area: web-3d
+    sources: [mentor-architecture-lite, mentor-demo]
+  - id: REQ-004
+    title: Web 3D chạy trên máy tính và điện thoại
+    description: Giao diện 3D dùng được trên trình duyệt máy tính và trên điện thoại dạng PWA, có điều khiển phím và cần ảo.
+    status: draft
+    priority: must
+    milestone: M1
+    area: web-3d
+    sources: [mentor-architecture-full, mentor-architecture-lite, mentor-demo]
+  - id: REQ-005
+    title: Trang quản trị hệ thống
+    description: Quản trị viên quản lý người dùng, xem thống kê và cấu hình hệ thống.
+    status: draft
+    priority: must
+    milestone: M1
+    area: admin
+    sources: [mentor-architecture-full, mentor-architecture-lite, mentor-demo]
+  - id: REQ-006
+    title: Lưu trữ và phân phối asset 3D
+    description: Quản lý GLB, texture, âm thanh, hoạt ảnh và metadata trên MinIO, phân phối được qua CDN.
+    status: draft
+    priority: must
+    milestone: M2
+    area: media
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-007
+    title: Người dùng tải lên ảnh và âm thanh có kiểm soát
+    description: Giới hạn định dạng, dung lượng và có đường xử lý nội dung vi phạm.
+    status: draft
+    priority: should
+    milestone: M2
+    area: media
+    sources: [mentor-demo]
+  - id: REQ-008
+    title: Thông báo realtime, trong ứng dụng và email
+    description: Người dùng nhận được thông báo về thanh toán, gia hạn và sự kiện của tiệm.
+    status: draft
+    priority: must
+    milestone: M2
+    area: notification
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-009
+    title: Chủ tiệm thuê đất để mở tiệm
+    description: Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước.
+    status: accepted
+    priority: must
+    milestone: M3
+    area: core-api
+    sources: [mentor-brief, mentor-architecture-full]
+  - id: REQ-010
+    title: Thanh toán qua PayOS
+    description: Thanh toán có webhook được xác thực và xử lý lặp an toàn. Phạm vi tiền thật còn là câu hỏi mở.
+    status: draft
+    priority: must
+    milestone: M3
+    area: payment
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-011
+    title: Thuê máy theo thời gian và gia hạn
+    description: Người chơi trả phí để dùng máy trong một khoảng thời gian; hết giờ thì kết thúc phiên. Đơn giá trong ảnh là 1.000đ một máy.
+    status: draft
+    priority: must
+    milestone: M3
+    area: payment
+    sources: [mentor-architecture-lite, mentor-demo]
+  - id: REQ-012
+    title: Hoá đơn và lịch sử giao dịch
+    description: Người dùng và chủ tiệm xem được hoá đơn, lịch sử thanh toán của mình.
+    status: draft
+    priority: should
+    milestone: M3
+    area: payment
+    sources: [mentor-architecture-lite]
+  - id: REQ-013
+    title: Chủ tiệm xây dựng và bài trí tiệm
+    description: Sau khi thuê đất, chủ tiệm vào chế độ xây dựng để đặt máy, bàn ghế và trang trí.
+    status: accepted
+    priority: must
+    milestone: M4
+    area: world
+    sources: [mentor-brief, mentor-architecture-lite]
+  - id: REQ-014
+    title: Người chơi khám phá và chọn tiệm bất kỳ
+    description: Người chơi xem danh sách tiệm, số máy còn trống, số người online và chọn tiệm để vào.
+    status: accepted
+    priority: must
+    milestone: M4
+    area: world
+    sources: [mentor-brief, mentor-architecture-lite]
+  - id: REQ-015
+    title: Duyệt tiệm và nội dung
+    description: Quản trị viên duyệt tiệm và xử lý nội dung vi phạm.
+    status: draft
+    priority: should
+    milestone: M4
+    area: admin
+    sources: [mentor-architecture-lite]
+  - id: REQ-016
+    title: Nâng cấp tiệm và danh tiếng
+    description: Tiệm có danh tiếng, chủ tiệm mở rộng không gian, thêm máy từ kết quả kinh doanh.
+    status: draft
+    priority: should
+    milestone: M4
+    area: core-api
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-017
+    title: Vào tiệm và di chuyển đa người realtime
+    description: Nhiều người chơi cùng ở trong một tiệm, thấy nhau di chuyển với độ trễ thấp, server có thẩm quyền.
+    status: accepted
+    priority: must
+    milestone: M5
+    area: game
+    sources: [mentor-brief, mentor-architecture-full, mentor-demo]
+  - id: REQ-018
+    title: Ngồi vào máy và giữ chỗ không trùng
+    description: Một máy chỉ có một người dùng tại một thời điểm, kể cả khi nhiều người tranh cùng lúc.
+    status: accepted
+    priority: must
+    milestone: M5
+    area: game
+    sources: [mentor-brief, mentor-architecture-full, mentor-demo]
+  - id: REQ-019
+    title: Từ 100 người trở lên trong một phòng
+    description: Một phòng giữ được tối thiểu 100 người chơi ổn định; game server mở rộng được theo chiều ngang.
+    status: draft
+    priority: should
+    milestone: M5
+    area: game
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-020
+    title: Giao lưu giữa người chơi
+    description: Người chơi trò chuyện và kết bạn trong tiệm. Phạm vi chat, voice còn là câu hỏi mở.
+    status: draft
+    priority: should
+    milestone: M5
+    area: game
+    sources: [mentor-architecture-lite, mentor-demo]
+  - id: REQ-021
+    title: Máy bán nước và đồ ăn trong tiệm
+    description: Người chơi mua đồ ăn thức uống ảo từ máy bán hàng trong tiệm.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [mentor-architecture-lite]
+  - id: REQ-022
+    title: Chatbot AI trên máy tính trong game
+    description: Người chơi ngồi vào máy và trò chuyện với chatbot dùng LLM chạy local.
+    status: draft
+    priority: should
+    milestone: M6
+    area: ai-chat
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-023
+    title: Đọc hội thoại bằng TTS tiếng Việt
+    description: Hội thoại của chatbot và NPC được đọc bằng giọng tiếng Việt chạy local.
+    status: draft
+    priority: should
+    milestone: M6
+    area: ai-chat
+    sources: [mentor-architecture-full, mentor-architecture-lite]
+  - id: REQ-024
+    title: NPC phục vụ quán net huấn luyện bằng Reinforcement Learning
+    description: Bắt đầu từ một NPC giao đồ trong quán, huấn luyện trên mô phỏng headless, kiểm định độc lập rồi mới đưa vào tiệm.
+    status: draft
+    priority: could
+    milestone: M7
+    area: worker-ai
+    sources: [mentor-chat-npc, mentor-chat-arena]
+  - id: REQ-025
+    title: Quan sát hệ thống bằng metric, log và trace
+    description: Có Prometheus, Grafana, Loki và OpenTelemetry cho mọi service.
+    status: draft
+    priority: should
+    milestone: M8
+    area: infra
+    sources: [mentor-architecture-full]
+  - id: REQ-026
+    title: Triển khai production trên Kubernetes
+    description: Hệ thống chạy trên Kubernetes, có Kafka cho sự kiện và hàng đợi việc nền.
+    status: draft
+    priority: must
+    milestone: M8
+    area: infra
+    sources: [mentor-architecture-full, team-decision]
+  - id: REQ-027
+    title: Tách staging và production, phát hành theo tag
+    description: Mọi thay đổi được test trên staging trước; tag kích hoạt phát hành, ai trong nhóm cũng phát hành được nếu đúng quy trình.
+    status: accepted
+    priority: must
+    milestone: M0
+    area: infra
+    sources: [team-decision]
