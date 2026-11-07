@@ -1,11 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { findMatches } from './denylist.mjs';
-
-function argument(name) {
-  const index = process.argv.indexOf(`--${name}`);
-  return index === -1 ? undefined : process.argv[index + 1];
-}
+import { argument } from '../lib/cli.mjs';
 
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });

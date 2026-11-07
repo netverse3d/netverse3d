@@ -8,11 +8,7 @@ import {
   validateDecisions,
   validateRegistry,
 } from './lib.mjs';
-
-function argument(name) {
-  const index = process.argv.indexOf(`--${name}`);
-  return index === -1 ? undefined : process.argv[index + 1];
-}
+import { argument } from '../lib/cli.mjs';
 
 const root = process.cwd();
 const base = argument('base');

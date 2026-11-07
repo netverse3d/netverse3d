@@ -1,11 +1,7 @@
 import { appendFileSync, readFileSync } from 'node:fs';
 import { tagExists, treeOf } from './git-facts.mjs';
 import { evaluateChecks, evaluateRelease, tagFor } from './lib.mjs';
-
-function argument(name) {
-  const index = process.argv.indexOf(`--${name}`);
-  return index === -1 ? undefined : process.argv[index + 1];
-}
+import { argument } from '../lib/cli.mjs';
 
 const cwd = process.cwd();
 const environment = argument('environment');

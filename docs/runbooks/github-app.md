@@ -36,8 +36,10 @@ Kết quả mong đợi: `gh variable list` và `gh secret list` có hai tên tr
 
 ## 5. Chỉ cho App tạo tag
 
+Sửa `releaseAppId` trong `.github/settings/repository.json` thành App ID qua PR, rồi chạy:
+
 ```
-node scripts/github/setup-repo.mjs --release-app-id <app-id>
+node scripts/github/setup-repo.mjs
 ```
 
 Kết quả mong đợi: tạo tay tag `stg-v*` hoặc `prod-v*` bị từ chối, còn workflow **release** thì tạo được.
