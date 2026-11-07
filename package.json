@@ -14,9 +14,10 @@
     "format": "node scripts/format.mjs --write",
     "format:check": "node scripts/format.mjs --check",
     "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
-    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && turbo run lint test build",
+    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && pnpm catalog:check && turbo run lint test build",
     "trace:check": "node scripts/trace/check-registry.mjs",
-    "trace:link": "node scripts/drift/link.mjs"
+    "trace:link": "node scripts/drift/link.mjs",
+    "catalog:check": "node scripts/catalog/check.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
