@@ -1,0 +1,30 @@
+name: Lệch nghiệp vụ hoặc câu hỏi cần chốt
+description: Việc đang làm trái với REQ hoặc ADR, hoặc chưa có REQ nào phủ
+labels: [needs-decision]
+body:
+  - type: input
+    id: related
+    attributes:
+      label: REQ hoặc ADR liên quan
+      placeholder: REQ-000, ADR-0000
+  - type: textarea
+    id: situation
+    attributes:
+      label: Tình huống
+      description: Đang làm gì, lệch ở đâu.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Các lựa chọn và hệ quả
+      placeholder: |
+        1. ... (đề xuất), vì ...
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: decider
+    attributes:
+      label: Ai cần quyết định
+      placeholder: Mentor, nhóm

@@ -1,0 +1,42 @@
+name: Lỗi
+description: Hành vi sai so với yêu cầu
+type: Bug
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Yêu cầu bị vi phạm
+      description: Mã REQ nếu xác định được.
+      placeholder: REQ-000
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Môi trường
+      options:
+        - Local
+        - Staging
+        - Production
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Phiên bản
+      placeholder: stg-v0.1.0
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Mong đợi và thực tế
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Bằng chứng
+      description: Log, ảnh chụp. Che secret và dữ liệu cá nhân trước khi dán.
