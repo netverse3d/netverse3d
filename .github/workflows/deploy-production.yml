@@ -1,0 +1,64 @@
+name: deploy-production
+
+on:
+  push:
+    tags: ['prod-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.plan.outputs.components }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: plan
+        run: node scripts/release/plan-images.mjs "$GITHUB_REF_NAME"
+
+  promote-images:
+    needs: plan
+    if: needs.plan.outputs.components != '[]'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJson(needs.plan.outputs.components) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Reuse the newest image tested on staging
+        env:
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.component.id }}
+        run: |
+          for staging_tag in $(node scripts/release/staging-candidates.mjs "$GITHUB_REF_NAME"); do
+            if docker buildx imagetools inspect "$IMAGE:$staging_tag" >/dev/null 2>&1; then
+              docker buildx imagetools create --tag "$IMAGE:$GITHUB_REF_NAME" "$IMAGE:$staging_tag"
+              docker buildx imagetools inspect "$IMAGE:$GITHUB_REF_NAME"
+              exit 0
+            fi
+          done
+          echo "No tested staging image found for $IMAGE" >&2
+          exit 1
