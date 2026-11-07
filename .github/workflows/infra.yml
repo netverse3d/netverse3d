@@ -1,0 +1,25 @@
+name: infra
+
+on:
+  pull_request:
+    paths:
+      - infra/**
+      - scripts/infra/**
+      - .env.example
+      - .github/workflows/infra.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/infra/compose.mjs config
+      - run: node scripts/infra/compose.mjs smoke
+      - if: always()
+        run: docker compose --env-file .env.example -f infra/compose/compose.yaml --profile observability logs --tail 50

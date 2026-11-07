@@ -41,7 +41,7 @@ requirements:
     sources: [mentor-architecture-full, mentor-architecture-lite, mentor-demo]
   - id: REQ-006
     title: Lưu trữ và phân phối asset 3D
-    description: Quản lý GLB, texture, âm thanh, hoạt ảnh và metadata trên MinIO, phân phối được qua CDN.
+    description: Quản lý GLB, texture, âm thanh, hoạt ảnh và metadata trên object storage chuẩn S3, phân phối được qua CDN. Sơ đồ ghi MinIO; sản phẩm cụ thể còn là câu hỏi mở.
     status: draft
     priority: must
     milestone: M2

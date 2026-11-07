@@ -33,7 +33,7 @@ components:
     path: services/media
     kind: service
     stack: NestJS, Prisma
-    summary: Asset 3D, ảnh, âm thanh, metadata, MinIO, CDN
+    summary: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN
     milestone: M2
   - id: payment
     path: services/payment

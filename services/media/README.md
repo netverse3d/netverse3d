@@ -1,6 +1,6 @@
 # media
 
-Service: Asset 3D, ảnh, âm thanh, metadata, MinIO, CDN.
+Service: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN.
 
 - Stack dự kiến: NestJS, Prisma
 - Milestone: M2
