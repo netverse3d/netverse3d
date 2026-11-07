@@ -28,14 +28,12 @@ gitGraph
 
 ## Đưa thay đổi vào
 
-| Từ                                     | Vào       | Cách merge                   |
-| -------------------------------------- | --------- | ---------------------------- |
-| `feat/*`, `fix/*`, `docs/*`, `chore/*` | `staging` | Squash                       |
-| `staging`                              | `main`    | Merge commit                 |
-| `hotfix/*`                             | `main`    | Merge commit                 |
-| `main`                                 | `staging` | Merge commit, sau mỗi hotfix |
+| Từ                                     | Vào       | Cách merge   |
+| -------------------------------------- | --------- | ------------ |
+| `feat/*`, `fix/*`, `docs/*`, `chore/*` | `staging` | Squash       |
+| `staging`                              | `main`    | Merge commit |
 
-Không squash khi đưa `staging` lên `main`: git sẽ coi commit chưa vào `main` và gây xung đột ở vòng sau.
+Thay đổi chỉ đi một chiều từ `staging` lên `main`. Không squash ở bước này: git sẽ coi commit chưa vào `main` và gây xung đột ở vòng sau.
 
 Sau khi merge thì xoá nhánh; việc tiếp theo tạo nhánh mới từ `staging`. Làm tiếp trên nhánh đã squash sẽ gây xung đột.
 
@@ -58,12 +56,10 @@ prod-v0.1.2  lên production
 
 ## Phát hành
 
-Ai có quyền ghi cũng phát hành được, và không ai bỏ qua được các bước kiểm, kể cả admin. Làm theo [quy trình phát hành](../../runbooks/release.md).
+Ai có quyền ghi cũng phát hành được và phải đi qua các bước kiểm, kể cả admin. Riêng chủ tổ chức vẫn sửa được cấu hình trong trường hợp khẩn cấp, việc này để lại dấu vết trong audit log. Làm theo [quy trình phát hành](../../runbooks/release.md).
 
-## Hotfix
+## Sửa lỗi gấp
 
-1. Tách `hotfix/<phiên-bản>-<slug>` từ `main`, sửa và test.
-2. Phát hành staging trên nhánh hotfix để test.
-3. PR vào `main`.
-4. Phát hành production.
-5. PR `main` vào `staging`, bằng merge commit.
+Sửa gấp là một `fix` bình thường, không có luồng riêng: nhánh `fix/*` vào `staging`, phát hành staging, test đạt rồi đưa lên `main` và phát hành production.
+
+Bản sửa sẽ mang theo mọi thứ đang có trong `staging`, nên việc chưa xong phải luôn ẩn sau feature flag.

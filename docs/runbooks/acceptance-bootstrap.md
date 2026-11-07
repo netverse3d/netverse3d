@@ -4,23 +4,23 @@ Kết quả chạy trên GitHub thật ngày 07–08/11/2026. Chạy lại khi �
 
 ## Đã đạt
 
-| Kiểm tra                            | Cách làm                                                             | Kết quả                                                         |
-| ----------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Cấu hình khớp mã                    | `node scripts/github/setup-repo.mjs --check`                         | `GitHub settings match`                                         |
-| Không push thẳng                    | Push một commit lên `staging`                                        | Bị từ chối: `Changes must be made through a pull request`       |
-| Luật của `main`                     | `gh api repos/netverse3d/netverse3d/rules/branches/main`             | Chỉ nhận merge commit, cần đủ 3 check                           |
-| Luật của `staging`                  | Như trên, với `staging`                                              | Nhận squash và merge commit, cần đủ 3 check                     |
-| PR thiếu truy vết                   | PR đổi tệp trong `infra/`, mô tả không có REQ                        | `trace` đỏ, trạng thái `BLOCKED`, merge bị từ chối              |
-| Bổ sung truy vết                    | Sửa mô tả, thêm `Refs #2` và `REQ-027`                               | `trace` xanh mà không cần push lại                              |
-| Release sai định dạng               | Chạy với phiên bản `1.04.0`                                          | Dừng ở `validate`: `Version must look like 1.4.0`, không có tag |
-| Release sai nhánh                   | Chạy production trên `staging`                                       | Dừng ở `validate`: `prod-v0.1.0 must be on main`, không có tag  |
-| Release hợp lệ khi chưa có App      | Chạy staging với `0.1.0`                                             | `validate` xanh, bước tạo tag dừng vì thiếu App, không có tag   |
-| Clone sạch                          | `git clone`, `pnpm bootstrap`, `pnpm verify`                         | Exit 0, git hook được bật, không có tệp local nào trong repo    |
-| Commit sai định dạng                | Chạy `.githooks/commit-msg` với `bad message`                        | Exit 1                                                          |
-| Hạ tầng dev                         | `pnpm infra:smoke` trên máy local và trên CI                         | Đủ 7 dịch vụ                                                    |
-| Admin không bỏ qua được Environment | `gh api repos/netverse3d/netverse3d/environments/production-release` | `can_admins_bypass: false`                                      |
-| Check không giả được                | `gh api repos/netverse3d/netverse3d/rules/branches/main`             | Mỗi check có `integration_id: 15368`                            |
-| Wiki                                | Mở trang sau khi merge vào `staging`                                 | HTTP 200                                                        |
+| Kiểm tra                            | Cách làm                                                             | Kết quả                                                                                  |
+| ----------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Cấu hình khớp mã                    | `node scripts/github/setup-repo.mjs --check`                         | `GitHub settings match`                                                                  |
+| Không push thẳng                    | Push một commit lên `staging`                                        | Bị từ chối: `Changes must be made through a pull request`                                |
+| Luật của `main`                     | `gh api repos/netverse3d/netverse3d/rules/branches/main`             | Chỉ nhận merge commit, cần đủ 3 check                                                    |
+| Luật của `staging`                  | Như trên, với `staging`                                              | Chỉ nhận squash, cần đủ 3 check                                                          |
+| PR thiếu truy vết                   | PR đổi tệp trong `infra/`, mô tả không có REQ                        | `trace` đỏ, trạng thái `BLOCKED`, merge bị từ chối                                       |
+| Bổ sung truy vết                    | Sửa mô tả, thêm `Refs #2` và `REQ-027`                               | `trace` xanh mà không cần push lại                                                       |
+| Release sai định dạng               | Chạy với phiên bản `1.04.0`                                          | Dừng ở `validate`: `Version must look like 1.4.0`, không có tag                          |
+| Release sai nhánh                   | Chạy production trên `staging`                                       | Dừng ở `validate`: `prod-v0.1.0 must be on main`, không có tag                           |
+| Release hợp lệ khi chưa có App      | Chạy staging với `0.1.0`                                             | `validate` xanh, bước tạo tag dừng vì thiếu App, không có tag                            |
+| Clone sạch                          | `git clone`, `pnpm bootstrap`, `pnpm verify`                         | Exit 0, git hook được bật, không có tệp local nào trong repo                             |
+| Commit sai định dạng                | Chạy `.githooks/commit-msg` với `bad message`                        | Exit 1                                                                                   |
+| Hạ tầng dev                         | `pnpm infra:smoke` trên máy local và trên CI                         | Đủ 7 dịch vụ                                                                             |
+| Admin không bỏ qua được Environment | `gh api repos/netverse3d/netverse3d/environments/production-release` | `can_admins_bypass: false`                                                               |
+| Check không giả bằng status         | `gh api repos/netverse3d/netverse3d/rules/branches/main`             | Mỗi check có `integration_id: 15368`; một job Actions cùng tên vẫn cần người review để ý |
+| Wiki                                | Mở trang sau khi merge vào `staging`                                 | HTTP 200                                                                                 |
 
 ## Chưa kiểm chứng được
 

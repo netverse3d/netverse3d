@@ -26,7 +26,7 @@ Không tự chọn thay người đang làm, không tự sửa REQ hoặc ADR đ
 - Nhánh tách từ `staging`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, `docs/<slug>`, `chore/<slug>`.
 - PR vào `staging` bằng squash. Mô tả PR có `Closes #<issue>` và REQ hoặc ADR.
 - `staging` lên `main` bằng merge commit, không squash.
-- Hotfix: nhánh `hotfix/*` tách từ `main`, PR vào `main`, rồi merge `main` ngược về `staging`.
+- Sửa gấp cũng là một `fix`, đi qua `staging` như mọi việc khác.
 - Phát hành chỉ qua workflow Release. Không tạo tag bằng tay.
 - Không ai đẩy thẳng lên `staging` hoặc `main`.
 

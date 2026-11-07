@@ -23,6 +23,6 @@ Nhóm cần một nơi test ổn định trước production. Merge và phát h�
 ## Hệ quả
 
 - Việc chưa xong trong `staging` phải ẩn sau feature flag, vì promote mang theo toàn bộ.
-- Hotfix đi từ `main` trên nhánh `hotfix/*`, sau đó merge `main` ngược về `staging`.
+- Không có luồng riêng cho sửa gấp. Sửa gấp là một `fix`, cũng lên `staging` rồi mới tới production, nên không cần nhánh `hotfix/*` và không có merge từ `main` về `staging`.
 - Khi tổ chức mới có một người, tạm để 0 approval và cho tự duyệt; có thành viên thì bật lại.
 - Chủ tổ chức vẫn sửa được cấu hình trong trường hợp khẩn cấp, nên việc này được ghi lại trong audit log.
