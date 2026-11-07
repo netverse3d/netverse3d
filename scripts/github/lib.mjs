@@ -55,7 +55,7 @@ function branchRuleset(name, mergeMethods, settings) {
 export function buildRulesets(settings) {
   const allReleaseTags = Object.values(RELEASE_TAG_PATTERNS);
   const rulesets = [
-    branchRuleset('staging', ['squash', 'merge'], settings),
+    branchRuleset('staging', ['squash'], settings),
     branchRuleset('main', ['merge'], settings),
     {
       name: 'release-tags-immutable',
@@ -106,10 +106,7 @@ export function buildEnvironments(settings) {
     },
     {
       name: 'release-staging',
-      branchPolicy: [
-        { name: 'staging', type: 'branch' },
-        { name: 'hotfix/*', type: 'branch' },
-      ],
+      branchPolicy: [{ name: 'staging', type: 'branch' }],
       reviewers: [],
       preventSelfReview: false,
       canAdminsBypass: false,

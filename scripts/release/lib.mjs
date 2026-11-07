@@ -24,15 +24,11 @@ export function parseTag(tag) {
   return { environment: match[1] === 'stg' ? 'staging' : 'production', version: match[2] };
 }
 
-function isStagingSource(branches) {
-  return branches.some((branch) => branch === 'staging' || branch.startsWith('hotfix/'));
-}
-
 export function evaluatePlacement({ environment, version, branches, peerExists, sameTreeAsPeer }) {
   const tag = tagFor(environment, version);
   const peer = tagFor('staging', version);
   if (environment === 'staging') {
-    return isStagingSource(branches) ? [] : [`${tag} must be on staging or hotfix/*`];
+    return branches.includes('staging') ? [] : [`${tag} must be on staging`];
   }
   if (!branches.includes('main')) return [`${tag} must be on main`];
   if (!peerExists) return [`${peer} does not exist; release staging first`];
@@ -65,10 +61,13 @@ export function evaluateRelease({
 
 export function evaluateChecks(checkRuns, required = REQUIRED_CHECKS) {
   return required.flatMap((name) => {
-    const run = checkRuns.find((item) => item.name === name && item.app?.slug === CHECK_PROVIDER);
-    if (!run) return [`Required check "${name}" has not run on this commit`];
-    if (run.conclusion !== 'success') {
-      return [`Required check "${name}" is ${run.conclusion ?? run.status}`];
+    const runs = checkRuns.filter(
+      (item) => item.name === name && item.app?.slug === CHECK_PROVIDER,
+    );
+    if (runs.length === 0) return [`Required check "${name}" has not run on this commit`];
+    const failed = runs.find((run) => run.conclusion !== 'success');
+    if (failed) {
+      return [`Required check "${name}" is ${failed.conclusion ?? failed.status}`];
     }
     return [];
   });

@@ -30,12 +30,12 @@ test('không ai được bỏ qua ruleset của nhánh, kể cả admin', () => 
   assert.deepEqual(byName(rulesets, 'main').bypass_actors, []);
 });
 
-test('main chỉ nhận merge commit, staging nhận squash và merge ngược', () => {
+test('main chỉ nhận merge commit, staging chỉ nhận squash', () => {
   const rulesets = buildRulesets(settings);
   const methods = (name) =>
     rule(byName(rulesets, name), 'pull_request').parameters.allowed_merge_methods;
   assert.deepEqual(methods('main'), ['merge']);
-  assert.deepEqual(methods('staging'), ['squash', 'merge']);
+  assert.deepEqual(methods('staging'), ['squash']);
 });
 
 test('nhánh yêu cầu đủ các check bắt buộc', () => {
@@ -104,11 +104,11 @@ test('môi trường duyệt production chỉ nhận nhánh main', () => {
   assert.deepEqual(release.reviewers, [{ type: 'User', id: 1 }]);
 });
 
-test('môi trường tạo tag staging chỉ nhận staging và hotfix', () => {
+test('môi trường tạo tag staging chỉ nhận nhánh staging', () => {
   const release = buildEnvironments(settings).find((item) => item.name === 'release-staging');
   assert.deepEqual(
     release.branchPolicy.map((item) => item.name),
-    ['staging', 'hotfix/*'],
+    ['staging'],
   );
 });
 

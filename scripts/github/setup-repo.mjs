@@ -96,9 +96,16 @@ function applyEnvironment(environment) {
       deployment_branch_policy: { protected_branches: false, custom_branch_policies: true },
     });
     const existing = listPolicies(path);
+    const matches = (left, right) => left.name === right.name && left.type === right.type;
     for (const policy of environment.branchPolicy) {
-      const found = existing.some((item) => item.name === policy.name && item.type === policy.type);
-      if (!found) api('POST', `${path}/deployment-branch-policies`, policy);
+      if (!existing.some((item) => matches(item, policy))) {
+        api('POST', `${path}/deployment-branch-policies`, policy);
+      }
+    }
+    for (const policy of existing) {
+      if (!environment.branchPolicy.some((item) => matches(item, policy))) {
+        api('DELETE', `${path}/deployment-branch-policies/${policy.id}`);
+      }
     }
   }
   if (!apiStatus(path)) return [`environment ${environment.name}: missing`];

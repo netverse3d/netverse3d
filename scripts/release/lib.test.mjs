@@ -45,14 +45,14 @@ test('từ chối môi trường lạ', () => {
   assert.match(evaluateRelease({ ...staging, environment: 'dev' }).join(), /Unknown environment/);
 });
 
-test('staging chạy được trên nhánh staging và hotfix', () => {
+test('staging chỉ chạy được trên nhánh staging', () => {
   assert.deepEqual(evaluateRelease(staging), []);
-  assert.deepEqual(evaluateRelease({ ...staging, branch: 'hotfix/1.4.1-pay' }), []);
+  assert.match(evaluateRelease({ ...staging, branch: 'fix/13-pay' }).join(), /must be on staging/);
 });
 
 test('staging không chạy trên nhánh khác', () => {
   const errors = evaluateRelease({ ...staging, branch: 'main' }).join();
-  assert.match(errors, /stg-v1\.4\.0 must be on staging or hotfix/);
+  assert.match(errors, /stg-v1\.4\.0 must be on staging/);
 });
 
 test('production chỉ chạy trên main', () => {
@@ -78,13 +78,23 @@ test('không dùng lại tag đã có', () => {
   assert.match(evaluateRelease({ ...staging, tagExists: true }).join(), /already exists/);
 });
 
-test('tag đã tạo nằm trên nhánh hotfix được chấp nhận cho staging', () => {
+test('tag staging nằm trên nhánh staging được chấp nhận', () => {
   const result = evaluatePlacement({
     environment: 'staging',
     version: '1.4.1',
-    branches: ['hotfix/1.4.1-pay', 'feat/x'],
+    branches: ['staging', 'feat/x'],
   });
   assert.deepEqual(result, []);
+});
+
+test('không cho qua khi có một lần chạy cùng tên bị lỗi', () => {
+  const app = { slug: 'github-actions' };
+  const runs = [
+    { name: 'verify', conclusion: 'success', app },
+    { name: 'verify', conclusion: 'failure', app },
+    { name: 'secrets', conclusion: 'success', app },
+  ];
+  assert.match(evaluateChecks(runs).join(), /"verify" is failure/);
 });
 
 test('đọc đúng tag hợp lệ và từ chối tag sai', () => {
