@@ -1,0 +1,103 @@
+components:
+  - id: web-3d
+    path: apps/web-3d
+    kind: app
+    stack: Next.js, Three.js
+    summary: Web 3D và PWA cho người chơi và chủ tiệm
+    milestone: M1
+  - id: admin
+    path: apps/admin
+    kind: app
+    stack: Next.js
+    summary: Quản trị hệ thống
+    milestone: M1
+  - id: identity
+    path: services/identity
+    kind: service
+    stack: NestJS, Prisma
+    summary: Đăng ký, đăng nhập, JWT, RBAC
+    milestone: M1
+  - id: core-api
+    path: services/core-api
+    kind: service
+    stack: NestJS, Prisma
+    summary: Người dùng, tiệm, máy, thuê đất, cấu hình
+    milestone: M3
+  - id: world
+    path: services/world
+    kind: service
+    stack: NestJS, Prisma
+    summary: Thế giới, bản đồ, bố cục, phòng net
+    milestone: M4
+  - id: media
+    path: services/media
+    kind: service
+    stack: NestJS, Prisma
+    summary: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN
+    milestone: M2
+  - id: payment
+    path: services/payment
+    kind: service
+    stack: NestJS, Prisma
+    summary: PayOS, thuê máy, nâng cấp, webhook, hoá đơn
+    milestone: M3
+  - id: ai-chat
+    path: services/ai-chat
+    kind: service
+    stack: Python
+    summary: Chatbot LLM chạy local và TTS tiếng Việt
+    milestone: M6
+  - id: notification
+    path: services/notification
+    kind: service
+    stack: NestJS, Prisma
+    summary: Thông báo realtime, email, trong ứng dụng
+    milestone: M2
+  - id: game
+    path: services/game
+    kind: service
+    stack: Chưa chốt, chờ core của mentor
+    summary: Game Gateway và Authoritative Room Server
+    milestone: M5
+  - id: worker-asset
+    path: workers/asset
+    kind: worker
+    stack: Chưa chốt
+    summary: Xử lý GLB, nén, chuyển đổi asset
+    milestone: M2
+  - id: worker-ai
+    path: workers/ai
+    kind: worker
+    stack: Python
+    summary: Hàng đợi LLM, TTS, huấn luyện NPC về sau
+    milestone: M6
+  - id: worker-jobs
+    path: workers/jobs
+    kind: worker
+    stack: Chưa chốt
+    summary: Gia hạn, dọn dữ liệu, thống kê định kỳ
+    milestone: M3
+  - id: contracts
+    path: packages/contracts
+    kind: package
+    stack: OpenAPI, JSON Schema
+    summary: Hợp đồng HTTP, sự kiện Kafka và giao thức realtime
+    milestone: M0
+  - id: game-shared
+    path: packages/game-shared
+    kind: package
+    stack: TypeScript
+    summary: Kiểu và hằng số dùng chung giữa client và game server
+    milestone: M5
+  - id: ui
+    path: packages/ui
+    kind: package
+    stack: React
+    summary: Thành phần giao diện dùng chung
+    milestone: M1
+  - id: config
+    path: packages/config
+    kind: package
+    stack: TypeScript
+    summary: Cấu hình dùng chung cho lint, TypeScript
+    milestone: M1

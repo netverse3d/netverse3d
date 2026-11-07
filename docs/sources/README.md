@@ -1,0 +1,25 @@
+# Nguồn của yêu cầu
+
+Trang này tóm tắt các nguồn đầu vào của dự án. Mỗi yêu cầu trong `docs/requirements/registry.yaml` ghi rõ nó đến từ nguồn nào. Khi nguồn mâu thuẫn, quyết định nằm ở `docs/decisions`.
+
+| Mã nguồn                   | Nội dung                                                                                                                                                                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mentor-brief`             | Lời mô tả của mentor: người dùng là chủ tiệm net hoặc người đi chơi net; muốn mở tiệm phải thuê đất rồi vào thiết lập; người chơi chọn tiệm bất kỳ, vào đó có máy.                                                                                                                |
+| `mentor-architecture-full` | Sơ đồ đầy đủ: client web 3D, PWA, admin; API Gateway, WebSocket Gateway; Game Gateway và Room Server viết bằng Go; 7 service NestJS; Kafka, Redis, worker pool; PostgreSQL, MinIO; Prometheus, Grafana, Loki, OpenTelemetry; Docker, Kubernetes; mục tiêu từ 100 người mỗi phòng. |
+| `mentor-architecture-lite` | Sơ đồ rút gọn 5 service và gameplay: đăng nhập, tạo nhân vật, khám phá tiệm, vào tiệm, di chuyển, ngồi vào máy, giao lưu. Vòng lặp: làm chủ tiệm, thu hút người chơi, người chơi dùng dịch vụ, nhận danh tiếng và phát triển.                                                     |
+| `mentor-demo`              | Bản thử tại [tiemnet.fun](https://tiemnet.fun/): một quán chung nhiều máy, kinh tế theo phút chơi, chat, voice, nhạc chung, tranh treo tường, máy ảo có trình duyệt. Mới khảo sát phần công khai, chưa xem phần sau đăng nhập.                                                    |
+| `mentor-chat-npc`          | Hội thoại ý tưởng: người chơi huấn luyện NPC bằng Reinforcement Learning; NPC làm việc trong quán net; dạy bằng cách chơi; huấn luyện trên mô phỏng headless, kiểm định độc lập trước khi dùng.                                                                                   |
+| `mentor-chat-arena`        | Hội thoại ý tưởng: nền tảng thi đấu và chấm điểm thuật toán RL theo hướng benchmark trước, game 3D để trình diễn.                                                                                                                                                                 |
+| `team-decision`            | Quyết định của nhóm, ghi trong `docs/decisions`.                                                                                                                                                                                                                                  |
+
+## Các nguồn khác nhau ở đâu
+
+| Nội dung       | Sơ đồ                        | Bản demo                   | Hội thoại                    |
+| -------------- | ---------------------------- | -------------------------- | ---------------------------- |
+| Sản phẩm       | Nhiều tiệm, chủ tiệm tự xây  | Một quán chung             | Train NPC hoặc đấu trường AI |
+| "AI"           | Chatbot LLM và TTS           | Chưa thấy                  | NPC học bằng RL              |
+| Realtime       | Room Server bằng Go, gRPC    | Colyseus trên Node         | NestJS và WebSocket          |
+| Quy mô backend | 7 hoặc 5 service, Kafka, K8s | Next.js API và game server | NestJS và Python, Jenkins    |
+| Kinh tế        | PayOS, 1.000đ một máy        | Phút chơi, tặng phút       | Bán lượt train, marketplace  |
+
+Cách nhóm xử lý các khác biệt này nằm ở [ADR-0002](../decisions/ADR-0002-product-scope.md), [ADR-0003](../decisions/ADR-0003-seven-services.md) và [ADR-0004](../decisions/ADR-0004-game-core-boundary.md). Những điểm chưa chốt nằm ở [câu hỏi mở](../wiki/open-questions.md).

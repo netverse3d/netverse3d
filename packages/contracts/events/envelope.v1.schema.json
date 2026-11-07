@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/events/envelope.v1.schema.json",
+  "title": "Event envelope",
+  "description": "Vỏ chung của mọi sự kiện Kafka",
+  "type": "object",
+  "required": ["id", "type", "source", "occurredAt", "version", "data"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "type": { "type": "string", "pattern": "^[a-z]+(\\.[a-z-]+)+$" },
+    "source": { "type": "string" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "version": { "type": "integer", "minimum": 1 },
+    "traceParent": { "type": "string" },
+    "data": { "type": "object" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,28 @@
+milestones:
+  - id: M0
+    title: M0 · Nền móng
+    goal: Repo, quy trình, CI, tài liệu và hạ tầng dev sẵn sàng cho cả nhóm.
+  - id: M1
+    title: M1 · Giao diện và Identity
+    goal: Người dùng đăng ký, đăng nhập, tạo nhân vật và thấy được giao diện 3D; có trang quản trị.
+  - id: M2
+    title: M2 · Media và Notification
+    goal: Lưu trữ, phân phối asset; thông báo đến người dùng.
+  - id: M3
+    title: M3 · Thuê đất và Payment
+    goal: Chủ tiệm thuê được đất, thanh toán qua PayOS, có hoá đơn và gia hạn.
+  - id: M4
+    title: M4 · Xây tiệm và thế giới
+    goal: Chủ tiệm xây, bài trí tiệm; người chơi khám phá và chọn tiệm.
+  - id: M5
+    title: M5 · Tích hợp game core
+    goal: Nhận core của mentor; nhiều người vào tiệm, di chuyển, ngồi vào máy.
+  - id: M6
+    title: M6 · Chatbot và TTS
+    goal: Chatbot LLM chạy local và đọc hội thoại bằng tiếng Việt trên máy tính trong game.
+  - id: M7
+    title: M7 · NPC học tăng cường
+    goal: Một NPC phục vụ được huấn luyện trên mô phỏng, kiểm định rồi đưa vào tiệm.
+  - id: M8
+    title: M8 · Production
+    goal: Chạy trên Kubernetes, có quan sát hệ thống, đạt mục tiêu tải và sẵn sàng bảo vệ.

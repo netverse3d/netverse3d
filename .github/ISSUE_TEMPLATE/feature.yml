@@ -1,0 +1,33 @@
+name: Tính năng
+description: Một khả năng mới cho người dùng, thường là issue cha có các issue con
+type: Feature
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Yêu cầu
+      description: Mã trong sổ yêu cầu, ví dụ REQ-009. Chưa có thì thêm vào sổ trước.
+      placeholder: REQ-000
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Kết quả người dùng nhận được
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Tiêu chí nghiệm thu
+      description: Mỗi dòng là một điều kiểm được.
+      placeholder: |
+        - [ ] Chủ tiệm chọn được khu đất còn trống
+        - [ ] Khu đất đã có người thuê không chọn được
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Ghi chú
+      description: Phụ thuộc, câu hỏi còn mở.

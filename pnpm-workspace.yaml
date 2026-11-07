@@ -4,3 +4,5 @@ packages:
   - workers/*
   - packages/*
   - docs
+allowBuilds:
+  esbuild: true

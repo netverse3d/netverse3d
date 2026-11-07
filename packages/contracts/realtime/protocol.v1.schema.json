@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/realtime/protocol.v1.schema.json",
+  "title": "Realtime protocol",
+  "description": "Bản nháp giao thức giữa client và game server, có thể đổi khi nhận core từ mentor",
+  "x-status": "draft",
+  "oneOf": [
+    { "$ref": "#/$defs/join" },
+    { "$ref": "#/$defs/move" },
+    { "$ref": "#/$defs/seatRequest" },
+    { "$ref": "#/$defs/seatLeave" },
+    { "$ref": "#/$defs/snapshot" },
+    { "$ref": "#/$defs/delta" },
+    { "$ref": "#/$defs/seatGranted" },
+    { "$ref": "#/$defs/seatDenied" },
+    { "$ref": "#/$defs/error" }
+  ],
+  "$defs": {
+    "position": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    },
+    "player": {
+      "type": "object",
+      "required": ["playerId", "position", "yaw"],
+      "properties": {
+        "playerId": { "type": "string" },
+        "position": { "$ref": "#/$defs/position" },
+        "yaw": { "type": "number" },
+        "seatId": { "type": ["string", "null"] }
+      }
+    },
+    "join": {
+      "type": "object",
+      "required": ["kind", "shopId", "ticket"],
+      "properties": {
+        "kind": { "const": "join" },
+        "shopId": { "type": "string" },
+        "ticket": { "type": "string" }
+      }
+    },
+    "move": {
+      "type": "object",
+      "required": ["kind", "sequence", "position", "yaw"],
+      "properties": {
+        "kind": { "const": "move" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "position": { "$ref": "#/$defs/position" },
+        "yaw": { "type": "number" }
+      }
+    },
+    "seatRequest": {
+      "type": "object",
+      "required": ["kind", "seatId"],
+      "properties": {
+        "kind": { "const": "seat.request" },
+        "seatId": { "type": "string" }
+      }
+    },
+    "seatLeave": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "seat.leave" }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "required": ["kind", "tick", "players"],
+      "properties": {
+        "kind": { "const": "snapshot" },
+        "tick": { "type": "integer", "minimum": 0 },
+        "players": { "type": "array", "items": { "$ref": "#/$defs/player" } }
+      }
+    },
+    "delta": {
+      "type": "object",
+      "required": ["kind", "tick"],
+      "properties": {
+        "kind": { "const": "delta" },
+        "tick": { "type": "integer", "minimum": 0 },
+        "changed": { "type": "array", "items": { "$ref": "#/$defs/player" } },
+        "left": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "seatGranted": {
+      "type": "object",
+      "required": ["kind", "seatId", "playerId"],
+      "properties": {
+        "kind": { "const": "seat.granted" },
+        "seatId": { "type": "string" },
+        "playerId": { "type": "string" }
+      }
+    },
+    "seatDenied": {
+      "type": "object",
+      "required": ["kind", "seatId", "reason"],
+      "properties": {
+        "kind": { "const": "seat.denied" },
+        "seatId": { "type": "string" },
+        "reason": { "enum": ["occupied", "too_far", "no_balance"] }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["kind", "code"],
+      "properties": {
+        "kind": { "const": "error" },
+        "code": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

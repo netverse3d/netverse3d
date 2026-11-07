@@ -1,0 +1,25 @@
+name: Công việc
+description: Một việc làm được trong vài ngày
+type: Task
+body:
+  - type: input
+    id: requirement
+    attributes:
+      label: Yêu cầu hoặc quyết định
+      description: REQ hoặc ADR liên quan. Việc thuần công cụ, tài liệu thì ghi "không".
+      placeholder: REQ-000
+    validations:
+      required: true
+  - type: textarea
+    id: work
+    attributes:
+      label: Việc cần làm
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Xong khi nào
+      description: Cách kiểm là đã xong.
+    validations:
+      required: true

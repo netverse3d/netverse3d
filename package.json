@@ -14,9 +14,16 @@
     "format": "node scripts/format.mjs --write",
     "format:check": "node scripts/format.mjs --check",
     "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
-    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && turbo run lint test build",
+    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && pnpm catalog:check && pnpm docs:check && turbo run lint test build",
     "trace:check": "node scripts/trace/check-registry.mjs",
-    "trace:link": "node scripts/drift/link.mjs"
+    "trace:link": "node scripts/drift/link.mjs",
+    "catalog:check": "node scripts/catalog/check.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "infra:up": "node scripts/infra/compose.mjs up",
+    "infra:down": "node scripts/infra/compose.mjs down",
+    "infra:smoke": "node scripts/infra/compose.mjs smoke",
+    "docs:generate": "node scripts/docs/generate.mjs",
+    "docs:check": "node scripts/docs/generate.mjs --check"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",

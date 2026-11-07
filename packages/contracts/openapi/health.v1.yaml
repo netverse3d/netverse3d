@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info:
+  title: Netverse Health
+  version: 1.0.0
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Báo service còn sống và sẵn sàng nhận việc
+      responses:
+        '200':
+          description: Service hoạt động bình thường
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  version:
+                    type: string
+        '503':
+          description: Một phụ thuộc bắt buộc đang lỗi
