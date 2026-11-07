@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -71,6 +72,14 @@ test('cấu trúc đúng thì không báo gì', () => {
 
 test('thành phần chỉ giữ chỗ thì được phép provenance none', () => {
   assert.deepEqual(checkAllComponents(createRepository()), []);
+});
+
+test('tệp bị git bỏ qua không được tính là mã của thành phần', () => {
+  const root = createRepository();
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  write(root, '.gitignore', 'notes.local.md\n');
+  write(root, 'services/identity/notes.local.md', 'ghi chú riêng');
+  assert.deepEqual(checkAllComponents(root), []);
 });
 
 test('chặn thành phần có mã mà chưa khai nguồn gốc', () => {

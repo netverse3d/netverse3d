@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
@@ -5,7 +6,7 @@ import { parse } from 'yaml';
 export const COMPONENT_ROOTS = ['apps', 'services', 'workers', 'packages'];
 export const PROVENANCE_VALUES = ['none', 'original', 'cleared'];
 
-const METADATA_FILES = new Set(['README.md', 'component.yaml', 'CONTEXT.md', 'CONTEXT.history.md']);
+const METADATA_FILES = new Set(['README.md', 'component.yaml']);
 const IGNORED_DIRECTORIES = new Set(['node_modules', 'dist', '.next', '.turbo', 'coverage']);
 const DECISION_ID = /^ADR-\d{4}$/;
 const MANIFESTS = ['package.json', 'go.mod', 'pyproject.toml'];
@@ -69,6 +70,19 @@ function walkFiles(directory, base = '') {
   return files;
 }
 
+function withoutIgnoredFiles(directory, files) {
+  const result = spawnSync('git', ['check-ignore', '--stdin'], {
+    cwd: directory,
+    input: files.join('
+'),
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return files;
+  const ignored = new Set(result.stdout.split('
+').filter(Boolean));
+  return files.filter((file) => !ignored.has(file));
+}
+
 function requiredFilesFor(kind) {
   if (kind === 'service') return ['Dockerfile', '.env.example'];
   if (kind === 'worker') return ['Dockerfile', '.env.example'];
@@ -78,7 +92,7 @@ function requiredFilesFor(kind) {
 
 export function checkComponent(root, component) {
   const directory = join(root, component.path);
-  const files = walkFiles(directory);
+  const files = withoutIgnoredFiles(directory, walkFiles(directory));
   const implementation = files.filter((file) => !METADATA_FILES.has(file));
   const errors = [];
   const metadataPath = join(directory, 'component.yaml');
