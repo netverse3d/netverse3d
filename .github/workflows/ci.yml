@@ -3,7 +3,7 @@ name: ci
 on:
   pull_request:
   push:
-    branches: [staging, main]
+    branches: [staging, main, 'hotfix/**']
 
 permissions:
   contents: read

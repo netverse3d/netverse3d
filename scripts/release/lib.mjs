@@ -1,7 +1,16 @@
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const TAG = /^(stg|prod)-v(.+)$/;
-const SHARED_PATHS = /^(?:packages\/|pnpm-lock\.yaml$|tsconfig\.base\.json$)/;
+const CHECK_PROVIDER = 'github-actions';
 
+export const SHARED_PATHS = [
+  'packages',
+  'package.json',
+  'pnpm-lock.yaml',
+  'pnpm-workspace.yaml',
+  'turbo.json',
+  'tsconfig.base.json',
+  '.nvmrc',
+];
 export const REQUIRED_CHECKS = ['verify', 'secrets'];
 export const TAG_PREFIX = { staging: 'stg', production: 'prod' };
 
@@ -31,9 +40,18 @@ export function evaluatePlacement({ environment, version, branches, peerExists, 
   return [];
 }
 
-export function evaluateRelease({ environment, version, branch, tagExists, peerExists, sameTree }) {
+export function evaluateRelease({
+  environment,
+  version,
+  branch,
+  refType = 'branch',
+  tagExists,
+  peerExists,
+  sameTree,
+}) {
   if (!TAG_PREFIX[environment]) return [`Unknown environment "${environment}"`];
   if (!VERSION.test(version ?? '')) return ['Version must look like 1.4.0'];
+  if (refType !== 'branch') return ['Release must run on a branch'];
   const errors = evaluatePlacement({
     environment,
     version,
@@ -47,7 +65,7 @@ export function evaluateRelease({ environment, version, branch, tagExists, peerE
 
 export function evaluateChecks(checkRuns, required = REQUIRED_CHECKS) {
   return required.flatMap((name) => {
-    const run = checkRuns.find((item) => item.name === name);
+    const run = checkRuns.find((item) => item.name === name && item.app?.slug === CHECK_PROVIDER);
     if (!run) return [`Required check "${name}" has not run on this commit`];
     if (run.conclusion !== 'success') {
       return [`Required check "${name}" is ${run.conclusion ?? run.status}`];
@@ -90,9 +108,22 @@ export function stagingTagsUpTo(tags, version) {
     .map(({ name }) => name);
 }
 
+export function selectSourceTag(stagingTagsNewestFirst, hasChangedSince) {
+  let source = null;
+  for (const tag of stagingTagsNewestFirst) {
+    if (hasChangedSince(tag)) break;
+    source = tag;
+  }
+  return source;
+}
+
+function isSharedPath(file) {
+  return SHARED_PATHS.some((path) => file === path || file.startsWith(`${path}/`));
+}
+
 export function selectChangedComponents(components, files) {
   const deployable = components.filter((component) => component.hasDockerfile);
-  if (files === null || files.some((file) => SHARED_PATHS.test(file))) return deployable;
+  if (files === null || files.some(isSharedPath)) return deployable;
   return deployable.filter((component) =>
     files.some((file) => file.startsWith(`${component.path}/`)),
   );

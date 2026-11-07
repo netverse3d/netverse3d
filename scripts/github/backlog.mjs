@@ -1,4 +1,5 @@
 const PRIORITY = { must: 'P1', should: 'P2', could: 'P3' };
+const READY_REQUIREMENT_STATUSES = ['accepted', 'implemented'];
 
 function areaLabels(requirement) {
   return [`area:${requirement.area}`];
@@ -36,6 +37,8 @@ export function planBacklog(requirements, seed, milestones) {
       errors.push(`backlog seed references unknown ${group.requirement}`);
       continue;
     }
+    if (requirement.status === 'deprecated') continue;
+    const isReady = READY_REQUIREMENT_STATUSES.includes(requirement.status);
     for (const item of group.items) {
       issues.push({
         key: `${group.requirement}/${item.title}`,
@@ -47,7 +50,7 @@ export function planBacklog(requirements, seed, milestones) {
         labels: [...areaLabels(requirement), ...(item.labels ?? [])],
         priority: PRIORITY[requirement.priority],
         size: item.size,
-        status: item.labels?.length ? 'Backlog' : 'Ready',
+        status: isReady && !item.labels?.length ? 'Ready' : 'Backlog',
       });
     }
   }
@@ -58,7 +61,17 @@ export function planBacklog(requirements, seed, milestones) {
   return { issues, errors };
 }
 
+function isPlanned(issue, existingTitles) {
+  if (issue.type === 'Feature') {
+    return existingTitles.some((title) => title.startsWith(`${issue.key}:`));
+  }
+  return existingTitles.includes(issue.title);
+}
+
 export function selectMissingIssues(issues, existingTitles) {
-  const existing = new Set(existingTitles);
-  return issues.filter((issue) => !existing.has(issue.title));
+  return issues.filter((issue) => !isPlanned(issue, existingTitles));
+}
+
+export function findIssueByKey(existing, key) {
+  return existing.find((item) => item.title.startsWith(`${key}:`));
 }

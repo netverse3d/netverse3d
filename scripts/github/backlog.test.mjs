@@ -61,6 +61,28 @@ test('việc con gắn đúng yêu cầu cha, có nhãn và cỡ', () => {
   assert.ok(blocked.labels.includes('blocked'));
 });
 
+test('việc của yêu cầu còn nháp chưa được coi là sẵn sàng', () => {
+  const draft = { ...requirements[0], id: 'REQ-003', status: 'draft' };
+  const seed = { tasks: [{ requirement: 'REQ-003', items: [{ title: 'Làm', size: 'S' }] }] };
+  const { issues } = planBacklog([draft], seed, milestones);
+  assert.equal(issues.find((issue) => issue.title === 'Làm').status, 'Backlog');
+});
+
+test('bỏ qua việc của yêu cầu đã bỏ mà không lỗi', () => {
+  const seed = { tasks: [{ requirement: 'REQ-002', items: [{ title: 'Làm', size: 'S' }] }] };
+  const { issues, errors } = planBacklog(requirements, seed, milestones);
+  assert.deepEqual(errors, []);
+  assert.equal(
+    issues.some((issue) => issue.title === 'Làm'),
+    false,
+  );
+});
+
+test('đổi tiêu đề yêu cầu không tạo trùng issue cha', () => {
+  const issues = [{ key: 'REQ-001', type: 'Feature', title: 'REQ-001: Tên mới' }];
+  assert.deepEqual(selectMissingIssues(issues, ['REQ-001: Tên cũ']), []);
+});
+
 test('báo lỗi khi việc trỏ tới yêu cầu không tồn tại', () => {
   const { errors } = planBacklog(
     requirements,

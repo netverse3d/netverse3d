@@ -100,6 +100,69 @@ test('từ chối phát hành lại số đã có', () => {
   assert.match(result.stderr, /already exists/);
 });
 
+test('production dùng image của bản staging nơi service đổi lần cuối', () => {
+  const { cwd, git, change, pushAll } = createRepository();
+  git('tag', 'stg-v0.1.0');
+  change('services/identity/src/a.txt', 'feat: change identity');
+  git('tag', 'stg-v0.1.1');
+  change('docs/note.txt', 'docs: add note');
+  git('tag', 'stg-v0.1.2');
+  git('switch', '-q', 'main');
+  git('merge', '-q', '--no-ff', '--no-edit', 'staging');
+  git('tag', 'prod-v0.1.2');
+  pushAll();
+  git('fetch', '-q', 'origin');
+  const result = plan(cwd, 'prod-v0.1.2');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /"sourceTag":"stg-v0\.1\.1"/);
+});
+
+test('hotfix chạy trọn vòng với kết quả check của chính commit đó', () => {
+  const { cwd, git, change } = createRepository();
+  git('switch', '-q', 'main');
+  git('switch', '-qc', 'hotfix/0.1.1-pay');
+  change('services/identity/src/fix.txt', 'fix: reject duplicate webhook');
+  const checks = join(cwd, '.git/checks.json');
+  writeFileSync(
+    checks,
+    JSON.stringify([
+      { name: 'verify', conclusion: 'success', app: { slug: 'github-actions' } },
+      { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
+    ]),
+  );
+  const run = (...args) =>
+    spawnSync(process.execPath, [VALIDATE, ...args], {
+      cwd,
+      encoding: 'utf8',
+      env: { ...process.env, GITHUB_OUTPUT: '' },
+    });
+  const staged = run(
+    '--environment',
+    'staging',
+    '--version',
+    '0.1.1',
+    '--branch',
+    'hotfix/0.1.1-pay',
+    '--checks-file',
+    checks,
+  );
+  assert.equal(staged.status, 0, staged.stderr);
+  git('tag', 'stg-v0.1.1');
+  git('switch', '-q', 'main');
+  git('merge', '-q', '--no-ff', '--no-edit', 'hotfix/0.1.1-pay');
+  const released = run(
+    '--environment',
+    'production',
+    '--version',
+    '0.1.1',
+    '--branch',
+    'main',
+    '--checks-file',
+    checks,
+  );
+  assert.equal(released.status, 0, released.stderr);
+});
+
 test('tag sai định dạng không được lập kế hoạch build', () => {
   const { cwd } = createRepository();
   const result = plan(cwd, 'v1.0.0');

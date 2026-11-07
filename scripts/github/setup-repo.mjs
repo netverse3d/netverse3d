@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { loadCatalog } from '../catalog/lib.mjs';
-import { api, apiStatus, REPOSITORY } from './gh.mjs';
+import { api, apiStatus, ORGANIZATION, REPOSITORY } from './gh.mjs';
 import {
   buildEnvironments,
   buildLabels,
   buildRulesets,
   findDrift,
+  findEnvironmentDrift,
   REPOSITORY_SETTINGS,
 } from './lib.mjs';
 
@@ -18,7 +19,7 @@ function resolveReviewers() {
     if (reviewer.type === 'User') {
       return { type: 'User', id: api('GET', `users/${reviewer.login}`).id };
     }
-    return { type: 'Team', id: api('GET', `orgs/netverse3d/teams/${reviewer.slug}`).id };
+    return { type: 'Team', id: api('GET', `orgs/${ORGANIZATION}/teams/${reviewer.slug}`).id };
   });
 }
 
@@ -46,20 +47,21 @@ function normalizeRules(rules) {
   return [...rules].sort((a, b) => a.type.localeCompare(b.type));
 }
 
+function listRulesets() {
+  return api('GET', `${repositoryPath}/rulesets?per_page=100`) ?? [];
+}
+
 function applyRulesets() {
   const problems = [];
-  const summaries = api('GET', `${repositoryPath}/rulesets?per_page=100`) ?? [];
-  for (const ruleset of buildRulesets(settings)) {
+  const summaries = listRulesets();
+  const desired = buildRulesets(settings);
+  for (const ruleset of desired) {
     const summary = summaries.find((item) => item.name === ruleset.name);
     if (!isCheck) {
       if (summary) api('PUT', `${repositoryPath}/rulesets/${summary.id}`, ruleset);
       else api('POST', `${repositoryPath}/rulesets`, ruleset);
     }
-    const id =
-      summary?.id ??
-      api('GET', `${repositoryPath}/rulesets?per_page=100`).find(
-        (item) => item.name === ruleset.name,
-      )?.id;
+    const id = summary?.id ?? listRulesets().find((item) => item.name === ruleset.name)?.id;
     if (!id) {
       problems.push(`ruleset ${ruleset.name}: missing`);
       continue;
@@ -71,7 +73,17 @@ function applyRulesets() {
     );
     problems.push(...drift.map((d) => `ruleset ${ruleset.name}: ${d}`));
   }
+  const desiredNames = desired.map((ruleset) => ruleset.name);
+  for (const summary of summaries) {
+    if (!desiredNames.includes(summary.name)) {
+      problems.push(`ruleset ${summary.name}: not declared in the settings`);
+    }
+  }
   return problems;
+}
+
+function listPolicies(path) {
+  return api('GET', `${path}/deployment-branch-policies`).branch_policies;
 }
 
 function applyEnvironment(environment) {
@@ -79,34 +91,18 @@ function applyEnvironment(environment) {
   if (!isCheck) {
     api('PUT', path, {
       reviewers: environment.reviewers,
-      prevent_self_review: environment.preventSelfReview ?? false,
+      prevent_self_review: environment.preventSelfReview,
+      can_admins_bypass: environment.canAdminsBypass,
       deployment_branch_policy: { protected_branches: false, custom_branch_policies: true },
     });
-    const existing = api('GET', `${path}/deployment-branch-policies`);
+    const existing = listPolicies(path);
     for (const policy of environment.branchPolicy) {
-      const found = existing.branch_policies.some(
-        (item) => item.name === policy.name && item.type === policy.type,
-      );
+      const found = existing.some((item) => item.name === policy.name && item.type === policy.type);
       if (!found) api('POST', `${path}/deployment-branch-policies`, policy);
     }
   }
   if (!apiStatus(path)) return [`environment ${environment.name}: missing`];
-  const policies = api('GET', `${path}/deployment-branch-policies`).branch_policies;
-  const problems = environment.branchPolicy
-    .filter((policy) => !policies.some((item) => item.name === policy.name))
-    .map((policy) => `environment ${environment.name}: missing policy ${policy.name}`);
-  const actual = api('GET', path);
-  const reviewerRule = actual.protection_rules?.find((rule) => rule.type === 'required_reviewers');
-  const reviewerIds = (reviewerRule?.reviewers ?? []).map((item) => item.reviewer.id);
-  for (const reviewer of environment.reviewers) {
-    if (!reviewerIds.includes(reviewer.id)) {
-      problems.push(`environment ${environment.name}: missing reviewer ${reviewer.id}`);
-    }
-  }
-  if (environment.preventSelfReview && !reviewerRule?.prevent_self_review) {
-    problems.push(`environment ${environment.name}: self review is not blocked`);
-  }
-  return problems;
+  return findEnvironmentDrift(environment, api('GET', path), listPolicies(path));
 }
 
 function applyPages() {
@@ -121,7 +117,7 @@ function applyPages() {
 const problems = [
   ...applyRepositorySettings(),
   ...applyLabels(),
-  ...(process.argv.includes('--skip-rulesets') ? [] : applyRulesets()),
+  ...applyRulesets(),
   ...applyPages(),
 ];
 const resolvedReviewers = resolveReviewers();

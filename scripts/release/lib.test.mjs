@@ -8,6 +8,7 @@ import {
   parseTag,
   previousTag,
   selectChangedComponents,
+  selectSourceTag,
   stagingTagsUpTo,
   tagFor,
 } from './lib.mjs';
@@ -20,6 +21,11 @@ const staging = {
   peerExists: false,
   sameTree: false,
 };
+const components = [
+  { id: 'identity', path: 'services/identity', hasDockerfile: true },
+  { id: 'media', path: 'services/media', hasDockerfile: true },
+  { id: 'world', path: 'services/world', hasDockerfile: false },
+];
 const production = {
   environment: 'production',
   version: '1.4.0',
@@ -96,7 +102,7 @@ test('tạo tên tag theo môi trường', () => {
 
 test('chặn khi check bắt buộc chưa chạy hoặc chưa đạt', () => {
   const errors = evaluateChecks([
-    { name: 'verify', status: 'in_progress', conclusion: null },
+    { name: 'verify', status: 'in_progress', conclusion: null, app: { slug: 'github-actions' } },
   ]).join();
   assert.match(errors, /"verify" is in_progress/);
   assert.match(errors, /"secrets" has not run/);
@@ -104,10 +110,46 @@ test('chặn khi check bắt buộc chưa chạy hoặc chưa đạt', () => {
 
 test('cho qua khi mọi check bắt buộc đều đạt', () => {
   const runs = [
-    { name: 'verify', conclusion: 'success' },
-    { name: 'secrets', conclusion: 'success' },
+    { name: 'verify', conclusion: 'success', app: { slug: 'github-actions' } },
+    { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
   ];
   assert.deepEqual(evaluateChecks(runs), []);
+});
+
+test('không tin check cùng tên nhưng không do GitHub Actions tạo', () => {
+  const runs = [
+    { name: 'verify', conclusion: 'success', app: { slug: 'someone-else' } },
+    { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
+  ];
+  assert.match(evaluateChecks(runs).join(), /"verify" has not run/);
+});
+
+test('từ chối phát hành khi đang chạy trên tag thay vì nhánh', () => {
+  const errors = evaluateRelease({ ...staging, refType: 'tag' }).join();
+  assert.match(errors, /must run on a branch/);
+  assert.deepEqual(evaluateRelease({ ...staging, refType: 'branch' }), []);
+});
+
+test('lấy image từ bản staging nơi thành phần đổi lần cuối', () => {
+  const changedAt = new Set(['stg-v0.1.0']);
+  const tags = ['stg-v0.1.2', 'stg-v0.1.1', 'stg-v0.1.0'];
+  assert.equal(
+    selectSourceTag(tags, (tag) => changedAt.has(tag)),
+    'stg-v0.1.1',
+  );
+});
+
+test('không có bản staging nào cùng nội dung thì không chọn image cũ', () => {
+  assert.equal(
+    selectSourceTag(['stg-v0.1.2', 'stg-v0.1.1'], () => true),
+    null,
+  );
+});
+
+test('đổi cấu hình gốc của workspace thì build mọi thành phần', () => {
+  for (const file of ['package.json', 'pnpm-workspace.yaml', 'turbo.json', '.nvmrc']) {
+    assert.equal(selectChangedComponents(components, [file]).length, 2, file);
+  }
 });
 
 test('so sánh phiên bản theo số, không theo chữ', () => {
@@ -127,12 +169,6 @@ test('liệt kê bản staging từ mới đến cũ, không vượt quá phiên
   const tags = ['stg-v0.1.0', 'stg-v0.10.0', 'stg-v0.2.0', 'prod-v0.2.0', 'stg-v0.2.1'];
   assert.deepEqual(stagingTagsUpTo(tags, '0.2.0'), ['stg-v0.2.0', 'stg-v0.1.0']);
 });
-
-const components = [
-  { id: 'identity', path: 'services/identity', hasDockerfile: true },
-  { id: 'media', path: 'services/media', hasDockerfile: true },
-  { id: 'world', path: 'services/world', hasDockerfile: false },
-];
 
 test('chỉ build thành phần có thay đổi', () => {
   const changed = selectChangedComponents(components, ['services/identity/src/a.ts', 'README.md']);
