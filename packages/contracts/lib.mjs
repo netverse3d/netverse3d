@@ -54,11 +54,19 @@ export function findSchemaBreakingChanges(previous, current, location = '#') {
   if (previous.additionalProperties !== false && current.additionalProperties === false) {
     breaking.push(`${location}: additionalProperties became false`);
   }
+  if (!previous.enum && current.enum) breaking.push(`${location}: enum was added`);
   if (previous.items && current.items) {
     breaking.push(...findSchemaBreakingChanges(previous.items, current.items, `${location}/items`));
   }
-  if ((previous.oneOf?.length ?? 0) > (current.oneOf?.length ?? 0)) {
-    breaking.push(`${location}: oneOf lost an option`);
+  for (const keyword of ['oneOf', 'anyOf']) {
+    const before = previous[keyword] ?? [];
+    const after = current[keyword] ?? [];
+    if (before.length > after.length) breaking.push(`${location}: ${keyword} lost an option`);
+    before.slice(0, after.length).forEach((option, index) => {
+      breaking.push(
+        ...findSchemaBreakingChanges(option, after[index], `${location}/${keyword}/${index}`),
+      );
+    });
   }
   const previousRequired = new Set(previous.required ?? []);
   for (const name of current.required ?? []) {
@@ -77,21 +85,58 @@ export function findSchemaBreakingChanges(previous, current, location = '#') {
   return breaking;
 }
 
+function compareContent(previous, current, label) {
+  return Object.entries(previous?.content ?? {}).flatMap(([mediaType, media]) => {
+    const next = current?.content?.[mediaType];
+    if (!next) return [`${label}: ${mediaType} was removed`];
+    if (!media.schema || !next.schema) return [];
+    return findSchemaBreakingChanges(media.schema, next.schema, `${label} ${mediaType}`);
+  });
+}
+
+function compareParameters(previous = [], current = [], label) {
+  const key = (parameter) => `${parameter.in}:${parameter.name}`;
+  const before = new Map(previous.map((parameter) => [key(parameter), parameter]));
+  const after = new Map(current.map((parameter) => [key(parameter), parameter]));
+  const breaking = [];
+  for (const [id, parameter] of before) {
+    if (!after.has(id)) breaking.push(`${label}: parameter "${parameter.name}" was removed`);
+  }
+  for (const [id, parameter] of after) {
+    if (parameter.required && !before.get(id)?.required) {
+      breaking.push(`${label}: parameter "${parameter.name}" became required`);
+    }
+  }
+  return breaking;
+}
+
+function compareOperation(operation, next, label) {
+  const breaking = [
+    ...compareParameters(operation.parameters, next.parameters, label),
+    ...compareContent(operation.requestBody, next.requestBody, `${label} request`),
+  ];
+  for (const [status, response] of Object.entries(operation.responses ?? {})) {
+    const nextResponse = next.responses?.[status];
+    if (!nextResponse) breaking.push(`${label} no longer returns ${status}`);
+    else breaking.push(...compareContent(response, nextResponse, `${label} ${status}`));
+  }
+  return breaking;
+}
+
 export function findOpenApiBreakingChanges(previous, current) {
   const breaking = [];
   for (const [path, item] of Object.entries(previous.paths ?? {})) {
     for (const method of HTTP_METHODS.filter((name) => item[name])) {
+      const label = `${method.toUpperCase()} ${path}`;
       const next = current.paths?.[path]?.[method];
-      if (!next) {
-        breaking.push(`${method.toUpperCase()} ${path} was removed`);
-        continue;
-      }
-      for (const status of Object.keys(item[method].responses ?? {})) {
-        if (!next.responses?.[status]) {
-          breaking.push(`${method.toUpperCase()} ${path} no longer returns ${status}`);
-        }
-      }
+      if (next) breaking.push(...compareOperation(item[method], next, label));
+      else breaking.push(`${label} was removed`);
     }
+  }
+  for (const [name, schema] of Object.entries(previous.components?.schemas ?? {})) {
+    const next = current.components?.schemas?.[name];
+    if (next) breaking.push(...findSchemaBreakingChanges(schema, next, `schema ${name}`));
+    else breaking.push(`schema "${name}" was removed`);
   }
   return breaking;
 }

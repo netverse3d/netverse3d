@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -14,12 +14,18 @@ import {
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const FOLDERS = ['openapi', 'events', 'realtime'];
 
+function isContractFile(name) {
+  return name.endsWith('.json') || name.endsWith('.yaml');
+}
+
 function listContracts() {
-  return FOLDERS.flatMap((folder) =>
-    readdirSync(join(ROOT, folder))
-      .filter((name) => name.endsWith('.json') || name.endsWith('.yaml'))
-      .map((name) => join(folder, name).replaceAll('\\', '/')),
-  );
+  return FOLDERS.flatMap((folder) => {
+    const directory = join(ROOT, folder);
+    if (!existsSync(directory)) return [];
+    return readdirSync(directory, { recursive: true })
+      .map((name) => join(folder, name).replaceAll('\\', '/'))
+      .filter(isContractFile);
+  });
 }
 
 function readAtRef(ref, file) {
@@ -45,7 +51,7 @@ function listContractsAtRef(ref) {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
   });
-  return output.split('\n').filter((name) => name.endsWith('.json') || name.endsWith('.yaml'));
+  return output.split('\n').filter(isContractFile);
 }
 
 function compare(file, contract, baseRef) {
