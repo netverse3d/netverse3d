@@ -9,8 +9,12 @@ tasks:
         size: S
       - title: Chuẩn bị server staging và thêm bước deploy thật
         size: L
+      - title: Xử lý cảnh báo bảo mật của công cụ build wiki
+        size: S
   - requirement: REQ-001
     items:
+      - title: Ký và xác minh image khi phát hành, làm trước service đầu tiên
+        size: M
       - title: Xác nhận nguồn gốc và đưa service identity vào repo
         size: L
       - title: Đăng ký và đăng nhập trên giao diện
