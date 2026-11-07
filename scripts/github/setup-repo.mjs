@@ -121,7 +121,7 @@ function applyPages() {
 const problems = [
   ...applyRepositorySettings(),
   ...applyLabels(),
-  ...applyRulesets(),
+  ...(process.argv.includes('--skip-rulesets') ? [] : applyRulesets()),
   ...applyPages(),
 ];
 const resolvedReviewers = resolveReviewers();

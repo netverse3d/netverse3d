@@ -1,0 +1,48 @@
+# Cấu hình GitHub Project
+
+Cấu hình repo, Project và bộ issue đều nằm trong mã. Các script chạy lặp lại được, không tạo trùng.
+
+## Lệnh
+
+| Lệnh                                         | Việc                                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `node scripts/github/setup-repo.mjs`         | Áp cấu hình repo, nhãn, ruleset, Environment, Pages rồi đọc lại để đối chiếu |
+| `node scripts/github/setup-repo.mjs --check` | Chỉ đối chiếu, báo khác biệt                                                 |
+| `node scripts/github/setup-project.mjs`      | Tạo Project, field, Milestone                                                |
+| `node scripts/github/seed-issues.mjs`        | Tạo issue còn thiếu từ sổ yêu cầu và `docs/requirements/backlog-seed.yaml`   |
+
+Cần quyền `gh auth refresh -s project`.
+
+## Thay đổi cấu hình
+
+Sửa `.github/settings/repository.json` qua PR, rồi chạy `setup-repo.mjs`.
+
+## Khi đã mời thành viên
+
+1. Chủ tổ chức cấp thêm quyền: `gh auth refresh -s admin:org`.
+2. Mời thành viên, tạo team `core` có quyền ghi vào repo.
+3. Sửa `.github/settings/repository.json`:
+
+```json
+{
+  "approvals": 1,
+  "preventSelfReview": true,
+  "releaseReviewers": [{ "type": "Team", "slug": "core" }]
+}
+```
+
+4. Chạy `node scripts/github/setup-repo.mjs`.
+
+Kết quả mong đợi: PR cần một thành viên khác duyệt, người bấm phát hành production không tự duyệt được.
+
+## Các view của Project
+
+Tạo trong giao diện Project nếu API không hỗ trợ:
+
+| View           | Kiểu    | Thiết lập                                 |
+| -------------- | ------- | ----------------------------------------- |
+| Bảng công việc | Board   | Nhóm theo Status, lọc `-status:Done`      |
+| Theo Milestone | Table   | Nhóm theo Milestone, sắp theo Priority    |
+| Theo người     | Table   | Nhóm theo Assignees, lọc `-status:Done`   |
+| Lộ trình       | Roadmap | Nhóm theo Milestone                       |
+| Cần chốt       | Table   | Lọc `label:needs-decision,waiting-mentor` |
