@@ -4,6 +4,13 @@ import { api, gh, ghJson, ORGANIZATION, REPOSITORY } from './gh.mjs';
 
 export const PROJECT_TITLE = 'Netverse 3D';
 const STATUS_OPTIONS = ['Backlog', 'Ready', 'In Progress', 'In Review', 'Done'];
+const VIEWS = [
+  { name: 'Bảng công việc', layout: 'board', filter: '-status:Done' },
+  { name: 'Theo Milestone', layout: 'table' },
+  { name: 'Theo người', layout: 'table', filter: '-status:Done' },
+  { name: 'Lộ trình', layout: 'roadmap' },
+  { name: 'Cần chốt', layout: 'table', filter: 'label:needs-decision,waiting-mentor' },
+];
 const FIELDS = [
   { name: 'Priority', options: ['P0', 'P1', 'P2', 'P3'] },
   { name: 'Size', options: ['XS', 'S', 'M', 'L', 'XL'] },
@@ -73,6 +80,16 @@ function ensureStatusOptions(number) {
   gh(['api', 'graphql', '-f', `query=${query}`]);
 }
 
+function ensureViews(number) {
+  const query = `query { organization(login: "${ORGANIZATION}") { projectV2(number: ${number}) { views(first: 50) { nodes { name } } } } }`;
+  const result = ghJson(['api', 'graphql', '-f', `query=${query}`]);
+  const existing = result.data.organization.projectV2.views.nodes.map((view) => view.name);
+  for (const view of VIEWS) {
+    if (existing.includes(view.name)) continue;
+    api('POST', `orgs/${ORGANIZATION}/projectsV2/${number}/views`, view);
+  }
+}
+
 function ensureMilestones() {
   const { milestones } = parse(readFileSync('docs/requirements/milestones.yaml', 'utf8'));
   const existing = api('GET', `repos/${REPOSITORY}/milestones?state=all&per_page=100`);
@@ -92,6 +109,7 @@ gh(['project', 'link', String(project.number), '--owner', ORGANIZATION, '--repo'
 gh(['project', 'edit', String(project.number), '--owner', ORGANIZATION, '--visibility', 'PUBLIC']);
 ensureFields(project.number);
 ensureStatusOptions(project.number);
+ensureViews(project.number);
 const milestoneCount = ensureMilestones();
 
 const fields = listFields(project.number).map((field) => field.name);
