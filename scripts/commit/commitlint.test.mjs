@@ -20,6 +20,15 @@ test('từ chối commit có thân văn xuôi', () => {
   assert.notEqual(lint('feat: let players log in\n\nThis adds a login form.\n').status, 0);
 });
 
+test('nhận tiêu đề có từ viết tắt hoặc tên riêng', () => {
+  const result = lint('feat: verify PayOS webhook in CI\n');
+  assert.equal(result.status, 0, result.stdout);
+});
+
+test('từ chối tiêu đề viết hoa chữ đầu', () => {
+  assert.notEqual(lint('feat: Let players log in\n').status, 0);
+});
+
 test('nhận commit chỉ có tiêu đề', () => {
   const result = lint('feat: let players log in\n');
   assert.equal(result.status, 0, result.stdout);
