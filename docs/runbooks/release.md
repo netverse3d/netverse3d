@@ -1,6 +1,8 @@
 # Quy trình phát hành
 
-Ai có quyền ghi vào repo cũng làm được. Không tạo tag bằng tay: hệ thống sẽ từ chối.
+Ai có quyền ghi vào repo cũng làm được. Không tạo tag bằng tay.
+
+Hệ thống chỉ từ chối tag tạo tay sau khi đã có [GitHub App](./github-app.md). Trước thời điểm đó chưa có lớp chặn này, nên không mời thêm người có quyền ghi.
 
 ## Phát hành staging
 

@@ -18,13 +18,13 @@ gitGraph
 
 ## Hai môi trường
 
-|                 | Staging                        | Production                                                    |
-| --------------- | ------------------------------ | ------------------------------------------------------------- |
-| Nhánh           | `staging`, là nhánh mặc định   | `main`                                                        |
-| Tag             | `stg-vX.Y.Z`                   | `prod-vX.Y.Z`                                                 |
-| Ý nghĩa         | Bản đưa ra test                | Bản chính thức, đúng số của bản staging đã đạt                |
-| Khi phát hành   | Build image rồi deploy tự động | Dùng lại image của bản staging, cần một thành viên khác duyệt |
-| Dữ liệu, secret | Riêng cho test                 | Thật, tách hoàn toàn                                          |
+|                 | Staging                          | Production                                                    |
+| --------------- | -------------------------------- | ------------------------------------------------------------- |
+| Nhánh           | `staging`, là nhánh mặc định     | `main`                                                        |
+| Tag             | `stg-vX.Y.Z`                     | `prod-vX.Y.Z`                                                 |
+| Ý nghĩa         | Bản đưa ra test                  | Bản chính thức, đúng số của bản staging đã đạt                |
+| Khi phát hành   | Build image của phần có thay đổi | Thành viên khác duyệt rồi mới tạo tag, dùng lại image đã test |
+| Dữ liệu, secret | Riêng cho test                   | Thật, tách hoàn toàn                                          |
 
 ## Đưa thay đổi vào
 

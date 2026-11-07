@@ -15,6 +15,9 @@ Nhóm cần một nơi test ổn định trước production. Merge và phát h�
 - Test lại trên staging thì tăng Z. Production dùng đúng số của bản staging đạt, nên số production có thể nhảy cóc.
 - `prod-vX.Y.Z` chỉ hợp lệ khi nằm trên `main`, đã có `stg-vX.Y.Z` và cùng nội dung; dùng lại image đã test, không build lại.
 - Tag không sửa, không xoá. Chỉ GitHub App của tổ chức tạo được tag, sau khi workflow Release kiểm tra và, với production, sau khi một thành viên khác duyệt.
+- Hai App riêng cho hai loại tag, khoá nằm trong secret của Environment. Khoá production chỉ mở trên `main` và sau khi duyệt, vì workflow chạy từ file trên chính nhánh được chọn nên secret cấp repo có thể bị đọc từ một nhánh bất kỳ.
+- Check bắt buộc phải do GitHub Actions tạo, để không giả được bằng cách gửi status cùng tên.
+- Không tìm thấy image đúng nội dung thì phát hành thất bại, không dùng tạm image cũ hơn.
 - Ai có quyền ghi cũng bấm được Release. Không ai bỏ qua được quy trình, kể cả admin.
 
 ## Hệ quả

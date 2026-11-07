@@ -17,11 +17,15 @@ Cần quyền `gh auth refresh -s project`.
 
 Sửa `.github/settings/repository.json` qua PR, rồi chạy `setup-repo.mjs`.
 
-## Khi đã mời thành viên
+## Trước khi mời thành viên
+
+Làm xong [GitHub App](./github-app.md) trước, vì khi chưa có App thì ai có quyền ghi cũng tạo tay được tag phát hành.
+
+## Mời thành viên
 
 1. Chủ tổ chức cấp thêm quyền: `gh auth refresh -s admin:org`.
-2. Mời thành viên, tạo team `core` có quyền ghi vào repo.
-3. Sửa `.github/settings/repository.json`:
+2. Tạo team `core` có quyền ghi vào repo, nhưng chưa thêm ai.
+3. Sửa `.github/settings/repository.json` qua PR:
 
 ```json
 {
@@ -32,6 +36,7 @@ Sửa `.github/settings/repository.json` qua PR, rồi chạy `setup-repo.mjs`.
 ```
 
 4. Chạy `node scripts/github/setup-repo.mjs`.
+5. Mời thành viên vào team `core`.
 
 Kết quả mong đợi: PR cần một thành viên khác duyệt, người bấm phát hành production không tự duyệt được.
 
