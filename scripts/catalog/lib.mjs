@@ -73,13 +73,11 @@ function walkFiles(directory, base = '') {
 function withoutIgnoredFiles(directory, files) {
   const result = spawnSync('git', ['check-ignore', '--stdin'], {
     cwd: directory,
-    input: files.join('
-'),
+    input: files.join('\n'),
     encoding: 'utf8',
   });
   if (result.status !== 0) return files;
-  const ignored = new Set(result.stdout.split('
-').filter(Boolean));
+  const ignored = new Set(result.stdout.split('\n').filter(Boolean));
   return files.filter((file) => !ignored.has(file));
 }
 
