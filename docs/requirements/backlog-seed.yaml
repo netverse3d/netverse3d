@@ -1,0 +1,110 @@
+tasks:
+  - requirement: REQ-027
+    items:
+      - title: Tạo GitHub App phát hành và lưu khoá
+        size: S
+      - title: Mời thành viên, tạo team core, bật duyệt chéo
+        size: S
+      - title: Chạy thử trọn vòng phát hành staging và production
+        size: S
+      - title: Chuẩn bị server staging và thêm bước deploy thật
+        size: L
+  - requirement: REQ-001
+    items:
+      - title: Xác nhận nguồn gốc và đưa service identity vào repo
+        size: L
+      - title: Đăng ký và đăng nhập trên giao diện
+        size: M
+      - title: Duy trì và thu hồi phiên đăng nhập
+        size: M
+  - requirement: REQ-002
+    items:
+      - title: Mô hình vai trò người chơi, chủ tiệm, quản trị
+        size: M
+      - title: Bảo vệ API theo vai trò
+        size: M
+  - requirement: REQ-003
+    items:
+      - title: Màn hình tạo nhân vật
+        size: M
+      - title: Hồ sơ người chơi
+        size: S
+  - requirement: REQ-004
+    items:
+      - title: Dựng khung apps/web-3d với Next.js và Three.js
+        size: M
+      - title: Xây phòng 3D mẫu với dữ liệu giả theo giao thức nháp
+        size: L
+      - title: Điều khiển bằng phím và cần ảo trên điện thoại
+        size: M
+      - title: Cấu hình PWA
+        size: S
+  - requirement: REQ-005
+    items:
+      - title: Dựng khung apps/admin
+        size: M
+      - title: Trang quản lý người dùng
+        size: M
+  - requirement: REQ-006
+    items:
+      - title: Chốt object storage thay cho MinIO
+        size: S
+        labels: [needs-decision]
+      - title: Xác nhận nguồn gốc và đưa service media vào repo
+        size: L
+      - title: Thêm object storage vào hạ tầng dev
+        size: S
+      - title: Quy trình đưa asset 3D lên và phân phối
+        size: M
+  - requirement: REQ-008
+    items:
+      - title: Xác nhận nguồn gốc và đưa service notification vào repo
+        size: L
+      - title: Thông báo trong ứng dụng
+        size: M
+      - title: Gửi email
+        size: S
+  - requirement: REQ-009
+    items:
+      - title: Chốt đơn vị thanh toán cho thuê đất và thuê máy
+        size: S
+        labels: [needs-decision]
+      - title: Dựng service core-api
+        size: M
+      - title: Mô hình khu đất và hợp đồng thuê
+        size: M
+      - title: Màn hình chọn và thuê đất
+        size: L
+  - requirement: REQ-010
+    items:
+      - title: Xác minh môi trường thử và tài khoản PayOS
+        size: S
+        labels: [needs-decision]
+      - title: Xác nhận nguồn gốc và đưa service payment vào repo
+        size: L
+      - title: Webhook có xác thực và xử lý lặp an toàn
+        size: M
+  - requirement: REQ-011
+    items:
+      - title: Tính phí thuê máy và gia hạn
+        size: M
+  - requirement: REQ-013
+    items:
+      - title: Dựng service world
+        size: M
+      - title: Chế độ xây dựng tiệm
+        size: L
+  - requirement: REQ-014
+    items:
+      - title: Danh sách và tìm kiếm tiệm
+        size: M
+  - requirement: REQ-017
+    items:
+      - title: Nhận core của mentor và cập nhật giao thức realtime
+        size: L
+        labels: [waiting-mentor]
+  - requirement: REQ-020
+    items:
+      - title: Chốt phạm vi chat, voice, nhạc và tranh với mentor
+        size: S
+        labels: [needs-decision]

@@ -1,0 +1,80 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Môi trường
+        type: choice
+        required: true
+        options: [staging, production]
+      version:
+        description: Phiên bản, ví dụ 0.1.0
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.validate.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Read checks of this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" \
+            --paginate --jq '.check_runs' | jq -s 'add' > "$RUNNER_TEMP/checks.json"
+      - id: validate
+        name: Validate release
+        env:
+          RELEASE_ENVIRONMENT: ${{ inputs.environment }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/release/validate.mjs \
+            --environment "$RELEASE_ENVIRONMENT" \
+            --version "$RELEASE_VERSION" \
+            --branch "$GITHUB_REF_NAME" \
+            --checks-file "$RUNNER_TEMP/checks.json"
+
+  approve:
+    needs: validate
+    if: inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment: production-release
+    steps:
+      - run: echo "Approved release of $RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+
+  tag:
+    needs: [validate, approve]
+    if: ${{ !cancelled() && needs.validate.result == 'success' && (needs.approve.result == 'success' || needs.approve.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+      - name: Create tag
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f "ref=refs/tags/$RELEASE_TAG" \
+            -f "sha=$GITHUB_SHA"
