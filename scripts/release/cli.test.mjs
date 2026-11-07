@@ -100,6 +100,67 @@ test('từ chối phát hành lại số đã có', () => {
   assert.match(result.stderr, /already exists/);
 });
 
+test('production dùng image của bản staging nơi service đổi lần cuối', () => {
+  const { cwd, git, change, pushAll } = createRepository();
+  git('tag', 'stg-v0.1.0');
+  change('services/identity/src/a.txt', 'feat: change identity');
+  git('tag', 'stg-v0.1.1');
+  change('docs/note.txt', 'docs: add note');
+  git('tag', 'stg-v0.1.2');
+  git('switch', '-q', 'main');
+  git('merge', '-q', '--no-ff', '--no-edit', 'staging');
+  git('tag', 'prod-v0.1.2');
+  pushAll();
+  git('fetch', '-q', 'origin');
+  const result = plan(cwd, 'prod-v0.1.2');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /"sourceTag":"stg-v0\.1\.1"/);
+});
+
+test('sửa lỗi đi qua staging nhiều vòng mà không cần merge ngược', () => {
+  const { cwd, git, change } = createRepository();
+  const checks = join(cwd, '.git/checks.json');
+  writeFileSync(
+    checks,
+    JSON.stringify([
+      { name: 'verify', conclusion: 'success', app: { slug: 'github-actions' } },
+      { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
+    ]),
+  );
+  const release = (environment, version, branch) =>
+    spawnSync(
+      process.execPath,
+      [
+        VALIDATE,
+        '--environment',
+        environment,
+        '--version',
+        version,
+        '--branch',
+        branch,
+        '--checks-file',
+        checks,
+      ],
+      { cwd, encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: '' } },
+    );
+  for (const [version, file] of [
+    ['0.1.0', 'docs/first.txt'],
+    ['0.1.1', 'docs/second.txt'],
+    ['0.1.2', 'docs/third.txt'],
+  ]) {
+    git('switch', '-q', 'staging');
+    change(file, 'fix: urgent repair');
+    const staged = release('staging', version, 'staging');
+    assert.equal(staged.status, 0, staged.stderr);
+    git('tag', `stg-v${version}`);
+    git('switch', '-q', 'main');
+    git('merge', '-q', '--no-ff', '--no-edit', 'staging');
+    const released = release('production', version, 'main');
+    assert.equal(released.status, 0, released.stderr);
+    git('tag', `prod-v${version}`);
+  }
+});
+
 test('tag sai định dạng không được lập kế hoạch build', () => {
   const { cwd } = createRepository();
   const result = plan(cwd, 'v1.0.0');
@@ -118,7 +179,7 @@ test('tag staging đặt ngoài nhánh cho phép bị từ chối', () => {
   git('fetch', '-q', 'origin');
   const result = plan(cwd, 'stg-v0.1.0');
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /must be on staging or hotfix/);
+  assert.match(result.stderr, /must be on staging/);
 });
 
 test('lần đầu phát hành lập kế hoạch build thành phần có Dockerfile', () => {

@@ -13,6 +13,9 @@ import {
   parseTag,
   previousTag,
   selectChangedComponents,
+  selectSourceTag,
+  SHARED_PATHS,
+  stagingTagsUpTo,
   tagFor,
 } from './lib.mjs';
 
@@ -36,15 +39,27 @@ const errors = evaluatePlacement({
 });
 if (errors.length > 0) fail(errors.join('\n'));
 
+const tags = listTags(cwd);
 const components = loadCatalog(cwd).map((component) => ({
   ...component,
   hasDockerfile: existsSync(join(cwd, component.path, 'Dockerfile')),
 }));
 const selected = selectChangedComponents(
   components,
-  changedFiles(previousTag(listTags(cwd), tag), tag, cwd),
+  changedFiles(previousTag(tags, tag), tag, cwd),
 );
-const matrix = JSON.stringify(selected.map(({ id, path }) => ({ id, path })));
+
+function withSourceTag(component) {
+  if (parsed.environment !== 'production') return { id: component.id, path: component.path };
+  const sourceTag = selectSourceTag(
+    stagingTagsUpTo(tags, parsed.version),
+    (candidate) => changedFiles(candidate, tag, cwd, [component.path, ...SHARED_PATHS]).length > 0,
+  );
+  if (!sourceTag) fail(`No staging release has the same content as ${tag} for ${component.id}`);
+  return { id: component.id, path: component.path, sourceTag };
+}
+
+const matrix = JSON.stringify(selected.map(withSourceTag));
 
 console.log(`Components for ${tag}: ${matrix}`);
 if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `components=${matrix}\n`);

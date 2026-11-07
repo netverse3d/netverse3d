@@ -46,6 +46,28 @@ export function findSchemaBreakingChanges(previous, current, location = '#') {
   if (previous.type && typeOf(previous) !== typeOf(current)) {
     breaking.push(`${location}: type changed from ${typeOf(previous)} to ${typeOf(current)}`);
   }
+  for (const value of previous.enum ?? []) {
+    if (current.enum && !current.enum.includes(value)) {
+      breaking.push(`${location}: enum value "${value}" was removed`);
+    }
+  }
+  if (previous.additionalProperties !== false && current.additionalProperties === false) {
+    breaking.push(`${location}: additionalProperties became false`);
+  }
+  if (!previous.enum && current.enum) breaking.push(`${location}: enum was added`);
+  if (previous.items && current.items) {
+    breaking.push(...findSchemaBreakingChanges(previous.items, current.items, `${location}/items`));
+  }
+  for (const keyword of ['oneOf', 'anyOf']) {
+    const before = previous[keyword] ?? [];
+    const after = current[keyword] ?? [];
+    if (before.length > after.length) breaking.push(`${location}: ${keyword} lost an option`);
+    before.slice(0, after.length).forEach((option, index) => {
+      breaking.push(
+        ...findSchemaBreakingChanges(option, after[index], `${location}/${keyword}/${index}`),
+      );
+    });
+  }
   const previousRequired = new Set(previous.required ?? []);
   for (const name of current.required ?? []) {
     if (!previousRequired.has(name)) breaking.push(`${location}: "${name}" became required`);
@@ -63,14 +85,58 @@ export function findSchemaBreakingChanges(previous, current, location = '#') {
   return breaking;
 }
 
+function compareContent(previous, current, label) {
+  return Object.entries(previous?.content ?? {}).flatMap(([mediaType, media]) => {
+    const next = current?.content?.[mediaType];
+    if (!next) return [`${label}: ${mediaType} was removed`];
+    if (!media.schema || !next.schema) return [];
+    return findSchemaBreakingChanges(media.schema, next.schema, `${label} ${mediaType}`);
+  });
+}
+
+function compareParameters(previous = [], current = [], label) {
+  const key = (parameter) => `${parameter.in}:${parameter.name}`;
+  const before = new Map(previous.map((parameter) => [key(parameter), parameter]));
+  const after = new Map(current.map((parameter) => [key(parameter), parameter]));
+  const breaking = [];
+  for (const [id, parameter] of before) {
+    if (!after.has(id)) breaking.push(`${label}: parameter "${parameter.name}" was removed`);
+  }
+  for (const [id, parameter] of after) {
+    if (parameter.required && !before.get(id)?.required) {
+      breaking.push(`${label}: parameter "${parameter.name}" became required`);
+    }
+  }
+  return breaking;
+}
+
+function compareOperation(operation, next, label) {
+  const breaking = [
+    ...compareParameters(operation.parameters, next.parameters, label),
+    ...compareContent(operation.requestBody, next.requestBody, `${label} request`),
+  ];
+  for (const [status, response] of Object.entries(operation.responses ?? {})) {
+    const nextResponse = next.responses?.[status];
+    if (!nextResponse) breaking.push(`${label} no longer returns ${status}`);
+    else breaking.push(...compareContent(response, nextResponse, `${label} ${status}`));
+  }
+  return breaking;
+}
+
 export function findOpenApiBreakingChanges(previous, current) {
   const breaking = [];
   for (const [path, item] of Object.entries(previous.paths ?? {})) {
     for (const method of HTTP_METHODS.filter((name) => item[name])) {
-      if (!current.paths?.[path]?.[method]) {
-        breaking.push(`${method.toUpperCase()} ${path} was removed`);
-      }
+      const label = `${method.toUpperCase()} ${path}`;
+      const next = current.paths?.[path]?.[method];
+      if (next) breaking.push(...compareOperation(item[method], next, label));
+      else breaking.push(`${label} was removed`);
     }
+  }
+  for (const [name, schema] of Object.entries(previous.components?.schemas ?? {})) {
+    const next = current.components?.schemas?.[name];
+    if (next) breaking.push(...findSchemaBreakingChanges(schema, next, `schema ${name}`));
+    else breaking.push(`schema "${name}" was removed`);
   }
   return breaking;
 }

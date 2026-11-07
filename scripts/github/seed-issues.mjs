@@ -2,10 +2,9 @@ import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
-import { planBacklog, selectMissingIssues } from './backlog.mjs';
-import { api, gh, ghJson, ORGANIZATION, REPOSITORY } from './gh.mjs';
+import { findIssueByKey, planBacklog, selectMissingIssues } from './backlog.mjs';
+import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
 
-const PROJECT_TITLE = 'Netverse 3D';
 const REQUEST_GAP_MS = 1200;
 const repositoryPath = `repos/${REPOSITORY}`;
 
@@ -104,12 +103,11 @@ const missing = selectMissingIssues(
   planned,
   existing.map((item) => item.title),
 );
-const byTitle = new Map(existing.map((item) => [item.title, item]));
 console.log(`Planned ${planned.length} issues, ${planned.length - missing.length} already exist.`);
 
 for (const issue of missing.filter((item) => item.type === 'Feature')) {
   const created = createIssue(issue, milestoneNumbers);
-  byTitle.set(issue.title, created);
+  existing.push(created);
   addToProject(project, issue, created.html_url);
   console.log(`Created #${created.number}: ${issue.title}`);
   await sleep(REQUEST_GAP_MS);
@@ -118,8 +116,7 @@ for (const issue of missing.filter((item) => item.type === 'Feature')) {
 for (const issue of missing.filter((item) => item.type === 'Task')) {
   const created = createIssue(issue, milestoneNumbers);
   addToProject(project, issue, created.html_url);
-  const parent = planned.find((item) => item.key === issue.parent);
-  const parentIssue = byTitle.get(parent.title);
+  const parentIssue = findIssueByKey(existing, issue.parent);
   api('POST', `${repositoryPath}/issues/${parentIssue.number}/sub_issues`, {
     sub_issue_id: created.id,
   });

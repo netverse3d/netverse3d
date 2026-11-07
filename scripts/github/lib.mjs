@@ -1,4 +1,6 @@
 const LABEL_COLORS = { area: '1d76db', status: 'e4e669' };
+const GITHUB_ACTIONS_APP_ID = 15368;
+const RELEASE_TAG_PATTERNS = { staging: 'refs/tags/stg-v*', production: 'refs/tags/prod-v*' };
 
 export const REPOSITORY_SETTINGS = {
   has_wiki: false,
@@ -40,7 +42,10 @@ function branchRuleset(name, mergeMethods, settings) {
         type: 'required_status_checks',
         parameters: {
           strict_required_status_checks_policy: false,
-          required_status_checks: settings.requiredChecks.map((context) => ({ context })),
+          required_status_checks: settings.requiredChecks.map((context) => ({
+            context,
+            integration_id: GITHUB_ACTIONS_APP_ID,
+          })),
         },
       },
     ],
@@ -48,30 +53,28 @@ function branchRuleset(name, mergeMethods, settings) {
 }
 
 export function buildRulesets(settings) {
-  const releaseTags = {
-    ref_name: { include: ['refs/tags/stg-v*', 'refs/tags/prod-v*'], exclude: [] },
-  };
+  const allReleaseTags = Object.values(RELEASE_TAG_PATTERNS);
   const rulesets = [
-    branchRuleset('staging', ['squash', 'merge'], settings),
+    branchRuleset('staging', ['squash'], settings),
     branchRuleset('main', ['merge'], settings),
     {
       name: 'release-tags-immutable',
       target: 'tag',
       enforcement: 'active',
       bypass_actors: [],
-      conditions: releaseTags,
+      conditions: { ref_name: { include: allReleaseTags, exclude: [] } },
       rules: [{ type: 'update' }, { type: 'deletion' }, { type: 'non_fast_forward' }],
     },
   ];
-  if (settings.releaseAppId) {
+  for (const [environment, pattern] of Object.entries(RELEASE_TAG_PATTERNS)) {
+    const appId = settings.releaseAppIds?.[environment];
+    if (!appId) continue;
     rulesets.push({
-      name: 'release-tags-created-by-app',
+      name: `release-tags-${environment}-by-app`,
       target: 'tag',
       enforcement: 'active',
-      bypass_actors: [
-        { actor_id: settings.releaseAppId, actor_type: 'Integration', bypass_mode: 'always' },
-      ],
-      conditions: releaseTags,
+      bypass_actors: [{ actor_id: appId, actor_type: 'Integration', bypass_mode: 'always' }],
+      conditions: { ref_name: { include: [pattern], exclude: [] } },
       rules: [{ type: 'creation' }],
     });
   }
@@ -99,10 +102,56 @@ export function buildEnvironments(settings) {
       branchPolicy: [{ name: 'main', type: 'branch' }],
       reviewers: settings.resolvedReviewers,
       preventSelfReview: settings.preventSelfReview,
+      canAdminsBypass: false,
     },
-    { name: 'production', branchPolicy: [{ name: 'prod-v*', type: 'tag' }], reviewers: [] },
-    { name: 'staging', branchPolicy: [{ name: 'stg-v*', type: 'tag' }], reviewers: [] },
+    {
+      name: 'release-staging',
+      branchPolicy: [{ name: 'staging', type: 'branch' }],
+      reviewers: [],
+      preventSelfReview: false,
+      canAdminsBypass: false,
+    },
+    {
+      name: 'production',
+      branchPolicy: [{ name: 'prod-v*', type: 'tag' }],
+      reviewers: [],
+      preventSelfReview: false,
+      canAdminsBypass: false,
+    },
   ];
+}
+
+function differenceOfSets(desired, actual, label) {
+  return [
+    ...desired.filter((key) => !actual.includes(key)).map((key) => `missing ${label} ${key}`),
+    ...actual.filter((key) => !desired.includes(key)).map((key) => `unexpected ${label} ${key}`),
+  ];
+}
+
+export function findEnvironmentDrift(environment, actual, policies) {
+  const reviewerRule = actual.protection_rules?.find((rule) => rule.type === 'required_reviewers');
+  const actualReviewers = (reviewerRule?.reviewers ?? []).map(
+    (item) => `${item.type}:${item.reviewer.id}`,
+  );
+  const problems = [
+    ...differenceOfSets(
+      environment.branchPolicy.map((policy) => `${policy.type}:${policy.name}`),
+      policies.map((policy) => `${policy.type}:${policy.name}`),
+      'policy',
+    ),
+    ...differenceOfSets(
+      environment.reviewers.map((reviewer) => `${reviewer.type}:${reviewer.id}`),
+      actualReviewers,
+      'reviewer',
+    ),
+  ];
+  if (actual.can_admins_bypass !== environment.canAdminsBypass) {
+    problems.push(`can_admins_bypass is ${actual.can_admins_bypass}`);
+  }
+  if (Boolean(reviewerRule?.prevent_self_review) !== Boolean(environment.preventSelfReview)) {
+    problems.push(`prevent_self_review is ${Boolean(reviewerRule?.prevent_self_review)}`);
+  }
+  return problems.map((problem) => `environment ${environment.name}: ${problem}`);
 }
 
 export function findDrift(desired, actual, path = '') {

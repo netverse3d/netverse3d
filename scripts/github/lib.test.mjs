@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildEnvironments, buildLabels, buildRulesets, findDrift } from './lib.mjs';
+import {
+  buildEnvironments,
+  buildLabels,
+  buildRulesets,
+  findDrift,
+  findEnvironmentDrift,
+} from './lib.mjs';
 
 const settings = {
   approvals: 0,
   preventSelfReview: false,
-  releaseAppId: null,
+  releaseAppIds: { staging: null, production: null },
   requiredChecks: ['verify', 'trace', 'secrets'],
   resolvedReviewers: [{ type: 'User', id: 1 }],
 };
@@ -24,12 +30,12 @@ test('không ai được bỏ qua ruleset của nhánh, kể cả admin', () => 
   assert.deepEqual(byName(rulesets, 'main').bypass_actors, []);
 });
 
-test('main chỉ nhận merge commit, staging nhận squash và merge ngược', () => {
+test('main chỉ nhận merge commit, staging chỉ nhận squash', () => {
   const rulesets = buildRulesets(settings);
   const methods = (name) =>
     rule(byName(rulesets, name), 'pull_request').parameters.allowed_merge_methods;
   assert.deepEqual(methods('main'), ['merge']);
-  assert.deepEqual(methods('staging'), ['squash', 'merge']);
+  assert.deepEqual(methods('staging'), ['squash']);
 });
 
 test('nhánh yêu cầu đủ các check bắt buộc', () => {
@@ -65,23 +71,113 @@ test('không ai sửa hoặc xoá được tag phát hành', () => {
 });
 
 test('chưa có App thì chưa chặn tạo tag', () => {
-  assert.equal(byName(buildRulesets(settings), 'release-tags-created-by-app'), undefined);
+  const names = buildRulesets(settings).map((item) => item.name);
+  assert.ok(!names.includes('release-tags-staging-by-app'));
+  assert.ok(!names.includes('release-tags-production-by-app'));
 });
 
-test('có App thì chỉ App được tạo tag', () => {
-  const ruleset = byName(
-    buildRulesets({ ...settings, releaseAppId: 99 }),
-    'release-tags-created-by-app',
-  );
-  assert.deepEqual(ruleset.rules, [{ type: 'creation' }]);
-  assert.equal(ruleset.bypass_actors[0].actor_id, 99);
-  assert.equal(ruleset.bypass_actors[0].actor_type, 'Integration');
+test('mỗi App chỉ được tạo tag của đúng môi trường', () => {
+  const rulesets = buildRulesets({
+    ...settings,
+    releaseAppIds: { staging: 11, production: 22 },
+  });
+  const staging = byName(rulesets, 'release-tags-staging-by-app');
+  const production = byName(rulesets, 'release-tags-production-by-app');
+  assert.deepEqual(staging.conditions.ref_name.include, ['refs/tags/stg-v*']);
+  assert.equal(staging.bypass_actors[0].actor_id, 11);
+  assert.equal(staging.bypass_actors[0].actor_type, 'Integration');
+  assert.deepEqual(staging.rules, [{ type: 'creation' }]);
+  assert.deepEqual(production.conditions.ref_name.include, ['refs/tags/prod-v*']);
+  assert.equal(production.bypass_actors[0].actor_id, 22);
+  assert.equal(production.bypass_actors.length, 1);
+});
+
+test('check bắt buộc phải do GitHub Actions tạo, không giả được bằng status', () => {
+  const checks = rule(byName(buildRulesets(settings), 'staging'), 'required_status_checks')
+    .parameters.required_status_checks;
+  for (const check of checks) assert.equal(check.integration_id, 15368, check.context);
 });
 
 test('môi trường duyệt production chỉ nhận nhánh main', () => {
   const release = buildEnvironments(settings).find((item) => item.name === 'production-release');
   assert.deepEqual(release.branchPolicy, [{ name: 'main', type: 'branch' }]);
   assert.deepEqual(release.reviewers, [{ type: 'User', id: 1 }]);
+});
+
+test('môi trường tạo tag staging chỉ nhận nhánh staging', () => {
+  const release = buildEnvironments(settings).find((item) => item.name === 'release-staging');
+  assert.deepEqual(
+    release.branchPolicy.map((item) => item.name),
+    ['staging'],
+  );
+});
+
+test('không môi trường nào cho admin bỏ qua quy tắc', () => {
+  for (const environment of buildEnvironments(settings)) {
+    assert.equal(environment.canAdminsBypass, false, environment.name);
+  }
+});
+
+const environment = {
+  name: 'production-release',
+  branchPolicy: [{ name: 'main', type: 'branch' }],
+  reviewers: [{ type: 'User', id: 1 }],
+  preventSelfReview: false,
+  canAdminsBypass: false,
+};
+const healthy = {
+  can_admins_bypass: false,
+  protection_rules: [
+    {
+      type: 'required_reviewers',
+      prevent_self_review: false,
+      reviewers: [{ type: 'User', reviewer: { id: 1 } }],
+    },
+  ],
+};
+const mainPolicy = [{ name: 'main', type: 'branch' }];
+
+test('môi trường đúng cấu hình thì không có khác biệt', () => {
+  assert.deepEqual(findEnvironmentDrift(environment, healthy, mainPolicy), []);
+});
+
+test('phát hiện môi trường cho admin bỏ qua', () => {
+  const drift = findEnvironmentDrift(
+    environment,
+    { ...healthy, can_admins_bypass: true },
+    mainPolicy,
+  );
+  assert.match(drift.join(), /can_admins_bypass/);
+});
+
+test('phát hiện policy nhánh thừa, thiếu hoặc sai loại', () => {
+  const extra = findEnvironmentDrift(environment, healthy, [
+    ...mainPolicy,
+    { name: '*', type: 'branch' },
+  ]);
+  assert.match(extra.join(), /unexpected policy branch:\*/);
+  const wrongType = findEnvironmentDrift(environment, healthy, [{ name: 'main', type: 'tag' }]);
+  assert.match(wrongType.join(), /missing policy branch:main/);
+});
+
+test('phát hiện người duyệt thừa hoặc thiếu', () => {
+  const noReviewer = findEnvironmentDrift(
+    environment,
+    { ...healthy, protection_rules: [] },
+    mainPolicy,
+  );
+  assert.match(noReviewer.join(), /missing reviewer User:1/);
+  const extra = findEnvironmentDrift({ ...environment, reviewers: [] }, healthy, mainPolicy);
+  assert.match(extra.join(), /unexpected reviewer User:1/);
+});
+
+test('phát hiện chưa bật cấm tự duyệt', () => {
+  const drift = findEnvironmentDrift(
+    { ...environment, preventSelfReview: true },
+    healthy,
+    mainPolicy,
+  );
+  assert.match(drift.join(), /prevent_self_review/);
 });
 
 test('có nhãn cho từng thành phần và nhãn quy trình', () => {

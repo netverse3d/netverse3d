@@ -19,4 +19,6 @@ Mỗi yêu cầu có mã `REQ-xxx` trong `docs/requirements/registry.yaml`, mỗ
 
 - Hai lớp đầu giúp phát hiện sớm nhưng có thể bị bỏ qua; lớp CI là lớp bắt buộc.
 - CI chỉ kiểm việc có gắn yêu cầu hay không, không phán đoán được mã có đúng yêu cầu hay không. Phần đó thuộc về review.
-- REQ `draft` chỉ gây cảnh báo; REQ đã bỏ hoặc không tồn tại thì bị chặn.
+- REQ `draft`, ADR `proposed`, và REQ hoặc ADR do chính PR thêm vào chỉ gây cảnh báo; REQ đã bỏ hoặc không tồn tại thì bị chặn.
+- PR đưa `staging` lên `main` và PR cập nhật thư viện do Dependabot tạo được miễn gắn yêu cầu, vì không tạo thay đổi nghiệp vụ mới.
+- PR có thể tự sửa workflow và script kiểm tra của chính nó. Không bật bắt buộc code owner vì quy trình không được phụ thuộc người cụ thể, nên người review phải đặc biệt để ý khi PR chạm `.github/` và `scripts/`.

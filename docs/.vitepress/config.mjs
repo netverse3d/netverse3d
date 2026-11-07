@@ -61,6 +61,9 @@ export default withMermaid(
           items: [
             { text: 'Nhận service có sẵn', link: '/runbooks/import-service' },
             { text: 'Phát hành', link: '/runbooks/release' },
+            { text: 'Tạo GitHub App', link: '/runbooks/github-app' },
+            { text: 'Cấu hình Project', link: '/runbooks/github-project' },
+            { text: 'Nghiệm thu dựng nền', link: '/runbooks/acceptance-bootstrap' },
           ],
         },
       ],

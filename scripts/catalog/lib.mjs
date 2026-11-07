@@ -88,6 +88,11 @@ function requiredFilesFor(kind) {
   return [];
 }
 
+function decisionExists(root, id) {
+  const directory = join(root, 'docs/decisions');
+  return existsSync(directory) && readdirSync(directory).some((name) => name.startsWith(`${id}-`));
+}
+
 export function checkComponent(root, component) {
   const directory = join(root, component.path);
   const files = withoutIgnoredFiles(directory, walkFiles(directory));
@@ -103,6 +108,8 @@ export function checkComponent(root, component) {
   }
   if (metadata.provenance === 'cleared' && !DECISION_ID.test(metadata.provenance_ref ?? '')) {
     errors.push(`${label}: provenance "cleared" needs provenance_ref pointing to an ADR`);
+  } else if (metadata.provenance === 'cleared' && !decisionExists(root, metadata.provenance_ref)) {
+    errors.push(`${label}: ${metadata.provenance_ref} does not exist in docs/decisions`);
   }
   if (implementation.length === 0) return errors;
 

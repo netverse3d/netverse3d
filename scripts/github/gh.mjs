@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 
 export const REPOSITORY = 'netverse3d/netverse3d';
 export const ORGANIZATION = 'netverse3d';
+export const PROJECT_TITLE = 'Netverse 3D';
 
 export function gh(args, input) {
   const output = execFileSync('gh', args, {

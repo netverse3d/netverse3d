@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
-import { api, gh, ghJson, ORGANIZATION, REPOSITORY } from './gh.mjs';
+import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
 
-export const PROJECT_TITLE = 'Netverse 3D';
 const STATUS_OPTIONS = ['Backlog', 'Ready', 'In Progress', 'In Review', 'Done'];
 const VIEWS = [
   { name: 'Bảng công việc', layout: 'board', filter: '-status:Done' },

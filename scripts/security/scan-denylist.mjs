@@ -1,22 +1,18 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { findMatches } from './denylist.mjs';
 import { argument } from '../lib/cli.mjs';
-
-function git(...args) {
-  return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
-}
+import { git } from '../lib/git.mjs';
 
 const findings = [];
 
-for (const file of git('ls-files', '-z').split('\0').filter(Boolean)) {
+for (const file of git(['ls-files', '-z']).split('\0').filter(Boolean)) {
   if (!existsSync(file)) continue;
   findings.push(...findMatches(file, readFileSync(file).toString('utf8')));
 }
 
 const commitRange = argument('commit-range');
 if (commitRange) {
-  const log = git('log', '--format=%h%x00%B%x00', commitRange).split('\0');
+  const log = git(['log', '--format=%h%x00%B%x00', commitRange]).split('\0');
   for (let index = 0; index + 1 < log.length; index += 2) {
     const sha = log[index].trim();
     findings.push(...findMatches(`commit ${sha}`, log[index + 1]));

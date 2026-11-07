@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -14,12 +14,18 @@ import {
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const FOLDERS = ['openapi', 'events', 'realtime'];
 
+function isContractFile(name) {
+  return name.endsWith('.json') || name.endsWith('.yaml');
+}
+
 function listContracts() {
-  return FOLDERS.flatMap((folder) =>
-    readdirSync(join(ROOT, folder))
-      .filter((name) => name.endsWith('.json') || name.endsWith('.yaml'))
-      .map((name) => join(folder, name).replaceAll('\\', '/')),
-  );
+  return FOLDERS.flatMap((folder) => {
+    const directory = join(ROOT, folder);
+    if (!existsSync(directory)) return [];
+    return readdirSync(directory, { recursive: true })
+      .map((name) => join(folder, name).replaceAll('\\', '/'))
+      .filter(isContractFile);
+  });
 }
 
 function readAtRef(ref, file) {
@@ -37,6 +43,15 @@ function readAtRef(ref, file) {
   } catch {
     return null;
   }
+}
+
+function listContractsAtRef(ref) {
+  const output = execFileSync('git', ['ls-tree', '-r', '--name-only', ref, ...FOLDERS], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  return output.split('\n').filter(isContractFile);
 }
 
 function compare(file, contract, baseRef) {
@@ -65,6 +80,14 @@ for (const file of files) {
       : validateJsonSchema(contract, file)),
   );
   if (baseRef) errors.push(...compare(file, contract, baseRef));
+}
+
+if (baseRef) {
+  for (const file of listContractsAtRef(baseRef)) {
+    if (files.includes(file)) continue;
+    const previous = parseContract(file, readAtRef(baseRef, file));
+    if (!isDraft(previous)) errors.push(`${file}: breaking change, a published file was removed`);
+  }
 }
 
 for (const error of errors) console.error(error);

@@ -1,7 +1,7 @@
 import { appendFileSync, readFileSync } from 'node:fs';
+import { argument } from '../lib/cli.mjs';
 import { tagExists, treeOf } from './git-facts.mjs';
 import { evaluateChecks, evaluateRelease, tagFor } from './lib.mjs';
-import { argument } from '../lib/cli.mjs';
 
 const cwd = process.cwd();
 const environment = argument('environment');
@@ -15,6 +15,7 @@ const errors = evaluateRelease({
   environment,
   version,
   branch,
+  refType: process.env.GITHUB_REF_TYPE,
   tagExists: tagExists(tag, cwd),
   peerExists: tagExists(peer, cwd),
   sameTree: treeOf('HEAD', cwd) === treeOf(peer, cwd),

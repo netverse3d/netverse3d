@@ -69,3 +69,12 @@ CI chỉ kiểm được việc có gắn yêu cầu, không biết mã có đú
 ## Ngoại lệ không cần REQ
 
 PR chỉ đổi tài liệu, công cụ, CI không bắt buộc có REQ. Nếu có nhắc REQ hoặc ADR thì mã đó vẫn phải tồn tại.
+
+PR đưa `staging` lên `main` và PR cập nhật thư viện do Dependabot tạo cũng được miễn.
+
+## Người review cần để ý
+
+CI không tự kiểm được những điều sau:
+
+- PR chạm `.github/` hoặc `scripts/` có thể đang sửa chính bộ kiểm tra, nên cần đọc kỹ hơn.
+- REQ hoặc ADR mới do chính PR thêm vào chỉ gây cảnh báo; người review phải xác nhận chúng đã được thống nhất.

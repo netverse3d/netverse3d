@@ -8,6 +8,7 @@ import {
   evaluatePullRequest,
   extractReferences,
   isProductPath,
+  isTraceExempt,
   loadDecisions,
   validateDecisions,
   validateRegistry,
@@ -100,19 +101,101 @@ test('không trùng lặp mã tham chiếu', () => {
   assert.deepEqual(extractReferences('REQ-001 và REQ-001, ADR-0001'), ['REQ-001', 'ADR-0001']);
 });
 
-test('main chỉ nhận PR từ staging hoặc hotfix', () => {
+test('main chỉ nhận PR từ staging', () => {
   assert.equal(evaluateBranchFlow({ base: 'main', head: 'feat/12-login' }).length, 1);
+  assert.equal(evaluateBranchFlow({ base: 'main', head: 'fix/13-payment' }).length, 1);
   assert.deepEqual(evaluateBranchFlow({ base: 'main', head: 'staging' }), []);
-  assert.deepEqual(evaluateBranchFlow({ base: 'main', head: 'hotfix/0.1.1-pay' }), []);
 });
 
-test('hotfix không được nhắm vào staging', () => {
-  assert.equal(evaluateBranchFlow({ base: 'staging', head: 'hotfix/0.1.1-pay' }).length, 1);
-});
-
-test('staging nhận nhánh việc và merge ngược từ main', () => {
+test('staging nhận nhánh việc, không nhận PR từ main', () => {
   assert.deepEqual(evaluateBranchFlow({ base: 'staging', head: 'feat/12-login' }), []);
-  assert.deepEqual(evaluateBranchFlow({ base: 'staging', head: 'main' }), []);
+  assert.deepEqual(evaluateBranchFlow({ base: 'staging', head: 'fix/13-payment' }), []);
+  assert.equal(evaluateBranchFlow({ base: 'staging', head: 'main' }).length, 1);
+});
+
+test('PR từ fork không được giả nhánh staging để vào main', () => {
+  assert.equal(evaluateBranchFlow({ base: 'main', head: 'staging', isFork: true }).length, 1);
+});
+
+test('đưa staging lên main không cần gắn lại yêu cầu', () => {
+  assert.equal(isTraceExempt({ base: 'main', head: 'staging' }), true);
+  assert.equal(isTraceExempt({ base: 'staging', head: 'main' }), false);
+  const { errors } = evaluatePullRequest({
+    body: '',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    exempt: true,
+  });
+  assert.deepEqual(errors, []);
+});
+
+test('PR cập nhật thư viện của Dependabot không cần gắn yêu cầu', () => {
+  const pullRequest = { base: 'staging', head: 'dependabot/npm_and_yarn/all' };
+  assert.equal(isTraceExempt({ ...pullRequest, author: 'dependabot[bot]' }), true);
+});
+
+test('người thường đặt tên nhánh dependabot vẫn phải gắn yêu cầu', () => {
+  const pullRequest = { base: 'staging', head: 'dependabot/fake' };
+  assert.equal(isTraceExempt({ ...pullRequest, author: 'someone' }), false);
+  assert.equal(isTraceExempt(pullRequest), false);
+});
+
+test('Dependabot trên nhánh khác vẫn phải gắn yêu cầu', () => {
+  assert.equal(
+    isTraceExempt({ base: 'staging', head: 'feat/x', author: 'dependabot[bot]' }),
+    false,
+  );
+});
+
+test('cảnh báo khi PR tự thêm ADR rồi tự trích dẫn', () => {
+  const { warnings } = evaluatePullRequest({
+    body: 'Closes #12 ADR-0001',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    baseDecisionIds: ['ADR-0002'],
+  });
+  assert.match(warnings.join(), /ADR-0001 was added by this pull request/);
+});
+
+test('nhánh việc thường và nhánh từ fork vẫn phải gắn yêu cầu', () => {
+  assert.equal(isTraceExempt({ base: 'staging', head: 'feat/12-login' }), false);
+  assert.equal(isTraceExempt({ base: 'main', head: 'staging', isFork: true }), false);
+  assert.equal(isTraceExempt({ base: 'staging', head: 'dependabot/x', isFork: true }), false);
+});
+
+test('cảnh báo khi PR tự thêm yêu cầu rồi tự trích dẫn', () => {
+  const { errors, warnings } = evaluatePullRequest({
+    body: 'Closes #12 REQ-001',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    baseRequirementIds: ['REQ-002'],
+  });
+  assert.deepEqual(errors, []);
+  assert.match(warnings.join(), /REQ-001 was added by this pull request/);
+});
+
+test('không cảnh báo khi yêu cầu đã có từ trước', () => {
+  const { warnings } = evaluatePullRequest({
+    body: 'Closes #12 REQ-001',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    baseRequirementIds: ['REQ-001'],
+  });
+  assert.deepEqual(warnings, []);
+});
+
+test('cảnh báo khi dựa trên ADR mới ở mức đề xuất', () => {
+  const { warnings } = evaluatePullRequest({
+    body: 'Closes #12 ADR-0003',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions: [...decisions, { id: 'ADR-0003', status: 'proposed' }],
+  });
+  assert.match(warnings.join(), /ADR-0003 is still proposed/);
 });
 
 test('sổ yêu cầu báo id sai, trùng và thiếu trường', () => {

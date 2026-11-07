@@ -4,7 +4,7 @@
 
 ## Đọc gì trước khi sửa
 
-1. `docs/wiki/index.md`: tổng quan nghiệp vụ và kỹ thuật.
+1. `docs/wiki/product/overview.md` và `docs/wiki/engineering/architecture.md`: tổng quan nghiệp vụ và kỹ thuật.
 2. `docs/requirements/registry.yaml`: yêu cầu đã thống nhất.
 3. `docs/decisions/`: các quyết định kiến trúc và phạm vi (ADR).
 4. `docs/catalog.yaml` và `README.md` của thành phần sắp sửa.
@@ -26,7 +26,7 @@ Không tự chọn thay người đang làm, không tự sửa REQ hoặc ADR đ
 - Nhánh tách từ `staging`: `feat/<issue>-<slug>`, `fix/<issue>-<slug>`, `docs/<slug>`, `chore/<slug>`.
 - PR vào `staging` bằng squash. Mô tả PR có `Closes #<issue>` và REQ hoặc ADR.
 - `staging` lên `main` bằng merge commit, không squash.
-- Hotfix: nhánh `hotfix/*` tách từ `main`, PR vào `main`, rồi merge `main` ngược về `staging`.
+- Sửa gấp cũng là một `fix`, đi qua `staging` như mọi việc khác.
 - Phát hành chỉ qua workflow Release. Không tạo tag bằng tay.
 - Không ai đẩy thẳng lên `staging` hoặc `main`.
 
