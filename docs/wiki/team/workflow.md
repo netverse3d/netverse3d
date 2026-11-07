@@ -1,0 +1,71 @@
+# Luồng làm việc
+
+```mermaid
+flowchart LR
+  A[REQ trong sổ yêu cầu] --> B[Issue trong Project]
+  B --> C[Nhánh từ staging]
+  C --> D[Code và test]
+  D --> E[PR vào staging]
+  E --> F[CI và một thành viên duyệt]
+  F --> G[Squash vào staging]
+  G --> H[Release staging và test]
+  H --> I[Promote lên main]
+  I --> J[Release production]
+```
+
+## Từng bước
+
+1. **Chọn issue.** Chưa có issue thì tạo mới từ mẫu. Issue phải gắn REQ.
+2. **Tạo nhánh** từ `staging`: `feat/<issue>-<slug>`.
+3. **Liên kết yêu cầu:** `pnpm trace:link REQ-001`.
+4. **Làm việc:** commit nhỏ, viết test, cập nhật wiki nếu hành vi đổi.
+5. **Kiểm tra:** `pnpm verify`.
+6. **Mở PR** vào `staging`, mô tả có `Closes #<issue>` và REQ hoặc ADR.
+7. **Review:** một thành viên bất kỳ khác duyệt. Đẩy commit mới thì cần duyệt lại.
+8. **Squash merge,** nhánh tự xoá.
+
+## Issue
+
+| Loại    | Dùng khi                                                              |
+| ------- | --------------------------------------------------------------------- |
+| Feature | Một khả năng mới cho người dùng; thường là issue cha có các issue con |
+| Task    | Một việc làm được trong vài ngày                                      |
+| Bug     | Hành vi sai so với REQ                                                |
+
+Mỗi issue có Milestone và nhãn `area:*`. Field trong Project: Status, Priority, Size.
+
+## Khi nào một việc sẵn sàng làm
+
+- Gắn với REQ đã chốt hoặc có quyết định rõ.
+- Biết cách kiểm là xong.
+- Không còn câu hỏi chặn trong [câu hỏi mở](../open-questions.md).
+
+## Khi nào một việc xong
+
+- CI xanh, đã review và đã merge vào `staging`.
+- Có test nói được hành vi.
+- Đã kiểm trên staging nếu người dùng thấy được.
+- Wiki, hợp đồng và trạng thái REQ đã cập nhật.
+
+## Khi có dấu hiệu lệch nghiệp vụ
+
+Lệch nghĩa là việc đang làm trái với REQ hoặc ADR, hoặc chưa có REQ nào phủ.
+
+1. Dừng lại, đừng tự chọn.
+2. Hỏi người phụ trách hoặc cả nhóm, kèm các lựa chọn và hệ quả.
+3. Ghi kết quả: sửa `docs/requirements/registry.yaml` hoặc thêm ADR.
+4. Làm tiếp theo quyết định mới.
+
+Hệ thống hỏi lại ở ba chỗ:
+
+| Lớp        | Khi nào                                  | Có bỏ qua được không                           |
+| ---------- | ---------------------------------------- | ---------------------------------------------- |
+| Công cụ AI | Khi sắp sửa mã sản phẩm chưa gắn yêu cầu | Được, tuỳ công cụ                              |
+| Git hook   | Khi push                                 | Được, sau khi xác nhận                         |
+| CI         | Khi mở PR                                | Không, thiếu REQ hoặc ADR thì không merge được |
+
+CI chỉ kiểm được việc có gắn yêu cầu, không biết mã có đúng yêu cầu. Phần đó thuộc về người review.
+
+## Ngoại lệ không cần REQ
+
+PR chỉ đổi tài liệu, công cụ, CI không bắt buộc có REQ. Nếu có nhắc REQ hoặc ADR thì mã đó vẫn phải tồn tại.

@@ -6,3 +6,7 @@ dist
 coverage
 docs/.vitepress/dist
 docs/.vitepress/cache
+docs/requirements/index.md
+docs/decisions/index.md
+docs/wiki/team/roadmap.md
+docs/wiki/engineering/components.md
