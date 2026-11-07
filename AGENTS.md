@@ -4,7 +4,7 @@
 
 ## Đọc gì trước khi sửa
 
-1. `docs/wiki/index.md`: tổng quan nghiệp vụ và kỹ thuật.
+1. `docs/wiki/product/overview.md` và `docs/wiki/engineering/architecture.md`: tổng quan nghiệp vụ và kỹ thuật.
 2. `docs/requirements/registry.yaml`: yêu cầu đã thống nhất.
 3. `docs/decisions/`: các quyết định kiến trúc và phạm vi (ADR).
 4. `docs/catalog.yaml` và `README.md` của thành phần sắp sửa.

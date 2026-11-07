@@ -95,16 +95,41 @@ export function evaluateReferences(references, requirements, decisions) {
       const decision = decisions.find((item) => item.id === reference);
       if (!decision) errors.push(`${reference} does not exist in docs/decisions`);
       else if (decision.status === 'superseded') errors.push(`${reference} is superseded`);
+      else if (decision.status === 'proposed') {
+        warnings.push(`${reference} is still proposed; confirm it with the team`);
+      }
     }
   }
   return { errors, warnings };
 }
 
-export function evaluatePullRequest({ body, files, requirements, decisions }) {
+export function isTraceExempt({ base, head, isFork = false }) {
+  if (isFork) return false;
+  if (base === 'main' && head === 'staging') return true;
+  if (base === 'staging' && head === 'main') return true;
+  return head.startsWith('dependabot/');
+}
+
+export function evaluatePullRequest({
+  body,
+  files,
+  requirements,
+  decisions,
+  exempt = false,
+  baseRequirementIds = null,
+}) {
   const references = extractReferences(body);
   const { errors, warnings } = evaluateReferences(references, requirements, decisions);
+  if (baseRequirementIds) {
+    for (const reference of references) {
+      const isKnown = requirements.some((item) => item.id === reference);
+      if (reference.startsWith('REQ-') && isKnown && !baseRequirementIds.includes(reference)) {
+        warnings.push(`${reference} was added by this pull request; reviewers must confirm it`);
+      }
+    }
+  }
   const productFiles = files.filter(isProductPath);
-  if (productFiles.length > 0) {
+  if (productFiles.length > 0 && !exempt) {
     if (references.length === 0) {
       errors.push(
         `product files changed without a REQ or ADR reference: ${productFiles.slice(0, 5).join(', ')}`,
@@ -117,7 +142,8 @@ export function evaluatePullRequest({ body, files, requirements, decisions }) {
   return { errors, warnings, references, productFiles };
 }
 
-export function evaluateBranchFlow({ base, head }) {
+export function evaluateBranchFlow({ base, head, isFork = false }) {
+  if (base === 'main' && isFork) return ['main does not accept pull requests from forks'];
   if (base === 'main' && head !== 'staging' && !head.startsWith('hotfix/')) {
     return [`main only accepts pull requests from staging or hotfix/*, got "${head}"`];
   }

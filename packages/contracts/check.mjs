@@ -39,6 +39,15 @@ function readAtRef(ref, file) {
   }
 }
 
+function listContractsAtRef(ref) {
+  const output = execFileSync('git', ['ls-tree', '-r', '--name-only', ref, ...FOLDERS], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  return output.split('\n').filter((name) => name.endsWith('.json') || name.endsWith('.yaml'));
+}
+
 function compare(file, contract, baseRef) {
   const previousText = readAtRef(baseRef, file);
   if (previousText === null) return [];
@@ -65,6 +74,14 @@ for (const file of files) {
       : validateJsonSchema(contract, file)),
   );
   if (baseRef) errors.push(...compare(file, contract, baseRef));
+}
+
+if (baseRef) {
+  for (const file of listContractsAtRef(baseRef)) {
+    if (files.includes(file)) continue;
+    const previous = parseContract(file, readAtRef(baseRef, file));
+    if (!isDraft(previous)) errors.push(`${file}: breaking change, a published file was removed`);
+  }
 }
 
 for (const error of errors) console.error(error);

@@ -118,6 +118,12 @@ test('nhận service đủ chuẩn có mã do nhóm tự viết', () => {
 
 test('nhận service đủ chuẩn có mã đã được phép và trỏ về ADR', () => {
   const root = createRepository('cleared\nprovenance_ref: ADR-0009');
+  write(root, 'docs/decisions/ADR-0009-permission.md', '# ADR-0009\n');
   addCompleteService(root);
   assert.deepEqual(checkAllComponents(root), []);
+});
+
+test('chặn nguồn gốc cleared trỏ tới ADR không tồn tại', () => {
+  const root = createRepository('cleared\nprovenance_ref: ADR-9999');
+  assert.match(checkAllComponents(root).join(), /ADR-9999 does not exist/);
 });

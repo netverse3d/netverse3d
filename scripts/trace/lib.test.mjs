@@ -8,6 +8,7 @@ import {
   evaluatePullRequest,
   extractReferences,
   isProductPath,
+  isTraceExempt,
   loadDecisions,
   validateDecisions,
   validateRegistry,
@@ -113,6 +114,71 @@ test('hotfix không được nhắm vào staging', () => {
 test('staging nhận nhánh việc và merge ngược từ main', () => {
   assert.deepEqual(evaluateBranchFlow({ base: 'staging', head: 'feat/12-login' }), []);
   assert.deepEqual(evaluateBranchFlow({ base: 'staging', head: 'main' }), []);
+});
+
+test('PR từ fork không được giả nhánh staging để vào main', () => {
+  assert.equal(evaluateBranchFlow({ base: 'main', head: 'staging', isFork: true }).length, 1);
+  assert.equal(
+    evaluateBranchFlow({ base: 'main', head: 'hotfix/1.0.1-x', isFork: true }).length,
+    1,
+  );
+});
+
+test('đưa staging lên main và merge ngược không cần gắn lại yêu cầu', () => {
+  assert.equal(isTraceExempt({ base: 'main', head: 'staging' }), true);
+  assert.equal(isTraceExempt({ base: 'staging', head: 'main' }), true);
+  const { errors } = evaluatePullRequest({
+    body: '',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    exempt: true,
+  });
+  assert.deepEqual(errors, []);
+});
+
+test('PR cập nhật thư viện tự động không cần gắn yêu cầu', () => {
+  assert.equal(isTraceExempt({ base: 'staging', head: 'dependabot/npm_and_yarn/all' }), true);
+});
+
+test('nhánh việc thường và nhánh từ fork vẫn phải gắn yêu cầu', () => {
+  assert.equal(isTraceExempt({ base: 'staging', head: 'feat/12-login' }), false);
+  assert.equal(isTraceExempt({ base: 'main', head: 'hotfix/1.0.1-x' }), false);
+  assert.equal(isTraceExempt({ base: 'main', head: 'staging', isFork: true }), false);
+  assert.equal(isTraceExempt({ base: 'staging', head: 'dependabot/x', isFork: true }), false);
+});
+
+test('cảnh báo khi PR tự thêm yêu cầu rồi tự trích dẫn', () => {
+  const { errors, warnings } = evaluatePullRequest({
+    body: 'Closes #12 REQ-001',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    baseRequirementIds: ['REQ-002'],
+  });
+  assert.deepEqual(errors, []);
+  assert.match(warnings.join(), /REQ-001 was added by this pull request/);
+});
+
+test('không cảnh báo khi yêu cầu đã có từ trước', () => {
+  const { warnings } = evaluatePullRequest({
+    body: 'Closes #12 REQ-001',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions,
+    baseRequirementIds: ['REQ-001'],
+  });
+  assert.deepEqual(warnings, []);
+});
+
+test('cảnh báo khi dựa trên ADR mới ở mức đề xuất', () => {
+  const { warnings } = evaluatePullRequest({
+    body: 'Closes #12 ADR-0003',
+    files: ['services/identity/src/main.ts'],
+    requirements,
+    decisions: [...decisions, { id: 'ADR-0003', status: 'proposed' }],
+  });
+  assert.match(warnings.join(), /ADR-0003 is still proposed/);
 });
 
 test('sổ yêu cầu báo id sai, trùng và thiếu trường', () => {

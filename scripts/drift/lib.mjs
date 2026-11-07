@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { git, gitOutputOrNull } from '../lib/git.mjs';
 import {
   evaluateReferences,
   extractReferences,
@@ -8,18 +8,10 @@ import {
 } from '../trace/lib.mjs';
 
 export const NEEDS_CONFIRMATION = 3;
-const NO_COMMIT = /^0+$/;
-
-function git(args, cwd) {
-  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-}
+export const NO_COMMIT = /^0+$/;
 
 function gitOutputOrEmpty(args, cwd) {
-  try {
-    return git(args, cwd).trim();
-  } catch {
-    return '';
-  }
+  return gitOutputOrNull(args, cwd) ?? '';
 }
 
 function lines(text) {

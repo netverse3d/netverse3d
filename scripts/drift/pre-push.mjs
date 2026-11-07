@@ -6,10 +6,10 @@ import {
   linkedReferences,
   loadTraceData,
   NEEDS_CONFIRMATION,
+  NO_COMMIT,
   resolveBase,
 } from './lib.mjs';
 
-const NO_COMMIT = /^0+$/;
 const root = process.cwd();
 const { requirements, decisions } = loadTraceData(root);
 const reasons = [];

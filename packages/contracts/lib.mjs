@@ -46,6 +46,20 @@ export function findSchemaBreakingChanges(previous, current, location = '#') {
   if (previous.type && typeOf(previous) !== typeOf(current)) {
     breaking.push(`${location}: type changed from ${typeOf(previous)} to ${typeOf(current)}`);
   }
+  for (const value of previous.enum ?? []) {
+    if (current.enum && !current.enum.includes(value)) {
+      breaking.push(`${location}: enum value "${value}" was removed`);
+    }
+  }
+  if (previous.additionalProperties !== false && current.additionalProperties === false) {
+    breaking.push(`${location}: additionalProperties became false`);
+  }
+  if (previous.items && current.items) {
+    breaking.push(...findSchemaBreakingChanges(previous.items, current.items, `${location}/items`));
+  }
+  if ((previous.oneOf?.length ?? 0) > (current.oneOf?.length ?? 0)) {
+    breaking.push(`${location}: oneOf lost an option`);
+  }
   const previousRequired = new Set(previous.required ?? []);
   for (const name of current.required ?? []) {
     if (!previousRequired.has(name)) breaking.push(`${location}: "${name}" became required`);
@@ -67,8 +81,15 @@ export function findOpenApiBreakingChanges(previous, current) {
   const breaking = [];
   for (const [path, item] of Object.entries(previous.paths ?? {})) {
     for (const method of HTTP_METHODS.filter((name) => item[name])) {
-      if (!current.paths?.[path]?.[method]) {
+      const next = current.paths?.[path]?.[method];
+      if (!next) {
         breaking.push(`${method.toUpperCase()} ${path} was removed`);
+        continue;
+      }
+      for (const status of Object.keys(item[method].responses ?? {})) {
+        if (!next.responses?.[status]) {
+          breaking.push(`${method.toUpperCase()} ${path} no longer returns ${status}`);
+        }
       }
     }
   }

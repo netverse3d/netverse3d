@@ -33,9 +33,11 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_REF: ${{ github.base_ref }}
           HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.txt"
           node scripts/trace/check-pr.mjs \
             --base "$BASE_REF" \
             --head "$HEAD_REF" \
+            --head-repository "$HEAD_REPOSITORY" \
             --body-file "$RUNNER_TEMP/pr-body.txt"
