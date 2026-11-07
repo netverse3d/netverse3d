@@ -6,6 +6,7 @@ export const REQUIREMENT_STATUSES = ['draft', 'accepted', 'implemented', 'deprec
 export const REQUIREMENT_PRIORITIES = ['must', 'should', 'could'];
 export const DECISION_STATUSES = ['proposed', 'accepted', 'superseded'];
 
+const DEPENDENCY_BOT = 'dependabot[bot]';
 const REQUIREMENT_ID = /^REQ-\d{3}$/;
 const REFERENCE = /\b(?:REQ-\d{3}|ADR-\d{4})\b/g;
 const ISSUE_REFERENCE = /(?:^|\s)(?:closes|fixes|resolves|refs)\s+#\d+/i;
@@ -103,11 +104,17 @@ export function evaluateReferences(references, requirements, decisions) {
   return { errors, warnings };
 }
 
-export function isTraceExempt({ base, head, isFork = false }) {
+export function isTraceExempt({ base, head, isFork = false, author }) {
   if (isFork) return false;
   if (base === 'main' && head === 'staging') return true;
-  if (base === 'staging' && head === 'main') return true;
-  return head.startsWith('dependabot/');
+  return author === DEPENDENCY_BOT && head.startsWith('dependabot/');
+}
+
+function warnSelfAdded(references, prefix, knownIds, baseIds) {
+  if (!baseIds) return [];
+  return references
+    .filter((id) => id.startsWith(prefix) && knownIds.includes(id) && !baseIds.includes(id))
+    .map((id) => `${id} was added by this pull request; reviewers must confirm it`);
 }
 
 export function evaluatePullRequest({
@@ -117,17 +124,24 @@ export function evaluatePullRequest({
   decisions,
   exempt = false,
   baseRequirementIds = null,
+  baseDecisionIds = null,
 }) {
   const references = extractReferences(body);
   const { errors, warnings } = evaluateReferences(references, requirements, decisions);
-  if (baseRequirementIds) {
-    for (const reference of references) {
-      const isKnown = requirements.some((item) => item.id === reference);
-      if (reference.startsWith('REQ-') && isKnown && !baseRequirementIds.includes(reference)) {
-        warnings.push(`${reference} was added by this pull request; reviewers must confirm it`);
-      }
-    }
-  }
+  warnings.push(
+    ...warnSelfAdded(
+      references,
+      'REQ-',
+      requirements.map((item) => item.id),
+      baseRequirementIds,
+    ),
+    ...warnSelfAdded(
+      references,
+      'ADR-',
+      decisions.map((item) => item.id),
+      baseDecisionIds,
+    ),
+  );
   const productFiles = files.filter(isProductPath);
   if (productFiles.length > 0 && !exempt) {
     if (references.length === 0) {
@@ -144,11 +158,11 @@ export function evaluatePullRequest({
 
 export function evaluateBranchFlow({ base, head, isFork = false }) {
   if (base === 'main' && isFork) return ['main does not accept pull requests from forks'];
-  if (base === 'main' && head !== 'staging' && !head.startsWith('hotfix/')) {
-    return [`main only accepts pull requests from staging or hotfix/*, got "${head}"`];
+  if (base === 'main' && head !== 'staging') {
+    return [`main only accepts pull requests from staging, got "${head}"`];
   }
-  if (base === 'staging' && head.startsWith('hotfix/')) {
-    return ['hotfix branches target main; merge main back into staging afterwards'];
+  if (base === 'staging' && head === 'main') {
+    return ['staging does not accept pull requests from main; changes flow from staging to main'];
   }
   return [];
 }

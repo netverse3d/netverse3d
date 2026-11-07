@@ -16,8 +16,8 @@ const root = process.cwd();
 const base = argument('base');
 const head = argument('head');
 const baseRef = argument('base-ref') ?? `origin/${base}`;
-const headRepository = argument('head-repository');
-const isFork = Boolean(headRepository) && headRepository !== process.env.GITHUB_REPOSITORY;
+const author = argument('author');
+const isFork = argument('head-repository') !== process.env.GITHUB_REPOSITORY;
 const body = readFileSync(argument('body-file'), 'utf8');
 const files = gitLines(['diff', '--name-only', `${baseRef}...HEAD`], root);
 
@@ -27,6 +27,12 @@ function loadBaseRequirementIds() {
   return (parse(text)?.requirements ?? []).map((item) => item.id);
 }
 
+function loadBaseDecisionIds() {
+  const names = gitOutputOrNull(['ls-tree', '--name-only', baseRef, 'docs/decisions/'], root);
+  if (names === null) return null;
+  return names.split('\n').map((name) => name.split('/').pop().slice(0, 8));
+}
+
 const requirements = loadRegistry(root);
 const decisions = loadDecisions(root);
 const result = evaluatePullRequest({
@@ -34,8 +40,9 @@ const result = evaluatePullRequest({
   files,
   requirements,
   decisions,
-  exempt: isTraceExempt({ base, head, isFork }),
+  exempt: isTraceExempt({ base, head, isFork, author }),
   baseRequirementIds: loadBaseRequirementIds(),
+  baseDecisionIds: loadBaseDecisionIds(),
 });
 const errors = [
   ...validateRegistry(requirements),
