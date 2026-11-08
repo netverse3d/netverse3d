@@ -141,12 +141,19 @@ test('dời issue đang mở sang milestone mới khi yêu cầu đổi mốc', 
   ]);
 });
 
-test('không dời issue đã đóng hoặc đã đúng mã milestone', () => {
+test('không dời issue đã đóng hoặc đã đúng milestone', () => {
   const existing = [
     seeded(5, 'REQ-008: Thông báo', 'M2 · Hai', { state: 'closed' }),
-    seeded(6, 'REQ-008: Thông báo', 'M3 · Tên cũ'),
+    seeded(6, 'REQ-008: Thông báo', 'M3 · Ba'),
   ];
   assert.deepEqual(planMilestoneMoves(plannedForMoves, existing), []);
+});
+
+test('dời issue còn nằm ở milestone tên cũ khi GitHub có cả tên cũ lẫn tên mới', () => {
+  const existing = [seeded(6, 'Gửi email', 'M3 · Tên cũ')];
+  assert.deepEqual(planMilestoneMoves(plannedForMoves, existing), [
+    { number: 6, from: 'M3 · Tên cũ', to: 'M3 · Ba' },
+  ]);
 });
 
 test('không dời issue không có milestone', () => {

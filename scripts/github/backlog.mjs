@@ -72,10 +72,6 @@ export function selectMissingIssues(issues, existingTitles) {
   return issues.filter((issue) => !isPlanned(issue, existingTitles));
 }
 
-function milestoneId(title) {
-  return title?.split(' · ')[0] ?? null;
-}
-
 function matchesPlanned(issue, existingIssue) {
   const requirement = issue.parent ?? issue.key;
   if (!(existingIssue.body ?? '').startsWith(`Yêu cầu: ${requirement}\n`)) return false;
@@ -89,7 +85,7 @@ export function planMilestoneMoves(planned, existing) {
     const current = existingIssue.milestone?.title;
     if (existingIssue.state !== 'open' || !current) continue;
     const issue = planned.find((item) => matchesPlanned(item, existingIssue));
-    if (!issue || milestoneId(current) === milestoneId(issue.milestone)) continue;
+    if (!issue || current === issue.milestone) continue;
     moves.push({ number: existingIssue.number, from: current, to: issue.milestone });
   }
   return moves;

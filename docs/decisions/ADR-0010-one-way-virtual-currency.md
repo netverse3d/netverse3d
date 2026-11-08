@@ -37,4 +37,4 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
   - Có áp giới hạn giờ chơi cho người dưới 18 tuổi không.
 - Nếu sau này chạy bằng tiền thật, cần người có chuyên môn pháp lý xem lại toàn bộ.
 
-Liên quan: REQ-010, REQ-011, REQ-028, REQ-029, REQ-030, REQ-031.
+Liên quan: REQ-009, REQ-010, REQ-011, REQ-028, REQ-029, REQ-030, REQ-031.
