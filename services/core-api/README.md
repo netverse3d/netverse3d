@@ -1,6 +1,6 @@
 # core-api
 
-Service: Người dùng, tiệm, máy, thuê đất, cấu hình.
+Service: Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình.
 
 - Stack dự kiến: NestJS, Prisma
 - Milestone: M3

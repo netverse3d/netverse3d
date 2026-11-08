@@ -46,7 +46,7 @@ Theo [ADR-0002](../../decisions/ADR-0002-product-scope.md), phần học tăng c
 
 Thứ tự chi tiết ở [lộ trình](../team/roadmap.md).
 
-Trước mắt nhóm tập trung vào giao diện, identity, media, payment, notification. Game core do mentor làm, xem [ADR-0004](../../decisions/ADR-0004-game-core-boundary.md).
+Trước mắt nhóm làm giao diện và identity, rồi tới lát cắt đầu: tiệm dựng sẵn, màn hình máy và game đầu tiên trên room server giả. Sau đó tới Xèng, payment và notification. Game core do mentor làm, xem [ADR-0004](../../decisions/ADR-0004-game-core-boundary.md).
 
 ## Đọc tiếp
 

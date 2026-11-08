@@ -23,7 +23,7 @@ Vì vậy nhiều REQ không thể nghiệm thu ở milestone của chính nó.
   - M6: bot học tăng cường.
   - M7: chatbot, TTS và NPC.
   - M8: production.
-- M2 dùng một room server giả theo giao thức nháp trong `packages/contracts/realtime`. Bản giả chỉ phục vụ phát triển và test giao diện, không triển khai lên staging hay production, không nằm ở `services/game`.
+- M2 dùng một room server giả theo giao thức nháp trong `packages/contracts/realtime`. Bản giả nằm cùng công cụ phát triển của `apps/web-3d`, chỉ phục vụ phát triển và test giao diện. Nó không được triển khai lên staging hay production và không nằm ở `services/game`.
 
 ## Hệ quả
 
@@ -32,4 +32,4 @@ Vì vậy nhiều REQ không thể nghiệm thu ở milestone của chính nó.
 - Core tới sớm thì kéo M5 lên.
 - Milestone trên GitHub được đổi tên theo mã `Mx`, issue giữ nguyên số.
 
-Liên quan: REQ-017, REQ-018, REQ-032, REQ-033.
+Liên quan: REQ-017, REQ-018, REQ-032, REQ-033, REQ-036.

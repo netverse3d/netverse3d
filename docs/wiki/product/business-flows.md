@@ -10,7 +10,7 @@ Liên quan: REQ-009, REQ-010, REQ-013, REQ-015, REQ-016.
 flowchart TD
   A[Đăng nhập] --> B[Xem bản đồ đất trống]
   B --> C[Chọn khu đất và thời hạn thuê]
-  C --> D[Trả bằng điểm doanh thu hoặc Xèng]
+  C --> D[Trả bằng điểm doanh thu]
   D -->|Thành công| E[Đất thuộc quyền thuê của chủ tiệm]
   D -->|Thất bại| B
   E --> F[Chế độ xây dựng: đặt máy, bàn ghế, trang trí]
@@ -22,11 +22,14 @@ flowchart TD
   J --> C
 ```
 
-Hướng tạm theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md): thuê đất trả bằng điểm doanh thu hoặc Xèng. Chưa chốt: hết hạn thuê khi tiệm đang có người thì xử lý ra sao.
+Hướng tạm theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md): thuê đất trả bằng điểm doanh thu. Chưa chốt:
+
+- Chủ tiệm mới chưa có điểm thì thuê khu đất đầu tiên bằng gì.
+- Hết hạn thuê khi tiệm đang có người thì xử lý ra sao.
 
 ## Người chơi đi net
 
-Liên quan: REQ-001, REQ-003, REQ-011, REQ-014, REQ-017, REQ-018, REQ-020, REQ-032, REQ-033.
+Liên quan: REQ-001, REQ-003, REQ-011, REQ-014, REQ-017, REQ-018, REQ-020, REQ-032, REQ-033, REQ-036.
 
 ```mermaid
 flowchart TD
@@ -82,18 +85,20 @@ sequenceDiagram
 
 ## Trả giờ máy và cấp điểm doanh thu
 
-Liên quan: REQ-011, REQ-029, REQ-030. Xèng của người chơi không bao giờ vào ví chủ tiệm.
+Liên quan: REQ-011, REQ-029, REQ-030. Xèng của người chơi không bao giờ vào ví chủ tiệm. Trừ Xèng là gọi đồng bộ vì phải biết kết quả trước khi cấp block; cấp điểm doanh thu đi qua sự kiện và có từ M4.
 
 ```mermaid
 sequenceDiagram
   participant G as Game server
   participant C as Core API
   participant P as Payment service
+  participant K as Kafka
   G->>C: Người chơi xin block giờ máy ở máy 12
   C->>P: Trừ Xèng theo giá của tiệm
   P->>P: Ghi sổ cái: trừ Xèng của người chơi, huỷ
   P-->>C: Đã trừ
   C-->>G: Cấp block, hết hạn lúc T
-  C->>P: Cấp điểm doanh thu cho chủ tiệm theo tỷ lệ
+  C->>K: Sự kiện block giờ máy đã trả
+  K->>P: Cấp điểm doanh thu cho chủ tiệm theo tỷ lệ (từ M4)
   P->>P: Ghi sổ cái: cộng điểm doanh thu
 ```

@@ -81,11 +81,11 @@ requirements:
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-011
     title: Thuê máy theo thời gian và gia hạn
-    description: Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá trong ảnh là 1.000đ một máy.
+    description: Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Sơ đồ ghi 1.000đ một máy; giá quy ra Xèng còn mở.
     status: draft
     priority: must
     milestone: M3
-    area: payment
+    area: core-api
     sources: [mentor-architecture-lite, mentor-demo]
   - id: REQ-012
     title: Hoá đơn và lịch sử giao dịch
@@ -279,3 +279,11 @@ requirements:
     milestone: M6
     area: worker-ai
     sources: [mentor-followup, mentor-chat-npc, mentor-chat-arena]
+  - id: REQ-036
+    title: Vào tiệm dựng sẵn và ngồi máy với room server giả
+    description: Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn, đi lại và ngồi vào máy một mình trên room server giả theo giao thức nháp. Bản giả chỉ dùng để phát triển và test, không triển khai.
+    status: draft
+    priority: must
+    milestone: M2
+    area: web-3d
+    sources: [team-decision, mentor-architecture-lite]

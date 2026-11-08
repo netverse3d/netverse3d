@@ -1,6 +1,6 @@
 # worker-ai
 
-Worker: Hàng đợi LLM, TTS, huấn luyện NPC về sau.
+Worker: Mô phỏng headless, huấn luyện và chạy bot học tăng cường; hàng đợi LLM, TTS.
 
 - Stack dự kiến: Python
 - Milestone: M6

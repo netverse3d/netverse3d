@@ -25,6 +25,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-006 | Lưu trữ và phân phối asset 3D | Nháp | Bắt buộc | `media` |
 | REQ-032 | Màn hình máy cá nhân | Nháp | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
+| REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Nháp | Bắt buộc | `web-3d` |
 
 ## M3 · Xèng và Payment
 
@@ -32,7 +33,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | --- | --- | --- | --- | --- |
 | REQ-008 | Thông báo realtime, trong ứng dụng và email | Nháp | Bắt buộc | `notification` |
 | REQ-010 | Thanh toán qua PayOS | Nháp | Bắt buộc | `payment` |
-| REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `payment` |
+| REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `core-api` |
 | REQ-012 | Hoá đơn và lịch sử giao dịch | Nháp | Nên có | `payment` |
 | REQ-028 | Tiền ảo Xèng nạp một chiều | Nháp | Bắt buộc | `payment` |
 | REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
@@ -146,7 +147,7 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-011: Thuê máy theo thời gian và gia hạn
 
-Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá trong ảnh là 1.000đ một máy.
+Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Sơ đồ ghi 1.000đ một máy; giá quy ra Xèng còn mở.
 
 Nguồn: `mentor-architecture-lite`, `mentor-demo`
 
@@ -293,3 +294,9 @@ Nguồn: `mentor-followup`, `mentor-demo`
 Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot, không tạo điểm doanh thu.
 
 Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`
+
+### REQ-036: Vào tiệm dựng sẵn và ngồi máy với room server giả
+
+Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn, đi lại và ngồi vào máy một mình trên room server giả theo giao thức nháp. Bản giả chỉ dùng để phát triển và test, không triển khai.
+
+Nguồn: `team-decision`, `mentor-architecture-lite`

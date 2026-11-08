@@ -29,9 +29,12 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
 ## Hệ quả
 
 - Không có đường nào đưa giá trị từ người chơi này sang người chơi khác.
-- `payment` giữ sổ cái; `core-api` gửi yêu cầu trừ Xèng hoặc cấp điểm qua sự kiện, không tự sửa số dư.
+- `payment` là nơi duy nhất sửa số dư. `core-api` gọi `payment` để trừ Xèng và chờ kết quả trước khi cấp block giờ máy; việc cấp điểm doanh thu đi qua sự kiện.
 - Webhook nạp tiền phải xử lý lặp an toàn theo mã đơn và có outbox, để người đã trả tiền chắc chắn nhận Xèng.
-- Còn mở: tên chính thức, tỷ giá Xèng, tỷ lệ cấp điểm, độ dài block, có áp giới hạn giờ chơi cho người dưới 18 tuổi không.
+- Còn mở:
+  - Tên chính thức, tỷ giá Xèng, tỷ lệ cấp điểm, độ dài block.
+  - Chủ tiệm mới chưa có điểm thì thuê khu đất đầu tiên bằng gì: Xèng, hay một khoản điểm khởi đầu do hệ thống cấp.
+  - Có áp giới hạn giờ chơi cho người dưới 18 tuổi không.
 - Nếu sau này chạy bằng tiền thật, cần người có chuyên môn pháp lý xem lại toàn bộ.
 
 Liên quan: REQ-010, REQ-011, REQ-028, REQ-029, REQ-030, REQ-031.
