@@ -52,7 +52,7 @@ requirements:
     description: Giới hạn định dạng, dung lượng và có đường xử lý nội dung vi phạm.
     status: draft
     priority: should
-    milestone: M2
+    milestone: M4
     area: media
     sources: [mentor-demo]
   - id: REQ-008
@@ -60,7 +60,7 @@ requirements:
     description: Người dùng nhận được thông báo về thanh toán, gia hạn và sự kiện của tiệm.
     status: draft
     priority: must
-    milestone: M2
+    milestone: M3
     area: notification
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-009
@@ -68,12 +68,12 @@ requirements:
     description: Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước.
     status: accepted
     priority: must
-    milestone: M3
+    milestone: M4
     area: core-api
     sources: [mentor-brief, mentor-architecture-full]
   - id: REQ-010
     title: Thanh toán qua PayOS
-    description: Thanh toán có webhook được xác thực và xử lý lặp an toàn. Phạm vi tiền thật còn là câu hỏi mở.
+    description: PayOS chỉ dùng để nạp Xèng. Webhook được xác thực và xử lý lặp an toàn. Chạy môi trường thử cho tới khi có quyết định khác.
     status: draft
     priority: must
     milestone: M3
@@ -81,7 +81,7 @@ requirements:
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-011
     title: Thuê máy theo thời gian và gia hạn
-    description: Người chơi trả phí để dùng máy trong một khoảng thời gian; hết giờ thì kết thúc phiên. Đơn giá trong ảnh là 1.000đ một máy.
+    description: Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá trong ảnh là 1.000đ một máy.
     status: draft
     priority: must
     milestone: M3
@@ -121,7 +121,7 @@ requirements:
     sources: [mentor-architecture-lite]
   - id: REQ-016
     title: Nâng cấp tiệm và danh tiếng
-    description: Tiệm có danh tiếng, chủ tiệm mở rộng không gian, thêm máy từ kết quả kinh doanh.
+    description: Tiệm có danh tiếng, chủ tiệm dùng điểm doanh thu để mở rộng không gian và thêm máy.
     status: draft
     priority: should
     milestone: M4
@@ -172,7 +172,7 @@ requirements:
     description: Người chơi ngồi vào máy và trò chuyện với chatbot dùng LLM chạy local.
     status: draft
     priority: should
-    milestone: M6
+    milestone: M7
     area: ai-chat
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-023
@@ -180,7 +180,7 @@ requirements:
     description: Hội thoại của chatbot và NPC được đọc bằng giọng tiếng Việt chạy local.
     status: draft
     priority: should
-    milestone: M6
+    milestone: M7
     area: ai-chat
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-024
@@ -215,3 +215,67 @@ requirements:
     milestone: M0
     area: infra
     sources: [team-decision]
+  - id: REQ-028
+    title: Tiền ảo Xèng nạp một chiều
+    description: Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Xèng là tên tạm.
+    status: draft
+    priority: must
+    milestone: M3
+    area: payment
+    sources: [team-decision]
+  - id: REQ-029
+    title: Sổ cái số dư ghi kép
+    description: Mọi thay đổi số dư Xèng và điểm doanh thu đi qua sổ cái ghi kép, không sửa số dư trực tiếp. Mỗi lần nạp gắn với mã đơn để webhook lặp lại không cộng hai lần.
+    status: draft
+    priority: must
+    milestone: M3
+    area: payment
+    sources: [team-decision]
+  - id: REQ-030
+    title: Điểm doanh thu của chủ tiệm
+    description: Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình và bot không tạo điểm.
+    status: draft
+    priority: must
+    milestone: M4
+    area: core-api
+    sources: [team-decision, mentor-architecture-lite]
+  - id: REQ-031
+    title: Phút miễn phí hằng ngày do hệ thống cấp
+    description: Thay cho tặng phút giữa người chơi trong bản demo, hệ thống cấp một lượng thời gian miễn phí mỗi ngày.
+    status: draft
+    priority: could
+    milestone: M3
+    area: payment
+    sources: [mentor-demo, team-decision]
+  - id: REQ-032
+    title: Màn hình máy cá nhân
+    description: Ngồi vào máy thì mở lớp màn hình 2D gồm game của Netverse, trình duyệt nhúng theo danh sách cho phép và video nhúng. Người khác thấy ảnh xem trước trên màn hình 3D của máy đó.
+    status: draft
+    priority: must
+    milestone: M2
+    area: web-3d
+    sources: [mentor-demo, mentor-followup]
+  - id: REQ-033
+    title: Game đầu tiên trên máy
+    description: Một game web do nhóm tự thiết kế, chơi được trên màn hình máy. Luật game viết một lần dưới dạng bước tất định để dùng chung cho giao diện, huấn luyện và chấm điểm bot.
+    status: draft
+    priority: must
+    milestone: M2
+    area: web-3d
+    sources: [mentor-followup, mentor-chat-arena]
+  - id: REQ-034
+    title: Màn hình chung của tiệm
+    description: Mỗi tiệm có màn hình lớn do chủ tiệm chọn nội dung như video xem chung, trận đấu đang diễn ra, bảng xếp hạng. Nội dung đồng bộ bằng trạng thái, mỗi máy tự hiển thị.
+    status: draft
+    priority: should
+    milestone: M5
+    area: game
+    sources: [mentor-followup, mentor-demo]
+  - id: REQ-035
+    title: Bot học tăng cường chơi game trên máy
+    description: Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot, không tạo điểm doanh thu.
+    status: draft
+    priority: should
+    milestone: M6
+    area: worker-ai
+    sources: [mentor-followup, mentor-chat-npc, mentor-chat-arena]

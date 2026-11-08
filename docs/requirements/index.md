@@ -18,31 +18,37 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-004 | Web 3D chạy trên máy tính và điện thoại | Nháp | Bắt buộc | `web-3d` |
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
 
-## M2 · Media và Notification
+## M2 · Lát cắt đầu
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-006 | Lưu trữ và phân phối asset 3D | Nháp | Bắt buộc | `media` |
-| REQ-007 | Người dùng tải lên ảnh và âm thanh có kiểm soát | Nháp | Nên có | `media` |
-| REQ-008 | Thông báo realtime, trong ứng dụng và email | Nháp | Bắt buộc | `notification` |
+| REQ-032 | Màn hình máy cá nhân | Nháp | Bắt buộc | `web-3d` |
+| REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 
-## M3 · Thuê đất và Payment
+## M3 · Xèng và Payment
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
-| REQ-009 | Chủ tiệm thuê đất để mở tiệm | Đã chốt | Bắt buộc | `core-api` |
+| REQ-008 | Thông báo realtime, trong ứng dụng và email | Nháp | Bắt buộc | `notification` |
 | REQ-010 | Thanh toán qua PayOS | Nháp | Bắt buộc | `payment` |
 | REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `payment` |
 | REQ-012 | Hoá đơn và lịch sử giao dịch | Nháp | Nên có | `payment` |
+| REQ-028 | Tiền ảo Xèng nạp một chiều | Nháp | Bắt buộc | `payment` |
+| REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
+| REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 
-## M4 · Xây tiệm và thế giới
+## M4 · Chủ tiệm
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
+| REQ-007 | Người dùng tải lên ảnh và âm thanh có kiểm soát | Nháp | Nên có | `media` |
+| REQ-009 | Chủ tiệm thuê đất để mở tiệm | Đã chốt | Bắt buộc | `core-api` |
 | REQ-013 | Chủ tiệm xây dựng và bài trí tiệm | Đã chốt | Bắt buộc | `world` |
 | REQ-014 | Người chơi khám phá và chọn tiệm bất kỳ | Đã chốt | Bắt buộc | `world` |
 | REQ-015 | Duyệt tiệm và nội dung | Nháp | Nên có | `admin` |
 | REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `core-api` |
+| REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `core-api` |
 
 ## M5 · Tích hợp game core
 
@@ -53,18 +59,20 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-019 | Từ 100 người trở lên trong một phòng | Nháp | Nên có | `game` |
 | REQ-020 | Giao lưu giữa người chơi | Nháp | Nên có | `game` |
 | REQ-021 | Máy bán nước và đồ ăn trong tiệm | Nháp | Có thì tốt | `game` |
+| REQ-034 | Màn hình chung của tiệm | Nháp | Nên có | `game` |
 
-## M6 · Chatbot và TTS
+## M6 · Bot học tăng cường
+
+| Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
+| --- | --- | --- | --- | --- |
+| REQ-035 | Bot học tăng cường chơi game trên máy | Nháp | Nên có | `worker-ai` |
+
+## M7 · Chatbot, TTS và NPC
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-022 | Chatbot AI trên máy tính trong game | Nháp | Nên có | `ai-chat` |
 | REQ-023 | Đọc hội thoại bằng TTS tiếng Việt | Nháp | Nên có | `ai-chat` |
-
-## M7 · NPC học tăng cường
-
-| Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
-| --- | --- | --- | --- | --- |
 | REQ-024 | NPC phục vụ quán net huấn luyện bằng Reinforcement Learning | Nháp | Có thì tốt | `worker-ai` |
 
 ## M8 · Production
@@ -132,13 +140,13 @@ Nguồn: `mentor-brief`, `mentor-architecture-full`
 
 ### REQ-010: Thanh toán qua PayOS
 
-Thanh toán có webhook được xác thực và xử lý lặp an toàn. Phạm vi tiền thật còn là câu hỏi mở.
+PayOS chỉ dùng để nạp Xèng. Webhook được xác thực và xử lý lặp an toàn. Chạy môi trường thử cho tới khi có quyết định khác.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-011: Thuê máy theo thời gian và gia hạn
 
-Người chơi trả phí để dùng máy trong một khoảng thời gian; hết giờ thì kết thúc phiên. Đơn giá trong ảnh là 1.000đ một máy.
+Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá trong ảnh là 1.000đ một máy.
 
 Nguồn: `mentor-architecture-lite`, `mentor-demo`
 
@@ -168,7 +176,7 @@ Nguồn: `mentor-architecture-lite`
 
 ### REQ-016: Nâng cấp tiệm và danh tiếng
 
-Tiệm có danh tiếng, chủ tiệm mở rộng không gian, thêm máy từ kết quả kinh doanh.
+Tiệm có danh tiếng, chủ tiệm dùng điểm doanh thu để mở rộng không gian và thêm máy.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
@@ -237,3 +245,51 @@ Nguồn: `mentor-architecture-full`, `team-decision`
 Mọi thay đổi được test trên staging trước; tag kích hoạt phát hành, ai trong nhóm cũng phát hành được nếu đúng quy trình.
 
 Nguồn: `team-decision`
+
+### REQ-028: Tiền ảo Xèng nạp một chiều
+
+Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Xèng là tên tạm.
+
+Nguồn: `team-decision`
+
+### REQ-029: Sổ cái số dư ghi kép
+
+Mọi thay đổi số dư Xèng và điểm doanh thu đi qua sổ cái ghi kép, không sửa số dư trực tiếp. Mỗi lần nạp gắn với mã đơn để webhook lặp lại không cộng hai lần.
+
+Nguồn: `team-decision`
+
+### REQ-030: Điểm doanh thu của chủ tiệm
+
+Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình và bot không tạo điểm.
+
+Nguồn: `team-decision`, `mentor-architecture-lite`
+
+### REQ-031: Phút miễn phí hằng ngày do hệ thống cấp
+
+Thay cho tặng phút giữa người chơi trong bản demo, hệ thống cấp một lượng thời gian miễn phí mỗi ngày.
+
+Nguồn: `mentor-demo`, `team-decision`
+
+### REQ-032: Màn hình máy cá nhân
+
+Ngồi vào máy thì mở lớp màn hình 2D gồm game của Netverse, trình duyệt nhúng theo danh sách cho phép và video nhúng. Người khác thấy ảnh xem trước trên màn hình 3D của máy đó.
+
+Nguồn: `mentor-demo`, `mentor-followup`
+
+### REQ-033: Game đầu tiên trên máy
+
+Một game web do nhóm tự thiết kế, chơi được trên màn hình máy. Luật game viết một lần dưới dạng bước tất định để dùng chung cho giao diện, huấn luyện và chấm điểm bot.
+
+Nguồn: `mentor-followup`, `mentor-chat-arena`
+
+### REQ-034: Màn hình chung của tiệm
+
+Mỗi tiệm có màn hình lớn do chủ tiệm chọn nội dung như video xem chung, trận đấu đang diễn ra, bảng xếp hạng. Nội dung đồng bộ bằng trạng thái, mỗi máy tự hiển thị.
+
+Nguồn: `mentor-followup`, `mentor-demo`
+
+### REQ-035: Bot học tăng cường chơi game trên máy
+
+Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot, không tạo điểm doanh thu.
+
+Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`

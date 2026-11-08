@@ -4,30 +4,47 @@ Netverse 3D là thế giới tiệm net 3D chạy trên trình duyệt. Một ng
 
 ## Người dùng
 
-| Vai trò       | Muốn gì                                | Làm gì trong hệ thống                            |
-| ------------- | -------------------------------------- | ------------------------------------------------ |
-| Chủ tiệm      | Có tiệm đẹp, đông khách, có danh tiếng | Thuê đất, xây và bài trí tiệm, đặt máy, nâng cấp |
-| Người chơi    | Có chỗ chơi, gặp bạn bè                | Tạo nhân vật, chọn tiệm, thuê máy, giao lưu      |
-| Quản trị viên | Hệ thống ổn định, nội dung lành mạnh   | Quản lý người dùng, duyệt tiệm, xem thống kê     |
+| Vai trò       | Muốn gì                                | Làm gì trong hệ thống                                           |
+| ------------- | -------------------------------------- | --------------------------------------------------------------- |
+| Chủ tiệm      | Có tiệm đẹp, đông khách, có danh tiếng | Thuê đất, xây và bài trí tiệm, đặt máy, nâng cấp                |
+| Người chơi    | Có chỗ chơi, gặp bạn bè                | Tạo nhân vật, chọn tiệm, thuê máy, chơi game trên máy, giao lưu |
+| Quản trị viên | Hệ thống ổn định, nội dung lành mạnh   | Quản lý người dùng, duyệt tiệm, xem thống kê                    |
 
 ## Vòng lặp sản phẩm
 
 ```mermaid
 flowchart LR
   A[Thuê đất, xây tiệm] --> B[Thu hút người chơi]
-  B --> C[Người chơi thuê máy, dùng dịch vụ]
-  C --> D[Tiệm có danh tiếng và doanh thu]
+  B --> C[Người chơi trả Xèng thuê máy, chơi game, đấu với bot]
+  C --> D[Tiệm có danh tiếng và điểm doanh thu]
   D --> E[Mở rộng, nâng cấp tiệm]
   E --> B
 ```
 
+## Kinh tế (hướng tạm)
+
+Theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md), đang ở mức đề xuất:
+
+- Người chơi nạp tiền thật để có **Xèng** (tên tạm). Xèng chỉ tiêu trong Netverse, không rút, không chuyển cho người khác.
+- Xèng trả cho giờ máy bị huỷ. Hệ thống cấp **điểm doanh thu** cho chủ tiệm, chỉ dùng để thuê đất, mua máy, nâng cấp.
+
+```mermaid
+flowchart LR
+  P[Người chơi] -->|Nạp qua PayOS| X[Xèng]
+  X -->|Trả giờ máy, bị huỷ| S[Hệ thống]
+  S -->|Cấp theo tỷ lệ| R[Điểm doanh thu của chủ tiệm]
+  R -->|Thuê đất, mua máy, nâng cấp| S
+```
+
 ## Phạm vi theo giai đoạn
 
-Theo [ADR-0002](../../decisions/ADR-0002-product-scope.md):
+Theo [ADR-0002](../../decisions/ADR-0002-product-scope.md), phần học tăng cường đang được xem lại ở [ADR-0012](../../decisions/ADR-0012-games-for-rl-bots.md):
 
-1. **Sản phẩm chính:** thuê đất, xây tiệm, người chơi vào máy, giao lưu.
-2. **Sau đó:** chatbot LLM và đọc hội thoại bằng tiếng Việt.
-3. **Sau nữa:** NPC phục vụ huấn luyện bằng học tăng cường.
+1. **Sản phẩm chính:** thuê đất, xây tiệm, người chơi vào máy, chơi game trên máy, giao lưu.
+2. **Sau đó:** bot học tăng cường chơi game trên máy cùng người.
+3. **Sau nữa:** chatbot LLM, đọc hội thoại bằng tiếng Việt và NPC phục vụ.
+
+Thứ tự chi tiết ở [lộ trình](../team/roadmap.md).
 
 Trước mắt nhóm tập trung vào giao diện, identity, media, payment, notification. Game core do mentor làm, xem [ADR-0004](../../decisions/ADR-0004-game-core-boundary.md).
 

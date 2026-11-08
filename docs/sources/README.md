@@ -10,6 +10,7 @@ Trang này tóm tắt các nguồn đầu vào của dự án. Mỗi yêu cầu 
 | `mentor-demo`              | Bản thử tại [tiemnet.fun](https://tiemnet.fun/): một quán chung nhiều máy, kinh tế theo phút chơi, chat, voice, nhạc chung, tranh treo tường, máy ảo có trình duyệt. Mới khảo sát phần công khai, chưa xem phần sau đăng nhập.                                                    |
 | `mentor-chat-npc`          | Hội thoại ý tưởng: người chơi huấn luyện NPC bằng Reinforcement Learning; NPC làm việc trong quán net; dạy bằng cách chơi; huấn luyện trên mô phỏng headless, kiểm định độc lập trước khi dùng.                                                                                   |
 | `mentor-chat-arena`        | Hội thoại ý tưởng: nền tảng thi đấu và chấm điểm thuật toán RL theo hướng benchmark trước, game 3D để trình diễn.                                                                                                                                                                 |
+| `mentor-followup`          | Gợi ý thêm của mentor qua người dẫn dắt nhóm (2026-11-08): trên máy dùng được trình duyệt hoặc app như trên desktop, có màn hình chung cho cả quán; dựng game web cho bot học tăng cường và đưa bot đã huấn luyện vào chơi.                                                       |
 | `team-decision`            | Quyết định của nhóm, ghi trong `docs/decisions`.                                                                                                                                                                                                                                  |
 
 ## Các nguồn khác nhau ở đâu
@@ -22,4 +23,4 @@ Trang này tóm tắt các nguồn đầu vào của dự án. Mỗi yêu cầu 
 | Quy mô backend | 7 hoặc 5 service, Kafka, K8s | Next.js API và game server | NestJS và Python, Jenkins    |
 | Kinh tế        | PayOS, 1.000đ một máy        | Phút chơi, tặng phút       | Bán lượt train, marketplace  |
 
-Cách nhóm xử lý các khác biệt này nằm ở [ADR-0002](../decisions/ADR-0002-product-scope.md), [ADR-0003](../decisions/ADR-0003-seven-services.md) và [ADR-0004](../decisions/ADR-0004-game-core-boundary.md). Những điểm chưa chốt nằm ở [câu hỏi mở](../wiki/open-questions.md).
+Cách nhóm xử lý các khác biệt này nằm ở [ADR-0002](../decisions/ADR-0002-product-scope.md), [ADR-0003](../decisions/ADR-0003-seven-services.md) và [ADR-0004](../decisions/ADR-0004-game-core-boundary.md). Hướng tạm về kinh tế, màn hình máy và bot nằm ở [ADR-0010](../decisions/ADR-0010-one-way-virtual-currency.md), [ADR-0011](../decisions/ADR-0011-station-screens.md) và [ADR-0012](../decisions/ADR-0012-games-for-rl-bots.md). Những điểm chưa chốt nằm ở [câu hỏi mở](../wiki/open-questions.md).

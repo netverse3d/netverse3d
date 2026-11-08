@@ -2,6 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
+- Đang xem lại: phần học tăng cường và đấu trường, theo [ADR-0012](./ADR-0012-games-for-rl-bots.md)
 
 ## Bối cảnh
 

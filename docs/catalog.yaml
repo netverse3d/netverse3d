@@ -21,7 +21,7 @@ components:
     path: services/core-api
     kind: service
     stack: NestJS, Prisma
-    summary: Người dùng, tiệm, máy, thuê đất, cấu hình
+    summary: Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình
     milestone: M3
   - id: world
     path: services/world
@@ -39,20 +39,20 @@ components:
     path: services/payment
     kind: service
     stack: NestJS, Prisma
-    summary: PayOS, thuê máy, nâng cấp, webhook, hoá đơn
+    summary: PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn
     milestone: M3
   - id: ai-chat
     path: services/ai-chat
     kind: service
     stack: Python
     summary: Chatbot LLM chạy local và TTS tiếng Việt
-    milestone: M6
+    milestone: M7
   - id: notification
     path: services/notification
     kind: service
     stack: NestJS, Prisma
     summary: Thông báo realtime, email, trong ứng dụng
-    milestone: M2
+    milestone: M3
   - id: game
     path: services/game
     kind: service
@@ -69,7 +69,7 @@ components:
     path: workers/ai
     kind: worker
     stack: Python
-    summary: Hàng đợi LLM, TTS, huấn luyện NPC về sau
+    summary: Mô phỏng headless, huấn luyện và chạy bot học tăng cường; hàng đợi LLM, TTS
     milestone: M6
   - id: worker-jobs
     path: workers/jobs

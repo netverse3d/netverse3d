@@ -1,16 +1,19 @@
 # Câu hỏi mở
 
-Những điều chưa chốt. Có câu trả lời thì cập nhật REQ hoặc thêm ADR, rồi xoá dòng ở đây.
+Những điều chưa chốt. Có câu trả lời thì cập nhật REQ hoặc ADR, rồi xoá dòng ở đây. Hướng tạm của nhóm nằm ở các ADR đang ở mức đề xuất.
 
 | #   | Câu hỏi                                                                                                                                                            | Ai trả lời   | Ảnh hưởng                                                |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | -------------------------------------------------------- |
 | 1   | Game core khi nào bàn giao, viết bằng Go hay Colyseus?                                                                                                             | Mentor       | REQ-017 đến REQ-021, `services/game`, giao thức realtime |
-| 2   | Thanh toán dùng tiền thật hay chỉ môi trường thử khi bảo vệ? PayOS có môi trường thử hay không cần xác minh.                                                       | Mentor, nhóm | REQ-010, REQ-011, tài khoản PayOS                        |
-| 3   | Thuê đất, thuê máy trả bằng tiền thật hay đơn vị trong game?                                                                                                       | Mentor, nhóm | REQ-009, REQ-011, luồng kinh tế                          |
-| 4   | Phút chơi, tặng phút trong demo có giữ lại không?                                                                                                                  | Mentor       | REQ-011                                                  |
-| 5   | Voice, nhạc chung, tranh treo tường, trình duyệt trên máy ảo có thuộc phạm vi không?                                                                               | Mentor       | Thêm REQ mới cho REQ-020 và `services/media`             |
+| 2   | PayOS có môi trường thử không, dùng loại tài khoản nào? Hướng tạm: chỉ chạy môi trường thử khi bảo vệ, theo ADR-0010.                                              | Nhóm         | REQ-010, tài khoản PayOS                                 |
+| 3   | Tên chính thức của tiền ảo, tỷ giá, tỷ lệ cấp điểm doanh thu, độ dài block giờ máy? Tên tạm là Xèng.                                                               | Nhóm, mentor | REQ-011, REQ-028, REQ-030                                |
+| 4   | Có áp giới hạn giờ chơi cho người dưới 18 tuổi trong phạm vi đồ án không?                                                                                          | Nhóm, mentor | REQ-001, REQ-011                                         |
+| 5   | Voice, nhạc chung, tranh treo tường có thuộc phạm vi không?                                                                                                        | Mentor       | REQ-020, `services/media`                                |
 | 6   | Sức chứa mục tiêu: 50, 100 hay 500 máy mỗi tiệm? Các nguồn đang ghi khác nhau.                                                                                     | Mentor       | REQ-019, thiết kế game server                            |
 | 7   | Ai trả chi phí server và GPU cho LLM local?                                                                                                                        | Nhóm, mentor | REQ-022, REQ-023, REQ-026                                |
 | 8   | Nhà trường yêu cầu tài liệu và mốc bảo vệ nào, ngày cụ thể ra sao?                                                                                                 | Nhóm         | Ngày của Milestone                                       |
 | 9   | Ai phụ trách mảng nào trong nhóm?                                                                                                                                  | Nhóm         | CODEOWNERS, gán issue                                    |
 | 10  | Object storage dùng gì? Sơ đồ ghi MinIO, nhưng bản cộng đồng đã ngừng và image chính thức không còn tải được. Các lựa chọn: RustFS, bản fork của MinIO, SeaweedFS. | Nhóm, mentor | REQ-006, `services/media`, `infra/compose`               |
+| 11  | Game đầu tiên thuộc thể loại nào?                                                                                                                                  | Mentor, nhóm | REQ-033, REQ-035                                         |
+| 12  | Luật game viết bằng ngôn ngữ nào, huấn luyện bằng bộ công cụ nào?                                                                                                  | Mentor       | REQ-033, REQ-035, `workers/ai`                           |
+| 13  | Có cần Chrome chạy trên server cho màn hình chung không? Hướng tạm: để sau, theo ADR-0011.                                                                         | Mentor       | REQ-034                                                  |
