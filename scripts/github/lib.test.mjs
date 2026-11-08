@@ -6,6 +6,7 @@ import {
   buildRulesets,
   findDrift,
   findEnvironmentDrift,
+  planMilestones,
 } from './lib.mjs';
 
 const settings = {
@@ -202,4 +203,28 @@ test('phát hiện mảng thiếu phần tử', () => {
 
 test('cấu hình khớp thì không có khác biệt', () => {
   assert.deepEqual(findDrift({ a: { b: [1] } }, { a: { b: [1], c: 2 }, d: 3 }), []);
+});
+
+test('đổi tên milestone theo mã thay vì tạo milestone trùng', () => {
+  const desired = [
+    { id: 'M2', title: 'M2 · Lát cắt đầu', goal: 'Mới' },
+    { id: 'M3', title: 'M3 · Xèng', goal: 'Ba' },
+    { id: 'M9', title: 'M9 · Thêm', goal: 'Chín' },
+  ];
+  const existing = [
+    { number: 3, title: 'M2 · Media và Notification', description: 'Cũ' },
+    { number: 4, title: 'M3 · Xèng', description: 'Ba' },
+  ];
+  assert.deepEqual(planMilestones(desired, existing), [
+    { action: 'update', number: 3, body: { title: 'M2 · Lát cắt đầu', description: 'Mới' } },
+    { action: 'create', body: { title: 'M9 · Thêm', description: 'Chín' } },
+  ]);
+});
+
+test('không nhầm M1 với M10 khi so mã milestone', () => {
+  const desired = [{ id: 'M1', title: 'M1 · Một', goal: 'A' }];
+  const existing = [{ number: 9, title: 'M10 · Mười', description: 'B' }];
+  assert.deepEqual(planMilestones(desired, existing), [
+    { action: 'create', body: { title: 'M1 · Một', description: 'A' } },
+  ]);
 });

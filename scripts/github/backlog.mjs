@@ -72,6 +72,23 @@ export function selectMissingIssues(issues, existingTitles) {
   return issues.filter((issue) => !isPlanned(issue, existingTitles));
 }
 
+function matchesPlanned(issue, existingIssue) {
+  if (issue.type === 'Feature') return existingIssue.title.startsWith(`${issue.key}:`);
+  return existingIssue.title === issue.title;
+}
+
+export function planMilestoneMoves(planned, existing) {
+  const moves = [];
+  for (const existingIssue of existing) {
+    if (existingIssue.state !== 'open') continue;
+    const issue = planned.find((item) => matchesPlanned(item, existingIssue));
+    const current = existingIssue.milestone?.title ?? null;
+    if (!issue || current === issue.milestone) continue;
+    moves.push({ number: existingIssue.number, from: current, to: issue.milestone });
+  }
+  return moves;
+}
+
 export function findIssueByKey(existing, key) {
   return existing.find((item) => item.title.startsWith(`${key}:`));
 }

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
-import { planBacklog, selectMissingIssues } from './backlog.mjs';
+import { planBacklog, planMilestoneMoves, selectMissingIssues } from './backlog.mjs';
 
 const requirements = [
   {
@@ -101,6 +101,31 @@ test('chạy lại không tạo trùng issue đã có', () => {
   const issues = [{ title: 'A' }, { title: 'B' }];
   assert.deepEqual(selectMissingIssues(issues, ['A']), [{ title: 'B' }]);
   assert.deepEqual(selectMissingIssues(issues, ['A', 'B']), []);
+});
+
+test('dời issue đang mở sang milestone mới khi yêu cầu đổi mốc', () => {
+  const planned = [
+    { key: 'REQ-008', type: 'Feature', title: 'REQ-008: Thông báo', milestone: 'M3 · Ba' },
+    { key: 'REQ-008/Gửi email', type: 'Task', title: 'Gửi email', milestone: 'M3 · Ba' },
+  ];
+  const existing = [
+    { number: 5, title: 'REQ-008: Thông báo cũ', state: 'open', milestone: { title: 'M2 · Hai' } },
+    { number: 6, title: 'Gửi email', state: 'open', milestone: { title: 'M2 · Hai' } },
+  ];
+  assert.deepEqual(planMilestoneMoves(planned, existing), [
+    { number: 5, from: 'M2 · Hai', to: 'M3 · Ba' },
+    { number: 6, from: 'M2 · Hai', to: 'M3 · Ba' },
+  ]);
+});
+
+test('không dời issue đã đóng, đã đúng mốc hoặc không do sổ yêu cầu sinh ra', () => {
+  const planned = [{ key: 'REQ-008', type: 'Feature', title: 'REQ-008: A', milestone: 'M3 · Ba' }];
+  const existing = [
+    { number: 5, title: 'REQ-008: A', state: 'closed', milestone: { title: 'M2 · Hai' } },
+    { number: 6, title: 'REQ-008: A', state: 'open', milestone: { title: 'M3 · Ba' } },
+    { number: 7, title: 'Việc tự tạo', state: 'open', milestone: { title: 'M2 · Hai' } },
+  ];
+  assert.deepEqual(planMilestoneMoves(planned, existing), []);
 });
 
 test('bộ issue thật của dự án hợp lệ và không trùng tiêu đề', () => {

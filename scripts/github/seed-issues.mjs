@@ -2,7 +2,12 @@ import { readFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
-import { findIssueByKey, planBacklog, selectMissingIssues } from './backlog.mjs';
+import {
+  findIssueByKey,
+  planBacklog,
+  planMilestoneMoves,
+  selectMissingIssues,
+} from './backlog.mjs';
 import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
 
 const REQUEST_GAP_MS = 1200;
@@ -99,6 +104,13 @@ const milestoneNumbers = new Map(
   ]),
 );
 const existing = listIssues();
+for (const move of planMilestoneMoves(planned, existing)) {
+  const milestone = milestoneNumbers.get(move.to);
+  if (!milestone) throw new Error(`Milestone "${move.to}" not found. Run setup-project first.`);
+  api('PATCH', `${repositoryPath}/issues/${move.number}`, { milestone });
+  console.log(`Moved #${move.number}: ${move.from ?? 'none'} -> ${move.to}`);
+  await sleep(REQUEST_GAP_MS);
+}
 const missing = selectMissingIssues(
   planned,
   existing.map((item) => item.title),
