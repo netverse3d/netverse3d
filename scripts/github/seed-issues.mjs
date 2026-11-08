@@ -4,6 +4,7 @@ import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
 import {
   findIssueByKey,
+  findUnknownMilestones,
   planBacklog,
   planMilestoneMoves,
   selectMissingIssues,
@@ -103,11 +104,16 @@ const milestoneNumbers = new Map(
     item.number,
   ]),
 );
+const unknownMilestones = findUnknownMilestones(planned, [...milestoneNumbers.keys()]);
+if (unknownMilestones.length > 0) {
+  console.error(`Milestones not found: ${unknownMilestones.join(', ')}. Run setup-project first.`);
+  process.exit(1);
+}
 const existing = listIssues();
 for (const move of planMilestoneMoves(planned, existing)) {
-  const milestone = milestoneNumbers.get(move.to);
-  if (!milestone) throw new Error(`Milestone "${move.to}" not found. Run setup-project first.`);
-  api('PATCH', `${repositoryPath}/issues/${move.number}`, { milestone });
+  api('PATCH', `${repositoryPath}/issues/${move.number}`, {
+    milestone: milestoneNumbers.get(move.to),
+  });
   console.log(`Moved #${move.number}: ${move.from ?? 'none'} -> ${move.to}`);
   await sleep(REQUEST_GAP_MS);
 }

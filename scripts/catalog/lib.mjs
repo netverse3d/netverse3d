@@ -13,6 +13,7 @@ const MANIFESTS = ['package.json', 'go.mod', 'pyproject.toml'];
 const TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?|_test\.go|^test_.+\.py)$/;
 const HEALTH_ENDPOINT = /["'`/]healthz["'`]?/;
 const SOURCE_FILE = /\.([cm]?[jt]sx?|go|py)$/;
+const README_MILESTONE = /^-\s*Milestone:\s*(M\d+)\s*$/m;
 
 export function loadCatalog(root) {
   return parse(readFileSync(join(root, 'docs/catalog.yaml'), 'utf8'))?.components ?? [];
@@ -28,6 +29,16 @@ export function listComponentDirectories(root) {
     }
   }
   return directories;
+}
+
+function checkReadmeMilestone(root, component) {
+  const readme = join(root, component.path, 'README.md');
+  if (!existsSync(readme)) return [];
+  const stated = readFileSync(readme, 'utf8').match(README_MILESTONE)?.[1];
+  if (!stated || stated === component.milestone) return [];
+  return [
+    `${component.path}: README.md says milestone ${stated} but the catalog says ${component.milestone}`,
+  ];
 }
 
 export function checkStructure(root) {
@@ -51,6 +62,7 @@ export function checkStructure(root) {
         errors.push(`${component.path}: missing ${file}`);
       }
     }
+    errors.push(...checkReadmeMilestone(root, component));
   }
   for (const directory of listComponentDirectories(root)) {
     if (!paths.has(directory)) errors.push(`${directory}: directory is not in docs/catalog.yaml`);

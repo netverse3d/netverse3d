@@ -66,6 +66,18 @@ test('báo thành phần thiếu README', () => {
   assert.match(checkStructure(root).join(), /missing README\.md/);
 });
 
+test('báo README ghi milestone khác catalog', () => {
+  const root = createRepository();
+  write(root, 'services/identity/README.md', '# identity\n\n- Milestone: M3\n');
+  assert.match(checkStructure(root).join(), /README\.md says milestone M3 but the catalog says M1/);
+});
+
+test('nhận README ghi đúng milestone của catalog', () => {
+  const root = createRepository();
+  write(root, 'services/identity/README.md', '# identity\n\n- Milestone: M1\n');
+  assert.deepEqual(checkStructure(root), []);
+});
+
 test('cấu trúc đúng thì không báo gì', () => {
   assert.deepEqual(checkStructure(createRepository()), []);
 });

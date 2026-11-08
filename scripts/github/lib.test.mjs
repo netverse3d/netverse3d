@@ -228,3 +228,20 @@ test('không nhầm M1 với M10 khi so mã milestone', () => {
     { action: 'create', body: { title: 'M1 · Một', description: 'A' } },
   ]);
 });
+
+test('ưu tiên milestone trùng tên khi GitHub có cả tên cũ lẫn tên mới', () => {
+  const desired = [{ id: 'M2', title: 'M2 · Mới', goal: 'A' }];
+  const existing = [
+    { number: 3, title: 'M2 · Cũ', description: 'B' },
+    { number: 8, title: 'M2 · Mới', description: 'A' },
+  ];
+  assert.deepEqual(planMilestones(desired, existing), []);
+});
+
+test('chỉ cập nhật mô tả khi tên milestone giữ nguyên', () => {
+  const desired = [{ id: 'M2', title: 'M2 · Hai', goal: 'Mới' }];
+  const existing = [{ number: 3, title: 'M2 · Hai', description: 'Cũ' }];
+  assert.deepEqual(planMilestones(desired, existing), [
+    { action: 'update', number: 3, body: { title: 'M2 · Hai', description: 'Mới' } },
+  ]);
+});
