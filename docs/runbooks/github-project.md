@@ -4,14 +4,28 @@ Cấu hình repo, Project và bộ issue đều nằm trong mã. Các script ch�
 
 ## Lệnh
 
-| Lệnh                                         | Việc                                                                         |
-| -------------------------------------------- | ---------------------------------------------------------------------------- |
-| `node scripts/github/setup-repo.mjs`         | Áp cấu hình repo, nhãn, ruleset, Environment, Pages rồi đọc lại để đối chiếu |
-| `node scripts/github/setup-repo.mjs --check` | Chỉ đối chiếu, báo khác biệt                                                 |
-| `node scripts/github/setup-project.mjs`      | Tạo Project, field, Milestone                                                |
-| `node scripts/github/seed-issues.mjs`        | Tạo issue còn thiếu từ sổ yêu cầu và `docs/requirements/backlog-seed.yaml`   |
+| Lệnh                                         | Việc                                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `node scripts/github/setup-repo.mjs`         | Áp cấu hình repo, nhãn, ruleset, Environment, Pages rồi đọc lại để đối chiếu                                  |
+| `node scripts/github/setup-repo.mjs --check` | Chỉ đối chiếu, báo khác biệt                                                                                  |
+| `node scripts/github/setup-project.mjs`      | Tạo Project, field; tạo hoặc đổi tên Milestone theo mã `Mx`                                                   |
+| `node scripts/github/seed-issues.mjs`        | Dời issue sang đúng Milestone, rồi tạo issue còn thiếu từ sổ yêu cầu và `docs/requirements/backlog-seed.yaml` |
 
 Cần quyền `gh auth refresh -s project`.
+
+## Khi đổi lộ trình
+
+Sổ yêu cầu là nguồn duy nhất cho Milestone của issue do script sinh ra.
+
+1. Sửa `docs/requirements/milestones.yaml` và `registry.yaml` qua PR. Tiêu đề Milestone luôn bắt đầu bằng `Mx · `.
+2. Sau khi merge, chạy `setup-project.mjs` trước để đổi tên Milestone, rồi mới chạy `seed-issues.mjs`.
+3. `seed-issues.mjs` dời mọi issue đang mở do sổ yêu cầu sinh ra mà nằm sai Milestone. Dời bằng tay trên GitHub sẽ bị đảo lại ở lần chạy sau. Issue không có Milestone, issue đã đóng và issue tự tạo không bị đụng tới.
+4. Script chỉ đồng bộ Milestone. Các thay đổi sau phải sửa tay trên GitHub:
+   - Đổi `area` của REQ: sửa nhãn `area:*` của issue REQ và các việc con.
+   - Chuyển một việc sang REQ khác: sửa dòng `Yêu cầu: REQ-xxx` ở đầu body và chuyển issue cha.
+   - Đổi tiêu đề một việc: đổi trên GitHub và trong `backlog-seed.yaml` cùng lúc, nếu không script sẽ tạo issue trùng.
+
+Việc tạo issue và tìm issue cha vẫn nhận theo tiêu đề. Không tự đặt tiêu đề issue bắt đầu bằng `REQ-xxx:` hoặc trùng tên một việc trong `backlog-seed.yaml`.
 
 ## Thay đổi cấu hình
 

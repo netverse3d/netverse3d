@@ -170,3 +170,18 @@ export function findDrift(desired, actual, path = '') {
     ? []
     : [`${path}: expected ${JSON.stringify(desired)}, got ${JSON.stringify(actual)}`];
 }
+
+export function planMilestones(desired, existing) {
+  const actions = [];
+  for (const milestone of desired) {
+    const body = { title: milestone.title, description: milestone.goal };
+    const current =
+      existing.find((item) => item.title === milestone.title) ??
+      existing.find((item) => item.title.startsWith(`${milestone.id} ·`));
+    if (!current) actions.push({ action: 'create', body });
+    else if (current.title !== body.title || current.description !== body.description) {
+      actions.push({ action: 'update', number: current.number, body });
+    }
+  }
+  return actions;
+}

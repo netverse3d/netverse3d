@@ -73,8 +73,6 @@ tasks:
       - title: Chốt đơn vị thanh toán cho thuê đất và thuê máy
         size: S
         labels: [needs-decision]
-      - title: Dựng service core-api
-        size: M
       - title: Mô hình khu đất và hợp đồng thuê
         size: M
       - title: Màn hình chọn và thuê đất
@@ -90,6 +88,8 @@ tasks:
         size: M
   - requirement: REQ-011
     items:
+      - title: Dựng service core-api
+        size: M
       - title: Tính phí thuê máy và gia hạn
         size: M
   - requirement: REQ-013
@@ -112,3 +112,44 @@ tasks:
       - title: Chốt phạm vi chat, voice, nhạc và tranh với mentor
         size: S
         labels: [needs-decision]
+  - requirement: REQ-028
+    items:
+      - title: Chốt tên chính thức, tỷ giá Xèng và độ dài block giờ máy
+        size: S
+        labels: [needs-decision]
+  - requirement: REQ-029
+    items:
+      - title: Sổ cái ghi kép cho Xèng và điểm doanh thu
+        size: L
+      - title: Cộng Xèng từ webhook nạp tiền qua outbox
+        size: M
+  - requirement: REQ-030
+    items:
+      - title: Cấp điểm doanh thu khi người chơi trả giờ máy
+        size: M
+  - requirement: REQ-036
+    items:
+      - title: Room server giả theo giao thức nháp cho lát cắt đầu
+        size: M
+      - title: Tiệm dựng sẵn để test lát cắt đầu
+        size: M
+  - requirement: REQ-032
+    items:
+      - title: Lớp màn hình 2D khi ngồi vào máy
+        size: L
+      - title: Trình duyệt nhúng theo danh sách cho phép
+        size: M
+  - requirement: REQ-033
+    items:
+      - title: Chốt thể loại game đầu tiên với mentor
+        size: S
+        labels: [needs-decision]
+      - title: Luật game đầu tiên dạng bước tất định
+        size: M
+      - title: Giao diện game đầu tiên trên màn hình máy
+        size: M
+  - requirement: REQ-035
+    items:
+      - title: Chốt ngôn ngữ viết luật và bộ công cụ huấn luyện với mentor
+        size: S
+        labels: [waiting-mentor]

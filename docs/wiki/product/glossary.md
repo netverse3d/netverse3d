@@ -17,6 +17,14 @@ Dùng đúng các từ này trong tài liệu, issue và tên định danh.
 | Phòng             | `Room`           | Phiên realtime của một tiệm trên game server                |
 | Danh tiếng        | `Reputation`     | Chỉ số thể hiện mức độ thành công của tiệm                  |
 | Asset             | `Asset`          | Tệp 3D, ảnh, âm thanh dùng trong thế giới                   |
+| Xèng (tên tạm)    | `Credit`         | Tiền ảo nạp một chiều, chỉ tiêu trong Netverse              |
+| Điểm doanh thu    | `RevenuePoints`  | Điểm hệ thống cấp cho chủ tiệm khi tiệm có khách            |
+| Sổ cái            | `Ledger`         | Ghi kép mọi thay đổi số dư Xèng và điểm doanh thu           |
+| Block giờ máy     | `TimeBlock`      | Khoảng thời gian dùng máy trả trước                         |
+| Màn hình máy      | `Desktop`        | Lớp 2D mở ra khi ngồi vào máy                               |
+| Màn hình chung    | `ShopScreen`     | Màn hình lớn của tiệm, đồng bộ bằng trạng thái              |
+| Game trên máy     | `StationGame`    | Game web của Netverse chơi trên màn hình máy                |
+| Bot               | `Bot`            | Người chơi do mô hình học tăng cường điều khiển             |
 
 ## Thuật ngữ quy trình
 

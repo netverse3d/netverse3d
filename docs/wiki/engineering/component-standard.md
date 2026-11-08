@@ -36,7 +36,7 @@ Repo công khai, nên mọi mã phải rõ nguồn gốc trước khi vào repo.
 
 ```yaml
 provenance: cleared
-provenance_ref: ADR-0010
+provenance_ref: ADR-9999
 ```
 
 ## Quy ước chung cho service

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
+import { planMilestones } from './lib.mjs';
 
 const STATUS_OPTIONS = ['Backlog', 'Ready', 'In Progress', 'In Review', 'Done'];
 const VIEWS = [
@@ -92,13 +93,9 @@ function ensureViews(number) {
 function ensureMilestones() {
   const { milestones } = parse(readFileSync('docs/requirements/milestones.yaml', 'utf8'));
   const existing = api('GET', `repos/${REPOSITORY}/milestones?state=all&per_page=100`);
-  for (const milestone of milestones) {
-    const body = { title: milestone.title, description: milestone.goal };
-    const current = existing.find((item) => item.title === milestone.title);
-    if (!current) api('POST', `repos/${REPOSITORY}/milestones`, body);
-    else if (current.description !== milestone.goal) {
-      api('PATCH', `repos/${REPOSITORY}/milestones/${current.number}`, body);
-    }
+  for (const { action, number, body } of planMilestones(milestones, existing)) {
+    if (action === 'create') api('POST', `repos/${REPOSITORY}/milestones`, body);
+    else api('PATCH', `repos/${REPOSITORY}/milestones/${number}`, body);
   }
   return milestones.length;
 }

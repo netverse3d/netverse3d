@@ -1,6 +1,6 @@
 # payment
 
-Service: PayOS, thuê máy, nâng cấp, webhook, hoá đơn.
+Service: PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn.
 
 - Stack dự kiến: NestJS, Prisma
 - Milestone: M3

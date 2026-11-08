@@ -2,6 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
+- Đang xem lại: phần học tăng cường, đấu trường và thứ tự giai đoạn theo [ADR-0012](./ADR-0012-games-for-rl-bots.md) và [ADR-0013](./ADR-0013-vertical-slice-roadmap.md). Trong lúc chờ chốt, lộ trình và độ ưu tiên của bot theo hai bản đề xuất đó.
 
 ## Bối cảnh
 

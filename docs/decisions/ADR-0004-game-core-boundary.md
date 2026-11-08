@@ -2,6 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
+- Xem thêm: room server giả chỉ để test giao diện ở [ADR-0013](./ADR-0013-vertical-slice-roadmap.md)
 
 ## Bối cảnh
 

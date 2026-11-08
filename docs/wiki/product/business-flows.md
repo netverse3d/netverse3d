@@ -10,7 +10,7 @@ Liên quan: REQ-009, REQ-010, REQ-013, REQ-015, REQ-016.
 flowchart TD
   A[Đăng nhập] --> B[Xem bản đồ đất trống]
   B --> C[Chọn khu đất và thời hạn thuê]
-  C --> D[Thanh toán]
+  C --> D[Trả bằng điểm doanh thu]
   D -->|Thành công| E[Đất thuộc quyền thuê của chủ tiệm]
   D -->|Thất bại| B
   E --> F[Chế độ xây dựng: đặt máy, bàn ghế, trang trí]
@@ -22,11 +22,14 @@ flowchart TD
   J --> C
 ```
 
-Chưa chốt: thuê đất trả bằng tiền thật hay đơn vị trong game; hết hạn thuê thì tiệm xử lý ra sao.
+Hướng tạm theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md): thuê đất trả bằng điểm doanh thu. Chưa chốt:
+
+- Chủ tiệm mới chưa có điểm thì thuê khu đất đầu tiên bằng gì.
+- Hết hạn thuê khi tiệm đang có người thì xử lý ra sao.
 
 ## Người chơi đi net
 
-Liên quan: REQ-001, REQ-003, REQ-011, REQ-014, REQ-017, REQ-018, REQ-020.
+Liên quan: REQ-001, REQ-003, REQ-011, REQ-014, REQ-017, REQ-018, REQ-020, REQ-032, REQ-033, REQ-036.
 
 ```mermaid
 flowchart TD
@@ -35,13 +38,14 @@ flowchart TD
   C --> D[Vào tiệm, di chuyển]
   D --> E[Đến gần máy, yêu cầu ngồi]
   E --> F{Máy còn trống và đủ điều kiện?}
-  F -->|Có| G[Giữ máy cho người này]
+  F -->|Có| G[Giữ máy, trả block giờ máy bằng Xèng]
   F -->|Không| D
-  G --> H[Dùng máy: chơi, chatbot, giao lưu]
-  H --> I{Còn thời gian?}
+  G --> H[Màn hình máy: game, trình duyệt nhúng, video]
+  H --> I{Còn thời gian trong block?}
   I -->|Còn| H
-  I -->|Hết| J[Gia hạn hoặc rời máy]
-  J --> D
+  I -->|Hết| J[Trả block tiếp hoặc rời máy]
+  J -->|Trả tiếp| H
+  J -->|Rời máy| D
   D --> K[Rời tiệm]
 ```
 
@@ -61,21 +65,40 @@ sequenceDiagram
   G-->>B: seat.denied, lý do occupied
 ```
 
-## Thanh toán
+## Nạp Xèng
 
-Liên quan: REQ-010, REQ-012. Webhook có thể đến nhiều lần hoặc không theo thứ tự.
+Liên quan: REQ-010, REQ-012, REQ-028, REQ-029. Webhook có thể đến nhiều lần hoặc không theo thứ tự. PayOS chỉ dùng để nạp; không có luồng rút.
 
 ```mermaid
 sequenceDiagram
   participant U as Người dùng
   participant P as Payment service
   participant O as PayOS
-  participant C as Core API
-  U->>P: Tạo yêu cầu thanh toán
+  U->>P: Tạo đơn nạp Xèng
   P->>O: Tạo link thanh toán
   O-->>U: Trang thanh toán
   O->>P: Webhook kết quả
-  P->>P: Xác thực chữ ký, bỏ qua nếu đã xử lý
-  P->>C: Sự kiện thanh toán thành công
-  C->>C: Cấp quyền thuê đất hoặc thuê máy
+  P->>P: Xác thực chữ ký, bỏ qua nếu mã đơn đã xử lý
+  P->>P: Ghi sổ cái: cộng Xèng
+  P-->>U: Thông báo số dư mới
+```
+
+## Trả giờ máy và cấp điểm doanh thu
+
+Liên quan: REQ-011, REQ-029, REQ-030. Xèng của người chơi không bao giờ vào ví chủ tiệm. Trừ Xèng là gọi đồng bộ vì phải biết kết quả trước khi cấp block; cấp điểm doanh thu đi qua sự kiện và có từ M4.
+
+```mermaid
+sequenceDiagram
+  participant G as Game server
+  participant C as Core API
+  participant P as Payment service
+  participant K as Kafka
+  G->>C: Người chơi xin block giờ máy ở máy 12
+  C->>P: Trừ Xèng theo giá của tiệm
+  P->>P: Ghi sổ cái: trừ Xèng của người chơi, huỷ
+  P-->>C: Đã trừ
+  C-->>G: Cấp block, hết hạn lúc T
+  C->>K: Sự kiện block giờ máy đã trả
+  K->>P: Cấp điểm doanh thu cho chủ tiệm theo tỷ lệ (từ M4)
+  P->>P: Ghi sổ cái: cộng điểm doanh thu
 ```

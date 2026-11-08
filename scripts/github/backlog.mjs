@@ -72,6 +72,30 @@ export function selectMissingIssues(issues, existingTitles) {
   return issues.filter((issue) => !isPlanned(issue, existingTitles));
 }
 
+function matchesPlanned(issue, existingIssue) {
+  const requirement = issue.parent ?? issue.key;
+  if (!(existingIssue.body ?? '').startsWith(`Yêu cầu: ${requirement}\n`)) return false;
+  if (issue.type === 'Feature') return existingIssue.title.startsWith(`${issue.key}:`);
+  return existingIssue.title === issue.title;
+}
+
+export function planMilestoneMoves(planned, existing) {
+  const moves = [];
+  for (const existingIssue of existing) {
+    const current = existingIssue.milestone?.title;
+    if (existingIssue.state !== 'open' || !current) continue;
+    const issue = planned.find((item) => matchesPlanned(item, existingIssue));
+    if (!issue || current === issue.milestone) continue;
+    moves.push({ number: existingIssue.number, from: current, to: issue.milestone });
+  }
+  return moves;
+}
+
+export function findUnknownMilestones(planned, knownTitles) {
+  const known = new Set(knownTitles);
+  return [...new Set(planned.map((issue) => issue.milestone))].filter((title) => !known.has(title));
+}
+
 export function findIssueByKey(existing, key) {
   return existing.find((item) => item.title.startsWith(`${key}:`));
 }
