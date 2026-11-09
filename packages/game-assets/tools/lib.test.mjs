@@ -270,6 +270,52 @@ test('lệnh xuất dừng khi có tệp gốc chưa khai', () => {
   assert.equal(readFileSync(stampPath(root), 'utf8'), before);
 });
 
+function makeKitModel(overrides = {}) {
+  return {
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1] },
+      { name: 'chair_a__seat_anchor', translation: [0, 0.4, 0] },
+    ],
+    meshes: [{ primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1 } }] }],
+    accessors: [{ count: 3 }, { count: 3, min: [-0.1, 0, -0.1], max: [0.1, 0.5, 0.1] }],
+    materials: [{ name: 'surface' }],
+    ...overrides,
+  };
+}
+
+function makeKitRoot(model, slotOverrides = {}, configOverrides = {}, bin = undefined) {
+  const { root, config } = makeRoot();
+  const kit = {
+    file: 'parts.glb',
+    source: 'parts.blend',
+    slots: {
+      chair: { variants: ['a'], maxTriangles: 100, anchors: ['seat_anchor'], ...slotOverrides },
+    },
+  };
+  writeFileSync(
+    join(root, 'assets.config.json'),
+    JSON.stringify({ ...config, kits: [kit], ...configOverrides }),
+  );
+  writeFileSync(join(root, 'source/parts.blend'), 'parts');
+  writeFileSync(join(root, 'exported/parts.glb'), makeGlb(model, bin));
+  return root;
+}
+
+test('ô đồ đủ điểm gắn thì được ghi dấu xuất', () => {
+  assert.deepEqual(finishExport(makeKitRoot(makeKitModel())), []);
+});
+
+test('báo ghế thiếu điểm ngồi', () => {
+  const nodes = [{ name: 'chair_a', mesh: 0 }];
+  const errors = finishExport(makeKitRoot(makeKitModel({ nodes })));
+  assert.match(errors.join('\n'), /chair_a is missing anchor seat_anchor/);
+});
+
+test('báo thiếu biến thể đã khai trong cấu hình', () => {
+  const errors = finishExport(makeKitRoot(makeKitModel(), { variants: ['a', 'b'] }));
+  assert.match(errors.join('\n'), /missing mesh: chair_b/);
+});
+
 test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
   const { root, config } = makeRoot();
   writeFileSync(join(root, 'source/base.blend'), 'edited');

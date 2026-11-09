@@ -10,6 +10,7 @@ const LFS_POINTER =
   /^version https:\/\/git-lfs\.github\.com\/spec\/v1\noid sha256:([0-9a-f]{64})\nsize \d+\n$/;
 const NUMBERED_COPY = /\.\d{3}$/;
 const LOD_TOLERANCE = 1.02;
+const ANCHOR_SEPARATOR = '__';
 const TRANSFORM_TOLERANCE = 1e-5;
 const IDENTITY_TRANSFORM = { translation: [0, 0, 0], rotation: [0, 0, 0, 1], scale: [1, 1, 1] };
 const STAMP_FILE = 'export-stamp.json';
@@ -134,6 +135,17 @@ function checkTransforms(nodes, fail) {
   }
 }
 
+function checkAnchors(gltf, nodes, expected, fail) {
+  for (const node of nodes) {
+    const children = new Set((node.children ?? []).map((index) => gltf.nodes[index].name));
+    for (const anchor of expected[node.name] ?? []) {
+      if (!children.has(`${node.name}${ANCHOR_SEPARATOR}${anchor}`)) {
+        fail(`${node.name} is missing anchor ${anchor}`);
+      }
+    }
+  }
+}
+
 export function checkModel(file, gltf, expected) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -146,17 +158,19 @@ export function checkModel(file, gltf, expected) {
   if (expected.bones) checkSkins(gltf, meshNodes, expected.bones, fail);
   checkClips(gltf, expected.clips ?? [], fail);
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
+  checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
   return errors;
 }
 
 export function sourceFiles(config) {
-  const { character, props } = config;
+  const { character, props, kits = [] } = config;
   return [
     ...new Set([
       character.rigSource,
       character.clipSource,
       ...Object.values(character.meshes).map((mesh) => mesh.source),
       ...props.map((prop) => prop.source),
+      ...kits.map((kit) => kit.source),
     ]),
   ];
 }
@@ -166,11 +180,28 @@ export function outputFiles(config) {
     config.character.file,
     config.character.lodFile,
     ...config.props.map((prop) => prop.file),
+    ...(config.kits ?? []).map((kit) => kit.file),
   ];
 }
 
+function kitParts(kit) {
+  return Object.entries(kit.slots).flatMap(([slot, spec]) =>
+    spec.variants.map((variant) => ({ name: `${slot}_${variant}`, spec })),
+  );
+}
+
+function kitExpectation(kit) {
+  const parts = kitParts(kit);
+  const perPart = (pick) => Object.fromEntries(parts.map(({ name, spec }) => [name, pick(spec)]));
+  return {
+    file: kit.file,
+    meshes: perPart((spec) => spec.maxTriangles),
+    anchors: perPart((spec) => spec.anchors ?? []),
+  };
+}
+
 function expectations(config) {
-  const { bones, clips, character, props } = config;
+  const { bones, clips, character, props, kits = [] } = config;
   const limits = (pick) =>
     Object.fromEntries(Object.entries(character.meshes).map(([name, mesh]) => [name, pick(mesh)]));
   const attributes = limits((mesh) => mesh.requiredAttributes ?? []);
@@ -186,6 +217,7 @@ function expectations(config) {
       ),
     },
     ...props.map((prop) => ({ file: prop.file, meshes: { [prop.object]: prop.maxTriangles } })),
+    ...kits.map(kitExpectation),
   ];
 }
 
