@@ -16,16 +16,22 @@ import {
   stampPath,
 } from './lib.mjs';
 
-function makeGlb(gltf) {
+function makeGlb(gltf, bin) {
   const json = Buffer.from(JSON.stringify(gltf).padEnd(4, ' '));
   const padded = Buffer.concat([json, Buffer.alloc((4 - (json.length % 4)) % 4, 0x20)]);
+  const binChunk = bin ? Buffer.alloc(8 + bin.length) : Buffer.alloc(0);
+  if (bin) {
+    binChunk.writeUInt32LE(bin.length, 0);
+    binChunk.writeUInt32LE(0x004e4942, 4);
+    bin.copy(binChunk, 8);
+  }
   const header = Buffer.alloc(20);
   header.writeUInt32LE(0x46546c67, 0);
   header.writeUInt32LE(2, 4);
-  header.writeUInt32LE(20 + padded.length, 8);
+  header.writeUInt32LE(20 + padded.length + binChunk.length, 8);
   header.writeUInt32LE(padded.length, 12);
   header.writeUInt32LE(0x4e4f534a, 16);
-  return Buffer.concat([header, padded]);
+  return Buffer.concat([header, padded, binChunk]);
 }
 
 function makeModel(overrides = {}) {
@@ -314,6 +320,69 @@ test('báo ghế thiếu điểm ngồi', () => {
 test('báo thiếu biến thể đã khai trong cấu hình', () => {
   const errors = finishExport(makeKitRoot(makeKitModel(), { variants: ['a', 'b'] }));
   assert.match(errors.join('\n'), /missing mesh: chair_b/);
+});
+
+const PALETTE = { surface: ['body', 'soft'], glow: ['strip', 'keycap'] };
+
+function makePaletteModel(u, v, material = 'surface') {
+  const bin = Buffer.alloc(8);
+  bin.writeFloatLE(u, 0);
+  bin.writeFloatLE(v, 4);
+  const model = makeKitModel({
+    meshes: [
+      { primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] },
+    ],
+    accessors: [
+      ...makeKitModel().accessors,
+      { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+    ],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 8 }],
+    materials: [{ name: material }],
+  });
+  return { model, bin };
+}
+
+function finishPaletteExport({ model, bin }) {
+  return finishExport(makeKitRoot(model, {}, { palette: PALETTE }, bin)).join('\n');
+}
+
+test('bề mặt trỏ đúng hàng màu của nó thì đạt', () => {
+  assert.equal(finishPaletteExport(makePaletteModel(0.5, 0.375)), '');
+});
+
+test('phím phát sáng trỏ đúng hàng màu phát sáng thì đạt', () => {
+  assert.equal(finishPaletteExport(makePaletteModel(0.9, 0.875, 'glow')), '');
+});
+
+test('báo vật liệu nằm ngoài hợp đồng bộ màu', () => {
+  assert.match(
+    finishPaletteExport(makePaletteModel(0.5, 0.375, 'prop_dark')),
+    /uses material prop_dark outside the palette/,
+  );
+});
+
+test('báo ô đồ không có UV trỏ vào dải màu', () => {
+  const { model, bin } = makePaletteModel(0.5, 0.375);
+  model.meshes[0].primitives[0].attributes = { POSITION: 1 };
+  assert.match(finishPaletteExport({ model, bin }), /has no palette UV/);
+});
+
+test('báo bề mặt trỏ nhầm sang hàng màu phát sáng', () => {
+  assert.match(
+    finishPaletteExport(makePaletteModel(0.5, 0.625)),
+    /palette UV outside surface rows/,
+  );
+});
+
+test('báo UV nằm giữa hai hàng màu', () => {
+  assert.match(finishPaletteExport(makePaletteModel(0.5, 0.25)), /palette UV outside surface rows/);
+});
+
+test('báo UV vượt ra ngoài chiều ngang dải màu', () => {
+  assert.match(
+    finishPaletteExport(makePaletteModel(1.2, 0.375)),
+    /palette UV outside surface rows/,
+  );
 });
 
 test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {

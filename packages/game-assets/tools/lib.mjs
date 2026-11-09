@@ -5,6 +5,9 @@ import { join } from 'node:path';
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
 const GLB_HEADER_SIZE = 20;
+const GLB_CHUNK_HEADER_SIZE = 8;
+const UV_PAIR_SIZE = 8;
+const PALETTE_ROW_TOLERANCE = 0.001;
 const MAX_POINTER_SIZE = 1024;
 const LFS_POINTER =
   /^version https:\/\/git-lfs\.github\.com\/spec\/v1\noid sha256:([0-9a-f]{64})\nsize \d+\n$/;
@@ -44,6 +47,15 @@ export function readGlb(buffer) {
   if (buffer.readUInt32LE(16) !== JSON_CHUNK_TYPE) throw new Error('GLB has no JSON chunk');
   const length = buffer.readUInt32LE(12);
   return JSON.parse(buffer.subarray(GLB_HEADER_SIZE, GLB_HEADER_SIZE + length).toString('utf8'));
+}
+
+export function readGlbBinary(buffer) {
+  const offset = GLB_HEADER_SIZE + buffer.readUInt32LE(12);
+  if (buffer.length < offset + GLB_CHUNK_HEADER_SIZE) return Buffer.alloc(0);
+  return buffer.subarray(
+    offset + GLB_CHUNK_HEADER_SIZE,
+    offset + GLB_CHUNK_HEADER_SIZE + buffer.readUInt32LE(offset),
+  );
 }
 
 function triangleCount(gltf, mesh) {
@@ -146,7 +158,46 @@ function checkAnchors(gltf, nodes, expected, fail) {
   }
 }
 
-export function checkModel(file, gltf, expected) {
+function readUvPairs(gltf, bin, accessorIndex) {
+  const accessor = gltf.accessors[accessorIndex];
+  const view = gltf.bufferViews[accessor.bufferView];
+  const start = (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+  const stride = view.byteStride ?? UV_PAIR_SIZE;
+  return Array.from({ length: accessor.count }, (_, index) => [
+    bin.readFloatLE(start + index * stride),
+    bin.readFloatLE(start + index * stride + UV_PAIR_SIZE / 2),
+  ]);
+}
+
+function isOnPaletteRow([u, v], rowCount, [firstRow, endRow]) {
+  const row = Math.floor(v * rowCount);
+  const onCentre = Math.abs(v - (row + 0.5) / rowCount) <= PALETTE_ROW_TOLERANCE;
+  return u >= 0 && u <= 1 && onCentre && row >= firstRow && row < endRow;
+}
+
+function checkPalette(gltf, bin, nodes, palette, fail) {
+  const surfaceRows = palette.surface.length;
+  const rowCount = surfaceRows + palette.glow.length;
+  const rowsOf = { surface: [0, surfaceRows], glow: [surfaceRows, rowCount] };
+  for (const node of nodes) {
+    for (const primitive of gltf.meshes[node.mesh].primitives) {
+      const material = gltf.materials[primitive.material]?.name;
+      if (rowsOf[material] === undefined) {
+        fail(`${node.name} uses material ${material} outside the palette`);
+      } else if (primitive.attributes.TEXCOORD_0 === undefined) {
+        fail(`${node.name} has no palette UV`);
+      } else if (
+        !readUvPairs(gltf, bin, primitive.attributes.TEXCOORD_0).every((pair) =>
+          isOnPaletteRow(pair, rowCount, rowsOf[material]),
+        )
+      ) {
+        fail(`${node.name} has a palette UV outside ${material} rows`);
+      }
+    }
+  }
+}
+
+export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
   const meshNodes = (gltf.nodes ?? []).filter((node) => node.mesh !== undefined);
@@ -159,6 +210,7 @@ export function checkModel(file, gltf, expected) {
   checkClips(gltf, expected.clips ?? [], fail);
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
+  if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   return errors;
 }
 
@@ -190,18 +242,19 @@ function kitParts(kit) {
   );
 }
 
-function kitExpectation(kit) {
+function kitExpectation(kit, palette) {
   const parts = kitParts(kit);
   const perPart = (pick) => Object.fromEntries(parts.map(({ name, spec }) => [name, pick(spec)]));
   return {
     file: kit.file,
     meshes: perPart((spec) => spec.maxTriangles),
     anchors: perPart((spec) => spec.anchors ?? []),
+    palette,
   };
 }
 
 function expectations(config) {
-  const { bones, clips, character, props, kits = [] } = config;
+  const { bones, clips, character, props, kits = [], palette } = config;
   const limits = (pick) =>
     Object.fromEntries(Object.entries(character.meshes).map(([name, mesh]) => [name, pick(mesh)]));
   const attributes = limits((mesh) => mesh.requiredAttributes ?? []);
@@ -217,7 +270,7 @@ function expectations(config) {
       ),
     },
     ...props.map((prop) => ({ file: prop.file, meshes: { [prop.object]: prop.maxTriangles } })),
-    ...kits.map(kitExpectation),
+    ...kits.map((kit) => kitExpectation(kit, palette)),
   ];
 }
 
@@ -297,8 +350,9 @@ function checkContent(root, config, requireContent) {
       continue;
     }
     const buffer = readFileSync(path);
-    if (!isLfsPointer(buffer)) errors.push(...checkModel(expected.file, readGlb(buffer), expected));
-    else if (requireContent) errors.push(`${expected.file} is an LFS pointer: fetch it first`);
+    if (!isLfsPointer(buffer)) {
+      errors.push(...checkModel(expected.file, readGlb(buffer), expected, readGlbBinary(buffer)));
+    } else if (requireContent) errors.push(`${expected.file} is an LFS pointer: fetch it first`);
     else skipped.push(expected.file);
   }
   return { errors, skipped };
