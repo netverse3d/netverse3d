@@ -197,6 +197,7 @@ def export_prop(prop):
 def export_kit(kit):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     objects = append_objects(kit['source'])
+    bpy.context.view_layer.update()
     select_only(objects, objects[0])
     bpy.ops.export_scene.gltf(
         filepath=os.path.join(EXPORT_DIR, kit['file']),

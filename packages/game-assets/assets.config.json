@@ -99,5 +99,46 @@
       "object": "station",
       "maxTriangles": 18000
     }
+  ],
+  "palette": {
+    "surface": ["body", "metal", "soft", "top", "floor", "wall", "ceiling", "trim"],
+    "glow": ["strip", "keycap", "screen", "accent"]
+  },
+  "kits": [
+    {
+      "file": "station-parts.glb",
+      "source": "parts-station.blend",
+      "slots": {
+        "desk": {
+          "variants": ["a"],
+          "maxTriangles": 2200,
+          "size": [1.7, 0.9, 0.8],
+          "anchors": [
+            "socket_monitor",
+            "socket_keyboard",
+            "socket_mouse",
+            "socket_chair",
+            "socket_case",
+            "interact_point",
+            "collision_main"
+          ]
+        },
+        "monitor": { "variants": ["a"], "maxTriangles": 1500, "size": [1.0, 0.7, 0.35] },
+        "keyboard": { "variants": ["a"], "maxTriangles": 1100, "size": [0.46, 0.06, 0.2] },
+        "mouse": { "variants": ["a"], "maxTriangles": 600, "size": [0.09, 0.06, 0.14] },
+        "chair": {
+          "variants": ["a"],
+          "maxTriangles": 5400,
+          "size": [0.75, 1.4, 0.8],
+          "anchors": ["seat_anchor", "collision_main"]
+        },
+        "case": {
+          "variants": ["a"],
+          "maxTriangles": 900,
+          "size": [0.32, 0.6, 0.5],
+          "anchors": ["collision_main"]
+        }
+      }
+    }
   ]
 }
