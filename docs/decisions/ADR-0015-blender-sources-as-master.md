@@ -16,7 +16,8 @@ Script sinh không phải thứ cả nhóm sửa tiếp được: chỉnh tay tr
 **Nơi chứa**
 
 - Thành phần mới `packages/game-assets` giữ toàn bộ tài sản 3D, cùng quy trình PR với mã.
-- `.blend` và `.glb` lưu bằng Git LFS. CI thường không tải các tệp này; chỉ workflow `assets` tải, và chỉ khi PR chạm tới thành phần.
+- `.blend` và `.glb` lưu bằng Git LFS. CI thường không tải các tệp này; workflow `assets` tải khi PR chạm tới thành phần, workflow `docs` chỉ tải mô hình để xuất bản thư viện.
+- `library/` là trang xem trực quan các thiết kế đã có, chạy tại máy và có bản trên trang tài liệu. Đây là bản phác để cả nhóm tham khảo, không phải mã sản phẩm.
 
 **Bản gốc**
 
