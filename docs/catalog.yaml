@@ -101,3 +101,9 @@ components:
     stack: TypeScript
     summary: Cấu hình dùng chung cho lint, TypeScript
     milestone: M1
+  - id: game-assets
+    path: packages/game-assets
+    kind: package
+    stack: Blender, glTF
+    summary: Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật
+    milestone: M1

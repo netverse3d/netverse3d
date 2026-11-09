@@ -25,6 +25,8 @@ bin/
 *.exe
 *.test
 *.out
+*.blend1
+*.blend@
 
 docs/.vitepress/dist/
 docs/.vitepress/cache/
