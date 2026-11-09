@@ -46,7 +46,7 @@ export function planBacklog(requirements, seed, milestones) {
         type: 'Task',
         title: item.title,
         body: `Yêu cầu: ${group.requirement}\n\nThuộc: ${requirement.title}`,
-        milestone: milestoneTitle.get(requirement.milestone),
+        milestone: milestoneTitle.get(item.milestone ?? requirement.milestone),
         labels: [...areaLabels(requirement), ...(item.labels ?? [])],
         priority: PRIORITY[requirement.priority],
         size: item.size,

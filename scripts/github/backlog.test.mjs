@@ -102,6 +102,27 @@ test('báo lỗi khi yêu cầu có milestone không tồn tại', () => {
   assert.match(errors.join(), /unknown milestone/);
 });
 
+test('một việc có thể nằm ở milestone khác với yêu cầu của nó', () => {
+  const seed = {
+    tasks: [
+      {
+        requirement: 'REQ-001',
+        items: [
+          { title: 'Làm trước', size: 'M' },
+          { title: 'Lùi lại', size: 'M', milestone: 'M2' },
+        ],
+      },
+    ],
+  };
+  const { issues, errors } = planBacklog(requirements, seed, [
+    ...milestones,
+    { id: 'M2', title: 'M2 · Hai' },
+  ]);
+  assert.deepEqual(errors, []);
+  assert.equal(issues.find((issue) => issue.title === 'Làm trước').milestone, 'M1 · Một');
+  assert.equal(issues.find((issue) => issue.title === 'Lùi lại').milestone, 'M2 · Hai');
+});
+
 test('chạy lại không tạo trùng issue đã có', () => {
   const issues = [{ title: 'A' }, { title: 'B' }];
   assert.deepEqual(selectMissingIssues(issues, ['A']), [{ title: 'B' }]);

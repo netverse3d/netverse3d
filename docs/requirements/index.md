@@ -27,6 +27,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Nháp | Bắt buộc | `web-3d` |
 | REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
+| REQ-040 | Mỗi tiệm có bản sắc riêng | Nháp | Bắt buộc | `game-assets` |
 
 ## M3 · Xèng và Payment
 
@@ -300,7 +301,7 @@ Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`
 
 ### REQ-036: Vào tiệm dựng sẵn và ngồi máy với room server giả
 
-Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn, đi lại và ngồi vào máy một mình trên room server giả theo giao thức nháp. Bản giả chỉ dùng để phát triển và test, không triển khai.
+Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn bằng tài khoản khách, đi lại, thuê miễn phí và ngồi vào máy một mình trên room server giả theo giao thức nháp. Trừ Xèng được nối ở M3. Bản giả chỉ dùng để phát triển và test, không triển khai.
 
 Nguồn: `team-decision`, `mentor-architecture-lite`
 
@@ -319,5 +320,11 @@ Nguồn: `mentor-followup`, `team-decision`
 ### REQ-039: Thế giới mang bối cảnh Sài Gòn cyber
 
 Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này.
+
+Nguồn: `team-decision`
+
+### REQ-040: Mỗi tiệm có bản sắc riêng
+
+Một con phố có nhiều tiệm và mỗi tiệm trông khác nhau. Hình dáng và màu của đồ đạc, gồm cả gradient nhiều màu như bàn phím, cùng bố cục, biển hiệu và kiểu đèn được lưu thành công thức của tiệm. Các tiệm dùng chung một bộ mô hình.
 
 Nguồn: `team-decision`

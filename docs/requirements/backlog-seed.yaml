@@ -33,8 +33,10 @@ tasks:
         size: M
       - title: Thân gốc, bộ xương chung và các ô đồ của nhân vật
         size: L
+        milestone: M3
       - title: Đổi màu từng phần và lưu công thức nhân vật
         size: M
+        milestone: M3
       - title: Hồ sơ người chơi
         size: S
   - requirement: REQ-004
@@ -136,6 +138,32 @@ tasks:
       - title: Room server giả theo giao thức nháp cho lát cắt đầu
         size: M
       - title: Tiệm dựng sẵn để test lát cắt đầu
+        size: M
+      - title: Điểm tương tác, chỗ ngồi và va chạm trong tệp Blender
+        size: S
+      - title: Camera góc ba theo nhân vật
+        size: S
+      - title: Va chạm với tường và đồ vật
+        size: M
+      - title: Nhấn E để thuê máy và ngồi xuống
+        size: M
+      - title: Đồng hồ phiên thuê và kết thúc phiên
+        size: M
+  - requirement: REQ-040
+    items:
+      - title: Ghi quyết định bản sắc tiệm là dữ liệu
+        size: S
+      - title: Hợp đồng bộ màu và công cụ kiểm tài sản
+        size: S
+      - title: Danh mục ô đồ và biến thể của bộ máy
+        size: L
+      - title: Bộ module phòng ghép theo lưới
+        size: L
+      - title: Công thức tiệm và ba tiệm mẫu
+        size: M
+      - title: Lắp tiệm từ công thức lúc chạy
+        size: M
+      - title: Phòng thử tiệm trong thư viện 3D
         size: M
   - requirement: REQ-037
     items:

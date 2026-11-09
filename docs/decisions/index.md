@@ -19,3 +19,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0013](./ADR-0013-vertical-slice-roadmap.md) | Lộ trình theo lát cắt chạy được, room server giả trong lúc chờ core | Đề xuất |
 | [ADR-0014](./ADR-0014-saigon-cyber-and-own-characters.md) | Bối cảnh Sài Gòn cyber, nhân vật và bot do nhóm tự thiết kế | Đề xuất |
 | [ADR-0015](./ADR-0015-blender-sources-as-master.md) | Tệp Blender là bản gốc của tài sản 3D | Đề xuất |
+| [ADR-0016](./ADR-0016-shop-identity-as-data.md) | Bản sắc tiệm là dữ liệu, mô hình không mang màu cố định | Đề xuất |

@@ -281,7 +281,7 @@ requirements:
     sources: [mentor-followup, mentor-chat-npc, mentor-chat-arena]
   - id: REQ-036
     title: Vào tiệm dựng sẵn và ngồi máy với room server giả
-    description: Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn, đi lại và ngồi vào máy một mình trên room server giả theo giao thức nháp. Bản giả chỉ dùng để phát triển và test, không triển khai.
+    description: Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn bằng tài khoản khách, đi lại, thuê miễn phí và ngồi vào máy một mình trên room server giả theo giao thức nháp. Trừ Xèng được nối ở M3. Bản giả chỉ dùng để phát triển và test, không triển khai.
     status: draft
     priority: must
     milestone: M2
@@ -310,4 +310,12 @@ requirements:
     priority: should
     milestone: M2
     area: web-3d
+    sources: [team-decision]
+  - id: REQ-040
+    title: Mỗi tiệm có bản sắc riêng
+    description: Một con phố có nhiều tiệm và mỗi tiệm trông khác nhau. Hình dáng và màu của đồ đạc, gồm cả gradient nhiều màu như bàn phím, cùng bố cục, biển hiệu và kiểu đèn được lưu thành công thức của tiệm. Các tiệm dùng chung một bộ mô hình.
+    status: draft
+    priority: must
+    milestone: M2
+    area: game-assets
     sources: [team-decision]
