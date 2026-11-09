@@ -151,6 +151,8 @@ tasks:
         size: M
   - requirement: REQ-040
     items:
+      - title: Ghi quyết định bản sắc tiệm là dữ liệu
+        size: S
       - title: Hợp đồng bộ màu và công cụ kiểm tài sản
         size: S
       - title: Danh mục ô đồ và biến thể của bộ máy
