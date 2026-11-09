@@ -45,6 +45,10 @@ export default withMermaid(
             { text: 'Danh sách thành phần', link: '/wiki/engineering/components' },
             { text: 'Chuẩn thành phần', link: '/wiki/engineering/component-standard' },
             { text: 'Tài sản 3D', link: '/wiki/engineering/game-assets' },
+            {
+              text: 'Thư viện 3D',
+              link: 'https://netverse3d.github.io/netverse3d/game-assets/library/',
+            },
             { text: 'Quy ước', link: '/wiki/engineering/conventions' },
             { text: 'Nhánh và phát hành', link: '/wiki/engineering/branching-and-release' },
           ],

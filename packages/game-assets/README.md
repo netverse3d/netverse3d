@@ -10,12 +10,16 @@ Tệp Blender gốc, mô hình glTF xuất ra và bộ kiểm của nhân vật,
 source/              tệp .blend, là bản gốc, lưu bằng Git LFS
 exported/            tệp .glb do lệnh xuất tạo ra, không sửa tay
 assets.config.json   hợp đồng: xương, clip, mesh, ngân sách tam giác
-tools/               lệnh xuất và bộ kiểm
+library/             trang xem trực quan các thiết kế đã có
+tools/               lệnh xuất, bộ kiểm, máy chủ xem thư viện
 ```
 
 ```
+pnpm assets:library
 pnpm assets:export
 pnpm assets:check
 ```
+
+`library/models/` chứa hai mô hình thử nghiệm cũ chỉ để xem, không có tệp gốc.
 
 Quy trình đầy đủ nằm ở [Tài sản 3D](../../docs/wiki/engineering/game-assets.md). Quyết định nền tảng nằm ở [ADR-0015](../../docs/decisions/ADR-0015-blender-sources-as-master.md).

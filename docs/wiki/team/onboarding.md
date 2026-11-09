@@ -25,6 +25,8 @@ Kết quả mong đợi: `pnpm infra:smoke` báo `Infrastructure healthy`, `pnpm
 
 `pnpm bootstrap` tạo `.env` từ `.env.example`, cài thư viện, bật git hook, bật Git LFS và tải các tệp 3D. Đã clone từ trước thì chạy lại lệnh này sau khi pull.
 
+Muốn xem các thiết kế 3D đã có, chạy `pnpm assets:library` hoặc mở [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/).
+
 ## 3. Đọc theo thứ tự
 
 1. [Tổng quan sản phẩm](../product/overview.md)
