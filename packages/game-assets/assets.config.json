@@ -79,7 +79,12 @@
     "clipSource": "clips.blend",
     "meshes": {
       "body": { "source": "character-base.blend", "maxTriangles": 28000, "lodTriangles": 7000 },
-      "hair": { "source": "hair-default.blend", "maxTriangles": 9000, "lodTriangles": 3000 },
+      "hair": {
+        "source": "hair-default.blend",
+        "maxTriangles": 9000,
+        "lodTriangles": 3000,
+        "requiredAttributes": ["COLOR_0"]
+      },
       "glasses": { "source": "accessories.blend", "maxTriangles": 1200 },
       "headset": { "source": "accessories.blend", "maxTriangles": 2800 },
       "backpack": { "source": "accessories.blend", "maxTriangles": 1600 },

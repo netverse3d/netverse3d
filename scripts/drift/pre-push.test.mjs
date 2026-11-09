@@ -179,6 +179,23 @@ test('chặn push khi đẩy tệp Git LFS thất bại', () => {
   assert.equal(result.status, 2);
 });
 
+test('chặn push kèm hướng dẫn khi máy chưa có Git LFS', () => {
+  const { cwd, base } = createRepository();
+  const sha = commit(cwd, 'docs/wiki/index.md', 'docs: add wiki');
+  const result = spawnSync(
+    'sh',
+    [PRE_PUSH.replaceAll('\\', '/'), 'origin', 'https://example.test/repo.git'],
+    {
+      cwd,
+      input: `refs/heads/feat/1-login ${sha} refs/heads/feat/1-login ${base}\n`,
+      encoding: 'utf8',
+      env: { ...process.env, DRIFT_LFS: 'no-such-lfs-tool' },
+    },
+  );
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Git LFS is required/);
+});
+
 test('từ chối liên kết REQ không tồn tại', () => {
   const { cwd } = createRepository();
   const linked = spawnSync(process.execPath, [LINK, 'REQ-999'], { cwd, encoding: 'utf8' });

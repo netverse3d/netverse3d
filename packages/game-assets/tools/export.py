@@ -28,6 +28,12 @@ def require_blender_version():
         raise SystemExit('Blender {}.{} or newer is required'.format(*required))
 
 
+def reject_unapplied_modifiers(ob, filename):
+    unapplied = [modifier.name for modifier in ob.modifiers if modifier.type != 'ARMATURE']
+    if unapplied:
+        raise SystemExit('{} in {} has unapplied modifiers: {}'.format(ob.name, filename, ', '.join(unapplied)))
+
+
 def append_objects(filename, names):
     path = os.path.join(SOURCE_DIR, filename)
     with bpy.data.libraries.load(path, link=False) as (source, target):
@@ -36,6 +42,7 @@ def append_objects(filename, names):
             raise SystemExit('{} is missing objects: {}'.format(filename, ', '.join(missing)))
         target.objects = list(names)
     for ob in target.objects:
+        reject_unapplied_modifiers(ob, filename)
         bpy.context.scene.collection.objects.link(ob)
     return list(target.objects)
 
@@ -59,6 +66,21 @@ def remove_extra_rigs(rig):
             bpy.data.objects.remove(ob)
 
 
+def socket_value(socket):
+    value = getattr(socket, 'default_value', None)
+    if isinstance(value, float):
+        return round(value, 4)
+    if hasattr(value, '__len__') and not isinstance(value, str):
+        return tuple(round(item, 4) for item in value)
+    return value
+
+
+def material_signature(material):
+    nodes = sorted(material.node_tree.nodes, key=lambda node: node.name) if material.use_nodes else []
+    sockets = [(node.bl_idname, socket.name, socket_value(socket)) for node in nodes for socket in node.inputs]
+    return tuple(round(item, 4) for item in material.diffuse_color), sockets
+
+
 def merge_duplicate_materials(meshes):
     for ob in meshes:
         for slot in ob.material_slots:
@@ -66,7 +88,10 @@ def merge_duplicate_materials(meshes):
                 continue
             base, _, suffix = slot.material.name.rpartition('.')
             if suffix.isdigit() and base in bpy.data.materials:
-                slot.material = bpy.data.materials[base]
+                original = bpy.data.materials[base]
+                if material_signature(slot.material) != material_signature(original):
+                    raise SystemExit('Material {} differs between source files: change it in every file'.format(base))
+                slot.material = original
 
 
 def select_only(objects, active):

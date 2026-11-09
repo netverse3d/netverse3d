@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildStamp, checkAssets, loadConfig, stampPath } from './lib.mjs';
+import { finishExport } from './lib.mjs';
 
 const WINDOWS_INSTALL_ROOT = 'C:\\Program Files\\Blender Foundation';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -28,8 +28,7 @@ if (run.error) {
 }
 if (run.status !== 0) process.exit(run.status ?? 1);
 
-writeFileSync(stampPath(root), `${JSON.stringify(buildStamp(root, loadConfig(root)), null, 2)}\n`);
-const { errors } = checkAssets(root, { requireContent: true });
+const errors = finishExport(root);
 for (const error of errors) console.error(error);
 if (errors.length > 0) process.exit(1);
 console.log('Exported and validated.');

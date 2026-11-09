@@ -32,11 +32,17 @@ git lfs lock packages/game-assets/source/hair-default.blend
 ```
 
 1. Tách nhánh từ `staging` theo issue, rồi khoá tệp như trên. Tệp đang bị người khác khoá thì chờ hoặc trao đổi với họ.
-2. Mở tệp, sửa, lưu. Giữ nguyên tên đối tượng và tên xương.
+2. Mở tệp, sửa, lưu. Giữ nguyên tên đối tượng và tên xương. Apply mọi modifier trừ Armature, vì lệnh xuất từ chối modifier chưa apply.
 3. Chạy `pnpm assets:export`. Lệnh ghép các tệp gốc, xuất `.glb`, tạo bản nhẹ rồi tự kiểm.
 4. Mở `exported/player.glb` bằng trình xem glTF hoặc nhập lại vào Blender để nhìn tận mắt.
 5. Commit cả tệp `.blend`, tệp `.glb` và `export-stamp.json` rồi mở PR như mọi việc khác.
 6. PR merge xong thì mở khoá: `git lfs unlock <tệp>`.
+
+## Hai người cùng làm
+
+Mỗi người khoá một tệp `.blend` khác nhau, nhưng tệp `.glb` và `export-stamp.json` là kết quả chung nên vẫn xung đột khi PR thứ hai cập nhật từ `staging`. Khi đó không gộp tay. Giữ tệp `.blend` của cả hai bên, lấy tạm phiên bản bất kỳ của `exported/`, rồi chạy lại `pnpm assets:export` và commit.
+
+Vật liệu dùng chung, như `logo_canvas`, có bản sao trong nhiều tệp gốc. Đổi vật liệu thì đổi ở mọi tệp có nó, nếu không lệnh xuất sẽ báo lỗi.
 
 ## Việc thường gặp
 
@@ -54,15 +60,20 @@ Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ
 
 ## Bộ kiểm chặn gì
 
-| Lỗi                                    | Chặn ở                       |
-| -------------------------------------- | ---------------------------- |
-| Sửa `.blend` mà quên xuất lại          | `pnpm verify`, CI            |
-| Sửa `.glb` ngoài lệnh xuất             | `pnpm verify`, CI            |
-| Thêm `.blend` chưa khai trong cấu hình | `pnpm verify`, CI            |
-| Tệp không lưu bằng Git LFS             | CI                           |
-| Sai xương, thiếu clip, clip rỗng       | Lệnh xuất, workflow `assets` |
-| Vượt ngân sách, mesh chưa gắn xương    | Lệnh xuất, workflow `assets` |
-| Vật liệu bị nhân bản khi ghép tệp      | Lệnh xuất, workflow `assets` |
+| Lỗi                                                  | Chặn ở            |
+| ---------------------------------------------------- | ----------------- |
+| Sửa `.blend` mà quên xuất lại                        | `pnpm verify`, CI |
+| Sửa `.glb` ngoài lệnh xuất                           | `pnpm verify`, CI |
+| Thêm tệp hoặc khai tệp mà chưa xuất                  | `pnpm verify`, CI |
+| Tệp không lưu bằng Git LFS                           | CI                |
+| Máy chưa có Git LFS                                  | Hook khi push     |
+| Sai xương, thiếu clip, vượt ngân sách                | Lệnh xuất         |
+| Mesh chưa gắn xương, thiếu lớp màu bắt buộc          | Lệnh xuất         |
+| Modifier chưa apply, vật liệu khác nhau giữa các tệp | Lệnh xuất         |
+
+Lệnh xuất chỉ ghi `export-stamp.json` khi mọi kiểm đều qua. Xuất lỗi thì `pnpm verify` đỏ cho tới khi sửa xong. Workflow `assets` kiểm lại nội dung thật trên PR, hiện chưa phải check bắt buộc.
+
+Bộ kiểm chỉ thấy cấu trúc. Clip sai dáng hay tóc xấu vẫn cần người nhìn.
 
 ## Ai làm được gì
 

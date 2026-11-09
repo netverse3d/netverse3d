@@ -23,7 +23,7 @@ pnpm verify
 
 Kết quả mong đợi: `pnpm infra:smoke` báo `Infrastructure healthy`, `pnpm verify` kết thúc không lỗi. Xong việc thì tắt hạ tầng bằng `pnpm infra:down`.
 
-`pnpm bootstrap` tạo `.env` từ `.env.example`, cài thư viện và bật git hook.
+`pnpm bootstrap` tạo `.env` từ `.env.example`, cài thư viện, bật git hook, bật Git LFS và tải các tệp 3D. Đã clone từ trước thì chạy lại lệnh này sau khi pull.
 
 ## 3. Đọc theo thứ tự
 

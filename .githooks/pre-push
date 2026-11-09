@@ -2,12 +2,16 @@
 hook_dir=$(dirname "$0")
 refs=$(cat)
 
+lfs_tool=${DRIFT_LFS:-git-lfs}
+
 finish_push() {
-  if [ "$#" -gt 0 ] && command -v git-lfs >/dev/null 2>&1; then
-    printf '%s\n' "$refs" | git-lfs pre-push "$@"
-    exit $?
+  [ "$#" -eq 0 ] && exit 0
+  if ! command -v "$lfs_tool" >/dev/null 2>&1; then
+    echo "Git LFS is required. Install it, then run pnpm bootstrap." >&2
+    exit 1
   fi
-  exit 0
+  printf '%s\n' "$refs" | "$lfs_tool" pre-push "$@"
+  exit $?
 }
 
 printf '%s\n' "$refs" | node "$hook_dir/../scripts/drift/pre-push.mjs"

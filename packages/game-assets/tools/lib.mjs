@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const GLB_MAGIC = 0x46546c67;
@@ -102,6 +102,17 @@ function checkClips(gltf, clips, fail) {
   }
 }
 
+function checkAttributes(gltf, nodes, required, fail) {
+  for (const node of nodes) {
+    for (const attribute of required[node.name] ?? []) {
+      const present = gltf.meshes[node.mesh].primitives.every(
+        (primitive) => primitive.attributes[attribute] !== undefined,
+      );
+      if (!present) fail(`${node.name} is missing attribute ${attribute}`);
+    }
+  }
+}
+
 export function checkModel(file, gltf, expected) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -112,6 +123,7 @@ export function checkModel(file, gltf, expected) {
   }
   if (expected.bones) checkSkins(gltf, meshNodes, expected.bones, fail);
   checkClips(gltf, expected.clips ?? [], fail);
+  checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   return errors;
 }
 
@@ -139,12 +151,14 @@ function expectations(config) {
   const { bones, clips, character, props } = config;
   const limits = (pick) =>
     Object.fromEntries(Object.entries(character.meshes).map(([name, mesh]) => [name, pick(mesh)]));
+  const attributes = limits((mesh) => mesh.requiredAttributes ?? []);
   return [
-    { file: character.file, bones, clips, meshes: limits((mesh) => mesh.maxTriangles) },
+    { file: character.file, bones, clips, attributes, meshes: limits((mesh) => mesh.maxTriangles) },
     {
       file: character.lodFile,
       bones,
       clips: [],
+      attributes,
       meshes: limits((mesh) =>
         mesh.lodTriangles ? Math.ceil(mesh.lodTriangles * LOD_TOLERANCE) : mesh.maxTriangles,
       ),
@@ -176,16 +190,27 @@ function compareHashes(folder, recorded, describe) {
   return errors;
 }
 
+function listUnstamped(declared, recorded) {
+  return declared
+    .filter((file) => recorded[file] === undefined)
+    .map((file) => `${file} is not in the export stamp: run the export`);
+}
+
+export function stampPath(root) {
+  return join(root, 'exported', STAMP_FILE);
+}
+
 export function checkStamp(root, config) {
-  const stampPath = join(root, 'exported', STAMP_FILE);
-  if (!existsSync(stampPath)) return [`${STAMP_FILE} is missing: run the export`];
-  const stamp = JSON.parse(readFileSync(stampPath, 'utf8'));
+  if (!existsSync(stampPath(root))) return [`${STAMP_FILE} is missing: run the export`];
+  const stamp = JSON.parse(readFileSync(stampPath(root), 'utf8'));
   const declared = new Set(sourceFiles(config));
   const undeclared = readdirSync(join(root, 'source'))
     .filter((file) => file.endsWith('.blend') && !declared.has(file))
     .map((file) => `${file} is not declared in assets.config.json`);
   return [
     ...undeclared,
+    ...listUnstamped(sourceFiles(config), stamp.sources),
+    ...listUnstamped(outputFiles(config), stamp.exported),
     ...compareHashes(
       join(root, 'source'),
       stamp.sources,
@@ -199,13 +224,15 @@ export function checkStamp(root, config) {
   ];
 }
 
-export function checkAssets(root, { requireContent = false } = {}) {
-  const config = loadConfig(root);
-  const errors = checkStamp(root, config);
+function checkContent(root, config, requireContent) {
+  const errors = [];
   const skipped = [];
   for (const expected of expectations(config)) {
     const path = join(root, 'exported', expected.file);
-    if (!existsSync(path)) continue;
+    if (!existsSync(path)) {
+      errors.push(`${expected.file} is missing`);
+      continue;
+    }
     const buffer = readFileSync(path);
     if (!isLfsPointer(buffer)) errors.push(...checkModel(expected.file, readGlb(buffer), expected));
     else if (requireContent) errors.push(`${expected.file} is an LFS pointer: fetch it first`);
@@ -214,6 +241,17 @@ export function checkAssets(root, { requireContent = false } = {}) {
   return { errors, skipped };
 }
 
-export function stampPath(root) {
-  return join(root, 'exported', STAMP_FILE);
+export function checkAssets(root, { requireContent = false } = {}) {
+  const config = loadConfig(root);
+  const { errors, skipped } = checkContent(root, config, requireContent);
+  return { errors: [...new Set([...checkStamp(root, config), ...errors])], skipped };
+}
+
+export function finishExport(root) {
+  const config = loadConfig(root);
+  const { errors } = checkContent(root, config, true);
+  if (errors.length === 0) {
+    writeFileSync(stampPath(root), `${JSON.stringify(buildStamp(root, config), null, 2)}\n`);
+  }
+  return errors;
 }

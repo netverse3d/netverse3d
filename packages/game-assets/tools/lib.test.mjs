@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -10,8 +10,10 @@ import {
   checkModel,
   checkStamp,
   contentId,
+  finishExport,
   isLfsPointer,
   readGlb,
+  stampPath,
 } from './lib.mjs';
 
 function makeGlb(gltf) {
@@ -182,4 +184,44 @@ test('chế độ bắt buộc nội dung coi con trỏ LFS là lỗi', () => {
 test('bộ tệp đúng hợp đồng thì không có lỗi và không bỏ qua gì', () => {
   const { root } = makeRoot();
   assert.deepEqual(checkAssets(root, { requireContent: true }), { errors: [], skipped: [] });
+});
+
+test('báo mesh thiếu lớp màu bắt buộc', () => {
+  const expected = { ...EXPECTED, attributes: { body: ['COLOR_0'] } };
+  assert.match(
+    checkModel('a.glb', makeModel(), expected).join('\n'),
+    /body is missing attribute COLOR_0/,
+  );
+});
+
+test('báo tệp xuất đã khai nhưng chưa từng được xuất', () => {
+  const { root, config } = makeRoot();
+  config.props.push({ file: 'chair.glb', source: 'base.blend', object: 'chair', maxTriangles: 9 });
+  writeFileSync(join(root, 'assets.config.json'), JSON.stringify(config));
+  const text = checkAssets(root, { requireContent: true }).errors.join('\n');
+  assert.match(text, /chair\.glb is not in the export stamp/);
+  assert.match(text, /chair\.glb is missing/);
+});
+
+test('báo tệp gốc đã khai nhưng chưa có trong dấu xuất', () => {
+  const { root, config } = makeRoot();
+  writeFileSync(join(root, 'source/hair.blend'), 'hair');
+  config.character.meshes.hair = { source: 'hair.blend', maxTriangles: 9 };
+  assert.match(checkStamp(root, config).join('\n'), /hair\.blend is not in the export stamp/);
+});
+
+test('không ghi dấu xuất khi mô hình sai hợp đồng', () => {
+  const { root, config } = makeRoot();
+  const before = readFileSync(stampPath(root), 'utf8');
+  writeFileSync(join(root, 'exported/player.glb'), makeGlb(makeModel({ animations: [] })));
+  assert.match(finishExport(root).join('\n'), /missing clip: idle/);
+  assert.equal(readFileSync(stampPath(root), 'utf8'), before);
+  assert.match(checkStamp(root, config).join('\n'), /player\.glb does not match/);
+});
+
+test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
+  const { root, config } = makeRoot();
+  writeFileSync(join(root, 'source/base.blend'), 'edited');
+  assert.deepEqual(finishExport(root), []);
+  assert.deepEqual(checkStamp(root, config), []);
 });
