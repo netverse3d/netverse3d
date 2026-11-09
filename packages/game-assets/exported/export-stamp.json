@@ -6,12 +6,12 @@
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "019a5761cd0fbc66c68be41f9b853885f35bc0a46c0dcfd6f60e0a59627c3650"
+    "parts-station.blend": "bd9a43063125a17bdd98abcf50362df20cbbf58d3f632b2edd36d6142f3cdf64"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "ea4a3bb48002503c7429c953801be1d7abd0e01189d8beab9cc930c798f39863"
+    "station-parts.glb": "bef374eed27d3df9f5f874dc609046f9525e3527176d1e05b2ca3dc707f5e45a"
   }
 }
