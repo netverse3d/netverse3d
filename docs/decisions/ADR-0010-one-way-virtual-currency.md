@@ -20,7 +20,9 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
 - Xèng chỉ có được bằng cách nạp qua PayOS hoặc do hệ thống cấp. Xèng chỉ tiêu, không rút, không chuyển cho người khác, không đổi ngược.
 - Chủ tiệm nhận **điểm doanh thu** (`RevenuePoints`), không nhận Xèng. Khi người chơi trả Xèng cho giờ máy, Xèng bị huỷ và hệ thống cấp điểm cho chủ tiệm theo một tỷ lệ.
 - Điểm doanh thu chỉ dùng để thuê đất, mua máy, nâng cấp tiệm. Không chuyển, không đổi ra Xèng, không đổi ra tiền.
-- Chủ tiệm dùng máy ở tiệm mình và bot không tạo điểm doanh thu.
+- Chủ tiệm dùng máy ở tiệm mình không tạo điểm doanh thu.
+- Bot khách tạo điểm doanh thu có giới hạn: có trần theo ngày, chỉ tiệm mới nhận điểm này, và thấp hơn nhiều so với khách thật. Mục đích là cho tiệm mới có điểm để lớn lên và hạn chế việc cày điểm bằng bot.
+- Bot không phải bot khách thì không tạo điểm doanh thu.
 - Tặng phút giữa người chơi bỏ, thay bằng phút miễn phí hằng ngày do hệ thống cấp.
 - Giờ máy trả trước theo block. Room server dừng giữa chừng thì block đã trả không bị trừ thêm.
 - Mọi thay đổi số dư đi qua sổ cái ghi kép do `services/payment` sở hữu.
@@ -35,6 +37,7 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
   - Tên chính thức, tỷ giá Xèng, tỷ lệ cấp điểm, độ dài block.
   - Chủ tiệm mới chưa có điểm thì thuê khu đất đầu tiên bằng gì: Xèng, hay một khoản điểm khởi đầu do hệ thống cấp.
   - Có áp giới hạn giờ chơi cho người dưới 18 tuổi không.
+  - Trần điểm từ bot khách là bao nhiêu, tính theo tiệm hay theo chủ tiệm, tiệm được coi là mới trong bao lâu.
 - Nếu sau này chạy bằng tiền thật, cần người có chuyên môn pháp lý xem lại toàn bộ.
 
-Liên quan: REQ-009, REQ-010, REQ-011, REQ-028, REQ-029, REQ-030, REQ-031.
+Liên quan: REQ-009, REQ-010, REQ-011, REQ-028, REQ-029, REQ-030, REQ-031, REQ-038.

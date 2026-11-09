@@ -31,6 +31,10 @@ tasks:
     items:
       - title: Màn hình tạo nhân vật
         size: M
+      - title: Thân gốc, bộ xương chung và các ô đồ của nhân vật
+        size: L
+      - title: Đổi màu từng phần và lưu công thức nhân vật
+        size: M
       - title: Hồ sơ người chơi
         size: S
   - requirement: REQ-004
@@ -133,6 +137,24 @@ tasks:
         size: M
       - title: Tiệm dựng sẵn để test lát cắt đầu
         size: M
+  - requirement: REQ-037
+    items:
+      - title: Đổi biểu cảm khi chơi và hiện cho người xung quanh
+        size: M
+  - requirement: REQ-038
+    items:
+      - title: Bot khách dùng luật cho tiệm vắng
+        size: M
+      - title: Giới hạn điểm doanh thu từ bot khách
+        size: S
+      - title: Dựng dòng bot theo thiết kế chung
+        size: M
+  - requirement: REQ-039
+    items:
+      - title: Con hẻm mẫu theo chuẩn mỹ thuật Sài Gòn cyber
+        size: L
+      - title: Đo hiệu năng tiệm nhiều máy trên GPU thật
+        size: S
   - requirement: REQ-032
     items:
       - title: Lớp màn hình 2D khi ngồi vào máy

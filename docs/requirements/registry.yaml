@@ -17,12 +17,12 @@ requirements:
     sources: [mentor-brief, mentor-architecture-full]
   - id: REQ-003
     title: Tạo và chỉnh nhân vật
-    description: Người chơi tạo nhân vật trước khi vào thế giới, có hồ sơ hiển thị với người khác.
+    description: Người chơi tạo nhân vật trước khi vào thế giới, tự chọn tóc, trang phục, phụ kiện và màu từng phần trên một bộ xương chung. Tài khoản lưu công thức nhân vật, có hồ sơ hiển thị với người khác.
     status: draft
     priority: must
     milestone: M1
     area: web-3d
-    sources: [mentor-architecture-lite, mentor-demo]
+    sources: [mentor-architecture-lite, mentor-demo, team-decision]
   - id: REQ-004
     title: Web 3D chạy trên máy tính và điện thoại
     description: Giao diện 3D dùng được trên trình duyệt máy tính và trên điện thoại dạng PWA, có điều khiển phím và cần ảo.
@@ -97,7 +97,7 @@ requirements:
     sources: [mentor-architecture-lite]
   - id: REQ-013
     title: Chủ tiệm xây dựng và bài trí tiệm
-    description: Sau khi thuê đất, chủ tiệm vào chế độ xây dựng để đặt máy, bàn ghế và trang trí.
+    description: Sau khi thuê đất, chủ tiệm vào chế độ xây dựng để đặt máy, bàn ghế, trang trí và chọn màu nhấn của tiệm.
     status: accepted
     priority: must
     milestone: M4
@@ -233,7 +233,7 @@ requirements:
     sources: [team-decision]
   - id: REQ-030
     title: Điểm doanh thu của chủ tiệm
-    description: Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình và bot không tạo điểm.
+    description: Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
     status: draft
     priority: must
     milestone: M4
@@ -273,7 +273,7 @@ requirements:
     sources: [mentor-followup, mentor-demo]
   - id: REQ-035
     title: Bot học tăng cường chơi game trên máy
-    description: Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot, không tạo điểm doanh thu.
+    description: Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot. Chỉ bot khách tạo điểm doanh thu, theo REQ-038.
     status: draft
     priority: should
     milestone: M6
@@ -287,3 +287,27 @@ requirements:
     milestone: M2
     area: web-3d
     sources: [team-decision, mentor-architecture-lite]
+  - id: REQ-037
+    title: Biểu cảm nhân vật khi chơi
+    description: Người chơi đổi được giữa tám biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
+    status: draft
+    priority: should
+    milestone: M5
+    area: web-3d
+    sources: [team-decision]
+  - id: REQ-038
+    title: Bot khách cho tiệm vắng
+    description: Tiệm vắng có bot khách đi lại, chọn máy và ngồi chơi như người, luôn hiện rõ là bot. Chỉ tiệm mới nhận điểm doanh thu từ bot khách, có trần theo ngày và thấp hơn nhiều so với khách thật.
+    status: draft
+    priority: should
+    milestone: M5
+    area: game
+    sources: [mentor-followup, team-decision]
+  - id: REQ-039
+    title: Thế giới mang bối cảnh Sài Gòn cyber
+    description: Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này.
+    status: draft
+    priority: should
+    milestone: M2
+    area: web-3d
+    sources: [team-decision]
