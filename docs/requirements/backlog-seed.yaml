@@ -147,13 +147,13 @@ tasks:
         size: M
       - title: Giới hạn điểm doanh thu từ bot khách
         size: S
-  - requirement: REQ-039
-    items:
       - title: Dựng dòng bot theo thiết kế chung
         size: M
+  - requirement: REQ-039
+    items:
       - title: Con hẻm mẫu theo chuẩn mỹ thuật Sài Gòn cyber
         size: L
-      - title: Đo hiệu năng tiệm 50 máy trên GPU thật
+      - title: Đo hiệu năng tiệm nhiều máy trên GPU thật
         size: S
   - requirement: REQ-032
     items:

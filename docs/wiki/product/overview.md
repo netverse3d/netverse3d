@@ -1,13 +1,13 @@
 # Tổng quan sản phẩm
 
-Netverse 3D là game tycoon mở tiệm net trong một TP.HCM phiên bản cyber về đêm, chạy trên trình duyệt. Một người có thể vừa là chủ tiệm, vừa là người đi chơi net.
+Netverse 3D là thế giới tiệm net 3D chạy trên trình duyệt. Một người có thể vừa là chủ tiệm, vừa là người đi chơi net.
 
-Khách và nhân viên trong tiệm có thể là người thật hoặc bot do AI điều khiển, nên tiệm vẫn có sức sống khi vắng người. Chiếc máy trong tiệm là cửa vào web, game và các trận đấu với bot. Trọng tâm của đồ án là cả game lẫn ứng dụng AI.
-
-## Bối cảnh và hình ảnh
+## Hướng đang đề xuất
 
 Theo [ADR-0014](../../decisions/ADR-0014-saigon-cyber-and-own-characters.md), đang ở mức đề xuất:
 
+- Thể loại nghiêng về tycoon mở tiệm net. Trọng tâm là cả game lẫn ứng dụng AI.
+- Khách trong tiệm có thể là người thật hoặc bot, nên tiệm vẫn có sức sống khi vắng người. Chiếc máy trong tiệm là cửa vào web, game và các trận đấu với bot.
 - Thế giới là hẻm, nhà ống, biển hiệu tiếng Việt của Sài Gòn dưới ánh đèn đêm. Đồ vật tối và trầm, màu đến từ ánh đèn.
 - Nhân vật người là chibi do nhóm tự thiết kế, tự chọn đồ và màu từng phần, có tám biểu cảm khi chơi.
 - Bot là một dòng robot cùng dáng với người chơi, nhận ra qua mặt kính đen và mắt LED.
@@ -37,7 +37,7 @@ Theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md), đang ở
 
 - Người chơi nạp tiền thật để có **Xèng** (tên tạm). Xèng chỉ tiêu trong Netverse, không rút, không chuyển cho người khác.
 - Xèng trả cho giờ máy bị huỷ. Hệ thống cấp **điểm doanh thu** cho chủ tiệm, chỉ dùng để thuê đất, mua máy, nâng cấp.
-- Tiệm mới vắng khách có bot khách. Bot khách cũng tạo điểm nhưng có trần và thấp hơn nhiều so với khách thật.
+- Tiệm vắng có bot khách. Chỉ tiệm mới nhận điểm từ bot khách, có trần và thấp hơn nhiều so với khách thật.
 
 ```mermaid
 flowchart LR

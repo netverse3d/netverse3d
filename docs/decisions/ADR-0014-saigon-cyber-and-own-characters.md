@@ -13,8 +13,9 @@ Nhóm đã thử nhiều hướng trên một bản phác dựng bằng mã, đ�
 
 **Sản phẩm**
 
-- Thể loại nghiêng về tycoon: mở tiệm, phục vụ khách, mở rộng. Trọng tâm là cả game lẫn ứng dụng AI.
-- Khách có nhu cầu riêng về giá, cấu hình máy, độ đông và dịch vụ, để các tiệm khác nhau ở thứ người chơi cảm nhận được.
+- Thể loại nghiêng về tycoon: mở tiệm, phục vụ khách, mở rộng.
+- Trọng tâm là cả game lẫn ứng dụng AI. Nếu được chốt, điểm này thay phần "AI làm sau" trong [ADR-0002](./ADR-0002-product-scope.md).
+- Hướng thiết kế: khách có nhu cầu riêng về giá, cấu hình máy, độ đông và dịch vụ, để các tiệm khác nhau ở thứ người chơi cảm nhận được. Cơ chế cụ thể còn nằm ở câu hỏi mở.
 
 **Bối cảnh**
 
@@ -48,9 +49,9 @@ Nhóm đã thử nhiều hướng trên một bản phác dựng bằng mã, đ�
 ## Hệ quả
 
 - Dựng bằng mã không đạt được độ đẹp cuối cùng. Nhóm cần một người làm được Blender để nặn thân, đồ và công trình theo đúng bộ xương và ô đồ.
-- Người chơi cần bộ xương để áo co giãn theo cơ thể. Bot là khối cứng, dùng instancing theo bộ phận được.
+- Người chơi cần gắn da vào bộ xương để áo co giãn theo cơ thể. Bot dùng chung khung xương và chuyển động, nhưng có thể là các khối cứng gắn theo từng xương, không cần gắn da, nên dùng instancing theo bộ phận được.
 - Ngồi gõ phím dùng IK để tay chạm phím theo tỷ lệ từng nhân vật, thay vì phụ thuộc vào clip.
-- Chưa đo hiệu năng trên GPU thật với 50 máy và 48 người trong một tiệm.
+- Chưa đo hiệu năng trên GPU thật. Sức chứa mục tiêu còn nằm ở câu hỏi 6; ảnh của mentor ghi 50 máy nên có thể đo thử với số đó.
 - Những điểm còn mở nằm ở [câu hỏi mở](../wiki/open-questions.md).
 
-Liên quan: REQ-003, REQ-035, REQ-037, REQ-038, REQ-039, [ADR-0010](./ADR-0010-one-way-virtual-currency.md), [ADR-0012](./ADR-0012-games-for-rl-bots.md).
+Liên quan: REQ-003, REQ-013, REQ-019, REQ-035, REQ-037, REQ-038, REQ-039, [ADR-0010](./ADR-0010-one-way-virtual-currency.md), [ADR-0012](./ADR-0012-games-for-rl-bots.md).

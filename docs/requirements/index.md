@@ -26,7 +26,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-032 | Màn hình máy cá nhân | Nháp | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Nháp | Bắt buộc | `web-3d` |
-| REQ-037 | Biểu cảm nhân vật khi chơi | Nháp | Nên có | `web-3d` |
 | REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
 
 ## M3 · Xèng và Payment
@@ -52,7 +51,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-015 | Duyệt tiệm và nội dung | Nháp | Nên có | `admin` |
 | REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `core-api` |
 | REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `core-api` |
-| REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
 
 ## M5 · Tích hợp game core
 
@@ -64,6 +62,8 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-020 | Giao lưu giữa người chơi | Nháp | Nên có | `game` |
 | REQ-021 | Máy bán nước và đồ ăn trong tiệm | Nháp | Có thì tốt | `game` |
 | REQ-034 | Màn hình chung của tiệm | Nháp | Nên có | `game` |
+| REQ-037 | Biểu cảm nhân vật khi chơi | Nháp | Nên có | `web-3d` |
+| REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
 
 ## M6 · Bot học tăng cường
 
@@ -162,7 +162,7 @@ Nguồn: `mentor-architecture-lite`
 
 ### REQ-013: Chủ tiệm xây dựng và bài trí tiệm
 
-Sau khi thuê đất, chủ tiệm vào chế độ xây dựng để đặt máy, bàn ghế và trang trí.
+Sau khi thuê đất, chủ tiệm vào chế độ xây dựng để đặt máy, bàn ghế, trang trí và chọn màu nhấn của tiệm.
 
 Nguồn: `mentor-brief`, `mentor-architecture-lite`
 
@@ -294,7 +294,7 @@ Nguồn: `mentor-followup`, `mentor-demo`
 
 ### REQ-035: Bot học tăng cường chơi game trên máy
 
-Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot. Điểm doanh thu từ bot theo REQ-038.
+Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot. Chỉ bot khách tạo điểm doanh thu, theo REQ-038.
 
 Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`
 
@@ -312,12 +312,12 @@ Nguồn: `team-decision`
 
 ### REQ-038: Bot khách cho tiệm vắng
 
-Tiệm vắng có bot khách đi lại, chọn máy và ngồi chơi như người, luôn hiện rõ là bot. Bot khách tạo điểm doanh thu có giới hạn, có trần theo ngày, chỉ áp dụng cho tiệm mới và thấp hơn nhiều so với khách thật.
+Tiệm vắng có bot khách đi lại, chọn máy và ngồi chơi như người, luôn hiện rõ là bot. Chỉ tiệm mới nhận điểm doanh thu từ bot khách, có trần theo ngày và thấp hơn nhiều so với khách thật.
 
 Nguồn: `mentor-followup`, `team-decision`
 
 ### REQ-039: Thế giới mang bối cảnh Sài Gòn cyber
 
-Thế giới 3D theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, nhân vật người và bot do nhóm tự thiết kế.
+Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này.
 
 Nguồn: `team-decision`
