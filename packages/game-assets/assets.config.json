@@ -110,7 +110,7 @@
       "source": "parts-station.blend",
       "slots": {
         "desk": {
-          "variants": ["a"],
+          "variants": ["a", "b"],
           "maxTriangles": 2200,
           "size": [1.7, 0.9, 0.8],
           "anchors": [
@@ -123,17 +123,17 @@
             "collision_main"
           ]
         },
-        "monitor": { "variants": ["a"], "maxTriangles": 1500, "size": [1.0, 0.7, 0.35] },
-        "keyboard": { "variants": ["a"], "maxTriangles": 1100, "size": [0.46, 0.06, 0.2] },
-        "mouse": { "variants": ["a"], "maxTriangles": 600, "size": [0.09, 0.06, 0.14] },
+        "monitor": { "variants": ["a", "b"], "maxTriangles": 1500, "size": [1.0, 0.7, 0.35] },
+        "keyboard": { "variants": ["a", "b"], "maxTriangles": 1100, "size": [0.46, 0.06, 0.2] },
+        "mouse": { "variants": ["a", "b"], "maxTriangles": 600, "size": [0.09, 0.06, 0.14] },
         "chair": {
-          "variants": ["a"],
+          "variants": ["a", "b"],
           "maxTriangles": 5400,
           "size": [0.75, 1.4, 0.8],
           "anchors": ["seat_anchor", "collision_main"]
         },
         "case": {
-          "variants": ["a"],
+          "variants": ["a", "b"],
           "maxTriangles": 900,
           "size": [0.32, 0.6, 0.5],
           "anchors": ["collision_main"]
