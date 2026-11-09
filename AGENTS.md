@@ -37,6 +37,7 @@ Không tự chọn thay người đang làm, không tự sửa REQ hoặc ADR đ
 - Không thêm chú thích mới. Khi sửa một hàm hoặc khai báo, xoá chú thích cũ trong đơn vị đó. Chỉ giữ chỉ dẫn cho công cụ như build tag, lint directive, migration marker, shebang.
 - Kiến thức để trong tên định danh, tên test, `docs/wiki`, ADR.
 - Tìm mã có sẵn trước khi viết mới.
+- Tài sản 3D sửa trên tệp `.blend` trong `packages/game-assets/source` rồi xuất lại, không sửa tay tệp `.glb`. Xem `docs/wiki/engineering/game-assets.md`.
 
 ## Repo public: những điều cấm
 

@@ -4,11 +4,12 @@
 
 | Công cụ        | Phiên bản | Ghi chú                       |
 | -------------- | --------- | ----------------------------- |
-| Git            | Mới nhất  |                               |
+| Git, Git LFS   | Mới nhất  | Tệp 3D lưu bằng Git LFS       |
 | Node.js        | 22.14     | Xem `.nvmrc`                  |
 | pnpm           | 11        | `npm i -g pnpm`               |
 | Docker Desktop | Mới nhất  | Để chạy hạ tầng dev           |
 | Go, Python     | Khi cần   | Chỉ khi làm game core hoặc AI |
+| Blender        | 5.2       | Chỉ khi làm tài sản 3D        |
 
 ## 2. Lấy mã và chuẩn bị
 
