@@ -24,6 +24,8 @@ Nhóm đã thử nhiều hướng trên một bản phác dựng bằng mã, đ�
 
 **Mỹ thuật môi trường**
 
+Cập nhật 2026-11-09: màu môi trường chuyển thành các bộ màu theo [ADR-0016](./ADR-0016-shop-identity-as-data.md). Các dòng dưới là một hướng cho bộ màu, không còn là chuẩn chung. Bối cảnh đường phố sẽ chốt sau.
+
 - Nhà cửa và đồ vật tối, trầm; màu đến từ ánh đèn.
 - Tỷ lệ tính theo chiều cao nhân vật.
 - Bề mặt có vết thời gian. Biển hiệu ít, nền tối, chữ dịu.
