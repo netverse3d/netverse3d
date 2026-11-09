@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { delimiter, dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -124,6 +124,59 @@ test('nhánh mới vẫn được so với điểm tách khỏi staging', () => 
   git(cwd, 'update-ref', 'refs/remotes/origin/staging', base);
   const sha = commit(cwd, 'services/identity/src/main.ts', 'feat: add login');
   assert.equal(push(cwd, sha, NO_COMMIT, answerFile(cwd, 'n')).status, 1);
+});
+
+function pushWithLfs(cwd, sha, base, drift, lfsExitCode = 0) {
+  const bin = join(cwd, '.git/fake-bin');
+  const log = join(cwd, '.git/lfs.log');
+  mkdirSync(bin, { recursive: true });
+  writeFileSync(
+    join(bin, 'git-lfs'),
+    `#!/bin/sh\necho "$@" >> '${log.replaceAll('\\', '/')}'\ncat >> '${log.replaceAll('\\', '/')}'\nexit ${lfsExitCode}\n`,
+    { mode: 0o755 },
+  );
+  const pathKey = Object.keys(process.env).find((key) => key.toUpperCase() === 'PATH');
+  const stdin = `refs/heads/feat/1-login ${sha} refs/heads/feat/1-login ${base}\n`;
+  const result = spawnSync(
+    'sh',
+    [PRE_PUSH.replaceAll('\\', '/'), 'origin', 'https://example.test/repo.git'],
+    {
+      cwd,
+      input: stdin,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        DRIFT_TTY: drift,
+        [pathKey]: `${bin}${delimiter}${process.env[pathKey]}`,
+      },
+    },
+  );
+  return { result, log };
+}
+
+test('đẩy tệp Git LFS sau khi qua kiểm tra truy vết', () => {
+  const { cwd, base } = createRepository();
+  const sha = commit(cwd, 'docs/wiki/index.md', 'docs: add wiki');
+  const { result, log } = pushWithLfs(cwd, sha, base, answerFile(cwd, 'n'));
+  assert.equal(result.status, 0, result.stderr);
+  const recorded = readFileSync(log, 'utf8');
+  assert.match(recorded, /pre-push origin https:\/\/example\.test\/repo\.git/);
+  assert.match(recorded, new RegExp(sha));
+});
+
+test('không đẩy tệp Git LFS khi người dùng huỷ push', () => {
+  const { cwd, base } = createRepository();
+  const sha = commit(cwd, 'services/identity/src/main.ts', 'feat: add login');
+  const { result, log } = pushWithLfs(cwd, sha, base, answerFile(cwd, 'n'));
+  assert.equal(result.status, 1);
+  assert.equal(existsSync(log), false);
+});
+
+test('chặn push khi đẩy tệp Git LFS thất bại', () => {
+  const { cwd, base } = createRepository();
+  const sha = commit(cwd, 'docs/wiki/index.md', 'docs: add wiki');
+  const { result } = pushWithLfs(cwd, sha, base, answerFile(cwd, 'n'), 2);
+  assert.equal(result.status, 2);
 });
 
 test('từ chối liên kết REQ không tồn tại', () => {

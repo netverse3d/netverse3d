@@ -1,22 +1,31 @@
 #!/bin/sh
 hook_dir=$(dirname "$0")
 refs=$(cat)
+
+finish_push() {
+  if [ "$#" -gt 0 ] && command -v git-lfs >/dev/null 2>&1; then
+    printf '%s\n' "$refs" | git-lfs pre-push "$@"
+    exit $?
+  fi
+  exit 0
+}
+
 printf '%s\n' "$refs" | node "$hook_dir/../scripts/drift/pre-push.mjs"
 status=$?
 
-[ "$status" -eq 0 ] && exit 0
+[ "$status" -eq 0 ] && finish_push "$@"
 [ "$status" -ne 3 ] && exit "$status"
 
 tty_device=${DRIFT_TTY:-/dev/tty}
 if ! (: <"$tty_device") 2>/dev/null; then
   echo "No terminal to confirm with. The pull request check will still require a REQ or ADR." >&2
-  exit 0
+  finish_push "$@"
 fi
 
 printf 'Is this change really outside the agreed requirements? Push anyway? [y/N] ' >&2
 read -r answer <"$tty_device"
 case "$answer" in
-  y | Y) exit 0 ;;
+  y | Y) finish_push "$@" ;;
   *)
     echo "Push cancelled. Link a requirement or record the decision, then push again." >&2
     exit 1
