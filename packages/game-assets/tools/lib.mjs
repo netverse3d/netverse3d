@@ -175,14 +175,28 @@ function isOnPaletteRow([u, v], rowCount, [firstRow, endRow]) {
   return u >= 0 && u <= 1 && onCentre && row >= firstRow && row < endRow;
 }
 
+function checkImagePrimitive(gltf, bin, node, primitive, fail) {
+  if (primitive.attributes.TEXCOORD_0 === undefined) {
+    fail(`${node.name} has no image UV`);
+    return;
+  }
+  const inside = readUvPairs(gltf, bin, primitive.attributes.TEXCOORD_0).every(
+    ([u, v]) => u >= 0 && u <= 1 && v >= 0 && v <= 1,
+  );
+  if (!inside) fail(`${node.name} has an image UV outside 0..1`);
+}
+
 function checkPalette(gltf, bin, nodes, palette, fail) {
   const surfaceRows = palette.surface.length;
   const rowCount = surfaceRows + palette.glow.length;
   const rowsOf = { surface: [0, surfaceRows], glow: [surfaceRows, rowCount] };
+  const images = new Set(palette.images ?? []);
   for (const node of nodes) {
     for (const primitive of gltf.meshes[node.mesh].primitives) {
       const material = gltf.materials[primitive.material]?.name;
-      if (rowsOf[material] === undefined) {
+      if (images.has(material)) {
+        checkImagePrimitive(gltf, bin, node, primitive, fail);
+      } else if (rowsOf[material] === undefined) {
         fail(`${node.name} uses material ${material} outside the palette`);
       } else if (primitive.attributes.TEXCOORD_0 === undefined) {
         fail(`${node.name} has no palette UV`);

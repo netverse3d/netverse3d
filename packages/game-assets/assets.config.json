@@ -102,7 +102,8 @@
   ],
   "palette": {
     "surface": ["body", "metal", "soft", "top", "floor", "wall", "ceiling", "trim"],
-    "glow": ["strip", "keycap", "screen", "accent"]
+    "glow": ["strip", "keycap", "screen", "accent"],
+    "images": ["display", "decal"]
   },
   "kits": [
     {

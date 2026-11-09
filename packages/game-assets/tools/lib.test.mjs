@@ -322,7 +322,11 @@ test('báo thiếu biến thể đã khai trong cấu hình', () => {
   assert.match(errors.join('\n'), /missing mesh: chair_b/);
 });
 
-const PALETTE = { surface: ['body', 'soft'], glow: ['strip', 'keycap'] };
+const PALETTE = {
+  surface: ['body', 'soft'],
+  glow: ['strip', 'keycap'],
+  images: ['display', 'decal'],
+};
 
 function makePaletteModel(u, v, material = 'surface') {
   const bin = Buffer.alloc(8);
@@ -376,6 +380,23 @@ test('báo bề mặt trỏ nhầm sang hàng màu phát sáng', () => {
 
 test('báo UV nằm giữa hai hàng màu', () => {
   assert.match(finishPaletteExport(makePaletteModel(0.5, 0.25)), /palette UV outside surface rows/);
+});
+
+test('màn hình và hình dán được dùng UV tự do trong ảnh', () => {
+  assert.equal(finishPaletteExport(makePaletteModel(0.13, 0.27, 'display')), '');
+});
+
+test('báo UV của ảnh vượt ra ngoài khung ảnh', () => {
+  assert.match(
+    finishPaletteExport(makePaletteModel(1.2, 0.27, 'decal')),
+    /decal has an image UV outside 0\.\.1|has an image UV outside 0\.\.1/,
+  );
+});
+
+test('báo màn hình không có UV ảnh', () => {
+  const { model, bin } = makePaletteModel(0.13, 0.27, 'display');
+  model.meshes[0].primitives[0].attributes = { POSITION: 1 };
+  assert.match(finishPaletteExport({ model, bin }), /has no image UV/);
 });
 
 test('báo UV vượt ra ngoài chiều ngang dải màu', () => {
