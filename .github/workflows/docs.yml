@@ -5,6 +5,9 @@ on:
     branches: [staging]
     paths:
       - docs/**
+      - packages/game-assets/library/**
+      - packages/game-assets/exported/**
+      - packages/game-assets/tools/**
       - .github/workflows/docs.yml
 
 permissions:
@@ -29,6 +32,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:check
       - run: pnpm --filter @netverse/docs build
+      - run: git lfs pull --include="packages/game-assets/exported/*,packages/game-assets/library/models/*"
+      - run: node packages/game-assets/tools/publish-library.mjs docs/.vitepress/dist/game-assets
       - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/.vitepress/dist
