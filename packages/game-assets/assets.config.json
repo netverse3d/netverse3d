@@ -191,7 +191,7 @@
         "ceiling": {
           "variants": ["a"],
           "maxTriangles": 400,
-          "size": [2.01, 0.2, 2.01],
+          "size": [2.01, 0.42, 2.01],
           "grid": { "size": 2, "axes": [0, 2] }
         },
         "light": { "variants": ["a"], "maxTriangles": 300, "size": [1.2, 0.14, 0.16] },

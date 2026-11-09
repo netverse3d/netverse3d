@@ -1,5 +1,5 @@
 {
-  "config": "8d6fa0db2c52e7842c514f1383e6863ce2481c9a0f04550c1824b1bc6687adce",
+  "config": "888487ed86c86a1d0f37553c906a36db0d2c951c5ec50fb5e3d10f8350181a76",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "58b6a362da4e61729197b8166770e0e4fb44a6155756dd24b7e7f8f28bf52654",
@@ -7,13 +7,13 @@
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
     "parts-station.blend": "38a00ed608dc832ee40198e8c3c396af3987132daf9126046987d1ecb2e4e714",
-    "environment-kit.blend": "e30b2b47d8e020899380ebf8bf759c170fcfaf846b6658a067a2b189511bd57e"
+    "environment-kit.blend": "3aae64587177340e19c14a826c40dffe1e85c471437b2a37fa99cc330e809686"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
     "station-parts.glb": "976822f21c14c7dec84b3c1851f131b8e5fa5aa5a79c40bc596f450425fd41d2",
-    "room-kit.glb": "19450afb50987fd2702e37eefe89170bc3c818ab61f36d71d3b6487e1a73e941"
+    "room-kit.glb": "cf0fd57f0be1d5502dbe0b64c7ee958b52140046f63170bf1dba5193f3fe0ec0"
   }
 }
