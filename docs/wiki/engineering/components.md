@@ -21,3 +21,4 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `packages/game-shared` | package | TypeScript | Kiểu và hằng số dùng chung giữa client và game server | M5 |
 | `packages/ui` | package | React | Thành phần giao diện dùng chung | M1 |
 | `packages/config` | package | TypeScript | Cấu hình dùng chung cho lint, TypeScript | M1 |
+| `packages/game-assets` | package | Blender, glTF | Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật | M1 |
