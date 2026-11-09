@@ -26,6 +26,8 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-032 | Màn hình máy cá nhân | Nháp | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Nháp | Bắt buộc | `web-3d` |
+| REQ-037 | Biểu cảm nhân vật khi chơi | Nháp | Nên có | `web-3d` |
+| REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
 
 ## M3 · Xèng và Payment
 
@@ -50,6 +52,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-015 | Duyệt tiệm và nội dung | Nháp | Nên có | `admin` |
 | REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `core-api` |
 | REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `core-api` |
+| REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
 
 ## M5 · Tích hợp game core
 
@@ -99,9 +102,9 @@ Nguồn: `mentor-brief`, `mentor-architecture-full`
 
 ### REQ-003: Tạo và chỉnh nhân vật
 
-Người chơi tạo nhân vật trước khi vào thế giới, có hồ sơ hiển thị với người khác.
+Người chơi tạo nhân vật trước khi vào thế giới, tự chọn tóc, trang phục, phụ kiện và màu từng phần trên một bộ xương chung. Tài khoản lưu công thức nhân vật, có hồ sơ hiển thị với người khác.
 
-Nguồn: `mentor-architecture-lite`, `mentor-demo`
+Nguồn: `mentor-architecture-lite`, `mentor-demo`, `team-decision`
 
 ### REQ-004: Web 3D chạy trên máy tính và điện thoại
 
@@ -261,7 +264,7 @@ Nguồn: `team-decision`
 
 ### REQ-030: Điểm doanh thu của chủ tiệm
 
-Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình và bot không tạo điểm.
+Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
 
 Nguồn: `team-decision`, `mentor-architecture-lite`
 
@@ -291,7 +294,7 @@ Nguồn: `mentor-followup`, `mentor-demo`
 
 ### REQ-035: Bot học tăng cường chơi game trên máy
 
-Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot, không tạo điểm doanh thu.
+Bot huấn luyện bằng học tăng cường trên mô phỏng headless, kiểm định độc lập rồi mới được vào tiệm. Bot ngồi máy, chơi và đấu với người, luôn hiện rõ là bot. Điểm doanh thu từ bot theo REQ-038.
 
 Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`
 
@@ -300,3 +303,21 @@ Nguồn: `mentor-followup`, `mentor-chat-npc`, `mentor-chat-arena`
 Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn, đi lại và ngồi vào máy một mình trên room server giả theo giao thức nháp. Bản giả chỉ dùng để phát triển và test, không triển khai.
 
 Nguồn: `team-decision`, `mentor-architecture-lite`
+
+### REQ-037: Biểu cảm nhân vật khi chơi
+
+Người chơi đổi được giữa tám biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
+
+Nguồn: `team-decision`
+
+### REQ-038: Bot khách cho tiệm vắng
+
+Tiệm vắng có bot khách đi lại, chọn máy và ngồi chơi như người, luôn hiện rõ là bot. Bot khách tạo điểm doanh thu có giới hạn, có trần theo ngày, chỉ áp dụng cho tiệm mới và thấp hơn nhiều so với khách thật.
+
+Nguồn: `mentor-followup`, `team-decision`
+
+### REQ-039: Thế giới mang bối cảnh Sài Gòn cyber
+
+Thế giới 3D theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, nhân vật người và bot do nhóm tự thiết kế.
+
+Nguồn: `team-decision`
