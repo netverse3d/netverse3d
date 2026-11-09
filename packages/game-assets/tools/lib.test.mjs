@@ -87,6 +87,39 @@ test('mô hình đúng hợp đồng thì không có lỗi', () => {
   assert.deepEqual(checkModel('a.glb', makeModel(), EXPECTED), []);
 });
 
+test('báo node lưới có scale chưa áp dụng', () => {
+  const nodes = [
+    { name: 'hips' },
+    { name: 'head' },
+    { name: 'body', mesh: 0, skin: 0, scale: [2, 2, 2] },
+  ];
+  assert.match(
+    checkModel('a.glb', makeModel({ nodes }), EXPECTED).join('\n'),
+    /body has an unapplied transform/,
+  );
+});
+
+test('báo node lưới có góc xoay chưa áp dụng', () => {
+  const nodes = [
+    { name: 'hips' },
+    { name: 'head' },
+    { name: 'body', mesh: 0, skin: 0, rotation: [0, 0.7, 0, 0.7] },
+  ];
+  assert.match(
+    checkModel('a.glb', makeModel({ nodes }), EXPECTED).join('\n'),
+    /body has an unapplied transform/,
+  );
+});
+
+test('xương được phép có transform riêng', () => {
+  const nodes = [
+    { name: 'hips', translation: [0, 0.7, 0], rotation: [0, 0.7, 0, 0.7] },
+    { name: 'head' },
+    { name: 'body', mesh: 0, skin: 0 },
+  ];
+  assert.deepEqual(checkModel('a.glb', makeModel({ nodes }), EXPECTED), []);
+});
+
 test('báo thiếu xương so với bộ xương chung', () => {
   const errors = checkModel('a.glb', makeModel({ skins: [{ joints: [0] }] }), EXPECTED);
   assert.match(errors.join('\n'), /missing bone: head/);

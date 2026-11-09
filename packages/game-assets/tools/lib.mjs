@@ -10,6 +10,8 @@ const LFS_POINTER =
   /^version https:\/\/git-lfs\.github\.com\/spec\/v1\noid sha256:([0-9a-f]{64})\nsize \d+\n$/;
 const NUMBERED_COPY = /\.\d{3}$/;
 const LOD_TOLERANCE = 1.02;
+const TRANSFORM_TOLERANCE = 1e-5;
+const IDENTITY_TRANSFORM = { translation: [0, 0, 0], rotation: [0, 0, 0, 1], scale: [1, 1, 1] };
 const STAMP_FILE = 'export-stamp.json';
 const CONFIG_FILE = 'assets.config.json';
 
@@ -118,11 +120,26 @@ function checkAttributes(gltf, nodes, required, fail) {
   }
 }
 
+function hasAppliedTransform(node) {
+  return Object.entries(IDENTITY_TRANSFORM).every(([key, identity]) =>
+    (node[key] ?? identity).every(
+      (value, index) => Math.abs(value - identity[index]) <= TRANSFORM_TOLERANCE,
+    ),
+  );
+}
+
+function checkTransforms(nodes, fail) {
+  for (const node of nodes) {
+    if (!hasAppliedTransform(node)) fail(`${node.name} has an unapplied transform`);
+  }
+}
+
 export function checkModel(file, gltf, expected) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
   const meshNodes = (gltf.nodes ?? []).filter((node) => node.mesh !== undefined);
   checkMeshes(gltf, meshNodes, expected, fail);
+  checkTransforms(meshNodes, fail);
   for (const material of gltf.materials ?? []) {
     if (NUMBERED_COPY.test(material.name)) fail(`duplicated material: ${material.name}`);
   }
