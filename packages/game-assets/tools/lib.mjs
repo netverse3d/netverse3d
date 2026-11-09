@@ -197,6 +197,27 @@ function checkPalette(gltf, bin, nodes, palette, fail) {
   }
 }
 
+function meshExtent(gltf, mesh) {
+  const bounds = mesh.primitives.map((primitive) => gltf.accessors[primitive.attributes.POSITION]);
+  return [0, 1, 2].map(
+    (axis) =>
+      Math.max(...bounds.map((accessor) => accessor.max[axis])) -
+      Math.min(...bounds.map((accessor) => accessor.min[axis])),
+  );
+}
+
+function checkSizes(gltf, nodes, sizes, fail) {
+  for (const node of nodes) {
+    const limit = sizes[node.name];
+    if (limit === undefined) continue;
+    const extent = meshExtent(gltf, gltf.meshes[node.mesh]);
+    if (extent.some((value, axis) => value > limit[axis])) {
+      const measured = extent.map((value) => value.toFixed(3)).join(' x ');
+      fail(`${node.name} is ${measured} m, larger than ${limit.join(' x ')}`);
+    }
+  }
+}
+
 export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -210,6 +231,7 @@ export function checkModel(file, gltf, expected, bin) {
   checkClips(gltf, expected.clips ?? [], fail);
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
+  checkSizes(gltf, meshNodes, expected.sizes ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   return errors;
 }
@@ -249,6 +271,7 @@ function kitExpectation(kit, palette) {
     file: kit.file,
     meshes: perPart((spec) => spec.maxTriangles),
     anchors: perPart((spec) => spec.anchors ?? []),
+    sizes: perPart((spec) => spec.size),
     palette,
   };
 }

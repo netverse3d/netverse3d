@@ -385,6 +385,18 @@ test('báo UV vượt ra ngoài chiều ngang dải màu', () => {
   );
 });
 
+test('món đồ nằm trong khung kích thước của ô thì đạt', () => {
+  assert.deepEqual(finishExport(makeKitRoot(makeKitModel(), { size: [0.3, 0.6, 0.3] })), []);
+});
+
+test('báo món đồ to hơn khung kích thước của ô', () => {
+  const errors = finishExport(makeKitRoot(makeKitModel(), { size: [0.1, 0.6, 0.3] }));
+  assert.match(
+    errors.join('\n'),
+    /chair_a is 0\.200 x 0\.500 x 0\.200 m, larger than 0\.1 x 0\.6 x 0\.3/,
+  );
+});
+
 test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
   const { root, config } = makeRoot();
   writeFileSync(join(root, 'source/base.blend'), 'edited');
