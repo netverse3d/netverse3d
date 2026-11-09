@@ -406,6 +406,17 @@ test('báo UV vượt ra ngoài chiều ngang dải màu', () => {
   );
 });
 
+test('module khớp lưới thì đạt', () => {
+  const grid = { size: 0.1, axes: [0, 2] };
+  assert.deepEqual(finishExport(makeKitRoot(makeKitModel(), { grid })), []);
+});
+
+test('báo module lệch lưới', () => {
+  const grid = { size: 2, axes: [0] };
+  const errors = finishExport(makeKitRoot(makeKitModel(), { grid }));
+  assert.match(errors.join('\n'), /chair_a spans 0\.200 m on axis 0, not a multiple of 2/);
+});
+
 test('món đồ nằm trong khung kích thước của ô thì đạt', () => {
   assert.deepEqual(finishExport(makeKitRoot(makeKitModel(), { size: [0.3, 0.6, 0.3] })), []);
 });

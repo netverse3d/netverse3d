@@ -149,6 +149,54 @@
           "anchors": ["collision_main"]
         }
       }
+    },
+    {
+      "file": "room-kit.glb",
+      "source": "environment-kit.blend",
+      "slots": {
+        "floor": {
+          "variants": ["a"],
+          "maxTriangles": 400,
+          "size": [2.01, 0.2, 2.01],
+          "grid": { "size": 2, "axes": [0, 2] }
+        },
+        "wall": {
+          "variants": ["a"],
+          "maxTriangles": 500,
+          "size": [2.01, 3.1, 2.01],
+          "grid": { "size": 2, "axes": [0] },
+          "anchors": ["collision_main"]
+        },
+        "corner": {
+          "variants": ["a"],
+          "maxTriangles": 1000,
+          "size": [2.01, 3.1, 2.01],
+          "grid": { "size": 2, "axes": [0, 2] },
+          "anchors": ["collision_a", "collision_b"]
+        },
+        "door": {
+          "variants": ["a"],
+          "maxTriangles": 900,
+          "size": [2.01, 3.1, 2.01],
+          "grid": { "size": 2, "axes": [0] },
+          "anchors": ["collision_left", "collision_right"]
+        },
+        "window": {
+          "variants": ["a"],
+          "maxTriangles": 800,
+          "size": [2.01, 3.1, 2.01],
+          "grid": { "size": 2, "axes": [0] },
+          "anchors": ["collision_main"]
+        },
+        "ceiling": {
+          "variants": ["a"],
+          "maxTriangles": 400,
+          "size": [2.01, 0.2, 2.01],
+          "grid": { "size": 2, "axes": [0, 2] }
+        },
+        "light": { "variants": ["a"], "maxTriangles": 300, "size": [1.2, 0.14, 0.16] },
+        "marker": { "variants": ["a"], "maxTriangles": 500, "size": [1.0, 0.08, 1.0] }
+      }
     }
   ]
 }

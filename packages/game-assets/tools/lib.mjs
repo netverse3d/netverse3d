@@ -15,6 +15,7 @@ const NUMBERED_COPY = /\.\d{3}$/;
 const LOD_TOLERANCE = 1.02;
 const ANCHOR_SEPARATOR = '__';
 const TRANSFORM_TOLERANCE = 1e-5;
+const GRID_TOLERANCE = 0.005;
 const IDENTITY_TRANSFORM = { translation: [0, 0, 0], rotation: [0, 0, 0, 1], scale: [1, 1, 1] };
 const STAMP_FILE = 'export-stamp.json';
 const CONFIG_FILE = 'assets.config.json';
@@ -232,6 +233,22 @@ function checkSizes(gltf, nodes, sizes, fail) {
   }
 }
 
+function checkGrid(gltf, nodes, grids, fail) {
+  for (const node of nodes) {
+    const grid = grids[node.name];
+    if (grid === undefined) continue;
+    const extent = meshExtent(gltf, gltf.meshes[node.mesh]);
+    for (const axis of grid.axes) {
+      const cells = extent[axis] / grid.size;
+      if (Math.abs(cells - Math.round(cells)) > GRID_TOLERANCE || Math.round(cells) === 0) {
+        fail(
+          `${node.name} spans ${extent[axis].toFixed(3)} m on axis ${axis}, not a multiple of ${grid.size}`,
+        );
+      }
+    }
+  }
+}
+
 export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -246,6 +263,7 @@ export function checkModel(file, gltf, expected, bin) {
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
   checkSizes(gltf, meshNodes, expected.sizes ?? {}, fail);
+  checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   return errors;
 }
@@ -286,6 +304,7 @@ function kitExpectation(kit, palette) {
     meshes: perPart((spec) => spec.maxTriangles),
     anchors: perPart((spec) => spec.anchors ?? []),
     sizes: perPart((spec) => spec.size),
+    grids: perPart((spec) => spec.grid),
     palette,
   };
 }
