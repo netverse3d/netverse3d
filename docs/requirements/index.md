@@ -15,7 +15,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-001 | Đăng ký và đăng nhập bằng tài khoản | Đã chốt | Bắt buộc | `identity` |
 | REQ-002 | Phân quyền theo vai trò người chơi, chủ tiệm, quản trị | Đã chốt | Bắt buộc | `identity` |
 | REQ-003 | Tạo và chỉnh nhân vật | Nháp | Bắt buộc | `web-3d` |
-| REQ-004 | Web 3D chạy trên máy tính và điện thoại | Nháp | Bắt buộc | `web-3d` |
+| REQ-004 | Web 3D chạy trên máy tính và điện thoại | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
 
 ## M2 · Lát cắt đầu
@@ -23,11 +23,11 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-006 | Lưu trữ và phân phối asset 3D | Nháp | Bắt buộc | `media` |
-| REQ-032 | Màn hình máy cá nhân | Nháp | Bắt buộc | `web-3d` |
+| REQ-032 | Màn hình máy cá nhân | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
-| REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Nháp | Bắt buộc | `web-3d` |
+| REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
-| REQ-040 | Mỗi tiệm có bản sắc riêng | Nháp | Bắt buộc | `game-assets` |
+| REQ-040 | Mỗi tiệm có bản sắc riêng | Đã chốt | Bắt buộc | `game-assets` |
 
 ## M3 · Xèng và Payment
 

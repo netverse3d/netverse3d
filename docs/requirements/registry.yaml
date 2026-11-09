@@ -26,7 +26,7 @@ requirements:
   - id: REQ-004
     title: Web 3D chạy trên máy tính và điện thoại
     description: Giao diện 3D dùng được trên trình duyệt máy tính và trên điện thoại dạng PWA, có điều khiển phím và cần ảo.
-    status: draft
+    status: accepted
     priority: must
     milestone: M1
     area: web-3d
@@ -250,7 +250,7 @@ requirements:
   - id: REQ-032
     title: Màn hình máy cá nhân
     description: Ngồi vào máy thì mở lớp màn hình 2D gồm game của Netverse, trình duyệt nhúng theo danh sách cho phép và video nhúng. Người khác thấy ảnh xem trước trên màn hình 3D của máy đó.
-    status: draft
+    status: accepted
     priority: must
     milestone: M2
     area: web-3d
@@ -282,7 +282,7 @@ requirements:
   - id: REQ-036
     title: Vào tiệm dựng sẵn và ngồi máy với room server giả
     description: Trong lúc chờ core của mentor, người chơi vào một tiệm dựng sẵn bằng tài khoản khách, đi lại, thuê miễn phí và ngồi vào máy một mình trên room server giả theo giao thức nháp. Trừ Xèng được nối ở M3. Bản giả chỉ dùng để phát triển và test, không triển khai.
-    status: draft
+    status: accepted
     priority: must
     milestone: M2
     area: web-3d
@@ -314,7 +314,7 @@ requirements:
   - id: REQ-040
     title: Mỗi tiệm có bản sắc riêng
     description: Một con phố có nhiều tiệm và mỗi tiệm trông khác nhau. Hình dáng và màu của đồ đạc, gồm cả gradient nhiều màu như bàn phím, cùng bố cục, biển hiệu và kiểu đèn được lưu thành công thức của tiệm. Các tiệm dùng chung một bộ mô hình.
-    status: draft
+    status: accepted
     priority: must
     milestone: M2
     area: game-assets
