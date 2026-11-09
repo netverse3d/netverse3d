@@ -20,6 +20,7 @@
     "catalog:check": "node scripts/catalog/check.mjs",
     "assets:export": "pnpm --filter @netverse/game-assets run export",
     "assets:check": "pnpm --filter @netverse/game-assets run check",
+    "assets:library": "pnpm --filter @netverse/game-assets run library",
     "bootstrap": "node scripts/bootstrap.mjs",
     "infra:up": "node scripts/infra/compose.mjs up",
     "infra:down": "node scripts/infra/compose.mjs down",
