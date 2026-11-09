@@ -17,6 +17,7 @@ export function resolveRequestPath(root, requestUrl) {
   } catch {
     return null;
   }
+  if (pathname.includes('\\')) return null;
   const target = resolve(root, `.${pathname}`);
   const inside = relative(root, target);
   if (inside.startsWith('..') || isAbsolute(inside)) return null;
