@@ -289,7 +289,7 @@ requirements:
     sources: [team-decision, mentor-architecture-lite]
   - id: REQ-037
     title: Biểu cảm nhân vật khi chơi
-    description: Người chơi đổi được giữa tám biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
+    description: Người chơi đổi được giữa mười hai biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
     status: draft
     priority: should
     milestone: M5

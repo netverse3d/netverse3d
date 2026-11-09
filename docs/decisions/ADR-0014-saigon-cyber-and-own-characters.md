@@ -35,7 +35,7 @@ Nhóm đã thử nhiều hướng trên một bản phác dựng bằng mã, đ�
 - Dáng chibi, chất liệu toon ba bậc.
 - Một thân gốc, một bộ xương chung. Tóc, áo, quần, giày, phụ kiện là các món rời; từng phần đổi được màu.
 - Tài khoản chỉ lưu công thức nhân vật: mã từng món và màu.
-- Tám biểu cảm đổi được khi chơi. Biểu cảm là trạng thái lúc chơi, không nằm trong công thức.
+- Mười hai biểu cảm đổi được khi chơi, tăng từ tám theo [ADR-0015](./ADR-0015-blender-sources-as-master.md). Biểu cảm là trạng thái lúc chơi, không nằm trong công thức.
 
 **Bot**
 

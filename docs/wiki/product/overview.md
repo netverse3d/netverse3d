@@ -9,7 +9,7 @@ Theo [ADR-0014](../../decisions/ADR-0014-saigon-cyber-and-own-characters.md), đ
 - Thể loại nghiêng về tycoon mở tiệm net. Trọng tâm là cả game lẫn ứng dụng AI.
 - Khách trong tiệm có thể là người thật hoặc bot, nên tiệm vẫn có sức sống khi vắng người. Chiếc máy trong tiệm là cửa vào web, game và các trận đấu với bot.
 - Thế giới là hẻm, nhà ống, biển hiệu tiếng Việt của Sài Gòn dưới ánh đèn đêm. Đồ vật tối và trầm, màu đến từ ánh đèn.
-- Nhân vật người là chibi do nhóm tự thiết kế, tự chọn đồ và màu từng phần, có tám biểu cảm khi chơi.
+- Nhân vật người là chibi do nhóm tự thiết kế, tự chọn đồ và màu từng phần, có mười hai biểu cảm khi chơi.
 - Bot là một dòng robot cùng dáng với người chơi, nhận ra qua mặt kính đen và mắt LED.
 
 ## Người dùng

@@ -306,7 +306,7 @@ Nguồn: `team-decision`, `mentor-architecture-lite`
 
 ### REQ-037: Biểu cảm nhân vật khi chơi
 
-Người chơi đổi được giữa tám biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
+Người chơi đổi được giữa mười hai biểu cảm khi đang chơi và người xung quanh nhìn thấy. Biểu cảm là trạng thái lúc chơi, không lưu trong công thức nhân vật.
 
 Nguồn: `team-decision`
 
