@@ -1,9 +1,10 @@
-import { copyFileSync, cpSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
-import { isLfsPointer } from './lib.mjs';
+import { hasGlbHeader, loadConfig, outputFiles } from './lib.mjs';
 
 const SERVED_FOLDERS = new Set(['library', 'exported']);
 const MODEL_FOLDERS = ['exported', 'library/models'];
+const PILOT_MODELS = ['library/models/bot-d1.glb', 'library/models/human-hoodie.glb'];
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.glb': 'model/gltf-binary',
@@ -37,13 +38,21 @@ export function listLibraryModels(root) {
   return MODEL_FOLDERS.flatMap((folder) => listModels(root, folder));
 }
 
-export function findPointers(root) {
-  return listLibraryModels(root).filter((file) => isLfsPointer(readFileSync(join(root, file))));
+function requiredModels(root) {
+  const exported = outputFiles(loadConfig(root)).map((file) => `exported/${file}`);
+  return [...exported, ...PILOT_MODELS];
+}
+
+export function findUnusableModels(root) {
+  return requiredModels(root).filter((file) => {
+    const path = join(root, file);
+    return !existsSync(path) || !hasGlbHeader(readFileSync(path));
+  });
 }
 
 export function copyLibrary(root, target) {
-  const pointers = findPointers(root);
-  if (pointers.length > 0) return pointers;
+  const unusable = findUnusableModels(root);
+  if (unusable.length > 0) return unusable;
   mkdirSync(join(target, 'exported'), { recursive: true });
   cpSync(join(root, 'library'), join(target, 'library'), { recursive: true });
   for (const file of listModels(root, 'exported')) {

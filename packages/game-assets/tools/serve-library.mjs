@@ -1,8 +1,9 @@
 import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, resolve } from 'node:path';
+import { pipeline } from 'node:stream';
 import { fileURLToPath } from 'node:url';
-import { contentTypeOf, findPointers, resolveRequestPath } from './library-files.mjs';
+import { contentTypeOf, findUnusableModels, resolveRequestPath } from './library-files.mjs';
 
 const DEFAULT_PORT = 4173;
 const HOST = '127.0.0.1';
@@ -10,9 +11,9 @@ const LIBRARY_ROUTE = '/library/';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT ?? DEFAULT_PORT);
 
-const pointers = findPointers(root);
-if (pointers.length > 0) {
-  console.error(`These models are not downloaded yet: ${pointers.join(', ')}`);
+const unusable = findUnusableModels(root);
+if (unusable.length > 0) {
+  console.error(`These models are missing or not downloaded: ${unusable.join(', ')}`);
   console.error('Run git lfs pull, then try again.');
   process.exit(1);
 }
@@ -37,7 +38,16 @@ const server = createServer((request, response) => {
     return;
   }
   response.writeHead(200, { 'Content-Type': contentTypeOf(file) });
-  createReadStream(file).pipe(response);
+  pipeline(createReadStream(file), response, (error) => {
+    if (error && error.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+      console.error(`Could not send ${file}: ${error.message}`);
+    }
+  });
+});
+
+server.on('error', (error) => {
+  console.error(`Could not start the 3D library: ${error.message}. Set PORT to use another port.`);
+  process.exit(1);
 });
 
 server.listen(port, HOST, () => {

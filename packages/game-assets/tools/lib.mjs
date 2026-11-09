@@ -30,6 +30,10 @@ export function contentId(buffer) {
   return matchPointer(buffer)?.[1] ?? createHash('sha256').update(buffer).digest('hex');
 }
 
+export function hasGlbHeader(buffer) {
+  return buffer.length >= 4 && buffer.readUInt32LE(0) === GLB_MAGIC;
+}
+
 export function readGlb(buffer) {
   if (buffer.length < GLB_HEADER_SIZE || buffer.readUInt32LE(0) !== GLB_MAGIC) {
     throw new Error('not a GLB file');

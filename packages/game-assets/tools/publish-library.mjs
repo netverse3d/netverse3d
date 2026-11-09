@@ -10,9 +10,9 @@ if (!target) {
   process.exit(1);
 }
 
-const pointers = copyLibrary(root, resolve(target));
-if (pointers.length > 0) {
-  console.error(`Fetch these Git LFS files first: ${pointers.join(', ')}`);
+const unusable = copyLibrary(root, resolve(target));
+if (unusable.length > 0) {
+  console.error(`These models are missing or not downloaded: ${unusable.join(', ')}`);
   process.exit(1);
 }
 console.log(`Published the 3D library to ${target}.`);

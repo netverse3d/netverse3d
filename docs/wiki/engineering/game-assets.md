@@ -4,9 +4,9 @@ Nhân vật và đồ vật nằm ở `packages/game-assets`. Lý do chọn các
 
 ## Xem những gì đã có
 
-[Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) cho xem nhân vật với 24 hành động, 12 biểu cảm, bản có và không phụ kiện, con hẻm Sài Gòn, bộ sưu tập các hướng đã thử và tiệm mẫu. Xem tại máy bằng `pnpm assets:library`, rồi mở `http://localhost:4173/library/`.
+[Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) cho xem nhân vật với 24 hành động, 12 biểu cảm, bản có và không phụ kiện, con hẻm Sài Gòn, bộ sưu tập các hướng đã thử và tiệm mẫu. Xem tại máy bằng `pnpm assets:library`, rồi mở `http://localhost:4173/library/`. Máy cần có mạng vì trang tải three.js và phông chữ từ CDN.
 
-Tab Hành động dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab khác còn là bản phác dựng bằng mã để chốt hướng, chưa phải tài sản chính thức. Thư viện chỉ để xem; game thật sẽ viết trong `apps/web-3d`.
+Tab Hành động dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab khác là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức. Thư viện chỉ để xem; game thật sẽ viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc
 
