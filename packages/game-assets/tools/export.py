@@ -9,6 +9,7 @@ EXPORT_DIR = os.path.join(ROOT, 'exported')
 with open(os.path.join(ROOT, 'assets.config.json'), encoding='utf-8') as handle:
     CONFIG = json.load(handle)
 
+NODE_BASE_PROPERTIES = {item.identifier for item in bpy.types.Node.bl_rna.properties}
 GLTF_OPTIONS = {
     'export_format': 'GLB',
     'use_selection': True,
@@ -66,19 +67,40 @@ def remove_extra_rigs(rig):
             bpy.data.objects.remove(ob)
 
 
-def socket_value(socket):
-    value = getattr(socket, 'default_value', None)
+def comparable(value):
     if isinstance(value, float):
         return round(value, 4)
-    if hasattr(value, '__len__') and not isinstance(value, str):
-        return tuple(round(item, 4) for item in value)
-    return value
+    if value is None or isinstance(value, (bool, int, str)):
+        return value
+    if isinstance(value, bpy.types.ID):
+        return value.name.rpartition('.')[0] if value.name.rpartition('.')[2].isdigit() else value.name
+    if hasattr(value, '__len__'):
+        return tuple(comparable(item) for item in value)
+    return type(value).__name__
+
+
+def node_settings(node):
+    return [
+        (item.identifier, comparable(getattr(node, item.identifier)))
+        for item in node.bl_rna.properties
+        if item.identifier not in NODE_BASE_PROPERTIES and item.type != 'COLLECTION'
+    ]
+
+
+def unlinked_inputs(node):
+    return [
+        (socket.name, comparable(getattr(socket, 'default_value', None)))
+        for socket in node.inputs
+        if not socket.is_linked
+    ]
 
 
 def material_signature(material):
-    nodes = sorted(material.node_tree.nodes, key=lambda node: node.name) if material.use_nodes else []
-    sockets = [(node.bl_idname, socket.name, socket_value(socket)) for node in nodes for socket in node.inputs]
-    return tuple(round(item, 4) for item in material.diffuse_color), sockets
+    tree = material.node_tree
+    nodes = sorted(tree.nodes, key=lambda node: node.name) if tree else []
+    links = sorted((l.from_node.name, l.from_socket.name, l.to_node.name, l.to_socket.name) for l in tree.links) if tree else []
+    described = [(node.name, node.bl_idname, node_settings(node), unlinked_inputs(node)) for node in nodes]
+    return comparable(material.diffuse_color), described, links
 
 
 def merge_duplicate_materials(meshes):

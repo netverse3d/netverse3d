@@ -219,6 +219,24 @@ test('không ghi dấu xuất khi mô hình sai hợp đồng', () => {
   assert.match(checkStamp(root, config).join('\n'), /player\.glb does not match/);
 });
 
+test('báo cấu hình đã đổi sau lần xuất cuối', () => {
+  const { root, config } = makeRoot();
+  config.character.meshes.body.maxTriangles = 50;
+  writeFileSync(join(root, 'assets.config.json'), JSON.stringify(config));
+  assert.match(
+    checkStamp(root, config).join('\n'),
+    /assets\.config\.json changed since the last export/,
+  );
+});
+
+test('lệnh xuất dừng khi có tệp gốc chưa khai', () => {
+  const { root } = makeRoot();
+  const before = readFileSync(stampPath(root), 'utf8');
+  writeFileSync(join(root, 'source/extra.blend'), 'extra');
+  assert.match(finishExport(root).join('\n'), /extra\.blend is not declared/);
+  assert.equal(readFileSync(stampPath(root), 'utf8'), before);
+});
+
 test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
   const { root, config } = makeRoot();
   writeFileSync(join(root, 'source/base.blend'), 'edited');

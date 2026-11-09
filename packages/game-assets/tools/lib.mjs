@@ -11,9 +11,10 @@ const LFS_POINTER =
 const NUMBERED_COPY = /\.\d{3}$/;
 const LOD_TOLERANCE = 1.02;
 const STAMP_FILE = 'export-stamp.json';
+const CONFIG_FILE = 'assets.config.json';
 
 export function loadConfig(root) {
-  return JSON.parse(readFileSync(join(root, 'assets.config.json'), 'utf8'));
+  return JSON.parse(readFileSync(join(root, CONFIG_FILE), 'utf8'));
 }
 
 function matchPointer(buffer) {
@@ -173,8 +174,13 @@ function hashFiles(folder, files) {
   );
 }
 
+function configHash(root) {
+  return contentId(readFileSync(join(root, CONFIG_FILE)));
+}
+
 export function buildStamp(root, config) {
   return {
+    config: configHash(root),
     sources: hashFiles(join(root, 'source'), sourceFiles(config)),
     exported: hashFiles(join(root, 'exported'), outputFiles(config)),
   };
@@ -200,15 +206,19 @@ export function stampPath(root) {
   return join(root, 'exported', STAMP_FILE);
 }
 
+function listUndeclared(root, config) {
+  const declared = new Set(sourceFiles(config));
+  return readdirSync(join(root, 'source'))
+    .filter((file) => file.endsWith('.blend') && !declared.has(file))
+    .map((file) => `${file} is not declared in ${CONFIG_FILE}`);
+}
+
 export function checkStamp(root, config) {
   if (!existsSync(stampPath(root))) return [`${STAMP_FILE} is missing: run the export`];
   const stamp = JSON.parse(readFileSync(stampPath(root), 'utf8'));
-  const declared = new Set(sourceFiles(config));
-  const undeclared = readdirSync(join(root, 'source'))
-    .filter((file) => file.endsWith('.blend') && !declared.has(file))
-    .map((file) => `${file} is not declared in assets.config.json`);
   return [
-    ...undeclared,
+    ...listUndeclared(root, config),
+    ...(stamp.config === configHash(root) ? [] : [`${CONFIG_FILE} changed since the last export`]),
     ...listUnstamped(sourceFiles(config), stamp.sources),
     ...listUnstamped(outputFiles(config), stamp.exported),
     ...compareHashes(
@@ -249,7 +259,7 @@ export function checkAssets(root, { requireContent = false } = {}) {
 
 export function finishExport(root) {
   const config = loadConfig(root);
-  const { errors } = checkContent(root, config, true);
+  const errors = [...listUndeclared(root, config), ...checkContent(root, config, true).errors];
   if (errors.length === 0) {
     writeFileSync(stampPath(root), `${JSON.stringify(buildStamp(root, config), null, 2)}\n`);
   }
