@@ -4,12 +4,12 @@ Tệp Blender gốc, mô hình glTF xuất ra và bộ kiểm của nhân vật,
 
 - Stack: Blender 5.2, glTF, Node.js cho bộ kiểm
 - Milestone: M1
-- Trạng thái: đã có phần base của nhân vật và bàn máy
+- Trạng thái: đã có nhân vật, bộ ô đồ bàn máy mười món và bộ module phòng
 
 ```
 source/              tệp .blend, là bản gốc, lưu bằng Git LFS
 exported/            tệp .glb do lệnh xuất tạo ra, không sửa tay
-assets.config.json   hợp đồng: xương, clip, mesh, ngân sách tam giác
+assets.config.json   hợp đồng: xương, clip, mesh, ô đồ, điểm neo, bộ màu, ngân sách tam giác
 library/             trang xem trực quan các thiết kế đã có
 tools/               lệnh xuất, bộ kiểm, máy chủ xem thư viện
 ```
