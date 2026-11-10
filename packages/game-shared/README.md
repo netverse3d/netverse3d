@@ -4,7 +4,7 @@ Package dùng chung: luật chơi chạy giống nhau ở client và game server
 
 - Stack: TypeScript, build ra ES module chạy trên Node và trình duyệt
 - Milestone: M2
-- Trạng thái: có di chuyển và va chạm, nhịp mô phỏng cố định, giao diện kết nối phòng
+- Trạng thái: có di chuyển và va chạm, hộp va chạm lấy từ mô hình, nhịp mô phỏng cố định, giao diện kết nối phòng
 
 ## Di chuyển và va chạm
 
@@ -23,6 +23,18 @@ Người chơi là hình tròn bán kính `PLAYER_RADIUS`.
 - `seconds` lớn hơn `MAX_STEP_SECONDS` bị cắt về trần đó. `seconds` hoặc `intent` không phải số hữu hạn thì người chơi đứng yên.
 - Đang lấn vào hộp, ví dụ vừa xuất hiện, thì được đẩy ra qua cạnh gần nhất.
 - Vòng qua góc hộp có thể đi dài hơn quãng của một bước vài phần trăm.
+
+## Hộp va chạm của tiệm
+
+`collisionBoxes(placements, anchors)` đổi các điểm neo `collision_*` trong tệp mô hình thành danh sách hộp cho `stepPlayer`. Client và server gọi cùng hàm này nên hai bên chặn người chơi ở cùng một chỗ.
+
+- `placements` là danh sách món đã đặt, mỗi món `{ part, position, yaw }` với `position` là `[x, y, z]`. Đây là hình dạng món đặt mà `shopPlan` của `game-assets` trả về; có nhiều danh sách thì nối lại rồi đưa vào.
+- `anchors` là kết quả `kitAnchors` của từng tệp mô hình gộp lại: theo tên món, rồi theo tên điểm neo, mỗi điểm neo có `position` là tâm hộp tính từ gốc món và `scale` là nửa kích thước hộp.
+- Món xoay 90 độ thì hộp đổi chiều rộng và chiều sâu. Món xoay lệch góc vuông cho hộp song song trục bao quanh hộp đã xoay, nên chặn rộng hơn hình thật một chút.
+- Độ cao bị bỏ qua: mọi hộp đều chặn từ sàn lên.
+- Món không có điểm neo va chạm, hoặc không có tên trong `anchors`, thì không sinh hộp và không báo lỗi. Gộp thiếu một tệp mô hình vì thế cho ra tường đi xuyên được; nơi gọi phải gộp đủ.
+- Số đo không hữu hạn hoặc nửa kích thước không dương thì ném `TypeError` kèm tên món.
+- Cạnh hộp được làm tròn tới phần triệu mét. Với món đặt theo góc vuông, mọi máy ra cùng một số; góc lệch thì có thể chênh một phần triệu mét giữa các máy.
 
 ## Nhịp mô phỏng cố định
 
