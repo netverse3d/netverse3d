@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { checkRecipes, loadConfig } from './lib.mjs';
 
@@ -38,17 +38,64 @@ const RECIPE = {
   lighting: 'neon',
 };
 
-function rootWith(recipe, file = `${recipe.id}.json`) {
+const roots = [];
+after(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
+
+function rootWithText(text, file) {
   const root = mkdtempSync(join(tmpdir(), 'recipes-'));
+  roots.push(root);
   mkdirSync(join(root, 'recipes'));
-  writeFileSync(join(root, 'recipes', file), JSON.stringify(recipe));
+  writeFileSync(join(root, 'recipes', file), text);
   return root;
+}
+
+function rootWith(recipe, file = `${recipe.id}.json`) {
+  return rootWithText(JSON.stringify(recipe), file);
 }
 
 function errorsOf(overrides, file) {
   const recipe = { ...RECIPE, ...overrides };
   return checkRecipes(rootWith(recipe, file), CONFIG).join('\n');
 }
+
+test('tệp công thức không phải JSON được báo gọn thay vì sập', () => {
+  const errors = checkRecipes(rootWithText('{oops', 'hong.json'), CONFIG).join('\n');
+  assert.match(errors, /hong\.json: invalid JSON/);
+});
+
+test('tệp công thức chỉ chứa null bị từ chối theo hợp đồng', () => {
+  const errors = checkRecipes(rootWithText('null', 'null.json'), CONFIG).join('\n');
+  assert.match(errors, /null\.json: \/ must be object/);
+});
+
+test('dải phát sáng chỉ dành cho hàng bề mặt', () => {
+  assert.equal(errorsOf({ emissive: { body: ['#201030'] } }), '');
+  assert.match(
+    errorsOf({ emissive: { strip: ['#201030'] } }),
+    /tim-neon: emissive row strip is not a surface row/,
+  );
+});
+
+test('công thức không có cửa bị từ chối', () => {
+  const layout = { cells: RECIPE.layout.cells, stations: RECIPE.layout.stations };
+  assert.match(errorsOf({ layout }), /tim-neon: \/layout must have required property 'door'/);
+});
+
+test('cửa và cửa sổ trùng chỗ bị từ chối', () => {
+  const windows = [{ wall: 'south', at: 1 }];
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, windows } }),
+    /tim-neon: two openings share south 1/,
+  );
+});
+
+test('máy đặt ngay ô trước cửa bị từ chối', () => {
+  const stations = [...RECIPE.layout.stations, { cell: [1, 1], facing: 'north' }];
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, stations } }),
+    /tim-neon: station at 1,1 blocks the door/,
+  );
+});
 
 test('công thức đúng hợp đồng thì đạt', () => {
   assert.equal(errorsOf({}), '');

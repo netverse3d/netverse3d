@@ -41,13 +41,18 @@
       "items": { "$ref": "#/$defs/color" }
     },
     "cell": {
+      "description": "Ô sàn [x, z]: x đếm từ tường west (0) sang east, z đếm từ tường north (0) xuống south.",
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
       "items": { "type": "integer", "minimum": 0 }
     },
-    "wall": { "enum": ["north", "south", "east", "west"] },
+    "wall": {
+      "description": "north là cạnh z = 0, south là cạnh z = sâu − 1, west là cạnh x = 0, east là cạnh x = rộng − 1.",
+      "enum": ["north", "south", "east", "west"]
+    },
     "opening": {
+      "description": "Một ô mở trên tường; at là chỉ số ô dọc theo tường đó, tính như x cho north và south, như z cho east và west.",
       "type": "object",
       "required": ["wall", "at"],
       "additionalProperties": false,
@@ -58,10 +63,11 @@
     },
     "layout": {
       "type": "object",
-      "required": ["cells", "stations"],
+      "required": ["cells", "stations", "door"],
       "additionalProperties": false,
       "properties": {
         "cells": {
+          "description": "Kích thước phòng [rộng, sâu] tính bằng ô 2 m.",
           "type": "array",
           "minItems": 2,
           "maxItems": 2,
@@ -76,12 +82,18 @@
             "additionalProperties": false,
             "properties": {
               "cell": { "$ref": "#/$defs/cell" },
-              "facing": { "$ref": "#/$defs/wall" }
+              "facing": {
+                "description": "Hướng người ngồi nhìn; màn hình nằm ở phía đó của ô.",
+                "$ref": "#/$defs/wall"
+              }
             }
           }
         },
-        "door": { "$ref": "#/$defs/opening" },
-        "windows": { "type": "array", "items": { "$ref": "#/$defs/opening" } }
+        "door": {
+          "description": "Lối vào duy nhất; ô sàn ngay trong cửa phải để trống.",
+          "$ref": "#/$defs/opening"
+        },
+        "windows": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/opening" } }
       }
     }
   }
