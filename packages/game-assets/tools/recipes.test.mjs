@@ -42,13 +42,30 @@ const RECIPE = {
 const roots = [];
 after(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
 
-function rootWithText(text, file) {
+function rootWithText(text, file, index = [file.replace(/\.json$/, '')]) {
   const root = mkdtempSync(join(tmpdir(), 'recipes-'));
   roots.push(root);
   mkdirSync(join(root, 'recipes'));
   writeFileSync(join(root, 'recipes', file), text);
+  if (index) writeFileSync(join(root, 'recipes', 'index.json'), JSON.stringify(index));
   return root;
 }
+
+test('danh mục công thức phải có và liệt kê đúng các tệp', () => {
+  const text = JSON.stringify(RECIPE);
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', null), CONFIG).join('\n'),
+    /recipes\/index\.json is missing/,
+  );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', ['khac']), CONFIG).join('\n'),
+    /index\.json lists khac but recipes\/khac\.json does not exist/,
+  );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', []), CONFIG).join('\n'),
+    /tim-neon is not listed in recipes\/index\.json/,
+  );
+});
 
 function rootWith(recipe, file = `${recipe.id}.json`) {
   return rootWithText(JSON.stringify(recipe), file);
@@ -170,7 +187,9 @@ test('ba tiệm mẫu đúng hợp đồng công thức', () => {
 
 test('ba tiệm mẫu khác hẳn nhau về bộ màu', () => {
   const folder = join(REAL_ROOT, 'recipes');
-  const recipes = readdirSync(folder).map((file) => JSON.parse(readFileSync(join(folder, file))));
+  const recipes = readdirSync(folder)
+    .filter((file) => file !== 'index.json')
+    .map((file) => JSON.parse(readFileSync(join(folder, file))));
   assert.equal(recipes.length, 3);
   for (const [index, first] of recipes.entries()) {
     for (const second of recipes.slice(index + 1)) {

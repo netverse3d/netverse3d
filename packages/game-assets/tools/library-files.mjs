@@ -8,6 +8,7 @@ const PILOT_MODELS = ['library/models/bot-d1.glb', 'library/models/human-hoodie.
 const RUNTIME_FOLDER = 'runtime';
 const RECIPE_FOLDER = 'recipes';
 const TEST_SUFFIX = '.test.mjs';
+const CONFIG_FILE = 'assets.config.json';
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.glb': 'model/gltf-binary',
@@ -26,7 +27,7 @@ export function resolveRequestPath(root, requestUrl) {
   const target = resolve(root, `.${pathname}`);
   const inside = relative(root, target);
   if (inside.startsWith('..') || isAbsolute(inside)) return null;
-  if (!SERVED_FOLDERS.has(inside.split(sep)[0])) return null;
+  if (inside !== CONFIG_FILE && !SERVED_FOLDERS.has(inside.split(sep)[0])) return null;
   return inside === 'library' ? join(target, 'index.html') : target;
 }
 
@@ -69,5 +70,6 @@ export function copyLibrary(root, target) {
     filter: (source) => !source.endsWith(TEST_SUFFIX),
   });
   cpSync(join(root, RECIPE_FOLDER), join(target, RECIPE_FOLDER), { recursive: true });
+  copyFileSync(join(root, CONFIG_FILE), join(target, CONFIG_FILE));
   return [];
 }

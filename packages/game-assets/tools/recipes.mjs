@@ -4,6 +4,7 @@ import { basename, join } from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 
 const RECIPE_FOLDER = 'recipes';
+const INDEX_FILE = 'index.json';
 const RECIPE_SCHEMA = createRequire(import.meta.url).resolve(
   '@netverse/contracts/world/shop-look.v1.schema.json',
 );
@@ -90,13 +91,35 @@ export function listRecipes(root) {
   const folder = join(root, RECIPE_FOLDER);
   if (!existsSync(folder)) return [];
   return readdirSync(folder)
-    .filter((name) => name.endsWith('.json'))
+    .filter((name) => name.endsWith('.json') && name !== INDEX_FILE)
     .map((name) => join(folder, name));
 }
 
+function checkIndex(root, files) {
+  const label = `${RECIPE_FOLDER}/${INDEX_FILE}`;
+  const path = join(root, RECIPE_FOLDER, INDEX_FILE);
+  if (!existsSync(path)) return [`${label} is missing`];
+  let listed;
+  try {
+    listed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return [`${label}: invalid JSON`];
+  }
+  if (!Array.isArray(listed)) return [`${label} must be an array of recipe ids`];
+  const ids = files.map((path) => basename(path, '.json'));
+  return [
+    ...listed
+      .filter((id) => !ids.includes(id))
+      .map((id) => `${INDEX_FILE} lists ${id} but ${RECIPE_FOLDER}/${id}.json does not exist`),
+    ...ids.filter((id) => !listed.includes(id)).map((id) => `${id} is not listed in ${label}`),
+  ];
+}
+
 export function checkRecipes(root, config) {
-  const errors = [];
-  for (const path of listRecipes(root)) {
+  const files = listRecipes(root);
+  if (!existsSync(join(root, RECIPE_FOLDER))) return [];
+  const errors = checkIndex(root, files);
+  for (const path of files) {
     const file = basename(path);
     let recipe;
     try {

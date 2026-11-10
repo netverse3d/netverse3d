@@ -3,6 +3,12 @@ const CELL_SIZE = 2;
 const STATION_SLOTS = ['monitor', 'keyboard', 'mouse', 'mat', 'headset', 'mic', 'chair', 'case'];
 const SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
+const CORNER_YAW = {
+  'south+west': 0,
+  'east+south': Math.PI / 2,
+  'east+north': Math.PI,
+  'north+west': -Math.PI / 2,
+};
 const ANCHOR_SEPARATOR = '__';
 const PRECISION = 1e4;
 
@@ -110,6 +116,44 @@ export function shopPlan(recipe, anchors) {
       };
     });
   });
+}
+
+export function roomPlan(recipe) {
+  const { cells, door, windows = [] } = recipe.layout;
+  const [width, depth] = cells;
+  const openings = new Map([
+    [`${door.wall} ${door.at}`, 'door'],
+    ...windows.map((opening) => [`${opening.wall} ${opening.at}`, 'window']),
+  ]);
+  const place = (slot, x, z, yaw) => ({
+    slot,
+    part: `${slot}_${recipe.variants[slot]}`,
+    position: [snap((x - (width - 1) / 2) * CELL_SIZE), 0, snap((z - (depth - 1) / 2) * CELL_SIZE)],
+    yaw,
+  });
+  const plan = [];
+  for (let z = 0; z < depth; z += 1) {
+    for (let x = 0; x < width; x += 1) {
+      plan.push(place('floor', x, z, 0), place('ceiling', x, z, 0));
+      const edges = [
+        ...(z === 0 ? [['north', x]] : []),
+        ...(z === depth - 1 ? [['south', x]] : []),
+        ...(x === 0 ? [['west', z]] : []),
+        ...(x === width - 1 ? [['east', z]] : []),
+      ].map(([wall, at]) => ({ wall, slot: openings.get(`${wall} ${at}`) ?? 'wall' }));
+      const corner = edges.length === 2 && edges.every((edge) => edge.slot === 'wall');
+      if (corner) {
+        const key = edges
+          .map((edge) => edge.wall)
+          .sort()
+          .join('+');
+        plan.push(place('corner', x, z, CORNER_YAW[key]));
+      } else {
+        for (const edge of edges) plan.push(place(edge.slot, x, z, YAW[edge.wall]));
+      }
+    }
+  }
+  return plan;
 }
 
 export function instanceGroups(plan) {

@@ -15,6 +15,7 @@ const REAL_MODEL = 'glTF real model';
 const CONFIG = {
   character: { file: 'player.glb', lodFile: 'player-lod.glb', meshes: {} },
   props: [],
+  kits: [{ file: 'station-parts.glb', source: 'parts.blend', slots: {} }],
 };
 
 function makeRoot(glb = REAL_MODEL) {
@@ -31,6 +32,7 @@ function makeRoot(glb = REAL_MODEL) {
   writeFileSync(join(root, 'library/models/human-hoodie.glb'), REAL_MODEL);
   writeFileSync(join(root, 'exported/player.glb'), glb);
   writeFileSync(join(root, 'exported/player-lod.glb'), REAL_MODEL);
+  writeFileSync(join(root, 'exported/station-parts.glb'), REAL_MODEL);
   writeFileSync(join(root, 'exported/export-stamp.json'), '{}');
   writeFileSync(join(root, 'source/base.blend'), 'blend');
   return root;
@@ -56,6 +58,12 @@ test('phục vụ mã chạy và công thức tiệm cho trang thư viện', () 
     resolveRequestPath(root, '/recipes/tim-neon.json'),
     join(root, 'recipes/tim-neon.json'),
   );
+});
+
+test('phục vụ hợp đồng assets.config.json nhưng không phục vụ tệp gốc khác', () => {
+  const root = makeRoot();
+  assert.equal(resolveRequestPath(root, '/assets.config.json'), join(root, 'assets.config.json'));
+  assert.equal(resolveRequestPath(root, '/package.json'), null);
 });
 
 test('khai kiểu nội dung cho mã và JSON', () => {
@@ -106,6 +114,12 @@ test('tìm ra mô hình bắt buộc bị thiếu', () => {
   ]);
 });
 
+test('tìm ra tệp bộ ô đồ bị thiếu', () => {
+  const root = makeRoot();
+  rmSync(join(root, 'exported/station-parts.glb'));
+  assert.deepEqual(findUnusableModels(root), ['exported/station-parts.glb']);
+});
+
 test('sao chép trang và mô hình, không kèm tệp gốc', () => {
   const root = makeRoot();
   const target = join(root, 'out');
@@ -118,6 +132,7 @@ test('sao chép trang và mô hình, không kèm tệp gốc', () => {
   assert.equal(existsSync(join(target, 'runtime/shop-look.mjs')), true);
   assert.equal(existsSync(join(target, 'runtime/shop-look.test.mjs')), false);
   assert.equal(existsSync(join(target, 'recipes/tim-neon.json')), true);
+  assert.equal(existsSync(join(target, 'assets.config.json')), true);
 });
 
 test('từ chối xuất bản khi mô hình mới là con trỏ LFS', () => {
