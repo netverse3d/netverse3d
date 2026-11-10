@@ -15,7 +15,14 @@ Package dùng chung: luật chơi chạy giống nhau ở client và game server
 - `obstacles` là danh sách hộp `{ minX, maxX, minZ, maxZ }` song song với trục.
 - Hàm trả về trạng thái mới và không sửa trạng thái cũ.
 
-Người chơi là hình tròn bán kính `PLAYER_RADIUS`. Chạm tường thì trượt dọc tường. Bước thời gian dài được chia nhỏ nên không đi xuyên tường mỏng.
+Người chơi là hình tròn bán kính `PLAYER_RADIUS`.
+
+- Chạm tường thì trượt dọc tường, kể cả khi tường ghép từ nhiều hộp kề nhau.
+- Khe hẹp hơn thân người thì không lọt qua.
+- Quãng đi được chia thành các sải ngắn nên không xuyên tường mỏng.
+- `seconds` lớn hơn `MAX_STEP_SECONDS` bị cắt về trần đó. `seconds` hoặc `intent` không phải số hữu hạn thì người chơi đứng yên.
+- Đang lấn vào hộp, ví dụ vừa xuất hiện, thì được đẩy ra qua cạnh gần nhất.
+- Vòng qua góc hộp có thể đi dài hơn quãng của một bước vài phần trăm.
 
 ## Chạy test
 
