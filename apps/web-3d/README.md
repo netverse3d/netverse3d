@@ -32,7 +32,9 @@ Tham số trên URL: `?shop=<id>` chọn tiệm mẫu, `?quality=low|medium|high
 
 - Hướng đi tính theo hướng camera đang nhìn: tiến là đi ra xa camera.
 - Nhân vật bị chặn bởi hộp va chạm của tường, bàn, ghế, thùng máy lấy từ mô hình. Mép ngoài của tiệm cũng bị chặn, nên chưa đi ra khỏi cửa được cho tới khi có phố.
-- Camera mặc định là góc rộng từ trên cao. Camera được phép lùi ra ngoài phòng: tường và trần nằm giữa camera và lòng phòng tự cắt đi nên không che nhân vật. Lăn chuột để lại gần hoặc lùi xa. Camera chưa tránh bàn ghế.
+- Camera mặc định nhìn chéo từ góc phòng, trên cao, bằng ống kính hẹp. Lăn chuột phóng liền mạch từ toàn cảnh xuống sát sau vai nhân vật; càng gần ống kính càng mở rộng.
+- Camera ra ngoài phòng thì tường và trần nằm giữa camera và lòng phòng tự cắt đi. Bàn, ghế, thùng máy chắn đường nhìn thì camera tự dừng trước món đó.
+- Bóng trên bề mặt lấy từ lightmap xám nung sẵn trong từng bộ mô hình, nhân với bảng màu của tiệm.
 - Cần ảo chưa có hình vẽ trên màn hình.
 
 ## Cấu trúc

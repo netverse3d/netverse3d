@@ -4,13 +4,19 @@ import { test } from 'node:test';
 import {
   CEILING_CUT_HEIGHT,
   DEFAULT_ORBIT,
+  FAR_FIELD_OF_VIEW,
   LOOK_HEIGHT,
   MAX_DISTANCE,
   MAX_PITCH,
   MIN_DISTANCE,
   MIN_PITCH,
+  NEAR_FIELD_OF_VIEW,
+  FURNITURE_HEIGHT,
+  MIN_CAMERA_REACH,
   cameraPose,
+  clearEye,
   cutaways,
+  fieldOfView,
   turnOrbit,
   zoomOrbit,
 } from './follow-camera.ts';
@@ -184,10 +190,67 @@ test('số đo kéo hoặc lăn hỏng thì giữ nguyên góc nhìn', () => {
   assert.deepEqual(zoomOrbit(DEFAULT_ORBIT, Number.NaN), DEFAULT_ORBIT);
 });
 
-test('camera hạ thấp và lại gần hết cỡ vẫn cao hơn trần, nên không bao giờ chui vào giữa bàn ghế', () => {
-  const lowest = zoomOrbit(turnOrbit(DEFAULT_ORBIT, 0, -100000), -1000);
-  for (const yaw of [0, 1, 2.5, -2]) {
-    const pose = cameraPose({ x: 0, z: 0 }, { ...lowest, yaw });
-    assert.ok(pose.eye[1] > CEILING_CUT_HEIGHT + 1.5, `yaw ${yaw}: eye at ${pose.eye[1]}`);
+test('lăn chuột vào hết cỡ thì camera xuống sát sau vai nhân vật', () => {
+  const nearest = zoomOrbit(turnOrbit(DEFAULT_ORBIT, 0, -100000), -1000);
+  const pose = cameraPose({ x: 0, z: 0 }, nearest);
+  assert.ok(span(pose) < 2, `camera is ${span(pose)} away`);
+  assert.ok(pose.eye[1] < FURNITURE_HEIGHT, `eye at ${pose.eye[1]}`);
+});
+
+const DESK = { minX: -0.8, maxX: 0.8, minZ: -3, maxZ: -2.3 };
+
+test('không có đồ nào chắn thì camera giữ nguyên chỗ', () => {
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: Math.PI, pitch: 0.3, distance: 5 });
+  assert.deepEqual(clearEye(pose, [DESK]), pose.eye);
+  assert.deepEqual(clearEye(pose, []), pose.eye);
+});
+
+test('bàn nằm giữa camera và nhân vật thì camera dừng trước bàn, vẫn trên đường nhìn cũ', () => {
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.15, distance: 6 });
+  const eye = clearEye(pose, [DESK]);
+  assert.ok(eye[2] > DESK.maxZ, `eye z ${eye[2]}`);
+  assert.ok(eye[2] < -1.5, `eye z ${eye[2]}`);
+  const ratio = eye[2] / pose.eye[2];
+  close(eye[0], pose.eye[0] * ratio, 'x');
+  close(eye[1] - LOOK_HEIGHT, (pose.eye[1] - LOOK_HEIGHT) * ratio, 'y');
+});
+
+test('camera nhìn từ trên cao qua nóc bàn ghế thì không bị kéo lại', () => {
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.9, distance: 8 });
+  assert.deepEqual(clearEye(pose, [DESK]), pose.eye);
+});
+
+test('đồ nằm xa hơn camera hoặc lệch khỏi đường nhìn thì không tính', () => {
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.15, distance: 1.9 });
+  assert.deepEqual(clearEye(pose, [DESK]), pose.eye);
+  const aside = { minX: 2, maxX: 3, minZ: -3, maxZ: -2 };
+  const far = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.15, distance: 6 });
+  assert.deepEqual(clearEye(far, [aside]), far.eye);
+});
+
+test('nhiều món chắn thì camera dừng trước món gần nhân vật nhất', () => {
+  const near = { minX: -0.5, maxX: 0.5, minZ: -2, maxZ: -1.6 };
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.15, distance: 6 });
+  const eye = clearEye(pose, [DESK, near]);
+  assert.ok(eye[2] > near.maxZ, `eye z ${eye[2]}`);
+});
+
+test('đồ chắn sát lưng nhân vật thì camera vẫn giữ một quãng tối thiểu, không chui vào người', () => {
+  const chair = { minX: -0.4, maxX: 0.4, minZ: -0.75, maxZ: -0.35 };
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.15, distance: 6 });
+  const eye = clearEye(pose, [chair]);
+  const away = Math.sqrt(eye[0] ** 2 + (eye[1] - LOOK_HEIGHT) ** 2 + eye[2] ** 2);
+  close(away, MIN_CAMERA_REACH, 'distance');
+});
+
+test('nhìn toàn cảnh dùng ống kính hẹp, lại gần thì ống kính mở rộng dần', () => {
+  assert.equal(fieldOfView(DEFAULT_ORBIT.distance), FAR_FIELD_OF_VIEW);
+  assert.equal(fieldOfView(MAX_DISTANCE), FAR_FIELD_OF_VIEW);
+  assert.equal(fieldOfView(MIN_DISTANCE), NEAR_FIELD_OF_VIEW);
+  let last = fieldOfView(MIN_DISTANCE);
+  for (let distance = MIN_DISTANCE + 0.5; distance <= 12; distance += 0.5) {
+    const next = fieldOfView(distance);
+    assert.ok(next <= last && last - next < 2, `at ${distance}: ${last} to ${next}`);
+    last = next;
   }
 });

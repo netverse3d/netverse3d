@@ -87,8 +87,14 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
     THREE: typeof import('three'),
     recipe: ShopRecipe,
     rows: string[],
-    options?: { roughness?: number; glowBoost?: number },
+    options?: {
+      roughness?: number;
+      glowBoost?: number;
+      lightmap?: Texture | null;
+      lightmapIntensity?: number;
+    },
   ): ShopMaterials;
+  export function kitLightmap(kitScene: Object3D): Texture | null;
   export function buildShop(
     THREE: typeof import('three'),
     kitScene: Object3D,
