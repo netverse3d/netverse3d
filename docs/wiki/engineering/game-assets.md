@@ -29,6 +29,16 @@ Tab Hành động dùng đúng mô hình trong `exported/`, nên xuất xong t�
 
 Đối tượng tên `guide_...` là khung dây để canh khoảng cách. Chúng không được xuất ra.
 
+Có hai loại tệp gốc (ADR-0018). Nhân vật, clip, tóc, phụ kiện và `props-station.blend` dựng tay trong Blender nên `.blend` là gốc. Bộ ô đồ bàn máy, module phòng và cảnh tiệm giới thiệu sinh từ script Python chạy trong Blender, nằm ở `packages/game-assets/pipeline/`; với chúng, script là gốc, còn `.blend` là kết quả trung gian được commit để lệnh xuất và Git LFS làm việc như cũ, không sửa tay. Tệp nào sinh từ script thì khai `generator` ngay cạnh `source` trong `assets.config.json`; tệp không có `generator` là dựng tay.
+
+| Tệp gốc                   | Script                          | Thư viện dùng chung                                                                                                 |
+| ------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `parts-station.blend`     | `pipeline/make_station_hero.py` | `hero_kit.py` (HeroPart, loft, cage, bake), `hero_station.py`, `hero_desks.py`, `hero_chair.py`, `hero_mic_boom.py` |
+| `environment-kit.blend`   | `pipeline/make_room_kit.py`     | `hero_kit.py`                                                                                                       |
+| `showcase-tim-neon.blend` | `pipeline/make_showcase.py`     | `pipeline/showcase_plan.mjs` sinh `showcase-plan.json` từ công thức và điểm neo của hai bộ đã xuất                  |
+
+`pnpm assets:generate` chạy mọi generator theo thứ tự trong config; thêm tên tệp gốc để chạy một cái, ví dụ `pnpm assets:generate environment-kit`. Lệnh ghi `.blend` vào `source/`, sau đó vẫn phải `pnpm assets:export`. Script trong `pipeline/` không được chứa đường dẫn tuyệt đối tới máy ai (có test chặn), không mang ảnh hay mô hình tham chiếu của bên khác vào repo, và theo cùng luật không chú thích như mã khác. `pipeline/render_part.py` render một món từ tệp `.blend` ra bốn góc để nghiệm thu ngoài trình duyệt.
+
 ## Bộ ô đồ và bộ màu
 
 Để mỗi tiệm có bản sắc riêng (REQ-040), bàn máy và phòng không còn là một khối. Chúng ghép từ các món rời khai trong `kits` của `assets.config.json`, và mọi món đổi màu qua một bộ màu chung thay vì mang màu riêng.
@@ -112,7 +122,7 @@ git lfs lock packages/game-assets/source/hair-default.blend
 ```
 
 1. Tách nhánh từ `staging` theo issue, rồi khoá tệp như trên. Tệp đang bị người khác khoá thì chờ hoặc trao đổi với họ.
-2. Mở tệp, sửa, lưu. Giữ nguyên tên đối tượng và tên xương. Apply mọi modifier trừ Armature, vì lệnh xuất từ chối modifier chưa apply.
+2. Mở tệp, sửa, lưu. Giữ nguyên tên đối tượng và tên xương. Apply mọi modifier trừ Armature, vì lệnh xuất từ chối modifier chưa apply. Tệp có `generator` thì không mở sửa tay: sửa script trong `pipeline/` rồi chạy `pnpm assets:generate <tên tệp gốc>`.
 3. Chạy `pnpm assets:export`. Lệnh ghép các tệp gốc, xuất `.glb`, tạo bản nhẹ rồi tự kiểm.
 4. Chạy `pnpm assets:library` và xem động tác đã sửa để nhìn tận mắt.
 5. Commit cả tệp `.blend`, tệp `.glb` và `export-stamp.json` rồi mở PR như mọi việc khác.

@@ -128,6 +128,7 @@
     {
       "file": "station-parts.glb",
       "source": "parts-station.blend",
+      "generator": "pipeline/make_station_hero.py",
       "lightmap": true,
       "slots": {
         "desk": {
@@ -201,6 +202,7 @@
     {
       "file": "room-kit.glb",
       "source": "environment-kit.blend",
+      "generator": "pipeline/make_room_kit.py",
       "lightmap": true,
       "slots": {
         "floor": {
@@ -278,6 +280,7 @@
     {
       "id": "showcase-tim-neon",
       "source": "showcase-tim-neon.blend",
+      "generator": "pipeline/make_showcase.py",
       "file": "showcase-tim-neon.glb",
       "recipe": "tim-neon",
       "images": {

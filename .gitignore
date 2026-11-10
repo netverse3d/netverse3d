@@ -37,3 +37,4 @@ docs/.vitepress/cache/
 !.vscode/settings.json
 .DS_Store
 Thumbs.db
+packages/game-assets/pipeline/showcase-plan.json
