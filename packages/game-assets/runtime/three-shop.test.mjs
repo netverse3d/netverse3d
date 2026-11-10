@@ -65,7 +65,13 @@ test('ảnh dải màu thành texture sRGB không lật', () => {
 
 test('vật liệu tiệm có đủ bốn tên của bộ ô đồ', () => {
   const materials = shopMaterials(THREE, RECIPE, ROWS);
-  assert.deepEqual(Object.keys(materials).sort(), ['decal', 'display', 'glow', 'legend', 'surface']);
+  assert.deepEqual(Object.keys(materials).sort(), [
+    'decal',
+    'display',
+    'glow',
+    'legend',
+    'surface',
+  ]);
   assert.equal(materials.surface.map, materials.glow.map);
   assert.ok(materials.surface.emissiveMap);
 });
