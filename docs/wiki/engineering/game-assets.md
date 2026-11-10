@@ -79,6 +79,12 @@ Ba biến thể bàn phím đều là bố cục ANSI Mỹ chuẩn, sinh từ d�
 
 Chữ trên phím không nằm trong mô hình: mặt trên keycap dùng hàng ảnh `legend`, UV trỏ vào một atlas là ảnh nhìn từ trên xuống của từng bàn phím, các bàn xếp chồng thành dải (`atlas` trong `keyboards.json`). Lúc chạy, `runtime/keyboard-legends.mjs` vẽ atlas bằng Canvas2D theo công thức đang chọn: nền phím lấy dải màu hàng `keycap` theo vị trí ngang, chữ chọn sáng hay tối theo độ chói của nền, phím có Shift ghi hai dòng; đổi công thức là vẽ lại. Vật liệu `legend` của `shopMaterials` nhận ảnh đó qua tuỳ chọn `legends` và vẫn nhân lightmap. Mã `code` của từng phím là chỗ nối cho luồng gõ phím về sau, vì một `KeyboardEvent` thật tra được thẳng phím nào trên bàn.
 
+### Chuột và tai nghe
+
+Chuột (`pipeline/hero_mouse.py`) là một khối subdivision liền: mười hai vòng tiết diện chữ D (đáy phẳng, mép đáy bo, vòm trên là cung siêu elip) xếp dọc thân với vòng đầu và đuôi thu nhỏ để subsurf khép thành mũi tròn, nên không có nếp gãy ở chỗ vỏ gặp dải sáng như bản cũ; dải sáng là mấy cột mặt ở mép đáy của cùng khối. Nút trái phải là hai mảnh vỏ mỏng nổi 1,2 mm trên thân, bánh xe và nút bên đặt bằng cùng hàm tiết diện nên luôn nằm trên mặt vỏ. Ba mẫu lấy từ kiểu dáng thật: `a` công thái học tay phải (gờ ngón cái, đệm cao su hai bên, hai nút bên), `b` đối xứng tối giản không nút rời, `c` văn phòng vòm cao có bánh xe ngón cái và bánh xe kim loại; đổi mẫu là đổi bảng số đo, không vẽ lại.
+
+Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu là loft tiết diện chữ nhật bo góc dọc cung tròn, đệm vành là dải thứ hai bên trong, củ tai là revolve hai mươi cạnh với đệm bo tròn và lưng củ có vòng điểm nhấn, càng kim loại nối vành với trục củ. Ba mẫu: `a` gaming có mic cần và đế phát sáng, `b` studio củ to lưng kim loại, `c` on-ear nhỏ vành mỏng.
+
 ### Module phòng
 
 Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép. Trụ ốp ở hai mép module chỉ chạy từ mép trên dải chân tường tới mép dưới dải đèn, vì trụ cao hết tường có mặt trên trùng phẳng với dải băng trần và nhấp nháy khi nhìn từ trên xuống.

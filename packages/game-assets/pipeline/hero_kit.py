@@ -279,6 +279,13 @@ class HeroPart:
         if face.normal.dot(axis * side) < 0:
             bmesh.ops.reverse_faces(self.bm, faces=[face])
 
+    def oriented_poly(self, points, outward, row):
+        face = self.bm.faces.new([self.bm.verts.new(p) for p in points])
+        self._tag([face], row)
+        face.normal_update()
+        if face.normal.dot(Vector(outward)) < 0:
+            bmesh.ops.reverse_faces(self.bm, faces=[face])
+
     def pillow(self, center, size, row, puff=0.25, levels=2, top_row=None, grid=3):
         cx, cy, cz = center
         sx, sy, sz = size[0] / 2, size[1] / 2, size[2] / 2
