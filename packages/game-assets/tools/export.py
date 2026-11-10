@@ -35,13 +35,14 @@ def reject_unapplied_modifiers(ob, filename):
         raise SystemExit('{} in {} has unapplied modifiers: {}'.format(ob.name, filename, ', '.join(unapplied)))
 
 
-def append_objects(filename, names):
+def append_objects(filename, names=None):
     path = os.path.join(SOURCE_DIR, filename)
     with bpy.data.libraries.load(path, link=False) as (source, target):
-        missing = [name for name in names if name not in source.objects]
+        wanted = list(source.objects) if names is None else list(names)
+        missing = [name for name in wanted if name not in source.objects]
         if missing:
             raise SystemExit('{} is missing objects: {}'.format(filename, ', '.join(missing)))
-        target.objects = list(names)
+        target.objects = wanted
     for ob in target.objects:
         reject_unapplied_modifiers(ob, filename)
         bpy.context.scene.collection.objects.link(ob)
@@ -193,7 +194,22 @@ def export_prop(prop):
     print('EXPORTED', prop['file'], triangles(ob))
 
 
+def export_kit(kit):
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    objects = append_objects(kit['source'])
+    bpy.context.view_layer.update()
+    select_only(objects, objects[0])
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(EXPORT_DIR, kit['file']),
+        export_animations=False,
+        **GLTF_OPTIONS,
+    )
+    print('EXPORTED', kit['file'], sum(triangles(ob) for ob in objects if ob.type == 'MESH'))
+
+
 require_blender_version()
 export_character()
 for item in CONFIG['props']:
     export_prop(item)
+for item in CONFIG.get('kits', []):
+    export_kit(item)
