@@ -38,8 +38,8 @@
   "layout": {
     "cells": [3, 3],
     "stations": [
-      { "cell": [0, 0], "facing": "south" },
-      { "cell": [1, 0], "facing": "south" },
+      { "cell": [0, 0], "facing": "north" },
+      { "cell": [1, 0], "facing": "north" },
       { "cell": [0, 1], "facing": "south" },
       { "cell": [1, 1], "facing": "south" }
     ],

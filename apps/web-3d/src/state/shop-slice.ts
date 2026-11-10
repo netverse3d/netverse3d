@@ -35,6 +35,7 @@ export interface ShopState {
   scene: SceneState;
   recipes: RecipeOption[];
   error: string | null;
+  nearbySeat: string | null;
 }
 
 export const DEFAULT_RECIPE = 'tim-neon';
@@ -54,6 +55,7 @@ export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
     },
     recipes: [],
     error: null,
+    nearbySeat: null,
   };
 }
 
@@ -73,6 +75,13 @@ export const shopSlice = createSlice({
     errorRaised(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
+    nearbySeatChanged(state, action: PayloadAction<string | null>) {
+      state.nearbySeat = action.payload;
+    },
+    seatRequested: {
+      reducer() {},
+      prepare: (seatId: string) => ({ payload: seatId }),
+    },
     recipeRequested: {
       reducer() {},
       prepare: (id: string) => ({ payload: id }),
@@ -89,6 +98,8 @@ export const {
   sceneChanged,
   recipesLoaded,
   errorRaised,
+  nearbySeatChanged,
+  seatRequested,
   recipeRequested,
   qualityRequested,
 } = shopSlice.actions;

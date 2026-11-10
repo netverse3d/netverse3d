@@ -4,9 +4,11 @@ import {
   errorRaised,
   initialShopState,
   isQualityLevel,
+  nearbySeatChanged,
   qualityRequested,
   recipeRequested,
   sceneChanged,
+  seatRequested,
   statsReported,
 } from './shop-slice.ts';
 import { createAppStore } from './store.ts';
@@ -49,4 +51,30 @@ test('lỗi được giữ lại để giao diện hiện', () => {
   assert.equal(store.getState().shop.error, 'player.glb: HTTP 404');
   assert.equal(initialShopState('bien-sau').scene.recipeId, 'bien-sau');
   assert.equal(isQualityLevel('ultra'), false);
+});
+
+test('máy trong tầm với được ghi vào kho và gỡ đi khi người chơi rời xa', () => {
+  const { store } = createAppStore();
+  assert.equal(store.getState().shop.nearbySeat, null);
+  store.dispatch(nearbySeatChanged('seat-3'));
+  assert.equal(store.getState().shop.nearbySeat, 'seat-3');
+  store.dispatch(nearbySeatChanged(null));
+  assert.equal(store.getState().shop.nearbySeat, null);
+});
+
+test('lệnh xin ngồi máy không đổi kho, lớp game nhận qua listener', () => {
+  const { store, listener } = createAppStore();
+  const asked: string[] = [];
+  const stop = listener.startListening({
+    actionCreator: seatRequested,
+    effect: (action) => {
+      asked.push(action.payload);
+    },
+  });
+  store.dispatch(nearbySeatChanged('seat-2'));
+  const before = store.getState().shop;
+  store.dispatch(seatRequested('seat-2'));
+  assert.equal(store.getState().shop, before);
+  assert.deepEqual(asked, ['seat-2']);
+  stop();
 });

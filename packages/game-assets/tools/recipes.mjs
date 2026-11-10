@@ -10,6 +10,7 @@ const RECIPE_SCHEMA = createRequire(import.meta.url).resolve(
   '@netverse/contracts/world/shop-look.v1.schema.json',
 );
 const WALL_AXIS = { north: 0, south: 0, east: 1, west: 1 };
+const CHAIR_SIDE = { north: 'south', south: 'north', east: 'west', west: 'east' };
 
 let validateRecipe;
 
@@ -62,7 +63,7 @@ function checkRecipeLayout(recipe, label) {
   const [width, depth] = cells;
   const taken = new Set();
   const doorway = doorwayCell(door, cells).join(',');
-  for (const { cell } of stations) {
+  for (const { cell, facing } of stations) {
     const [x, z] = cell;
     const key = cell.join(',');
     if (x >= width || z >= depth) {
@@ -70,6 +71,11 @@ function checkRecipeLayout(recipe, label) {
     }
     if (taken.has(key)) errors.push(`${label}: two stations share cell ${key}`);
     if (key === doorway) errors.push(`${label}: station at ${key} blocks the door`);
+    const walls = { north: z === 0, south: z === depth - 1, west: x === 0, east: x === width - 1 };
+    const chairSide = CHAIR_SIDE[facing];
+    if (walls[chairSide]) {
+      errors.push(`${label}: station at ${key} has its chair against the ${chairSide} wall`);
+    }
     taken.add(key);
   }
   const placed = new Set();

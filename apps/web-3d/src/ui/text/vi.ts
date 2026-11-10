@@ -16,6 +16,11 @@ export const vi = {
     medium: 'vừa',
     high: 'cao',
   },
+  seat: {
+    key: 'E',
+    prompt: 'Nhấn E để ngồi vào máy',
+    sit: 'Ngồi vào máy',
+  },
   status: {
     loading: 'Đang tải tiệm…',
     ready: 'Sẵn sàng',

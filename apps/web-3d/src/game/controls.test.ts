@@ -275,3 +275,28 @@ test('lăn chuột trên cảnh cộng dồn thành số nấc phóng, lấy ra 
   surface.dispatchEvent(Object.assign(new Event('wheel', { cancelable: true }), { deltaY: 100 }));
   assert.equal(controls.takeZoom(), 0);
 });
+
+test('nhấn E một lần là một lần dùng, giữ phím không lặp lại, lấy ra rồi thì hết', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  assert.equal(controls.takeUse(), false);
+  const press = key('keydown', 'KeyE');
+  keys.dispatchEvent(press);
+  assert.equal(press.defaultPrevented, true);
+  assert.equal(controls.takeUse(), true);
+  assert.equal(controls.takeUse(), false);
+  keys.dispatchEvent(Object.assign(key('keydown', 'KeyE'), { repeat: true }));
+  assert.equal(controls.takeUse(), false);
+  assert.deepEqual(controls.intent(), STILL);
+});
+
+test('E lúc đang gõ trong ô nhập, kèm Ctrl, hoặc sau khi gỡ điều khiển thì không tính là dùng', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  keys.dispatchEvent(key('keydown', 'KeyE', { tagName: 'INPUT' }));
+  keys.dispatchEvent(Object.assign(key('keydown', 'KeyE'), { ctrlKey: true }));
+  assert.equal(controls.takeUse(), false);
+  keys.dispatchEvent(key('keydown', 'KeyE'));
+  controls.dispose();
+  assert.equal(controls.takeUse(), false);
+});

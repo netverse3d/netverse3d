@@ -38,11 +38,11 @@
   "layout": {
     "cells": [3, 4],
     "stations": [
-      { "cell": [0, 0], "facing": "east" },
-      { "cell": [0, 1], "facing": "east" },
-      { "cell": [0, 2], "facing": "east" },
-      { "cell": [2, 0], "facing": "west" },
-      { "cell": [2, 1], "facing": "west" }
+      { "cell": [0, 0], "facing": "west" },
+      { "cell": [0, 1], "facing": "west" },
+      { "cell": [0, 2], "facing": "west" },
+      { "cell": [2, 0], "facing": "east" },
+      { "cell": [2, 1], "facing": "east" }
     ],
     "door": { "wall": "east", "at": 2 },
     "windows": [{ "wall": "south", "at": 1 }]
