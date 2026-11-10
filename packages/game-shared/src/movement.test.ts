@@ -1,9 +1,19 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { MAX_STEP_SECONDS, PLAYER_RADIUS, RUN_SPEED, WALK_SPEED, stepPlayer } from './movement.mjs';
+import {
+  MAX_STEP_SECONDS,
+  PLAYER_RADIUS,
+  RUN_SPEED,
+  WALK_SPEED,
+  stepPlayer,
+  type FloorBox,
+  type FloorPoint,
+  type MoveIntent,
+  type PlayerState,
+} from './movement.ts';
 
 const TOLERANCE = 1e-6;
-const START = { x: 0, z: 0, yaw: 0 };
+const START: PlayerState = { x: 0, z: 0, yaw: 0 };
 const WALL_EAST = { minX: 2, maxX: 2.2, minZ: -10, maxZ: 10 };
 const WALL_SOUTH = { minX: -10, maxX: 10, minZ: 2, maxZ: 2.2 };
 const WALL_NEAR_SEGMENT = { minX: 2, maxX: 3, minZ: -50, maxZ: 1 };
@@ -11,31 +21,37 @@ const WALL_FAR_SEGMENT = { minX: 2, maxX: 3, minZ: 1, maxZ: 80 };
 const WALL_WHOLE = { minX: 2, maxX: 3, minZ: -50, maxZ: 80 };
 const TICK_RATES = [20, 30, 60];
 
-function near(actual, expected, tolerance = TOLERANCE) {
+function near(actual: number, expected: number, tolerance = TOLERANCE): void {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} is not ${expected}`);
 }
 
-function walk(player, intent, obstacles, seconds, ticks) {
+function walk(
+  player: PlayerState,
+  intent: MoveIntent,
+  obstacles: readonly FloorBox[],
+  seconds: number,
+  ticks: number,
+): PlayerState {
   let current = player;
   for (let tick = 0; tick < ticks; tick += 1)
     current = stepPlayer(current, intent, obstacles, seconds);
   return current;
 }
 
-function gapTo(player, box) {
+function gapTo(player: FloorPoint, box: FloorBox): number {
   const nearestX = Math.min(Math.max(player.x, box.minX), box.maxX);
   const nearestZ = Math.min(Math.max(player.z, box.minZ), box.maxZ);
   return Math.hypot(player.x - nearestX, player.z - nearestZ);
 }
 
-function corridor(width) {
+function corridor(width: number): FloorBox[] {
   return [
     { minX: 2, maxX: 6, minZ: width / 2, maxZ: 5 },
     { minX: 2, maxX: 6, minZ: -5, maxZ: -width / 2 },
   ];
 }
 
-function seededRandom(seed) {
+function seededRandom(seed: number): () => number {
   let state = seed;
   return () => {
     state = (state + 0x6d2b79f5) | 0;
@@ -45,8 +61,8 @@ function seededRandom(seed) {
   };
 }
 
-function randomBoxes(random, count) {
-  const boxes = [];
+function randomBoxes(random: () => number, count: number): FloorBox[] {
+  const boxes: FloorBox[] = [];
   while (boxes.length < count) {
     const minX = random() * 16 - 8;
     const minZ = random() * 16 - 8;
@@ -190,9 +206,9 @@ test('đi lung tung giữa nhiều hộp không bao giờ lấn vào hộp và k
   const random = seededRandom(115);
   for (let map = 0; map < 200; map += 1) {
     const boxes = randomBoxes(random, 12);
-    const seconds = 1 / TICK_RATES[map % TICK_RATES.length];
+    const seconds = 1 / (TICK_RATES[map % TICK_RATES.length] ?? 30);
     let current = START;
-    let intent = { x: 0, z: 0, run: false };
+    let intent: MoveIntent = { x: 0, z: 0, run: false };
     for (let tick = 0; tick < 300; tick += 1) {
       if (tick % 20 === 0)
         intent = { x: random() * 2 - 1, z: random() * 2 - 1, run: random() < 0.5 };
@@ -233,11 +249,16 @@ test('bước thời gian quá dài bị cắt về trần và trả lời ngay'
 
 test('đầu vào không phải số hữu hạn thì đứng yên, không sinh NaN', () => {
   const facing = { x: 3, z: 4, yaw: 1.25 };
-  for (const intent of [{ x: NaN, z: 0 }, { x: Infinity, z: 0 }, { x: 1, z: -Infinity }, {}]) {
+  for (const intent of [
+    { x: NaN, z: 0 },
+    { x: Infinity, z: 0 },
+    { x: 1, z: -Infinity },
+    {} as MoveIntent,
+  ]) {
     assert.deepEqual(stepPlayer(facing, intent, [], 0.1), facing);
   }
   assert.deepEqual(stepPlayer(facing, { x: 1, z: 0 }, [], NaN), facing);
-  assert.deepEqual(stepPlayer(facing, { x: 1, z: 0 }, [], undefined), facing);
+  assert.deepEqual(stepPlayer(facing, { x: 1, z: 0 }, [], undefined as unknown as number), facing);
 });
 
 test('hộp có toạ độ hỏng bị bỏ qua thay vì làm hỏng vị trí', () => {

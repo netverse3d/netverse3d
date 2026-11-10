@@ -2,7 +2,7 @@
 
 Package dùng chung: luật chơi chạy giống nhau ở client và game server, không phụ thuộc Three.js hay trình duyệt.
 
-- Stack: JavaScript (ES module), chạy trên Node và trình duyệt
+- Stack: TypeScript, build ra ES module chạy trên Node và trình duyệt
 - Milestone: M2
 - Trạng thái: có di chuyển và va chạm trên mặt sàn
 
@@ -28,6 +28,8 @@ Người chơi là hình tròn bán kính `PLAYER_RADIUS`.
 
 ```
 pnpm --filter @netverse/game-shared test
+pnpm --filter @netverse/game-shared lint
+pnpm --filter @netverse/game-shared build
 ```
 
 Trước khi thêm mã vào đây, đọc [chuẩn thành phần](../../docs/wiki/engineering/component-standard.md).

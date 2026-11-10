@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default [
   {
@@ -27,4 +28,5 @@ export default [
       globals: globals.node,
     },
   },
+  ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.ts'] })),
 ];

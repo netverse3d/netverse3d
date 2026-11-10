@@ -5,9 +5,18 @@
   "license": "UNLICENSED",
   "type": "module",
   "exports": {
-    "./movement": "./src/movement.mjs"
+    "./movement": {
+      "types": "./dist/movement.d.ts",
+      "default": "./dist/movement.js"
+    }
   },
   "scripts": {
-    "test": "node --test \"src/**/*.test.mjs\""
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "tsc -p tsconfig.json",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"src/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "~6.0.3"
   }
 }
