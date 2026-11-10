@@ -44,6 +44,7 @@ export default withMermaid(
             { text: 'Kiến trúc', link: '/wiki/engineering/architecture' },
             { text: 'Danh sách thành phần', link: '/wiki/engineering/components' },
             { text: 'Chuẩn thành phần', link: '/wiki/engineering/component-standard' },
+            { text: 'Client game', link: '/wiki/engineering/web-client' },
             { text: 'Tài sản 3D', link: '/wiki/engineering/game-assets' },
             {
               text: 'Thư viện 3D',
