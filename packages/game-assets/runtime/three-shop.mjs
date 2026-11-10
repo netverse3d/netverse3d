@@ -44,8 +44,7 @@ export function shopMaterials(
     emissiveMap: emissive,
     emissive: new THREE.Color('#ffffff'),
     emissiveIntensity: 1,
-    aoMap: lightmap ?? undefined,
-    aoMapIntensity: lightmapIntensity,
+    ...(lightmap ? { aoMap: lightmap, aoMapIntensity: lightmapIntensity } : {}),
   });
   if (lightmap) surface.onBeforeCompile = occludeDirectLight;
   const glow = new THREE.MeshBasicMaterial({ map: palette, toneMapped: false });
