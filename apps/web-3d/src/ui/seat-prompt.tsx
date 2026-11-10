@@ -12,8 +12,8 @@ export default function SeatPrompt() {
   const ready = useSelector((state: RootState) => state.shop.scene.ready);
   if (!seatId || !ready) return null;
   return (
-    <div className={styles.prompt} role="status" data-seat={seatId}>
-      <span className={styles.hint}>
+    <div className={styles.prompt} data-seat={seatId}>
+      <span className={styles.hint} aria-live="polite">
         <kbd className={styles.key}>{vi.seat.key}</kbd>
         {vi.seat.prompt}
       </span>

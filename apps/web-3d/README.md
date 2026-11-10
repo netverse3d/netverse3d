@@ -35,7 +35,7 @@ Tham số trên URL: `?shop=<id>` chọn tiệm mẫu, `?quality=low|medium|high
 - Camera mặc định nhìn chéo từ góc phòng, trên cao, bằng ống kính hẹp. Lăn chuột phóng liền mạch từ toàn cảnh xuống sát sau vai nhân vật; càng gần ống kính càng mở rộng.
 - Camera ra ngoài phòng thì tường và trần nằm giữa camera và lòng phòng tự cắt đi. Bàn, ghế, thùng máy chắn đường nhìn thì camera tự dừng trước món đó.
 - Bóng trên bề mặt lấy từ lightmap xám nung sẵn trong từng bộ mô hình, nhân với bảng màu của tiệm.
-- Đứng chạm vào bất kỳ cạnh nào của một cụm máy trống thì hiện gợi ý ngồi máy: trên máy tính là chữ kèm phím E, trên màn hình chạm là một nút. Chạm hai cụm cùng lúc thì gợi ý máy có ghế gần hơn. Phím E chưa được nối và nút mới chỉ gửi yêu cầu vào kho trạng thái, chưa cho nhân vật ngồi.
+- Đứng chạm vào bất kỳ cạnh nào của một cụm máy trống thì hiện gợi ý ngồi máy: trên máy tính là chữ kèm phím E, trên thiết bị có màn hình chạm có thêm một nút. Chạm hai cụm cùng lúc thì gợi ý máy có ghế gần hơn. Phím E và nút cùng gửi yêu cầu ngồi; cho nhân vật ngồi xuống là việc kế tiếp.
 - Cần ảo chưa có hình vẽ trên màn hình.
 
 ## Cấu trúc

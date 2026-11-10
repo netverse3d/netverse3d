@@ -12,6 +12,8 @@
   border-radius: var(--radius-2);
   font-size: var(--text-sm);
   white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
 
 .hint {
@@ -33,22 +35,27 @@
 
 .button {
   display: none;
+  min-height: calc(var(--space-3) * 4 - var(--space-1));
   padding: var(--space-2) var(--space-3);
-  background: var(--violet);
-  border: 0;
+  background: var(--control);
+  border: 1px solid var(--violet);
   border-radius: var(--radius-1);
   color: var(--ink);
   font-family: var(--font);
   font-size: var(--text-sm);
   font-weight: 600;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+@media (any-pointer: coarse) {
+  .button {
+    display: block;
+  }
 }
 
 @media (pointer: coarse) {
   .hint {
     display: none;
-  }
-
-  .button {
-    display: block;
   }
 }

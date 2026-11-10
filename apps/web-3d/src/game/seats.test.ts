@@ -16,19 +16,12 @@ const ANCHORS = {
     socket_chair: { position: [0, 0, -0.24], scale: [1, 1, 1] },
     collision_main: { position: [0, 0.36, 0.46], scale: [0.76, 0.36, 0.35] },
   },
-  desk_b: {
-    socket_chair: { position: [0.1, 0, -1], scale: [1, 1, 1] },
-    collision_main: { position: [0, 0.36, 0.46], scale: [0.5, 0.36, 0.3] },
-  },
   chair_a: {
     seat_anchor: { position: [0, 0, 0.24], scale: [1, 1, 1] },
     collision_main: { position: [0, 0.66, -0.03], scale: [0.32, 0.66, 0.33] },
   },
   desk_bare: {
     socket_chair: { position: [0, 0, -0.24], scale: [1, 1, 1] },
-  },
-  desk_broken: {
-    collision_main: { position: [0, 0.36, 0.46], scale: [0.76, 0.36, 0.35] },
   },
 };
 
@@ -173,4 +166,28 @@ test('cách đều ghế của hai máy thì luôn chọn cùng một máy, khô
 
 test('tiệm chưa có máy nào thì không có gợi ý', () => {
   assert.equal(nearestSeat({ x: 0, z: 0 }, [], NOBODY), null);
+});
+
+test('tầm với là thân người cộng hai mươi phân', () => {
+  assert.equal(SEAT_REACH, PLAYER_RADIUS + 0.2);
+});
+
+test('máy được gợi ý là máy có ghế gần hơn, không phải máy có vùng gần hơn', () => {
+  const wide: Seat = {
+    seatId: 'seat-1',
+    chair: { x: -3, z: 0 },
+    footprint: { minX: -4, maxX: 0, minZ: -0.5, maxZ: 0.5 },
+  };
+  const narrow: Seat = {
+    seatId: 'seat-2',
+    chair: { x: 0.6, z: 0 },
+    footprint: { minX: 0.3, maxX: 1, minZ: -0.5, maxZ: 0.5 },
+  };
+  assert.equal(nearestSeat({ x: 0.05, z: 0.6 }, [wide, narrow], NOBODY)?.seatId, 'seat-2');
+});
+
+test('hai máy ngang nhau thì số nhỏ hơn thắng, máy 2 đứng trước máy 10', () => {
+  const second = seatAt('seat-2', -0.9, 0);
+  const tenth = seatAt('seat-10', 0.9, 0);
+  assert.equal(nearestSeat({ x: 0, z: 0.2 }, [tenth, second], NOBODY)?.seatId, 'seat-2');
 });

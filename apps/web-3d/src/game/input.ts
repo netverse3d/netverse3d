@@ -23,6 +23,8 @@ const RIGHT_KEYS = ['KeyD', 'ArrowRight'];
 const LEFT_KEYS = ['KeyA', 'ArrowLeft'];
 const RUN_KEYS = ['ShiftLeft', 'ShiftRight'];
 
+export const USE_KEY = 'KeyE';
+
 export const CONTROL_KEYS: ReadonlySet<string> = new Set([
   ...FORWARD_KEYS,
   ...BACK_KEYS,

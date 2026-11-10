@@ -69,7 +69,8 @@ export function nearestSeat(
       continue;
     }
     const lead = span(seat.chair, player) - span(best.chair, player);
-    if (lead < 0 || (lead === 0 && seat.seatId < best.seatId)) best = seat;
+    const earlier = seat.seatId.localeCompare(best.seatId, 'en', { numeric: true }) < 0;
+    if (lead < 0 || (lead === 0 && earlier)) best = seat;
   }
   return best;
 }

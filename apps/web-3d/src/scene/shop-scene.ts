@@ -71,6 +71,7 @@ export interface ShopSceneOptions {
   onState?: (state: SceneState) => void;
   onError?: (message: string) => void;
   onNearbySeat?: (seatId: string | null) => void;
+  onSeatRequest?: (seatId: string) => void;
 }
 
 interface LightPreset {
@@ -200,6 +201,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   const onState = options.onState ?? (() => {});
   const onError = options.onError ?? (() => {});
   const onNearbySeat = options.onNearbySeat ?? (() => {});
+  const onSeatRequest = options.onSeatRequest ?? (() => {});
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -304,6 +306,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
       nearbySeat = inReach;
       onNearbySeat(inReach);
     }
+    if (controls.takeUse() && nearbySeat !== null) onSeatRequest(nearbySeat);
     const pose = cameraPose(frame.player, orbit);
     const eye = clearEye(pose, furniture);
     const lens = fieldOfView(eyeDistance(eye, pose.target));

@@ -13,6 +13,7 @@ import {
   recipeRequested,
   recipesLoaded,
   sceneChanged,
+  seatRequested,
   statsReported,
 } from '../src/state/shop-slice.ts';
 import { createAppStore, type RootState } from '../src/state/store.ts';
@@ -64,6 +65,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
           onState: (state) => store.dispatch(sceneChanged(state)),
           onError: (message) => store.dispatch(errorRaised(message)),
           onNearbySeat: (seatId) => store.dispatch(nearbySeatChanged(seatId)),
+          onSeatRequest: (seatId) => store.dispatch(seatRequested(seatId)),
         });
         const requested = params.get('quality');
         shop.setQuality(
