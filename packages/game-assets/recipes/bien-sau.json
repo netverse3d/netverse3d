@@ -16,7 +16,7 @@
     "accent": ["#22e0c0"]
   },
   "variants": {
-    "desk": "a",
+    "desk": "b",
     "monitor": "a",
     "keyboard": "a",
     "mouse": "a",
