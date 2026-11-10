@@ -8,6 +8,7 @@ import {
   DEFAULT_RECIPE,
   errorRaised,
   isQualityLevel,
+  nearbySeatChanged,
   qualityRequested,
   recipeRequested,
   recipesLoaded,
@@ -16,6 +17,7 @@ import {
 } from '../src/state/shop-slice.ts';
 import { createAppStore, type RootState } from '../src/state/store.ts';
 import Hud from '../src/ui/hud.tsx';
+import SeatPrompt from '../src/ui/seat-prompt.tsx';
 import { vi } from '../src/ui/text/vi.ts';
 import styles from './shop-view.module.css';
 
@@ -61,6 +63,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
           onStats: (stats) => store.dispatch(statsReported(stats)),
           onState: (state) => store.dispatch(sceneChanged(state)),
           onError: (message) => store.dispatch(errorRaised(message)),
+          onNearbySeat: (seatId) => store.dispatch(nearbySeatChanged(seatId)),
         });
         const requested = params.get('quality');
         shop.setQuality(
@@ -103,6 +106,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
     >
       <canvas id="gl" className={styles.canvas} ref={canvasRef} aria-label={vi.app.stageLabel} />
       <Hud />
+      <SeatPrompt />
     </div>
   );
 }
