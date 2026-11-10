@@ -28,6 +28,9 @@ export interface Controls {
 
 interface KeyPress extends Event {
   readonly code: string;
+  readonly ctrlKey?: boolean;
+  readonly metaKey?: boolean;
+  readonly altKey?: boolean;
 }
 
 interface Touch extends Event {
@@ -35,6 +38,8 @@ interface Touch extends Event {
   readonly clientX: number;
   readonly clientY: number;
   readonly pointerType: string;
+  readonly button?: number;
+  readonly buttons?: number;
 }
 
 interface Drag {
@@ -46,10 +51,15 @@ export const STICK_RADIUS_PIXELS = 56;
 
 const TYPING_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const NO_TURN: Turn = { right: 0, down: 0 };
+const MAIN_BUTTON = 0;
 
 function isTyping(event: Event): boolean {
   const tagName = (event.target as { tagName?: unknown } | null)?.tagName;
   return typeof tagName === 'string' && TYPING_TAGS.has(tagName);
+}
+
+function isShortcut(press: KeyPress): boolean {
+  return Boolean(press.ctrlKey || press.metaKey || press.altKey);
 }
 
 export function createControls(surface: ControlSurface, keys: KeySource): Controls {
@@ -60,23 +70,41 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
   let stick: StickPosition | null = null;
   let turn: Turn = NO_TURN;
 
+  const release = (pointerId: number) => {
+    looks.delete(pointerId);
+    if (pointerId === stickPointer) {
+      stickPointer = null;
+      stick = null;
+    }
+  };
+  const releaseAll = () => {
+    pressed.clear();
+    looks.clear();
+    stickPointer = null;
+    stick = null;
+  };
+
   const onKeyDown = (event: Event) => {
-    const { code } = event as KeyPress;
-    if (!CONTROL_KEYS.has(code) || isTyping(event)) return;
-    pressed.add(code);
+    const press = event as KeyPress;
+    if (isShortcut(press)) {
+      pressed.clear();
+      return;
+    }
+    if (!CONTROL_KEYS.has(press.code) || isTyping(event)) return;
+    pressed.add(press.code);
     event.preventDefault();
   };
   const onKeyUp = (event: Event) => {
     pressed.delete((event as KeyPress).code);
   };
-  const onBlur = () => {
-    pressed.clear();
-  };
   const onPointerDown = (event: Event) => {
     const touch = event as Touch;
+    const isTouch = touch.pointerType === 'touch';
+    if (!isTouch && (touch.button ?? MAIN_BUTTON) !== MAIN_BUTTON) return;
     const { left, width } = surface.getBoundingClientRect();
     const onLeftHalf = touch.clientX < left + width / 2;
-    if (touch.pointerType === 'touch' && onLeftHalf && stickPointer === null) {
+    if (isTouch && onLeftHalf) {
+      if (stickPointer !== null) return;
       stickPointer = touch.pointerId;
       stickOrigin = { x: touch.clientX, y: touch.clientY };
       stick = { x: 0, y: 0 };
@@ -96,6 +124,10 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
     }
     const last = looks.get(touch.pointerId);
     if (!last) return;
+    if (touch.pointerType !== 'touch' && touch.buttons === 0) {
+      release(touch.pointerId);
+      return;
+    }
     turn = {
       right: turn.right + touch.clientX - last.x,
       down: turn.down + touch.clientY - last.y,
@@ -104,24 +136,24 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
     last.y = touch.clientY;
   };
   const onPointerEnd = (event: Event) => {
-    const { pointerId } = event as Touch;
-    looks.delete(pointerId);
-    if (pointerId === stickPointer) {
-      stickPointer = null;
-      stick = null;
-    }
+    release((event as Touch).pointerId);
+  };
+  const onContextMenu = (event: Event) => {
+    event.preventDefault();
   };
 
   const keyListeners: [string, (event: Event) => void][] = [
     ['keydown', onKeyDown],
     ['keyup', onKeyUp],
-    ['blur', onBlur],
+    ['blur', releaseAll],
   ];
   const surfaceListeners: [string, (event: Event) => void][] = [
     ['pointerdown', onPointerDown],
     ['pointermove', onPointerMove],
     ['pointerup', onPointerEnd],
     ['pointercancel', onPointerEnd],
+    ['lostpointercapture', onPointerEnd],
+    ['contextmenu', onContextMenu],
   ];
   for (const [type, listener] of keyListeners) keys.addEventListener(type, listener);
   for (const [type, listener] of surfaceListeners) surface.addEventListener(type, listener);
@@ -139,10 +171,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
     dispose() {
       for (const [type, listener] of keyListeners) keys.removeEventListener(type, listener);
       for (const [type, listener] of surfaceListeners) surface.removeEventListener(type, listener);
-      pressed.clear();
-      looks.clear();
-      stickPointer = null;
-      stick = null;
+      releaseAll();
       turn = NO_TURN;
     },
   };

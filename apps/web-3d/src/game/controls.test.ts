@@ -157,3 +157,105 @@ test('gỡ điều khiển thì không còn nghe phím hay chuột', () => {
   assert.deepEqual(controls.intent(), STILL);
   assert.deepEqual(controls.takeTurn(), { right: 0, down: 0 });
 });
+
+test('nhả phím lúc tiêu điểm đang ở ô chọn thì phím vẫn được nhả', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  keys.dispatchEvent(key('keydown', 'KeyW'));
+  keys.dispatchEvent(key('keyup', 'KeyW', { tagName: 'SELECT' }));
+  assert.deepEqual(controls.intent(), STILL);
+});
+
+test('tổ hợp với Ctrl, Alt hay Cmd là phím tắt của trình duyệt: không chặn, không đi, và nhả hết phím đang giữ', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  keys.dispatchEvent(key('keydown', 'KeyW'));
+  for (const modifier of ['ctrlKey', 'altKey', 'metaKey']) {
+    const shortcut = Object.assign(key('keydown', 'KeyS'), { [modifier]: true });
+    keys.dispatchEvent(shortcut);
+    assert.equal(shortcut.defaultPrevented, false, modifier);
+    assert.deepEqual(controls.intent(), STILL, modifier);
+  }
+});
+
+test('cần ảo dùng lại được sau khi nhả tay', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  for (const pointerId of [1, 2]) {
+    surface.dispatchEvent(pointer('pointerdown', pointerId, 200, 400, 'touch'));
+    surface.dispatchEvent(
+      pointer('pointermove', pointerId, 200 + STICK_RADIUS_PIXELS, 400, 'touch'),
+    );
+    assert.ok(controls.intent().right > 0.9, `touch ${pointerId}`);
+    surface.dispatchEvent(pointer('pointerup', pointerId, 200, 400, 'touch'));
+    assert.deepEqual(controls.intent(), STILL);
+  }
+});
+
+test('ngón thứ hai chạm nửa trái không cướp cần ảo và không quay camera', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(pointer('pointerdown', 1, 200, 400, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 1, 200, 400 - STICK_RADIUS_PIXELS, 'touch'));
+  surface.dispatchEvent(pointer('pointerdown', 2, 300, 400, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 2, 360, 500, 'touch'));
+  assert.ok(controls.intent().forward > 0.9);
+  assert.deepEqual(controls.takeTurn(), { right: 0, down: 0 });
+});
+
+test('nửa trái tính theo vị trí khung cảnh trên trang, không theo mép cửa sổ', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(pointer('pointerdown', 1, 450, 400, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 1, 450, 400 - STICK_RADIUS_PIXELS, 'touch'));
+  assert.ok(controls.intent().forward > 0.9);
+  surface.dispatchEvent(pointer('pointerdown', 2, 520, 300, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 2, 540, 300, 'touch'));
+  assert.deepEqual(controls.takeTurn(), { right: 20, down: 0 });
+});
+
+test('chuột ở nửa trái vẫn là quay camera, không phải cần ảo', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(pointer('pointerdown', 1, 200, 300));
+  surface.dispatchEvent(pointer('pointermove', 1, 240, 300));
+  assert.deepEqual(controls.intent(), STILL);
+  assert.deepEqual(controls.takeTurn(), { right: 40, down: 0 });
+});
+
+test('nút chuột phải không quay camera và không mở trình đơn của trình duyệt trên cảnh', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(Object.assign(pointer('pointerdown', 1, 500, 300), { button: 2 }));
+  surface.dispatchEvent(pointer('pointermove', 1, 600, 300));
+  assert.deepEqual(controls.takeTurn(), { right: 0, down: 0 });
+  const menu = new Event('contextmenu', { cancelable: true });
+  surface.dispatchEvent(menu);
+  assert.equal(menu.defaultPrevented, true);
+});
+
+test('lỡ mất sự kiện nhả chuột thì lần rê kế tiếp không còn quay camera', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(pointer('pointerdown', 1, 500, 300));
+  surface.dispatchEvent(Object.assign(pointer('pointermove', 1, 510, 300), { buttons: 1 }));
+  surface.dispatchEvent(Object.assign(pointer('pointermove', 1, 700, 300), { buttons: 0 }));
+  surface.dispatchEvent(Object.assign(pointer('pointermove', 1, 900, 300), { buttons: 0 }));
+  assert.deepEqual(controls.takeTurn(), { right: 10, down: 0 });
+});
+
+test('mất quyền giữ con trỏ hoặc cửa sổ mất tiêu điểm thì nhả cả cần ảo lẫn quay camera', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  surface.dispatchEvent(pointer('pointerdown', 1, 200, 400, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 1, 200, 300, 'touch'));
+  surface.dispatchEvent(pointer('lostpointercapture', 1, 200, 300, 'touch'));
+  assert.deepEqual(controls.intent(), STILL);
+  surface.dispatchEvent(pointer('pointerdown', 2, 700, 300, 'touch'));
+  surface.dispatchEvent(pointer('pointerdown', 3, 200, 400, 'touch'));
+  surface.dispatchEvent(pointer('pointermove', 3, 200, 300, 'touch'));
+  keys.dispatchEvent(new Event('blur'));
+  surface.dispatchEvent(pointer('pointermove', 2, 800, 300, 'touch'));
+  assert.deepEqual(controls.intent(), STILL);
+  assert.deepEqual(controls.takeTurn(), { right: 0, down: 0 });
+});

@@ -47,7 +47,10 @@ export default function Hud() {
         <select
           className={styles.select}
           value={scene.recipeId}
-          onChange={(event) => dispatch(recipeRequested(event.target.value))}
+          onChange={(event) => {
+            dispatch(recipeRequested(event.target.value));
+            event.target.blur();
+          }}
         >
           {recipes.map((recipe) => (
             <option key={recipe.id} value={recipe.id}>

@@ -290,24 +290,25 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     materials = null;
   }
 
-  function build(): void {
+  function build(resume = false): void {
     clearContent();
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
     materials = shopMaterials(THREE, recipe, assets.rows);
     const room = roomPlan(recipe);
     const stations = shopPlan(recipe, assets.anchors);
-    content.add(buildShop(THREE, assets.room.scene, room, materials));
-    content.add(buildShop(THREE, assets.station.scene, stations, materials));
-    const spawn = spawnFor(recipe);
-    player = createPlayer(THREE, assets.player, spawn);
-    content.add(player.root);
-    walk.place(spawn, [
+    const obstacles = [
       ...collisionBoxes([...room, ...stations], assets.anchors),
       ...shopPerimeter(recipe.layout.cells),
-    ]);
+    ];
+    const spawn = resume ? walk.position() : spawnFor(recipe);
+    content.add(buildShop(THREE, assets.room.scene, room, materials));
+    content.add(buildShop(THREE, assets.station.scene, stations, materials));
+    player = createPlayer(THREE, assets.player, spawn);
+    content.add(player.root);
+    walk.place(spawn, obstacles);
     interior = shopInterior(recipe.layout.cells);
-    orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw };
+    if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw };
     relight(recipe);
     play(0);
     state.rebuilds += 1;
@@ -317,10 +318,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     emit();
   }
 
-  function rebuild(): void {
+  function rebuild(resume = false): void {
     try {
-      build();
+      build(resume);
     } catch (reason) {
+      clearContent();
       state.ready = false;
       emit();
       onError(describe(reason));
@@ -365,7 +367,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     state.restored = true;
     buildEnvironment();
     resize();
-    rebuild();
+    controls.takeTurn();
+    rebuild(true);
     renderer.setAnimationLoop(tick);
   };
   canvas.addEventListener('webglcontextlost', onContextLost);

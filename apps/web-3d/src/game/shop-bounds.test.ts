@@ -40,3 +40,22 @@ test('vành ngoài không lấn vào lòng tiệm', () => {
     assert.equal(overlapsX && overlapsZ, false);
   }
 });
+
+test('vành ngoài kín cả ở bốn góc', () => {
+  const perimeter = shopPerimeter([2, 2]);
+  for (const [x, z] of [
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+    [-1, -1],
+  ] as const) {
+    let player = { x: 0, z: 0, yaw: 0 };
+    for (let tick = 0; tick < 300; tick += 1) {
+      player = stepPlayer(player, { x, z }, perimeter, 1 / 30);
+    }
+    assert.ok(
+      Math.abs(player.x) <= 2 && Math.abs(player.z) <= 2,
+      `escaped to ${player.x},${player.z}`,
+    );
+  }
+});

@@ -100,3 +100,11 @@ test('khung hình có thời gian hỏng không làm nhân vật nhảy', () => 
     );
   }
 });
+
+test('hỏi chỗ đứng thì ra vị trí của nhịp mới nhất, để dựng lại cảnh đúng chỗ đang đứng', () => {
+  const walk = createWalk(START, []);
+  assert.deepEqual(walk.position(), START);
+  walk.advance(TICK_SECONDS * 3.5, AHEAD, 0);
+  const step = WALK_SPEED * TICK_SECONDS;
+  assert.ok(Math.abs(walk.position().z - step * 3) < 1e-9, `at ${walk.position().z}`);
+});

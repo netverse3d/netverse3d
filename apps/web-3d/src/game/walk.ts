@@ -17,6 +17,7 @@ export interface WalkFrame {
 export interface Walk {
   advance(frameSeconds: number, local: LocalIntent, cameraYaw: number): WalkFrame;
   place(spawn: PlayerState, obstacles: readonly FloorBox[]): void;
+  position(): PlayerState;
 }
 
 export function createWalk(spawn: PlayerState, obstacles: readonly FloorBox[]): Walk {
@@ -36,6 +37,9 @@ export function createWalk(spawn: PlayerState, obstacles: readonly FloorBox[]): 
     place(next, nextObstacles) {
       simulation = createSimulation(next);
       boxes = nextObstacles;
+    },
+    position() {
+      return simulation.current;
     },
   };
 }

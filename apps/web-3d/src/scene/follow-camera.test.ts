@@ -82,10 +82,42 @@ test('quay lưng sát tường thì camera vẫn cách nhân vật một quãng,
   }
 });
 
-test('nhân vật đứng sát tường hơn cả lề camera thì camera lên ngay trên đầu, không lộn ra trước', () => {
-  const pose = cameraPose({ x: 0, z: -2.95 }, LEVEL, ROOM);
-  close(pose.eye[2], -2.95, 'z');
-  assert.equal(pose.eye[1], MAX_EYE_HEIGHT);
+test('nhân vật đứng ở ngưỡng cửa, ngoài lề camera, thì camera vẫn ở trong phòng và không nằm thẳng trên đầu', () => {
+  for (const yaw of [0, 0.8, -0.8]) {
+    const pose = cameraPose({ x: 0, z: -2.95 }, { ...LEVEL, yaw }, ROOM);
+    close(pose.eye[2], -3 + CAMERA_WALL_MARGIN, `z at yaw ${yaw}`);
+    const gap = Math.sqrt(pose.eye[0] ** 2 + (pose.eye[2] + 2.95) ** 2);
+    assert.ok(gap > 0.05, `yaw ${yaw}: camera is ${gap} from the vertical`);
+  }
+});
+
+test('xoay camera từng chút một thì vị trí camera đổi từng chút một, kể cả ở ngưỡng cửa và góc phòng', () => {
+  for (const [x, z] of [
+    [0, -2.95],
+    [2.7, 2.7],
+    [0, 0],
+    [-2.6, 0.4],
+  ] as const) {
+    let last = cameraPose({ x, z }, { ...DEFAULT_ORBIT, yaw: 0 }, ROOM);
+    for (let yaw = 0.01; yaw < Math.PI * 2; yaw += 0.01) {
+      const pose = cameraPose({ x, z }, { ...DEFAULT_ORBIT, yaw }, ROOM);
+      const moved = Math.sqrt(
+        (pose.eye[0] - last.eye[0]) ** 2 +
+          (pose.eye[1] - last.eye[1]) ** 2 +
+          (pose.eye[2] - last.eye[2]) ** 2,
+      );
+      assert.ok(moved < 0.2, `at ${x},${z} yaw ${yaw}: camera jumped ${moved}`);
+      last = pose;
+    }
+  }
+});
+
+test('góc nhìn mặc định còn chỗ để ngẩng camera lên trước khi chạm trần', () => {
+  const start = cameraPose({ x: 0, z: 0 }, DEFAULT_ORBIT, OPEN);
+  const raised = cameraPose({ x: 0, z: 0 }, turnOrbit(DEFAULT_ORBIT, 0, 10), OPEN);
+  assert.ok(start.eye[1] < MAX_EYE_HEIGHT - 0.2, `starts at ${start.eye[1]}`);
+  assert.ok(raised.eye[1] > start.eye[1]);
+  close(span(raised), DEFAULT_ORBIT.distance, 'distance');
 });
 
 test('kéo chuột sang phải thì camera nhìn sang phải, kéo xuống thì nhìn xuống', () => {

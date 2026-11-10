@@ -3,6 +3,7 @@ import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { createActorLook, type ActorLook } from '@netverse/game-assets/runtime/actor-look.mjs';
 import type { PlayerState } from '@netverse/game-shared/movement';
+import { blendClipWeights } from './clip-blend.ts';
 
 type Three = typeof import('three');
 
@@ -22,7 +23,6 @@ export interface Player {
 }
 
 const IDLE_CLIP = 'idle';
-const CLIP_BLEND_SECONDS = 0.18;
 let sharedLook: ActorLook | null = null;
 
 export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
@@ -35,15 +35,21 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
   const actions = new Map<string, AnimationAction>(
     gltf.animations.map((animation) => [animation.name, mixer.clipAction(animation)]),
   );
-  let playing: AnimationAction | null = null;
-  const playClip = (name: string) => {
-    const next = actions.get(name) ?? null;
-    if (!next || next === playing) return;
-    next.reset().play();
-    if (playing) next.crossFadeFrom(playing, CLIP_BLEND_SECONDS, false);
-    playing = next;
+  let clip = IDLE_CLIP;
+  let weights = new Map<string, number>();
+  const blend = (delta: number) => {
+    weights = blendClipWeights(weights, clip, delta);
+    for (const [name, action] of actions) {
+      const weight = weights.get(name);
+      if (weight === undefined) {
+        if (action.isRunning()) action.stop();
+      } else {
+        if (!action.isRunning()) action.play();
+        action.setEffectiveWeight(weight);
+      }
+    }
   };
-  playClip(IDLE_CLIP);
+  blend(0);
   return {
     root,
     hasFace: Boolean(root.userData.face?.map),
@@ -51,8 +57,11 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
       root.position.set(state.x, 0, state.z);
       root.rotation.y = state.yaw;
     },
-    playClip,
+    playClip(name) {
+      if (actions.has(name)) clip = name;
+    },
     update(delta) {
+      blend(delta);
       mixer.update(delta);
     },
     dispose() {
