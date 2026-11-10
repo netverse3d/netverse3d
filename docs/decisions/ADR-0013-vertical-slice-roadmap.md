@@ -1,6 +1,6 @@
 # ADR-0013: Lộ trình theo lát cắt chạy được, room server giả trong lúc chờ core
 
-- Trạng thái: proposed
+- Trạng thái: accepted
 - Ngày: 2026-11-08
 
 ## Bối cảnh

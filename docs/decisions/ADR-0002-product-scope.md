@@ -2,7 +2,8 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
-- Đang xem lại: phần học tăng cường, đấu trường và thứ tự giai đoạn theo [ADR-0012](./ADR-0012-games-for-rl-bots.md) và [ADR-0013](./ADR-0013-vertical-slice-roadmap.md); phần "AI làm sau" theo [ADR-0014](./ADR-0014-saigon-cyber-and-own-characters.md). Trong lúc chờ chốt, lộ trình và độ ưu tiên của bot theo các bản đề xuất đó.
+- Thứ tự giai đoạn đã được thay bằng [ADR-0013](./ADR-0013-vertical-slice-roadmap.md), chốt ngày 2026-11-10.
+- Đang xem lại: phần học tăng cường và đấu trường theo [ADR-0012](./ADR-0012-games-for-rl-bots.md); phần "AI làm sau" theo [ADR-0014](./ADR-0014-saigon-cyber-and-own-characters.md). Trong lúc chờ chốt, độ ưu tiên của bot theo các bản đề xuất đó.
 
 ## Bối cảnh
 
