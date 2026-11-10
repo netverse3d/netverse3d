@@ -15,15 +15,16 @@ export interface CameraPose {
 }
 
 export const LOOK_HEIGHT = 1.1;
-export const MIN_PITCH = 0.08;
-export const MAX_PITCH = 1.25;
-export const MIN_DISTANCE = 2.2;
-export const MAX_DISTANCE = 12;
+export const MIN_PITCH = 0.6;
+export const MAX_PITCH = 1.2;
+export const MIN_DISTANCE = 7;
+export const MAX_DISTANCE = 26;
 export const TURN_PER_PIXEL = 0.005;
 export const ZOOM_PER_NOTCH = 1.12;
-export const CAMERA_FIELD_OF_VIEW = 55;
+export const CAMERA_FIELD_OF_VIEW = 35;
+export const CORNER_VIEW_TURN = Math.PI / 4;
 export const CEILING_CUT_HEIGHT = 2.6;
-export const DEFAULT_ORBIT: CameraOrbit = { yaw: 0, pitch: 0.62, distance: 6.5 };
+export const DEFAULT_ORBIT: CameraOrbit = { yaw: 0, pitch: 0.8, distance: 13 };
 
 const CUT_OFF = 1e6;
 

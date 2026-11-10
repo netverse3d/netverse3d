@@ -28,6 +28,7 @@ import { createWalk } from '../game/walk.ts';
 import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
 import {
   CAMERA_FIELD_OF_VIEW,
+  CORNER_VIEW_TURN,
   DEFAULT_ORBIT,
   cameraPose,
   cutaways,
@@ -323,7 +324,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     content.add(player.root);
     walk.place(spawn, obstacles);
     openFloor = shopOpenFloor(recipe.layout.cells);
-    if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw };
+    if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
     relight(recipe);
     play(0);
     state.rebuilds += 1;

@@ -55,7 +55,7 @@ test('ngẩng camera lên thì vẫn giữ đúng khoảng cách tới nhân v�
 });
 
 test('nhân vật đứng sát tường thì camera vẫn giữ nguyên khoảng cách, lùi hẳn ra ngoài phòng', () => {
-  const pose = cameraPose({ x: 0, z: -1.7 }, DEFAULT_ORBIT);
+  const pose = cameraPose({ x: 0, z: -1.7 }, { ...DEFAULT_ORBIT, pitch: MIN_PITCH });
   close(span(pose), DEFAULT_ORBIT.distance, 'distance');
   assert.ok(pose.eye[2] < ROOM.minZ, `eye z ${pose.eye[2]}`);
 });
@@ -63,7 +63,7 @@ test('nhân vật đứng sát tường thì camera vẫn giữ nguyên khoảng
 test('góc nhìn mặc định là góc rộng từ trên cao, thấy được cả gian phòng', () => {
   const pose = cameraPose({ x: 0, z: 0 }, DEFAULT_ORBIT);
   assert.ok(pose.eye[1] > CEILING_CUT_HEIGHT, `eye y ${pose.eye[1]}`);
-  assert.ok(DEFAULT_ORBIT.distance >= 6);
+  assert.ok(DEFAULT_ORBIT.distance >= 10);
 });
 
 test('camera ở trong phòng và dưới trần thì không cắt gì', () => {
@@ -182,4 +182,12 @@ test('số đo kéo hoặc lăn hỏng thì giữ nguyên góc nhìn', () => {
   assert.deepEqual(turnOrbit(DEFAULT_ORBIT, Number.NaN, 5), DEFAULT_ORBIT);
   assert.deepEqual(turnOrbit(DEFAULT_ORBIT, 5, Infinity), DEFAULT_ORBIT);
   assert.deepEqual(zoomOrbit(DEFAULT_ORBIT, Number.NaN), DEFAULT_ORBIT);
+});
+
+test('camera hạ thấp và lại gần hết cỡ vẫn cao hơn trần, nên không bao giờ chui vào giữa bàn ghế', () => {
+  const lowest = zoomOrbit(turnOrbit(DEFAULT_ORBIT, 0, -100000), -1000);
+  for (const yaw of [0, 1, 2.5, -2]) {
+    const pose = cameraPose({ x: 0, z: 0 }, { ...lowest, yaw });
+    assert.ok(pose.eye[1] > CEILING_CUT_HEIGHT + 1.5, `yaw ${yaw}: eye at ${pose.eye[1]}`);
+  }
 });
