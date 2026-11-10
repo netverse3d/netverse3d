@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default [
   {
@@ -11,7 +12,11 @@ export default [
       '**/coverage/**',
       'docs/.vitepress/dist/**',
       'docs/.vitepress/cache/**',
-      'apps/**',
+      'apps/admin/**',
+      'apps/web-3d/.next/**',
+      'apps/web-3d/out/**',
+      'apps/web-3d/public/**',
+      'apps/web-3d/next-env.d.ts',
       'services/**',
       'workers/**',
       'packages/config/**',
@@ -26,6 +31,16 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: globals.node,
+    },
+  },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['apps/web-3d/**/*.{ts,tsx}'],
+  })),
+  {
+    files: ['apps/web-3d/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
     },
   },
 ];

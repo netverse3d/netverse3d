@@ -31,6 +31,9 @@ bin/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 
+apps/web-3d/public/game-assets/
+apps/web-3d/next-env.d.ts
+
 .idea/
 .vscode/*
 !.vscode/extensions.json
