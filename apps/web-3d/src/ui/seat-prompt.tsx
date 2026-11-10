@@ -16,9 +16,14 @@ export default function SeatPrompt() {
   const seated = seating.seated !== null;
   return (
     <div className={styles.prompt} data-seat={seatId} data-seated={String(seated)}>
-      {!seated && seating.denied && (
+      {!seated && seating.denied?.seatId === seatId && (
         <span className={styles.denied} role="alert">
-          {vi.seat.denied[seating.denied]}
+          {vi.seat.denied[seating.denied.reason]}
+        </span>
+      )}
+      {seating.error && (
+        <span className={styles.denied} role="alert">
+          {vi.seat.roomError}
         </span>
       )}
       <span className={styles.hint} aria-live="polite">

@@ -27,7 +27,6 @@ export function createWalk(spawn: PlayerState, obstacles: readonly FloorBox[]): 
   let simulation = createSimulation(spawn);
   let boxes = obstacles;
   let heldAt: PlayerState | null = null;
-  let resume: PlayerState | null = null;
   return {
     advance(frameSeconds, local, cameraYaw) {
       if (heldAt) return { player: heldAt, clip: null };
@@ -44,17 +43,14 @@ export function createWalk(spawn: PlayerState, obstacles: readonly FloorBox[]): 
       simulation = createSimulation(next);
       boxes = nextObstacles;
       heldAt = null;
-      resume = null;
     },
     hold(spot) {
-      if (!heldAt) resume = simulation.current;
       heldAt = spot;
     },
     release() {
       if (!heldAt) return;
       heldAt = null;
-      simulation = createSimulation(resume ?? simulation.current);
-      resume = null;
+      simulation = createSimulation(simulation.current);
     },
     held() {
       return heldAt !== null;

@@ -270,3 +270,22 @@ test('khoảng cách thật từ camera tới nhân vật tính theo chỗ camer
   close(eyeDistance(pose.eye, pose.target), 6, 'distance');
   close(eyeDistance(pose.target, pose.target), 0, 'zero');
 });
+
+test('nhân vật đang ngồi trong vùng của chính chiếc ghế thì chiếc ghế đó không kéo camera lại', () => {
+  const chair = { minX: -0.4, maxX: 0.4, minZ: -0.4, maxZ: 0.4 };
+  for (const [pitch, distance] of [
+    [0.3, 1.8],
+    [0.2, 4],
+    [0.35, 3],
+  ] as const) {
+    const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0.6, pitch, distance });
+    assert.deepEqual(clearEye(pose, [chair]), pose.eye, `pitch ${pitch} distance ${distance}`);
+  }
+});
+
+test('đang ngồi mà có món khác chắn đường nhìn thì camera vẫn dừng trước món đó', () => {
+  const chair = { minX: -0.4, maxX: 0.4, minZ: -0.4, maxZ: 0.4 };
+  const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.1, distance: 6 });
+  const eye = clearEye(pose, [chair, DESK]);
+  assert.ok(eye[2] > DESK.maxZ && eye[2] < -1.5, `eye z ${eye[2]}`);
+});

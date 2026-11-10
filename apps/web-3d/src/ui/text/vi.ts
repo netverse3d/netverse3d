@@ -27,6 +27,7 @@ export const vi = {
       too_far: 'Đứng gần máy hơn rồi thử lại',
       no_balance: 'Không đủ số dư để thuê máy',
     },
+    roomError: 'Phòng chưa nhận được yêu cầu, thử lại sau',
   },
   status: {
     loading: 'Đang tải tiệm…',

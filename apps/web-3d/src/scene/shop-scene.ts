@@ -333,7 +333,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   }
 
   function use(): void {
-    if (walk.held()) onLeaveRequest();
+    if (seatedAt !== null) onLeaveRequest();
     else if (nearbySeat !== null) onSeatRequest(nearbySeat, standing);
   }
 
@@ -452,6 +452,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     resize();
     controls.takeTurn();
     controls.takeZoom();
+    controls.takeUse();
     rebuild(true);
     renderer.setAnimationLoop(tick);
   };

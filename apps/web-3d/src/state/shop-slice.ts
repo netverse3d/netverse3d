@@ -30,7 +30,10 @@ export interface RecipeOption {
   name: string;
 }
 
-export type SeatDenial = 'occupied' | 'too_far' | 'no_balance';
+export interface SeatDenial {
+  seatId: string;
+  reason: 'occupied' | 'too_far' | 'no_balance';
+}
 
 export interface SeatingState {
   available: boolean;

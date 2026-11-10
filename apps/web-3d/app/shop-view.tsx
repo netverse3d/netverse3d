@@ -85,8 +85,12 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
     const stopRecipe = listener.startListening({
       actionCreator: recipeRequested,
       effect: (action) => {
+        const before = store.getState().shop.scene.recipeId;
         shop?.setRecipe(action.payload);
-        void openRoom();
+        if (store.getState().shop.scene.recipeId === before) return;
+        openRoom().catch((reason: unknown) => {
+          store.dispatch(errorRaised(reason instanceof Error ? reason.message : String(reason)));
+        });
       },
     });
     const stopUse = listener.startListening({

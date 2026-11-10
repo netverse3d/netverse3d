@@ -104,7 +104,10 @@ test('bị từ chối thì báo lý do và vẫn chưa ngồi; xin lại thì l
   const { session, views } = open(line);
   line.deliver({ kind: 'snapshot', tick: 0, players: [player(ME)] });
   line.deliver({ kind: 'seat.denied', seatId: 'seat-2', reason: 'occupied' });
-  assert.deepEqual(views.at(-1), { ...EMPTY, denied: 'occupied' });
+  assert.deepEqual(views.at(-1), {
+    ...EMPTY,
+    denied: { seatId: 'seat-2', reason: 'occupied' },
+  });
   session.requestSeat('seat-2', { x: 0, z: 0, yaw: 0 });
   assert.deepEqual(views.at(-1), EMPTY);
 });
@@ -155,4 +158,42 @@ test('đóng phiên thì đóng kết nối, không báo gì thêm, và xin máy
   session.leaveSeat();
   assert.equal(views.length, before);
   assert.equal(line.sent.length, sentBefore);
+});
+
+test('chưa nhận ảnh chụp của phòng thì chưa báo gì về chuyện ngồi máy', () => {
+  const line = wire();
+  const { views } = open(line);
+  line.deliver({ kind: 'seat.granted', seatId: 'seat-2', playerId: OTHER });
+  line.deliver({ kind: 'seat.denied', seatId: 'seat-2', reason: 'too_far' });
+  assert.deepEqual(views, []);
+});
+
+test('phòng từ chối cho vào thì lỗi được báo ngay dù chưa có ảnh chụp', () => {
+  const line = wire();
+  const { views } = open(line);
+  line.deliver({ kind: 'error', code: 'ticket_in_use' });
+  assert.deepEqual(views, [{ ...EMPTY, error: 'ticket_in_use' }]);
+});
+
+test('lỗi cũ được gỡ lúc người chơi thử lại, không treo mãi', () => {
+  const line = wire();
+  const { session, views } = open(line);
+  line.deliver({ kind: 'snapshot', tick: 0, players: [player(ME, 'seat-2')] });
+  line.deliver({ kind: 'error', code: 'already_seated' });
+  assert.equal(views.at(-1)?.error, 'already_seated');
+  session.leaveSeat();
+  assert.equal(views.at(-1)?.error, null);
+  line.deliver({ kind: 'error', code: 'unknown_seat' });
+  assert.equal(views.at(-1)?.error, 'unknown_seat');
+  session.requestSeat('seat-1', { x: 0, z: 0, yaw: 0 });
+  assert.equal(views.at(-1)?.error, null);
+});
+
+test('đã được cấp máy thì lý do bị từ chối trước đó không còn được báo', () => {
+  const line = wire();
+  const { views } = open(line);
+  line.deliver({ kind: 'snapshot', tick: 0, players: [player(ME)] });
+  line.deliver({ kind: 'seat.denied', seatId: 'seat-1', reason: 'occupied' });
+  line.deliver({ kind: 'seat.granted', seatId: 'seat-2', playerId: ME });
+  assert.deepEqual(views.at(-1), { ...EMPTY, seated: 'seat-2' });
 });
