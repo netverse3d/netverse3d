@@ -47,6 +47,7 @@ Tiêu đề nói thay đổi cho người đọc, không nói tên tệp hay tê
 | ---------------------------------- | ----------------------------------- |
 | `pnpm verify`                      | Toàn bộ kiểm tra như CI             |
 | `pnpm catalog:check`               | Cấu trúc và chuẩn thành phần        |
+| `pnpm boundaries:check`            | Hướng phụ thuộc giữa các lớp        |
 | `pnpm trace:check`                 | Sổ yêu cầu và ADR                   |
 | `pnpm trace:link REQ-001`          | Liên kết nhánh hiện tại với yêu cầu |
 | `pnpm docs:generate`               | Sinh lại các trang từ dữ liệu       |
