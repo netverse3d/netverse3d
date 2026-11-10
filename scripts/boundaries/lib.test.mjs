@@ -74,6 +74,19 @@ test('lớp cảnh 3D dùng React thì bị báo', () => {
   assert.match(violations[0], /apps\/web-3d\/src\/scene\/shop\.ts.*react/);
 });
 
+test('kho trạng thái dùng Redux Toolkit thì được, dùng gói nối với React thì bị báo', () => {
+  const violations = violationsIn({
+    'apps/web-3d/src/state/store.ts': "import { configureStore } from '@reduxjs/toolkit';",
+    'apps/web-3d/src/state/hooks.ts': "import { useSelector } from 'react-redux';",
+    'apps/web-3d/src/game/seat.ts': "import { useDispatch } from 'react-redux';",
+    'apps/web-3d/src/ui/prompt.tsx': "import { useSelector } from 'react-redux';",
+  });
+  assert.deepEqual(
+    violations.map((line) => line.split(' ')[0]),
+    ['apps/web-3d/src/game/seat.ts', 'apps/web-3d/src/state/hooks.ts'],
+  );
+});
+
 test('lớp giao diện dùng Three.js thì bị báo, kể cả qua đường dẫn con của gói', () => {
   const violations = violationsIn({
     'apps/web-3d/src/ui/hud.tsx': "import { Vector3 } from 'three';",

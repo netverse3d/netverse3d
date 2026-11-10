@@ -2,7 +2,7 @@ const WEB = 'apps/web-3d';
 const WEB_ALIASES = { '@/': `${WEB}/src/` };
 
 const NO_REACT = {
-  packages: ['react', 'react-dom', 'next'],
+  packages: ['react', 'react-dom', 'react-redux', 'next'],
   reason: 'the 3D world and game rules run outside React',
 };
 const NO_THREE = {

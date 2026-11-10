@@ -71,7 +71,7 @@ apps/web-3d/
 
 ## Luật phụ thuộc
 
-- `scene`, `game`, `net`, `state` không import React hay Next.js.
+- `scene`, `game`, `net`, `state` không import React, `react-redux` hay Next.js.
 - `ui` và `app` không import Three.js.
 - `game`, `net`, `state` không import Three.js: chỉ `scene` nói chuyện với Three.js.
 - `ui` không import `scene`, `game`, `net`. Muốn biết gì thì đọc `state`, muốn làm gì thì gửi lệnh vào `state`.
@@ -120,9 +120,32 @@ Luật chơi chỉ chạy ở bước 2. Bước 4 không được đổi trạn
 - Việc vẽ 3D chạy trên máy người chơi. Server chỉ phục vụ API và phòng realtime.
 - Địa chỉ API và phòng là cấu hình lúc build. Room server giả trong `dev/` không được có mặt trong bản build production.
 
-## Chưa chốt
+## Kho trạng thái
 
-- Chữ hiển thị cho người chơi (tiếng Việt) đặt ở đâu và có cần đa ngôn ngữ không.
-- Thư viện kho trạng thái: tự viết bằng `useSyncExternalStore` hay dùng thư viện có sẵn.
-- Cách viết CSS cho giao diện phủ trên canvas.
-- Ngân sách hiệu năng cho cả cảnh và máy tối thiểu phải chạy được.
+Kho trạng thái dùng Redux Toolkit.
+
+- `src/state/` chứa store và các slice, chỉ dùng `@reduxjs/toolkit`. Gói `react-redux` chỉ được dùng ở `ui` và `app`.
+- `scene`, `game`, `net` đọc bằng `store.getState()` hoặc `store.subscribe()`, ghi bằng `store.dispatch()`.
+- Kho chỉ giữ thứ giao diện cần và đổi thưa: máy đang trong tầm, phiên thuê, trạng thái kết nối, mức chất lượng, lỗi.
+- Thứ đổi theo từng nhịp (vị trí, hướng nhìn, khung xương) không đi qua kho. Chúng nằm trong mô phỏng của `game` và `scene` đọc thẳng từ đó. Đưa vào kho thì mỗi giây có 30 lần dispatch và React vẽ lại liên tục.
+- Dữ liệu trong kho phải là đối tượng thuần, tuần tự hoá được. `Map` của trạng thái phòng phải đổi thành đối tượng hoặc mảng trước lúc đưa vào.
+
+## Chữ hiển thị
+
+- Mọi chữ người chơi nhìn thấy nằm trong `src/ui/text/vi.ts`, component gọi theo khoá. Mã không chứa câu tiếng Việt.
+- Hiện chỉ có tiếng Việt. Thêm ngôn ngữ khác là thêm một tệp cùng bộ khoá.
+- Mã lỗi từ server là khoá để tra câu hiển thị, không hiện thẳng thông điệp của server.
+
+## CSS
+
+- Mỗi component một tệp `.module.css` đặt cạnh nó.
+- Màu, cỡ chữ, khoảng cách lấy từ biến CSS khai ở `app/globals.css`, không ghi số màu trong component.
+- `globals.css` chỉ chứa biến và phần đặt lại mặc định của trình duyệt.
+
+## Máy tối thiểu
+
+Game phải đạt 30 khung hình mỗi giây trong một tiệm 50 máy trên laptop văn phòng 5 năm tuổi: card tích hợp cỡ Intel UHD 620, RAM 8 GB.
+
+- Máy mạnh hơn dùng mức chất lượng cao hơn; không tính năng nào được chỉ chạy ở mức cao.
+- Điện thoại vào được ở mức chất lượng thấp, không cam kết số khung hình.
+- Trần tam giác, lời gọi vẽ và dung lượng tải cho cả cảnh sẽ ghi ở đây sau lần đo trên máy tối thiểu.

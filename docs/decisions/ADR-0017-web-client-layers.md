@@ -27,6 +27,10 @@
 | `src/net/`   | Kết nối phòng: bản WebSocket và bản giả                              | `state`, `packages/game-shared`        | React, Three.js, `ui`, `scene`, `app` |
 
 - Cảnh 3D và giao diện không gọi nhau. Game ghi vào kho trạng thái, giao diện đọc; giao diện gửi lệnh vào kho trạng thái, game nhận.
+- Kho trạng thái dùng Redux Toolkit. Thứ đổi theo từng nhịp như vị trí không đi qua kho.
+- Chữ hiển thị nằm trong tệp ngôn ngữ, hiện chỉ có tiếng Việt. Mã không chứa câu tiếng Việt.
+- CSS viết bằng CSS Modules, màu và cỡ chữ lấy từ biến chung.
+- Máy tối thiểu là laptop văn phòng 5 năm tuổi, card tích hợp cỡ Intel UHD 620, RAM 8 GB: 30 khung hình mỗi giây trong một tiệm 50 máy. Điện thoại vào được ở mức chất lượng thấp, không cam kết số khung hình.
 - Luật chơi mà server cũng cần (di chuyển, va chạm, nhịp mô phỏng, giao thức phòng) nằm ở `packages/game-shared`, không dùng Three.js, React hay mã của ứng dụng.
 - Room server giả nằm ở `apps/web-3d/dev/`, không vào bản build production, theo [ADR-0013](./ADR-0013-vertical-slice-roadmap.md).
 - Lệnh `pnpm boundaries:check` kiểm các hướng phụ thuộc trên và chạy trong `pnpm verify`. Thêm lớp mới thì thêm luật vào `scripts/boundaries/rules.mjs` trong cùng PR.
