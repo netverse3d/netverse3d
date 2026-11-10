@@ -219,18 +219,19 @@
           <button data-toggle="bounds" aria-pressed="false">Khung ô</button>
           <button data-toggle="grid" aria-pressed="true">Lưới sàn</button>
           <button data-toggle="bloom" aria-pressed="false">Bloom</button>
+          <button data-toggle="ao" aria-pressed="true">AO nướng</button>
         </div>
         <h2>Ánh sáng</h2>
         <div class="row">
           <span>Đèn chính</span
-          ><input id="key" type="range" min="0" max="4" step="0.1" value="2" /><output for="key"
-            >2.0</output
+          ><input id="key" type="range" min="0" max="4" step="0.1" value="1.2" /><output for="key"
+            >1.2</output
           >
         </div>
         <div class="row">
           <span>Môi trường</span
-          ><input id="env" type="range" min="0" max="1" step="0.05" value="0.35" /><output for="env"
-            >0.35</output
+          ><input id="env" type="range" min="0" max="1.5" step="0.05" value="0.8" /><output for="env"
+            >0.80</output
           >
         </div>
         <div class="row">
@@ -290,7 +291,7 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
-      import { shopMaterials } from '../runtime/three-shop.mjs';
+      import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -391,13 +392,13 @@
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
 
-      const key = new THREE.DirectionalLight('#fff4e6', 2);
+      const key = new THREE.DirectionalLight('#fff4e6', 1.2);
       key.position.set(3, 5, 4);
       const fill = new THREE.DirectionalLight('#dbe6ff', 0.8);
       fill.position.set(-4, 2.5, 2);
       const rim = new THREE.DirectionalLight('#ffffff', 0.9);
       rim.position.set(-1, 3.5, -5);
-      const hemi = new THREE.HemisphereLight('#ffffff', '#2a2a33', 0.4);
+      const hemi = new THREE.HemisphereLight('#ffffff', '#2a2a33', 0.7);
       scene.add(key, fill, rim, hemi);
       const floor = new THREE.Mesh(
         new THREE.CircleGeometry(12, 64),
@@ -423,9 +424,11 @@
         bounds: false,
         grid: true,
         bloom: false,
+        ao: true,
         glow: 1.1,
       };
       let materials = null;
+      let materialSets = {};
       let display = null;
       let decal = null;
 
@@ -439,26 +442,45 @@
         group.clear();
       }
 
+      function eachMaterial(apply) {
+        for (const set of Object.values(materialSets)) {
+          for (const material of Object.values(set)) apply(material, set);
+        }
+      }
+
       function rebuildMaterials() {
-        for (const material of Object.values(materials ?? {})) {
+        eachMaterial((material) => {
           material.map?.dispose();
           material.emissiveMap?.dispose();
           material.dispose();
-        }
-        materials = shopMaterials(THREE, recipes[state.recipeId], rows, { glowBoost: state.glow });
+        });
+        materialSets = Object.fromEntries(
+          Object.entries(kits).map(([file, gltf]) => [
+            file,
+            shopMaterials(THREE, recipes[state.recipeId], rows, {
+              glowBoost: state.glow,
+              lightmap: kitLightmap(gltf.scene),
+              lightmapIntensity: state.ao ? 1 : 0,
+            }),
+          ]),
+        );
+        materials = Object.values(materialSets)[0];
         display = materials.display;
         decal = materials.decal;
-        for (const material of Object.values(materials)) material.wireframe = state.wire;
+        eachMaterial((material) => {
+          material.wireframe = state.wire;
+        });
       }
 
       function partClone(name) {
-        for (const gltf of Object.values(kits)) {
+        for (const [file, gltf] of Object.entries(kits)) {
           const source = gltf.scene.getObjectByName(name);
           if (!source) continue;
+          const set = materialSets[file];
           const clone = source.clone(true);
           clone.traverse((mesh) => {
             if (!mesh.isMesh) return;
-            mesh.material = materials[mesh.material.name] ?? materials.surface;
+            mesh.material = set[mesh.material.name] ?? set.surface;
             mesh.frustumCulled = false;
           });
           return clone;
@@ -655,7 +677,7 @@
         exposure: (v) => (renderer.toneMappingExposure = v),
         glow: (v) => {
           state.glow = v;
-          materials.glow.color.setScalar(v);
+          for (const set of Object.values(materialSets)) set.glow.color.setScalar(v);
         },
         bloomStrength: (v) => (bloom.strength = v),
         bloomThreshold: (v) => (bloom.threshold = v),
@@ -677,8 +699,15 @@
         const name = button.dataset.toggle;
         state[name] = !state[name];
         button.setAttribute('aria-pressed', String(state[name]));
-        if (name === 'wire')
-          for (const material of Object.values(materials)) material.wireframe = state.wire;
+        if (name === 'wire') {
+          eachMaterial((material) => {
+            material.wireframe = state.wire;
+          });
+        }
+        if (name === 'ao') {
+          for (const set of Object.values(materialSets))
+            set.surface.aoMapIntensity = state.ao ? 1 : 0;
+        }
         if (name === 'grid') grid.visible = state.grid;
         if (name === 'bloom') bloom.enabled = state.bloom;
         if (name === 'anchors' || name === 'collision' || name === 'bounds') helperLayer();
@@ -697,7 +726,7 @@
       }
       addEventListener('resize', resize);
 
-      scene.environmentIntensity = 0.35;
+      scene.environmentIntensity = 0.8;
       rebuildMaterials();
       renderLists();
       resize();

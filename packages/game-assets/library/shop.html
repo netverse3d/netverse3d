@@ -225,6 +225,7 @@
           <button data-toggle="anchors" aria-pressed="false">Điểm neo</button>
           <button data-toggle="collision" aria-pressed="false">Hộp va chạm</button>
           <button data-toggle="bloom" aria-pressed="true">Bloom</button>
+          <button data-toggle="ao" aria-pressed="true">AO nướng</button>
           <button data-toggle="ceiling" aria-pressed="false">Trần</button>
         </div>
         <div id="meter">
@@ -315,7 +316,12 @@
         roomPlan,
         shopPlan,
       } from '../runtime/shop-look.mjs';
-      import { buildShop, paletteTexture, shopMaterials } from '../runtime/three-shop.mjs';
+      import {
+        buildShop,
+        kitLightmap,
+        paletteTexture,
+        shopMaterials,
+      } from '../runtime/three-shop.mjs';
 
       const $ = (id) => document.getElementById(id);
       const LIGHTING = {
@@ -432,9 +438,16 @@
         collision: false,
         bloom: true,
         ceiling: false,
+        ao: true,
         light: null,
       };
-      let materials = shopMaterials(THREE, state.recipe, rows);
+      const materials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(stationKit.scene),
+      });
+      const roomMaterials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(roomKit.scene),
+      });
+      const materialSets = [materials, roomMaterials];
       const GLOW_DEFAULT = materials.glow.color.r;
       let signMesh = null;
 
@@ -453,20 +466,24 @@
       function repaint() {
         const palette = paletteTexture(THREE, paletteImage(rows, state.recipe.palette));
         const emissive = paletteTexture(THREE, paletteImage(rows, state.recipe.emissive ?? {}));
-        for (const texture of [materials.surface.map, materials.surface.emissiveMap])
-          texture.dispose();
-        materials.surface.map = palette;
-        materials.surface.emissiveMap = emissive;
-        materials.glow.map = palette;
-        materials.surface.needsUpdate = true;
-        materials.glow.needsUpdate = true;
+        for (const set of materialSets) {
+          for (const texture of [set.surface.map, set.surface.emissiveMap]) texture.dispose();
+          set.surface.map = palette;
+          set.surface.emissiveMap = emissive;
+          set.glow.map = palette;
+          set.surface.needsUpdate = true;
+          set.glow.needsUpdate = true;
+        }
         paintSign();
       }
 
       function applyLight() {
         const light = state.light;
         renderer.toneMappingExposure = light.exposure;
-        materials.glow.color.setScalar(light.glow);
+        for (const set of materialSets) {
+          set.glow.color.setScalar(light.glow);
+          set.surface.aoMapIntensity = state.ao ? 1 : 0;
+        }
         bloom.strength = state.bloom ? light.bloomStrength : 0;
         bloom.threshold = light.bloomThreshold;
         for (const source of lightRig.children) {
@@ -606,7 +623,7 @@
           (placement) => state.ceiling || placement.slot !== 'ceiling',
         );
         const stations = shopPlan(state.recipe, anchors);
-        shopGroup.add(buildShop(THREE, roomKit.scene, room, materials));
+        shopGroup.add(buildShop(THREE, roomKit.scene, room, roomMaterials));
         shopGroup.add(buildShop(THREE, stationKit.scene, stations, materials));
         placeSign();
         currentPlan = [...room, ...stations];
@@ -749,7 +766,7 @@
         const key = button.dataset.toggle;
         state[key] = !state[key];
         button.setAttribute('aria-pressed', String(state[key]));
-        if (key === 'bloom') applyLight();
+        if (key === 'bloom' || key === 'ao') applyLight();
         else if (key === 'ceiling') rebuild();
         else helperLayer(currentPlan);
       });

@@ -109,6 +109,7 @@
     {
       "file": "station-parts.glb",
       "source": "parts-station.blend",
+      "lightmap": true,
       "slots": {
         "desk": {
           "variants": ["a"],
@@ -153,6 +154,7 @@
     {
       "file": "room-kit.glb",
       "source": "environment-kit.blend",
+      "lightmap": true,
       "slots": {
         "floor": {
           "variants": ["a"],

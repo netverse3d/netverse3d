@@ -9,7 +9,33 @@ export function paletteTexture(THREE, image) {
   return texture;
 }
 
-export function shopMaterials(THREE, recipe, rows, { roughness = 0.62, glowBoost = 1.2 } = {}) {
+const AO_INCLUDE = '#include <aomap_fragment>';
+const AO_DIRECT = `${AO_INCLUDE}
+#ifdef USE_AOMAP
+reflectedLight.directDiffuse *= ambientOcclusion;
+reflectedLight.directSpecular *= ambientOcclusion;
+#endif`;
+
+export function occludeDirectLight(shader) {
+  shader.fragmentShader = shader.fragmentShader.replace(AO_INCLUDE, AO_DIRECT);
+}
+
+export function kitLightmap(kitScene) {
+  let found = null;
+  kitScene.traverse((object) => {
+    if (!found && object.isMesh && object.material?.name === 'surface' && object.material.aoMap) {
+      found = object.material.aoMap;
+    }
+  });
+  return found;
+}
+
+export function shopMaterials(
+  THREE,
+  recipe,
+  rows,
+  { roughness = 0.62, glowBoost = 1.2, lightmap = null, lightmapIntensity = 1 } = {},
+) {
   const palette = paletteTexture(THREE, paletteImage(rows, recipe.palette));
   const emissive = paletteTexture(THREE, paletteImage(rows, recipe.emissive ?? {}));
   const surface = new THREE.MeshStandardMaterial({
@@ -18,7 +44,10 @@ export function shopMaterials(THREE, recipe, rows, { roughness = 0.62, glowBoost
     emissiveMap: emissive,
     emissive: new THREE.Color('#ffffff'),
     emissiveIntensity: 1,
+    aoMap: lightmap ?? undefined,
+    aoMapIntensity: lightmapIntensity,
   });
+  if (lightmap) surface.onBeforeCompile = occludeDirectLight;
   const glow = new THREE.MeshBasicMaterial({ map: palette, toneMapped: false });
   glow.color.setScalar(glowBoost);
   const display = new THREE.MeshBasicMaterial({ color: '#0a0a14', toneMapped: false });
