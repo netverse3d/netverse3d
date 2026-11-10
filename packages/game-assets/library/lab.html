@@ -592,7 +592,7 @@
         const box = new THREE.Box3().setFromObject(stageGroup);
         const size = box.getSize(new THREE.Vector3());
         const centre = box.getCenter(new THREE.Vector3());
-        const radius = Math.max(size.x, size.y, size.z) * 1.15 + 0.4;
+        const radius = Math.max(size.x, size.y, size.z) * 1.4 + 0.05;
         const dir = {
           front: [0, 0.35, -1],
           back: [0, 0.35, 1],

@@ -126,7 +126,7 @@ Vật liệu dùng chung, như `logo_canvas`, có bản sao trong nhiều tệp 
 
 ## Ngân sách
 
-Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ dùng khi cảnh đông người, tự giảm thân và tóc còn tổng khoảng 10.000 tam giác. Bộ bàn máy mười món hiện 13.482 tam giác, bộ module phòng 3.760. Ghế được nâng ngân sách từ 5.400 lên 6.800 (2026-11-10) để lưng có 25 vòng và đệm 13 vòng với nội suy mượt, sau khi người dùng thấy ghế góc cạnh trong phòng lab; 50 máy vẫn dưới một triệu tam giác mỗi khung. Muốn tăng ngân sách thì nêu lý do trong PR, và kiểm lại FPS trên GPU thật.
+Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ dùng khi cảnh đông người, tự giảm thân và tóc còn tổng khoảng 10.000 tam giác. Bộ bàn máy mười món hiện 14.186 tam giác, bộ module phòng 3.760. Ngày 2026-11-10, sau khi người dùng soi từng món trong phòng lab, ghế được nâng ngân sách từ 5.400 lên 6.800 để lưng có 25 vòng và đệm 13 vòng với nội suy mượt, và chuột từ 600 lên 1.400 để dựng lại thành vỏ trên dạng lưới cao độ đặt trên đế dưới với đường ron sắc, rãnh chia nút, khe bánh xe, dải sáng và logo đều là mặt của chính vỏ thay vì ống dán rời; 50 máy vẫn dưới một triệu tam giác mỗi khung. Muốn tăng ngân sách thì nêu lý do trong PR, và kiểm lại FPS trên GPU thật.
 
 ## Bộ kiểm chặn gì
 
