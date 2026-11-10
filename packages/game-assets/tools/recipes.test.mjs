@@ -67,7 +67,9 @@ test('công thức chọn ô không có trong bộ ô đồ bị từ chối', (
 });
 
 test('công thức thiếu hoặc thừa hàng màu bị từ chối', () => {
-  const { keycap, ...palette } = RECIPE.palette;
+  const palette = Object.fromEntries(
+    Object.entries(RECIPE.palette).filter(([row]) => row !== 'keycap'),
+  );
   assert.match(errorsOf({ palette }), /tim-neon: palette rows must be body, soft, strip, keycap/);
   assert.match(
     errorsOf({ palette: { ...RECIPE.palette, neon: ['#ffffff'] } }),
