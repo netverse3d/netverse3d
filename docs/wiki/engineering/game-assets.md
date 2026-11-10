@@ -65,13 +65,13 @@ V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo
 
 ### Module phòng
 
-Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`.
+Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép.
 
 ### Công thức tiệm
 
 Mỗi tiệm là một tệp JSON trong `recipes/`, theo hợp đồng `packages/contracts/world/shop-look.v1.schema.json`: `palette` (mỗi hàng màu là một dải gồm một hay nhiều màu), `emissive` (dải phát sáng nhẹ cho hàng bề mặt, tuỳ chọn), `variants` (biến thể cho từng ô đồ), `layout` (kích thước phòng theo ô 2 m, vị trí và hướng từng máy, cửa, cửa sổ), `sign` và `lighting`. Ba tiệm mẫu khác nhau về màu, bố cục, biển và đèn: `tim-neon`, `bien-sau`, `cam-retro`; biến thể của chúng đều là `a` vì mỗi ô mới có một biến thể.
 
-Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng ô 2 m; ô `[x, z]` có x đếm từ tường `west` (0) sang `east`, z đếm từ tường `north` (0) xuống `south`; `facing` là hướng người ngồi nhìn, màn hình nằm ở phía đó của ô; `at` của cửa và cửa sổ là chỉ số ô dọc theo tường. Mỗi tiệm có đúng một cửa và ô sàn ngay trong cửa phải để trống. Bộ kiểm công thức chạy trong `pnpm verify`, hoặc riêng bằng `pnpm --filter @netverse/game-assets check:recipes`; nó từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, dải phát sáng cho hàng không phải bề mặt, đặt máy ngoài phòng, hai máy chung một ô, máy chắn trước cửa, cửa và cửa sổ trùng chỗ, tệp không phải JSON, hoặc tên tệp khác `id`.
+Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng ô 2 m; ô `[x, z]` có x đếm từ tường `west` (0) sang `east`, z đếm từ tường `north` (0) xuống `south`; `facing` là hướng người ngồi nhìn, màn hình nằm ở phía đó của ô; `at` của cửa và cửa sổ là chỉ số ô dọc theo tường. Mỗi tiệm có đúng một cửa và ô sàn ngay trong cửa phải để trống. Cửa và cửa sổ không được đặt ở ô góc (ô đầu hay cuối của một bức tường) vì ô góc do module góc liền khối đảm nhiệm. Bộ kiểm công thức chạy trong `pnpm verify`, hoặc riêng bằng `pnpm --filter @netverse/game-assets check:recipes`; nó từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, dải phát sáng cho hàng không phải bề mặt, đặt máy ngoài phòng, hai máy chung một ô, máy chắn trước cửa, cửa hay cửa sổ ở ô góc, cửa và cửa sổ trùng chỗ, tệp không phải JSON, hoặc tên tệp khác `id`.
 
 ### Mã chạy
 
@@ -81,7 +81,11 @@ Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng
 
 ### Phòng thử tiệm
 
-Tab "Phòng thử tiệm" của thư viện mở `library/shop.html`: trang dựng cả tiệm từ công thức bằng đúng mã chạy ở trên, gồm phòng ghép từ module theo `layout`, các máy đặt theo socket, biển hiệu trên cửa và đèn theo `lighting`. Trong trang có thể chọn một trong ba tiệm mẫu, sửa từng hàng màu và thêm mốc để thành dải chuyển màu, đổi biến thể theo ô, đổi biển và kiểu đèn, bật lớp điểm neo và hộp va chạm, rồi chép JSON ra để lưu thành công thức mới trong `recipes/` (nhớ thêm `id` vào `recipes/index.json`). Trần tắt mặc định để nhìn từ trên xuống.
+Tab "Phòng thử tiệm" của thư viện mở `library/shop.html`: trang dựng cả tiệm từ công thức bằng đúng mã chạy ở trên, gồm phòng ghép từ module theo `layout`, các máy đặt theo socket, biển hiệu trên cửa và đèn theo `lighting`. Trong trang có thể chọn một trong ba tiệm mẫu, sửa từng hàng màu và thêm mốc để thành dải chuyển màu, đổi biến thể theo ô, đổi biển và kiểu đèn, bật lớp điểm neo và hộp va chạm, rồi chép JSON ra để lưu thành công thức mới trong `recipes/` (nhớ thêm `id` vào `recipes/index.json`). Trần tắt mặc định để nhìn từ trên xuống. Nhóm thanh trượt "Ánh sáng" (phơi sáng, đèn nền, đèn điểm, phát sáng, độ mạnh và ngưỡng bloom) chỉnh trực tiếp trên cảnh để chốt mức sáng rồi ghi lại vào preset của `lighting`; mặc định hiện tại giữ bloom thấp (neon 0,35, ngưỡng 0,85) và phát sáng 1,2 để tiệm không bị loá.
+
+### Phòng lab
+
+Tab "Phòng lab" mở `library/lab.html`: xem riêng từng món của hai bộ ô đồ trên bục xoay dưới ba đèn studio trung tính, kèm số tam giác, kích thước so với khung ô và danh sách điểm neo. Bật được khung dây, điểm neo, hộp va chạm, khung ô và lưới sàn; bốn bộ ghép thử mối nối (góc tường, cửa giữa hai tường, cửa sổ giữa hai tường, trần và đèn) để soi chỗ các module gặp nhau trước khi ghép cả tiệm. Cả hai trang vẽ qua composer có khử răng cưa MSAA bốn mẫu, vì `antialias` của canvas không tác dụng khi đi qua hậu xử lý.
 
 ## Chuẩn bị
 

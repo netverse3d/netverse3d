@@ -9,7 +9,7 @@ export function paletteTexture(THREE, image) {
   return texture;
 }
 
-export function shopMaterials(THREE, recipe, rows, { roughness = 0.62, glowBoost = 1.7 } = {}) {
+export function shopMaterials(THREE, recipe, rows, { roughness = 0.62, glowBoost = 1.2 } = {}) {
   const palette = paletteTexture(THREE, paletteImage(rows, recipe.palette));
   const emissive = paletteTexture(THREE, paletteImage(rows, recipe.emissive ?? {}));
   const surface = new THREE.MeshStandardMaterial({

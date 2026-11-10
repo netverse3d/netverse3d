@@ -381,7 +381,10 @@
       const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 60);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
-      const composer = new EffectComposer(renderer);
+      const composer = new EffectComposer(
+        renderer,
+        new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
+      );
       composer.addPass(new RenderPass(scene, camera));
       const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.4, 0.85);
       bloom.enabled = false;
@@ -591,11 +594,11 @@
         const centre = box.getCenter(new THREE.Vector3());
         const radius = Math.max(size.x, size.y, size.z) * 1.15 + 0.4;
         const dir = {
-          front: [0, 0.35, 1],
-          back: [0, 0.35, -1],
+          front: [0, 0.35, -1],
+          back: [0, 0.35, 1],
           side: [1, 0.35, 0],
           top: [0.001, 1, 0.001],
-          iso: [0.8, 0.6, 1],
+          iso: [0.8, 0.6, -1],
         }[view];
         const offset = new THREE.Vector3(...dir).normalize().multiplyScalar(radius * 1.9);
         controls.target.copy(centre);
