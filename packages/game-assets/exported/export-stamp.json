@@ -1,19 +1,23 @@
 {
-  "config": "14e4bb66676dd2c26c0acb75d0f06bef5b26967cfd4dcc31db6221c60b4284ad",
+  "config": "bd4fc32de76b0f7b75963e4de877ba24029f20c5c03538b3a74836d5a0ad7747",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "58b6a362da4e61729197b8166770e0e4fb44a6155756dd24b7e7f8f28bf52654",
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "01a312d06d8271e4093efedc0399d8b296c31f12553815435cfcdf47fc1a2038",
-    "environment-kit.blend": "2c8c75211ee3fb7b3465269647d24f03297eae265ed46f86a414dd294fcc49cd"
+    "parts-station.blend": "cda0696b0aa5b0ffd70642eff8bd1fb0232f101840c21eab28cfa0c78e925ef0",
+    "environment-kit.blend": "2c8c75211ee3fb7b3465269647d24f03297eae265ed46f86a414dd294fcc49cd",
+    "showcase-tim-neon.blend": "b1184954068dd771df0f548d5a81dba3226eea9bd7bda7752ec570cdb1787b75"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "f59c934a9ac6b33241fb86f1b6816e45c12ce4b09a6879e9a14fa272c174981f",
-    "room-kit.glb": "aa2e4b00bffd422f151fd98a15fbd52a2db005d810c8e6f542a2cfe948c0064c"
+    "station-parts.glb": "ba65e8a24f21aeb888ae65aa1420383d67ef348e2281d56a5ceaf7d5c541dc59",
+    "room-kit.glb": "aa2e4b00bffd422f151fd98a15fbd52a2db005d810c8e6f542a2cfe948c0064c",
+    "showcase-tim-neon.glb": "66f32e18f1c0f5dbb6f3089cc61cdeee96b54276fd7a000c63cf8ccb38981622",
+    "showcase-tim-neon-base.jpg": "3eb2247d1b420e3aafec6820bc6b6d9afa4ce4e2a88d14e45910c747bc22889a",
+    "showcase-tim-neon-spill.jpg": "8a619e9a9dc3c37963fe8f199c6c23eb22a0dc564422d3ea0c06c164baefd80a"
   }
 }

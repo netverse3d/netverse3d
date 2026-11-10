@@ -311,6 +311,26 @@ function checkLightmap(gltf, fail) {
   }
 }
 
+export function checkScene(file, gltf, expected, bin, root) {
+  const errors = [];
+  const fail = (message) => errors.push(`${file}: ${message}`);
+  const meshNodes = (gltf.nodes ?? []).filter((node) => node.mesh !== undefined);
+  if (meshNodes.length === 0) fail('scene has no meshes');
+  for (const node of meshNodes) {
+    const lit = gltf.meshes[node.mesh].primitives.every(
+      (primitive) => primitive.attributes[LIGHTMAP_ATTRIBUTE] !== undefined,
+    );
+    if (!lit) fail(`${node.name} is missing attribute ${LIGHTMAP_ATTRIBUTE}`);
+  }
+  if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
+  for (const image of expected.images) {
+    const path = join(root, 'exported', image);
+    if (!existsSync(path)) fail(`baked image ${image} is missing`);
+    else if (isLfsPointer(readFileSync(path))) fail(`baked image ${image} is an LFS pointer`);
+  }
+  return errors;
+}
+
 export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -337,7 +357,7 @@ export function checkModel(file, gltf, expected, bin) {
 }
 
 export function sourceFiles(config) {
-  const { character, props, kits = [] } = config;
+  const { character, props, kits = [], scenes = [] } = config;
   return [
     ...new Set([
       character.rigSource,
@@ -345,6 +365,7 @@ export function sourceFiles(config) {
       ...Object.values(character.meshes).map((mesh) => mesh.source),
       ...props.map((prop) => prop.source),
       ...kits.map((kit) => kit.source),
+      ...scenes.map((scene) => scene.source),
     ]),
   ];
 }
@@ -355,7 +376,12 @@ export function outputFiles(config) {
     config.character.lodFile,
     ...config.props.map((prop) => prop.file),
     ...(config.kits ?? []).map((kit) => kit.file),
+    ...(config.scenes ?? []).flatMap((scene) => [scene.file, ...Object.values(scene.files)]),
   ];
+}
+
+function sceneExpectation(scene, palette) {
+  return { file: scene.file, scene: true, images: Object.values(scene.files), palette };
 }
 
 function kitParts(kit) {
@@ -398,6 +424,7 @@ function expectations(config) {
     },
     ...props.map((prop) => ({ file: prop.file, meshes: { [prop.object]: prop.maxTriangles } })),
     ...kits.map((kit) => kitExpectation(kit, palette)),
+    ...(config.scenes ?? []).map((scene) => sceneExpectation(scene, palette)),
   ];
 }
 
@@ -478,7 +505,13 @@ function checkContent(root, config, requireContent) {
     }
     const buffer = readFileSync(path);
     if (!isLfsPointer(buffer)) {
-      errors.push(...checkModel(expected.file, readGlb(buffer), expected, readGlbBinary(buffer)));
+      const gltf = readGlb(buffer);
+      const bin = readGlbBinary(buffer);
+      errors.push(
+        ...(expected.scene
+          ? checkScene(expected.file, gltf, expected, bin, root)
+          : checkModel(expected.file, gltf, expected, bin)),
+      );
     } else if (requireContent) errors.push(`${expected.file} is an LFS pointer: fetch it first`);
     else skipped.push(expected.file);
   }

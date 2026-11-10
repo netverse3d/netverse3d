@@ -85,3 +85,82 @@ export function buildShop(THREE, kitScene, plan, materials) {
   }
   return group;
 }
+
+const SHOWCASE_VERTEX = `
+#include <common>
+attribute vec2 uv1;
+varying vec2 vPalette;
+varying vec2 vLightmap;
+void main() {
+  vPalette = uv;
+  vLightmap = uv1;
+  #include <begin_vertex>
+  #include <project_vertex>
+}`;
+
+const SHOWCASE_FRAGMENT = `
+uniform sampler2D palette;
+uniform sampler2D base;
+uniform sampler2D spill;
+uniform float ambient;
+uniform vec3 stripColor;
+uniform vec3 screenColor;
+uniform vec3 accentColor;
+uniform vec3 spillStrength;
+varying vec2 vPalette;
+varying vec2 vLightmap;
+void main() {
+  vec3 albedo = texture2D(palette, vPalette).rgb;
+  vec3 masks = texture2D(spill, vLightmap).rgb;
+  vec3 light = texture2D(base, vLightmap).rgb * ambient
+    + masks.r * stripColor * spillStrength.x
+    + masks.g * screenColor * spillStrength.y
+    + masks.b * accentColor * spillStrength.z;
+  gl_FragColor = vec4(albedo * light, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+
+export function rowColor(THREE, recipe, row) {
+  const stops = recipe.palette[row] ?? ['#ffffff'];
+  const color = new THREE.Color(0, 0, 0);
+  for (const stop of stops) color.add(new THREE.Color(stop));
+  return color.multiplyScalar(1 / stops.length);
+}
+
+export function showcaseMaterials(
+  THREE,
+  recipe,
+  rows,
+  { base, spill, ambient = 6, spillStrength = [8, 6, 6], glowBoost = 1.2 } = {},
+) {
+  const materials = shopMaterials(THREE, recipe, rows, { glowBoost });
+  materials.surface.dispose();
+  materials.surface = new THREE.ShaderMaterial({
+    uniforms: {
+      palette: { value: materials.glow.map },
+      base: { value: base },
+      spill: { value: spill },
+      ambient: { value: ambient },
+      stripColor: { value: rowColor(THREE, recipe, 'strip') },
+      screenColor: { value: rowColor(THREE, recipe, 'screen') },
+      accentColor: { value: rowColor(THREE, recipe, 'accent') },
+      spillStrength: { value: new THREE.Vector3(...spillStrength) },
+    },
+    vertexShader: SHOWCASE_VERTEX,
+    fragmentShader: SHOWCASE_FRAGMENT,
+  });
+  return materials;
+}
+
+export function recolorShowcase(THREE, materials, recipe, rows) {
+  const palette = paletteTexture(THREE, paletteImage(rows, recipe.palette));
+  const { uniforms } = materials.surface;
+  uniforms.palette.value.dispose();
+  uniforms.palette.value = palette;
+  uniforms.stripColor.value.copy(rowColor(THREE, recipe, 'strip'));
+  uniforms.screenColor.value.copy(rowColor(THREE, recipe, 'screen'));
+  uniforms.accentColor.value.copy(rowColor(THREE, recipe, 'accent'));
+  materials.glow.map = palette;
+  materials.glow.needsUpdate = true;
+}
