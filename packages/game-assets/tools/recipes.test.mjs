@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { checkRecipes, loadConfig } from './lib.mjs';
+import { loadConfig } from './lib.mjs';
+import { checkRecipes } from './recipes.mjs';
 
 const REAL_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
