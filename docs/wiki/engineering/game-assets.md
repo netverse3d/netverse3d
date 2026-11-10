@@ -73,6 +73,10 @@ Mỗi tiệm là một tệp JSON trong `recipes/`, theo hợp đồng `packages
 
 Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng ô 2 m; ô `[x, z]` có x đếm từ tường `west` (0) sang `east`, z đếm từ tường `north` (0) xuống `south`; `facing` là hướng người ngồi nhìn, màn hình nằm ở phía đó của ô; `at` của cửa và cửa sổ là chỉ số ô dọc theo tường. Mỗi tiệm có đúng một cửa và ô sàn ngay trong cửa phải để trống. Bộ kiểm công thức chạy trong `pnpm verify`, hoặc riêng bằng `pnpm --filter @netverse/game-assets check:recipes`; nó từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, dải phát sáng cho hàng không phải bề mặt, đặt máy ngoài phòng, hai máy chung một ô, máy chắn trước cửa, cửa và cửa sổ trùng chỗ, tệp không phải JSON, hoặc tên tệp khác `id`.
 
+### Mã chạy
+
+`runtime/shop-look.mjs` dựng ảnh dải màu 128×12 từ công thức (nội suy trong không gian tuyến tính rồi đưa về sRGB), đọc socket từ glTF và lập kế hoạch đặt từng món của mọi máy theo `layout`. `runtime/three-shop.mjs` biến kế hoạch đó thành `InstancedMesh` của three.js, mỗi hình khối một lần cho cả tiệm; mô-đun không kéo three.js vào, hàm nào cần three thì nhận nó làm tham số. Đo trên Chrome headless với bộ máy hiện tại: một máy 24 lời gọi vẽ, 50 máy vẫn 24 trong lúc nhân bản thường tốn 1.300; mỗi máy 12.334 tam giác (loa tính hai lần).
+
 ## Chuẩn bị
 
 Cần Git LFS và Blender 5.2 trở lên. `pnpm bootstrap` đã bật Git LFS và tải sẵn các tệp. Blender nằm ở vị trí lạ thì đặt biến `BLENDER_PATH`.
