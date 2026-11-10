@@ -14,10 +14,11 @@
     "format": "node scripts/format.mjs --write",
     "format:check": "node scripts/format.mjs --check",
     "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
-    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && pnpm catalog:check && pnpm docs:check && turbo run lint test build",
+    "verify": "pnpm lint && pnpm format:check && pnpm test:scripts && pnpm trace:check && pnpm catalog:check && pnpm boundaries:check && pnpm docs:check && turbo run lint test build",
     "trace:check": "node scripts/trace/check-registry.mjs",
     "trace:link": "node scripts/drift/link.mjs",
     "catalog:check": "node scripts/catalog/check.mjs",
+    "boundaries:check": "node scripts/boundaries/check.mjs",
     "assets:export": "pnpm --filter @netverse/game-assets run export",
     "assets:check": "pnpm --filter @netverse/game-assets run check",
     "assets:library": "pnpm --filter @netverse/game-assets run library",
@@ -36,6 +37,8 @@
     "globals": "^17.14.0",
     "prettier": "^3.9.10",
     "turbo": "^2.11.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "8.72.1",
     "yaml": "^2.9.1"
   }
 }
