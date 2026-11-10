@@ -48,6 +48,7 @@ src/game/             đọc phím, chuột, chạm thành ý định di chuyể
 src/types/            khai kiểu cho mã chạy JavaScript của game-assets
 src/ui/               giao diện React phủ trên canvas, đọc kho bằng useSelector và gửi lệnh bằng dispatch
 src/ui/text/vi.ts     mọi câu người chơi thấy, component gọi theo khoá
+dev/                  room server giả chạy trong trình duyệt theo giao thức nháp; chưa nối vào ứng dụng
 scripts/              chép tài sản vào public, máy chủ xem bản xuất tĩnh
 test/                 thử trang bằng Chrome headless trên bản xuất tĩnh
 ```

@@ -1,7 +1,7 @@
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { KitAnchors } from '@netverse/game-shared/collision';
-import { PLAYER_RADIUS } from '@netverse/game-shared/movement';
 import type { FloorBox, FloorPoint } from '@netverse/game-shared/movement';
+import { seatIdOf, withinSeatReach } from '@netverse/game-shared/seating';
 
 export interface StationPart {
   readonly station?: number;
@@ -17,8 +17,6 @@ export interface Seat {
   readonly footprint: FloorBox;
 }
 
-export const SEAT_REACH = PLAYER_RADIUS + 0.2;
-
 const DESK_SLOT = 'desk';
 const CHAIR_SLOT = 'chair';
 
@@ -30,12 +28,6 @@ function around(boxes: readonly FloorBox[], owner: string): FloorBox {
     minZ: Math.min(...boxes.map((box) => box.minZ)),
     maxZ: Math.max(...boxes.map((box) => box.maxZ)),
   };
-}
-
-function gapTo(box: FloorBox, point: FloorPoint): number {
-  const gapX = Math.max(box.minX - point.x, 0, point.x - box.maxX);
-  const gapZ = Math.max(box.minZ - point.z, 0, point.z - box.maxZ);
-  return Math.sqrt(gapX * gapX + gapZ * gapZ);
 }
 
 function span(from: FloorPoint, to: FloorPoint): number {
@@ -52,7 +44,7 @@ export function shopSeats(stations: readonly StationPart[], anchors: KitAnchors)
       if (!chair) throw new TypeError(`${part} has no chair in its station`);
       const footprint = around(collisionBoxes(parts, anchors), part);
       const [x = 0, , z = 0] = chair.position;
-      return { seatId: `seat-${station + 1}`, chair: { x, z }, footprint };
+      return { seatId: seatIdOf(station), chair: { x, z }, footprint };
     });
 }
 
@@ -63,7 +55,7 @@ export function nearestSeat(
 ): Seat | null {
   let best: Seat | null = null;
   for (const seat of seats) {
-    if (taken.has(seat.seatId) || gapTo(seat.footprint, player) > SEAT_REACH) continue;
+    if (taken.has(seat.seatId) || !withinSeatReach(player, seat.footprint)) continue;
     if (best === null) {
       best = seat;
       continue;

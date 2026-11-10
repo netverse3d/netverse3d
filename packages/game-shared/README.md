@@ -36,6 +36,16 @@ Người chơi là hình tròn bán kính `PLAYER_RADIUS`.
 - Số đo không hữu hạn hoặc nửa kích thước không dương thì ném `TypeError` kèm tên món.
 - Cạnh hộp được làm tròn tới phần triệu mét. Với món đặt theo góc vuông, mọi máy ra cùng một số; góc lệch thì có thể chênh một phần triệu mét giữa các máy.
 
+## Ngồi máy
+
+Luật chọn máy mà client và phòng phải hiểu giống nhau nằm ở `seating`:
+
+- `seatIdOf(station)` đặt tên máy theo thứ tự cụm máy trong tiệm, đếm từ một: `seat-1`, `seat-2`.
+- `withinSeatReach(point, footprint)` cho biết người đứng ở `point` có với tới cụm máy có vùng `footprint` hay không. Tầm với `SEAT_REACH` bằng thân người cộng 20 cm, đo từ mép vùng.
+- `gapToBox(box, point)` là khoảng hở từ một điểm tới một hộp trên sàn, bằng 0 khi điểm nằm trong hộp.
+
+Client dùng luật này để hiện gợi ý; phòng dùng nó để từ chối yêu cầu ngồi với lý do `too_far`.
+
 ## Nhịp mô phỏng cố định
 
 `@netverse/game-shared/simulation` tách luật chơi khỏi tốc độ khung hình. Luật chạy `TICK_RATE` nhịp mỗi giây, mỗi nhịp dài đúng `TICK_SECONDS`, nên máy 144 Hz và máy 20 Hz ra cùng một trạng thái sau cùng số nhịp.
