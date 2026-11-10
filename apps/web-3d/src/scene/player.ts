@@ -1,7 +1,9 @@
-import type { Object3D, SkinnedMesh } from 'three';
+import type { AnimationAction, Object3D, SkinnedMesh } from 'three';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { createActorLook, type ActorLook } from '@netverse/game-assets/runtime/actor-look.mjs';
+import type { PlayerState } from '@netverse/game-shared/movement';
+import { blendClipWeights } from './clip-blend.ts';
 
 type Three = typeof import('three');
 
@@ -13,29 +15,58 @@ export interface Spawn {
 
 export interface Player {
   root: Object3D;
-  yaw: number;
   hasFace: boolean;
+  moveTo(state: PlayerState): void;
+  playClip(name: string): void;
   update(delta: number): void;
   dispose(): void;
 }
 
 const IDLE_CLIP = 'idle';
+const HAND_PROPS = ['crate', 'cup'];
 let sharedLook: ActorLook | null = null;
 
 export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
   sharedLook ??= createActorLook(THREE);
   const root = SkeletonUtils.clone(gltf.scene);
   sharedLook.dress(root);
+  for (const name of HAND_PROPS) {
+    const prop = root.getObjectByName(name);
+    if (prop) prop.visible = false;
+  }
   root.position.set(spawn.x, 0, spawn.z);
   root.rotation.y = spawn.yaw;
   const mixer = new THREE.AnimationMixer(root);
-  const clip = gltf.animations.find((animation) => animation.name === IDLE_CLIP);
-  if (clip) mixer.clipAction(clip).play();
+  const actions = new Map<string, AnimationAction>(
+    gltf.animations.map((animation) => [animation.name, mixer.clipAction(animation)]),
+  );
+  let clip = IDLE_CLIP;
+  let weights = new Map<string, number>();
+  const blend = (delta: number) => {
+    weights = blendClipWeights(weights, clip, delta);
+    for (const [name, action] of actions) {
+      const weight = weights.get(name);
+      if (weight === undefined) {
+        if (action.isRunning()) action.stop();
+      } else {
+        if (!action.isRunning()) action.play();
+        action.setEffectiveWeight(weight);
+      }
+    }
+  };
+  blend(0);
   return {
     root,
-    yaw: spawn.yaw,
     hasFace: Boolean(root.userData.face?.map),
+    moveTo(state) {
+      root.position.set(state.x, 0, state.z);
+      root.rotation.y = state.yaw;
+    },
+    playClip(name) {
+      if (actions.has(name)) clip = name;
+    },
     update(delta) {
+      blend(delta);
       mixer.update(delta);
     },
     dispose() {

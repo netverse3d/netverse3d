@@ -17,10 +17,28 @@ import {
 } from '@netverse/game-assets/runtime/shop-look.mjs';
 import {
   buildShop,
+  kitLightmap,
   shopMaterials,
   type ShopMaterials,
 } from '@netverse/game-assets/runtime/three-shop.mjs';
+import { collisionBoxes } from '@netverse/game-shared/collision';
+import type { FloorBox } from '@netverse/game-shared/movement';
+import { createControls } from '../game/controls.ts';
+import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
+import { createWalk } from '../game/walk.ts';
 import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
+import {
+  FAR_FIELD_OF_VIEW,
+  CORNER_VIEW_TURN,
+  DEFAULT_ORBIT,
+  cameraPose,
+  clearEye,
+  cutaways,
+  eyeDistance,
+  fieldOfView,
+  turnOrbit,
+  zoomOrbit,
+} from './follow-camera.ts';
 import { QUALITY_PRESETS, pixelRatioFor } from './quality.ts';
 import { createPlayer, type Player, type Spawn } from './player.ts';
 
@@ -62,13 +80,8 @@ interface LightPreset {
   exposure: number;
 }
 
-const CELL_SIZE = 2;
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 } as const;
-const UP = new THREE.Vector3(0, 1, 0);
 const CONTEXT_RESTORE_DELAY = 400;
-const CAMERA_DISTANCE = 2.4;
-const CAMERA_HEIGHT = 1.9;
-const CAMERA_MARGIN = 0.6;
 const STATS_INTERVAL = 0.5;
 const ENVIRONMENT_BLUR = 0.04;
 const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
@@ -154,8 +167,7 @@ function disposeGroup(group: THREE.Group): void {
   group.clear();
 }
 
-function disposeMaterials(materials: ShopMaterials | null): void {
-  if (!materials) return;
+function disposeMaterials(materials: ShopMaterials): void {
   materials.surface.map?.dispose();
   materials.surface.emissiveMap?.dispose();
   for (const material of [materials.surface, materials.glow, materials.display, materials.decal]) {
@@ -194,7 +206,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   renderer.info.autoReset = false;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0d0a18');
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 80);
+  renderer.localClippingEnabled = true;
+  const camera = new THREE.PerspectiveCamera(FAR_FIELD_OF_VIEW, 1, 0.1, 80);
+  const cutPlanes = cutaways([0, 0, 0], { minX: 0, maxX: 0, minZ: 0, maxZ: 0 }).map(
+    ([x, y, z, constant]) => new THREE.Plane(new THREE.Vector3(x, y, z), constant),
+  );
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.8, 0.6, 0.72);
@@ -215,8 +231,13 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     face: false,
   };
   let pmrem: THREE.PMREMGenerator | null = null;
-  let materials: ShopMaterials | null = null;
+  let materialSets: ShopMaterials[] = [];
   let player: Player | null = null;
+  const controls = createControls(canvas, window);
+  const walk = createWalk({ x: 0, z: 0, yaw: 0 }, []);
+  let orbit = DEFAULT_ORBIT;
+  let openFloor: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
+  let furniture: FloorBox[] = [];
   let frames = 0;
   let elapsed = 0;
 
@@ -265,41 +286,66 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     renderer.toneMappingExposure = preset.exposure;
   }
 
-  function frameCamera(recipe: ShopRecipe, actor: Player): void {
-    const [width, depth] = recipe.layout.cells;
-    const forward = new THREE.Vector3(Math.sin(actor.yaw), 0, Math.cos(actor.yaw));
-    const eye = actor.root.position
-      .clone()
-      .addScaledVector(forward, -CAMERA_DISTANCE)
-      .add(UP.clone().multiplyScalar(CAMERA_HEIGHT));
-    eye.x = THREE.MathUtils.clamp(eye.x, -(width - CAMERA_MARGIN), width - CAMERA_MARGIN);
-    eye.z = THREE.MathUtils.clamp(eye.z, -(depth - CAMERA_MARGIN), depth - CAMERA_MARGIN);
-    const target = actor.root.position.clone().addScaledVector(forward, 2.5).setY(1.1);
-    camera.position.copy(eye);
-    camera.lookAt(target);
+  function play(delta: number): void {
+    if (!player) return;
+    const turn = controls.takeTurn();
+    orbit = zoomOrbit(turnOrbit(orbit, turn.right, turn.down), controls.takeZoom());
+    const frame = walk.advance(delta, controls.intent(), orbit.yaw);
+    player.moveTo(frame.player);
+    player.playClip(frame.clip);
+    const pose = cameraPose(frame.player, orbit);
+    const eye = clearEye(pose, furniture);
+    const lens = fieldOfView(eyeDistance(eye, pose.target));
+    if (camera.fov !== lens) {
+      camera.fov = lens;
+      camera.updateProjectionMatrix();
+    }
+    camera.position.set(...eye);
+    camera.lookAt(...pose.target);
+    cutaways(eye, openFloor).forEach(([x, y, z, constant], index) => {
+      cutPlanes[index]?.set(new THREE.Vector3(x, y, z), constant);
+    });
   }
 
   function clearContent(): void {
     disposeGroup(content);
     player?.dispose();
     player = null;
-    disposeMaterials(materials);
-    materials = null;
+    materialSets.forEach(disposeMaterials);
+    materialSets = [];
   }
 
-  function build(): void {
+  function build(resume = false): void {
     clearContent();
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
-    materials = shopMaterials(THREE, recipe, assets.rows);
-    content.add(buildShop(THREE, assets.room.scene, roomPlan(recipe), materials));
-    content.add(
-      buildShop(THREE, assets.station.scene, shopPlan(recipe, assets.anchors), materials),
-    );
-    player = createPlayer(THREE, assets.player, spawnFor(recipe));
+    const dress = (kit: GLTF): ShopMaterials => {
+      const materials = shopMaterials(THREE, recipe, assets.rows, {
+        lightmap: kitLightmap(kit.scene),
+      });
+      for (const material of Object.values(materials)) material.clippingPlanes = cutPlanes;
+      materialSets.push(materials);
+      return materials;
+    };
+    const room = roomPlan(recipe);
+    const stations = shopPlan(recipe, assets.anchors);
+    const stationBoxes = collisionBoxes(stations, assets.anchors);
+    const obstacles = [
+      ...collisionBoxes(room, assets.anchors),
+      ...stationBoxes,
+      ...shopPerimeter(recipe.layout.cells),
+    ];
+    const spawn = resume ? walk.position() : spawnFor(recipe);
+    content.add(buildShop(THREE, assets.room.scene, room, dress(assets.room)));
+    content.add(buildShop(THREE, assets.station.scene, stations, dress(assets.station)));
+    player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
+    walk.place(spawn, obstacles);
+    furniture = stationBoxes;
+    openFloor = shopOpenFloor(recipe.layout.cells);
+    if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
     relight(recipe);
-    frameCamera(recipe, player);
+    play(0);
     state.rebuilds += 1;
     state.frames = 0;
     state.ready = true;
@@ -307,10 +353,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     emit();
   }
 
-  function rebuild(): void {
+  function rebuild(resume = false): void {
     try {
-      build();
+      build(resume);
     } catch (reason) {
+      clearContent();
       state.ready = false;
       emit();
       onError(describe(reason));
@@ -320,6 +367,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   function tick(): void {
     if (state.lost || renderer.getContext().isContextLost()) return;
     const delta = clock.getDelta();
+    play(delta);
     player?.update(delta);
     renderer.info.reset();
     composer.render();
@@ -354,7 +402,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     state.restored = true;
     buildEnvironment();
     resize();
-    rebuild();
+    controls.takeTurn();
+    controls.takeZoom();
+    rebuild(true);
     renderer.setAnimationLoop(tick);
   };
   canvas.addEventListener('webglcontextlost', onContextLost);
@@ -365,6 +415,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
 
   function dispose(): void {
     renderer.setAnimationLoop(null);
+    controls.dispose();
     observer.disconnect();
     canvas.removeEventListener('webglcontextlost', onContextLost);
     canvas.removeEventListener('webglcontextrestored', onContextRestored);
