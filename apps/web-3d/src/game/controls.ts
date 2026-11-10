@@ -1,4 +1,4 @@
-import { CONTROL_KEYS, STILL, keysIntent, stickIntent } from './input.ts';
+import { CONTROL_KEYS, STILL, USE_KEY, keysIntent, stickIntent } from './input.ts';
 import type { LocalIntent, StickPosition } from './input.ts';
 
 type Listen = (type: string, listener: (event: Event) => void) => void;
@@ -24,6 +24,7 @@ export interface Controls {
   intent(): LocalIntent;
   takeTurn(): Turn;
   takeZoom(): number;
+  takeUse(): boolean;
   dispose(): void;
 }
 
@@ -32,6 +33,7 @@ interface KeyPress extends Event {
   readonly ctrlKey?: boolean;
   readonly metaKey?: boolean;
   readonly altKey?: boolean;
+  readonly repeat?: boolean;
 }
 
 interface Touch extends Event {
@@ -76,6 +78,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
   let stick: StickPosition | null = null;
   let turn: Turn = NO_TURN;
   let zoom = 0;
+  let use = false;
 
   const release = (pointerId: number) => {
     looks.delete(pointerId);
@@ -97,7 +100,13 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       pressed.clear();
       return;
     }
-    if (!CONTROL_KEYS.has(press.code) || isTyping(event)) return;
+    if (isTyping(event)) return;
+    if (press.code === USE_KEY) {
+      if (!press.repeat) use = true;
+      event.preventDefault();
+      return;
+    }
+    if (!CONTROL_KEYS.has(press.code)) return;
     pressed.add(press.code);
     event.preventDefault();
   };
@@ -186,12 +195,18 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       zoom = 0;
       return taken;
     },
+    takeUse() {
+      const taken = use;
+      use = false;
+      return taken;
+    },
     dispose() {
       for (const [type, listener] of keyListeners) keys.removeEventListener(type, listener);
       for (const [type, listener] of surfaceListeners) surface.removeEventListener(type, listener);
       releaseAll();
       turn = NO_TURN;
       zoom = 0;
+      use = false;
     },
   };
 }

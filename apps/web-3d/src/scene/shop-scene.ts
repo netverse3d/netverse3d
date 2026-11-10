@@ -24,6 +24,7 @@ import {
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { FloorBox } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
+import { nearestSeat, shopSeats, type Seat } from '../game/seats.ts';
 import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
 import { createWalk } from '../game/walk.ts';
 import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
@@ -69,6 +70,8 @@ export interface ShopSceneOptions {
   onStats?: (stats: SceneStats) => void;
   onState?: (state: SceneState) => void;
   onError?: (message: string) => void;
+  onNearbySeat?: (seatId: string | null) => void;
+  onSeatRequest?: (seatId: string) => void;
 }
 
 interface LightPreset {
@@ -197,6 +200,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   const onStats = options.onStats ?? (() => {});
   const onState = options.onState ?? (() => {});
   const onError = options.onError ?? (() => {});
+  const onNearbySeat = options.onNearbySeat ?? (() => {});
+  const onSeatRequest = options.onSeatRequest ?? (() => {});
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -238,6 +243,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   let orbit = DEFAULT_ORBIT;
   let openFloor: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
   let furniture: FloorBox[] = [];
+  let seats: Seat[] = [];
+  let nearbySeat: string | null = null;
+  const nobodySeated: ReadonlySet<string> = new Set();
   let frames = 0;
   let elapsed = 0;
 
@@ -293,6 +301,12 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const frame = walk.advance(delta, controls.intent(), orbit.yaw);
     player.moveTo(frame.player);
     player.playClip(frame.clip);
+    const inReach = nearestSeat(frame.player, seats, nobodySeated)?.seatId ?? null;
+    if (inReach !== nearbySeat) {
+      nearbySeat = inReach;
+      onNearbySeat(inReach);
+    }
+    if (controls.takeUse() && nearbySeat !== null) onSeatRequest(nearbySeat);
     const pose = cameraPose(frame.player, orbit);
     const eye = clearEye(pose, furniture);
     const lens = fieldOfView(eyeDistance(eye, pose.target));
@@ -313,13 +327,18 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     player = null;
     materialSets.forEach(disposeMaterials);
     materialSets = [];
+    seats = [];
+    if (nearbySeat !== null) {
+      nearbySeat = null;
+      onNearbySeat(null);
+    }
   }
 
   function build(resume = false): void {
     clearContent();
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
-    const dress = (kit: GLTF): ShopMaterials => {
+    const materialsOf = (kit: GLTF): ShopMaterials => {
       const materials = shopMaterials(THREE, recipe, assets.rows, {
         lightmap: kitLightmap(kit.scene),
       });
@@ -330,18 +349,20 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const room = roomPlan(recipe);
     const stations = shopPlan(recipe, assets.anchors);
     const stationBoxes = collisionBoxes(stations, assets.anchors);
+    const stationSeats = shopSeats(stations, assets.anchors);
     const obstacles = [
       ...collisionBoxes(room, assets.anchors),
       ...stationBoxes,
       ...shopPerimeter(recipe.layout.cells),
     ];
     const spawn = resume ? walk.position() : spawnFor(recipe);
-    content.add(buildShop(THREE, assets.room.scene, room, dress(assets.room)));
-    content.add(buildShop(THREE, assets.station.scene, stations, dress(assets.station)));
+    content.add(buildShop(THREE, assets.room.scene, room, materialsOf(assets.room)));
+    content.add(buildShop(THREE, assets.station.scene, stations, materialsOf(assets.station)));
     player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
     walk.place(spawn, obstacles);
     furniture = stationBoxes;
+    seats = stationSeats;
     openFloor = shopOpenFloor(recipe.layout.cells);
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
     relight(recipe);
