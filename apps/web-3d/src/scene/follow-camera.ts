@@ -26,8 +26,8 @@ export const NEAR_FIELD_OF_VIEW = 58;
 export const OVERVIEW_DISTANCE = 10;
 export const CORNER_VIEW_TURN = Math.PI / 4;
 export const CEILING_CUT_HEIGHT = 2.6;
-export const FURNITURE_HEIGHT = 1.6;
-export const CAMERA_CLEARANCE = 0.25;
+export const FURNITURE_HEIGHT = 1.4;
+export const CAMERA_CLEARANCE = 0.12;
 export const MIN_CAMERA_REACH = 0.9;
 export const DEFAULT_ORBIT: CameraOrbit = { yaw: 0, pitch: 0.8, distance: 13 };
 
@@ -101,6 +101,7 @@ function entryInto(box: FloorBox, from: Point3, to: Point3): number | null {
 
 export function clearEye(pose: CameraPose, furniture: readonly FloorBox[]): Point3 {
   const { eye, target } = pose;
+  if (eye[1] >= CEILING_CUT_HEIGHT) return eye;
   const length = Math.sqrt(
     (eye[0] - target[0]) ** 2 + (eye[1] - target[1]) ** 2 + (eye[2] - target[2]) ** 2,
   );
@@ -119,6 +120,12 @@ export function clearEye(pose: CameraPose, furniture: readonly FloorBox[]): Poin
     target[1] + (eye[1] - target[1]) * kept,
     target[2] + (eye[2] - target[2]) * kept,
   ];
+}
+
+export function eyeDistance(eye: Point3, target: Point3): number {
+  return Math.sqrt(
+    (eye[0] - target[0]) ** 2 + (eye[1] - target[1]) ** 2 + (eye[2] - target[2]) ** 2,
+  );
 }
 
 export function fieldOfView(distance: number): number {

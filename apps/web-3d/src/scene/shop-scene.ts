@@ -34,6 +34,7 @@ import {
   cameraPose,
   clearEye,
   cutaways,
+  eyeDistance,
   fieldOfView,
   turnOrbit,
   zoomOrbit,
@@ -294,7 +295,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     player.playClip(frame.clip);
     const pose = cameraPose(frame.player, orbit);
     const eye = clearEye(pose, furniture);
-    const lens = fieldOfView(orbit.distance);
+    const lens = fieldOfView(eyeDistance(eye, pose.target));
     if (camera.fov !== lens) {
       camera.fov = lens;
       camera.updateProjectionMatrix();
