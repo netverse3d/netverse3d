@@ -19,11 +19,14 @@ const CONFIG = {
 
 function makeRoot(glb = REAL_MODEL) {
   const root = mkdtempSync(join(tmpdir(), 'asset-library-'));
-  for (const folder of ['library/models', 'exported', 'source']) {
+  for (const folder of ['library/models', 'exported', 'source', 'runtime', 'recipes']) {
     mkdirSync(join(root, folder), { recursive: true });
   }
   writeFileSync(join(root, 'assets.config.json'), JSON.stringify(CONFIG));
   writeFileSync(join(root, 'library/index.html'), '<title>x</title>');
+  writeFileSync(join(root, 'runtime/shop-look.mjs'), 'export const x = 1;');
+  writeFileSync(join(root, 'runtime/shop-look.test.mjs'), 'test');
+  writeFileSync(join(root, 'recipes/tim-neon.json'), '{}');
   writeFileSync(join(root, 'library/models/bot-d1.glb'), REAL_MODEL);
   writeFileSync(join(root, 'library/models/human-hoodie.glb'), REAL_MODEL);
   writeFileSync(join(root, 'exported/player.glb'), glb);
@@ -41,6 +44,23 @@ test('trả về trang thư viện khi xin thư mục library', () => {
 test('phục vụ mô hình đã xuất', () => {
   const root = makeRoot();
   assert.equal(resolveRequestPath(root, '/exported/player.glb'), join(root, 'exported/player.glb'));
+});
+
+test('phục vụ mã chạy và công thức tiệm cho trang thư viện', () => {
+  const root = makeRoot();
+  assert.equal(
+    resolveRequestPath(root, '/runtime/shop-look.mjs'),
+    join(root, 'runtime/shop-look.mjs'),
+  );
+  assert.equal(
+    resolveRequestPath(root, '/recipes/tim-neon.json'),
+    join(root, 'recipes/tim-neon.json'),
+  );
+});
+
+test('khai kiểu nội dung cho mã và JSON', () => {
+  assert.equal(contentTypeOf('a.mjs'), 'text/javascript');
+  assert.equal(contentTypeOf('a.json'), 'application/json');
 });
 
 test('không phục vụ tệp ngoài thư mục được phép', () => {
@@ -95,6 +115,9 @@ test('sao chép trang và mô hình, không kèm tệp gốc', () => {
   assert.equal(existsSync(join(target, 'library/models/bot-d1.glb')), true);
   assert.equal(existsSync(join(target, 'exported/export-stamp.json')), false);
   assert.equal(existsSync(join(target, 'source')), false);
+  assert.equal(existsSync(join(target, 'runtime/shop-look.mjs')), true);
+  assert.equal(existsSync(join(target, 'runtime/shop-look.test.mjs')), false);
+  assert.equal(existsSync(join(target, 'recipes/tim-neon.json')), true);
 });
 
 test('từ chối xuất bản khi mô hình mới là con trỏ LFS', () => {
