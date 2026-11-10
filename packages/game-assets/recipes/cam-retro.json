@@ -16,13 +16,13 @@
     "accent": ["#ff6f3c"]
   },
   "variants": {
-    "desk": "a",
+    "desk": "c",
     "monitor": "a",
     "keyboard": "a",
     "mouse": "a",
     "mat": "a",
     "headset": "a",
-    "mic": "a",
+    "mic": "b",
     "speaker": "a",
     "chair": "a",
     "case": "a",
