@@ -43,7 +43,7 @@
       { "cell": [0, 1], "facing": "south" },
       { "cell": [1, 1], "facing": "south" }
     ],
-    "door": { "wall": "south", "at": 2 },
+    "door": { "wall": "south", "at": 1 },
     "windows": [{ "wall": "west", "at": 1 }]
   },
   "sign": { "text": "CAM RETRO", "style": "painted" },
