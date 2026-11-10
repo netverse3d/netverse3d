@@ -73,6 +73,19 @@ test('vật liệu bề mặt nhận lightmap nướng sẵn ở kênh UV thứ 
   assert.equal(plain.surface.aoMap, null);
 });
 
+test('không có lightmap thì không truyền khoá aoMap rỗng và không cảnh báo', () => {
+  const warned = [];
+  const original = console.warn;
+  console.warn = (...args) => warned.push(args.join(' '));
+  try {
+    const plain = shopMaterials(THREE, RECIPE, ROWS);
+    assert.equal(plain.surface.aoMap, null);
+    assert.deepEqual(warned, []);
+  } finally {
+    console.warn = original;
+  }
+});
+
 test('lấy lightmap từ vật liệu bề mặt của bộ ô đồ đã tải, không có thì trả null', () => {
   const scene = kitScene();
   assert.equal(kitLightmap(scene), null);
