@@ -20,6 +20,14 @@ export const vi = {
     key: 'E',
     prompt: 'Nhấn E để ngồi vào máy',
     sit: 'Ngồi vào máy',
+    standPrompt: 'Nhấn E để đứng dậy',
+    stand: 'Đứng dậy',
+    denied: {
+      occupied: 'Máy này đang có người ngồi',
+      too_far: 'Đứng gần máy hơn rồi thử lại',
+      no_balance: 'Không đủ số dư để thuê máy',
+    },
+    roomError: 'Phòng chưa nhận được yêu cầu, thử lại sau',
   },
   status: {
     loading: 'Đang tải tiệm…',

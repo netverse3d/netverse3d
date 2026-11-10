@@ -30,12 +30,34 @@ export interface RecipeOption {
   name: string;
 }
 
+export interface SeatDenial {
+  seatId: string;
+  reason: 'occupied' | 'too_far' | 'no_balance';
+}
+
+export interface SeatingState {
+  available: boolean;
+  seated: string | null;
+  taken: string[];
+  denied: SeatDenial | null;
+  error: string | null;
+}
+
+export const NO_ROOM: SeatingState = {
+  available: false,
+  seated: null,
+  taken: [],
+  denied: null,
+  error: null,
+};
+
 export interface ShopState {
   stats: SceneStats;
   scene: SceneState;
   recipes: RecipeOption[];
   error: string | null;
   nearbySeat: string | null;
+  seating: SeatingState;
 }
 
 export const DEFAULT_RECIPE = 'tim-neon';
@@ -56,6 +78,7 @@ export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
     recipes: [],
     error: null,
     nearbySeat: null,
+    seating: NO_ROOM,
   };
 }
 
@@ -78,10 +101,10 @@ export const shopSlice = createSlice({
     nearbySeatChanged(state, action: PayloadAction<string | null>) {
       state.nearbySeat = action.payload;
     },
-    seatRequested: {
-      reducer() {},
-      prepare: (seatId: string) => ({ payload: seatId }),
+    seatingChanged(state, action: PayloadAction<SeatingState>) {
+      state.seating = action.payload;
     },
+    useRequested() {},
     recipeRequested: {
       reducer() {},
       prepare: (id: string) => ({ payload: id }),
@@ -99,7 +122,8 @@ export const {
   recipesLoaded,
   errorRaised,
   nearbySeatChanged,
-  seatRequested,
+  seatingChanged,
+  useRequested,
   recipeRequested,
   qualityRequested,
 } = shopSlice.actions;

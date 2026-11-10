@@ -109,7 +109,7 @@ export function clearEye(pose: CameraPose, furniture: readonly FloorBox[]): Poin
   let reach = 1;
   for (const box of furniture) {
     const entry = entryInto(box, target, eye);
-    if (entry === null || entry >= reach) continue;
+    if (entry === null || entry <= 0 || entry >= reach) continue;
     const height = target[1] + (eye[1] - target[1]) * entry;
     if (height < FURNITURE_HEIGHT) reach = entry;
   }

@@ -1,6 +1,6 @@
-import { collisionBoxes } from '@netverse/game-shared/collision';
+import { anchorOnFloor, collisionBoxes } from '@netverse/game-shared/collision';
 import type { KitAnchors } from '@netverse/game-shared/collision';
-import type { FloorBox, FloorPoint } from '@netverse/game-shared/movement';
+import type { FloorBox, FloorPoint, PlayerState } from '@netverse/game-shared/movement';
 import { seatIdOf, withinSeatReach } from '@netverse/game-shared/seating';
 
 export interface StationPart {
@@ -15,10 +15,12 @@ export interface Seat {
   readonly seatId: string;
   readonly chair: FloorPoint;
   readonly footprint: FloorBox;
+  readonly sit: PlayerState;
 }
 
 const DESK_SLOT = 'desk';
 const CHAIR_SLOT = 'chair';
+const SIT_ANCHOR = 'seat_anchor';
 
 function around(boxes: readonly FloorBox[], owner: string): FloorBox {
   if (boxes.length === 0) throw new TypeError(`${owner} has no collision box`);
@@ -44,7 +46,10 @@ export function shopSeats(stations: readonly StationPart[], anchors: KitAnchors)
       if (!chair) throw new TypeError(`${part} has no chair in its station`);
       const footprint = around(collisionBoxes(parts, anchors), part);
       const [x = 0, , z = 0] = chair.position;
-      return { seatId: seatIdOf(station), chair: { x, z }, footprint };
+      const hip = anchors[chair.part]?.[SIT_ANCHOR];
+      if (!hip) throw new TypeError(`${chair.part} has no ${SIT_ANCHOR}`);
+      const sit = { ...anchorOnFloor(chair, hip, `${chair.part} ${SIT_ANCHOR}`), yaw: chair.yaw };
+      return { seatId: seatIdOf(station), chair: { x, z }, footprint, sit };
     });
 }
 

@@ -24,6 +24,8 @@ export interface Player {
 
 const IDLE_CLIP = 'idle';
 const HAND_PROPS = ['crate', 'cup'];
+const FOLLOW_UPS: Readonly<Record<string, string>> = { sit_down: 'typing' };
+const CLIP_END_SLACK = 1e-3;
 let sharedLook: ActorLook | null = null;
 
 export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
@@ -40,16 +42,23 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
   const actions = new Map<string, AnimationAction>(
     gltf.animations.map((animation) => [animation.name, mixer.clipAction(animation)]),
   );
+  for (const name of Object.keys(FOLLOW_UPS)) {
+    const once = actions.get(name);
+    if (!once) continue;
+    once.setLoop(THREE.LoopOnce, 1);
+    once.clampWhenFinished = true;
+  }
   let clip = IDLE_CLIP;
   let weights = new Map<string, number>();
   const blend = (delta: number) => {
+    const active = weights;
     weights = blendClipWeights(weights, clip, delta);
     for (const [name, action] of actions) {
       const weight = weights.get(name);
       if (weight === undefined) {
         if (action.isRunning()) action.stop();
       } else {
-        if (!action.isRunning()) action.play();
+        if (!active.has(name)) action.reset().play();
         action.setEffectiveWeight(weight);
       }
     }
@@ -66,6 +75,12 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
       if (actions.has(name)) clip = name;
     },
     update(delta) {
+      const next = FOLLOW_UPS[clip];
+      const playing = actions.get(clip);
+      const ended =
+        playing !== undefined &&
+        (playing.paused || playing.time >= playing.getClip().duration - CLIP_END_SLACK);
+      if (next && ended) clip = next;
       blend(delta);
       mixer.update(delta);
     },
