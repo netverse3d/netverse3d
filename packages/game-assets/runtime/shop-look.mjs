@@ -118,6 +118,10 @@ export function shopPlan(recipe, anchors) {
   });
 }
 
+export function doorwayCell({ wall, at }, [width, depth]) {
+  return { north: [at, 0], south: [at, depth - 1], west: [0, at], east: [width - 1, at] }[wall];
+}
+
 export function roomPlan(recipe) {
   const { cells, door, windows = [] } = recipe.layout;
   const [width, depth] = cells;
@@ -141,12 +145,12 @@ export function roomPlan(recipe) {
         ...(x === 0 ? [['west', z]] : []),
         ...(x === width - 1 ? [['east', z]] : []),
       ].map(([wall, at]) => ({ wall, slot: openings.get(`${wall} ${at}`) ?? 'wall' }));
-      const corner = edges.length === 2 && edges.every((edge) => edge.slot === 'wall');
+      const key = edges
+        .map((edge) => edge.wall)
+        .sort()
+        .join('+');
+      const corner = CORNER_YAW[key] !== undefined && edges.every((edge) => edge.slot === 'wall');
       if (corner) {
-        const key = edges
-          .map((edge) => edge.wall)
-          .sort()
-          .join('+');
         plan.push(place('corner', x, z, CORNER_YAW[key]));
       } else {
         for (const edge of edges) plan.push(place(edge.slot, x, z, YAW[edge.wall]));

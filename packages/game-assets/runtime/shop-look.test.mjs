@@ -7,6 +7,7 @@ import { isLfsPointer, loadConfig, readGlb } from '../tools/lib.mjs';
 import {
   PALETTE_WIDTH,
   colorAt,
+  doorwayCell,
   drawCalls,
   instanceGroups,
   kitAnchors,
@@ -217,6 +218,25 @@ test('cửa ở ô góc thì ô đó có cửa và một tường thay cho góc'
   assert.equal(placementAt(plan, 'door', [1, 0, 1]).yaw, 0);
   assert.equal(placementAt(plan, 'wall', [1, 0, 1]).yaw, Math.PI / 2);
   assert.equal(placementAt(plan, 'corner', [1, 0, 1]), undefined);
+});
+
+test('phòng một ô rộng không có góc, hai tường đối diện đứng riêng', () => {
+  for (const cells of [
+    [1, 3],
+    [3, 1],
+  ]) {
+    const plan = roomPlan(roomRecipe(cells, { wall: 'south', at: 0 }));
+    assert.deepEqual(partsOf(plan), { floor_a: 3, ceiling_a: 3, door_a: 1, wall_a: 7 });
+    assert.ok(plan.every((placement) => Number.isFinite(placement.yaw)));
+  }
+});
+
+test('ô sàn ngay trong cửa tính theo từng tường', () => {
+  const cells = [3, 4];
+  assert.deepEqual(doorwayCell({ wall: 'north', at: 1 }, cells), [1, 0]);
+  assert.deepEqual(doorwayCell({ wall: 'south', at: 1 }, cells), [1, 3]);
+  assert.deepEqual(doorwayCell({ wall: 'west', at: 2 }, cells), [0, 2]);
+  assert.deepEqual(doorwayCell({ wall: 'east', at: 2 }, cells), [2, 2]);
 });
 
 test('bộ máy thật có đủ socket cho mọi ô trong công thức mẫu', (context) => {

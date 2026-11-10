@@ -65,6 +65,21 @@ test('danh mục công thức phải có và liệt kê đúng các tệp', () =
     checkRecipes(rootWithText(text, 'tim-neon.json', []), CONFIG).join('\n'),
     /tim-neon is not listed in recipes\/index\.json/,
   );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', ['tim-neon', 'tim-neon']), CONFIG).join('\n'),
+    /index\.json lists tim-neon twice/,
+  );
+});
+
+test('danh mục công thức hỏng hoặc không phải mảng được báo gọn', () => {
+  const root = rootWithText(JSON.stringify(RECIPE), 'tim-neon.json', null);
+  writeFileSync(join(root, 'recipes', 'index.json'), '{oops');
+  assert.match(checkRecipes(root, CONFIG).join('\n'), /recipes\/index\.json: invalid JSON/);
+  writeFileSync(join(root, 'recipes', 'index.json'), '{"a":1}');
+  assert.match(
+    checkRecipes(root, CONFIG).join('\n'),
+    /recipes\/index\.json must be an array of recipe ids/,
+  );
 });
 
 function rootWith(recipe, file = `${recipe.id}.json`) {

@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join } from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
+import { doorwayCell } from '../runtime/shop-look.mjs';
 
 const RECIPE_FOLDER = 'recipes';
 const INDEX_FILE = 'index.json';
@@ -55,16 +56,12 @@ function checkRecipeVariants(recipe, kits, label) {
   return errors;
 }
 
-function cellInsideOpening({ wall, at }, [width, depth]) {
-  return { north: [at, 0], south: [at, depth - 1], west: [0, at], east: [width - 1, at] }[wall];
-}
-
 function checkRecipeLayout(recipe, label) {
   const errors = [];
   const { cells, stations, door, windows = [] } = recipe.layout;
   const [width, depth] = cells;
   const taken = new Set();
-  const doorway = cellInsideOpening(door, cells).join(',');
+  const doorway = doorwayCell(door, cells).join(',');
   for (const { cell } of stations) {
     const [x, z] = cell;
     const key = cell.join(',');
@@ -108,6 +105,9 @@ function checkIndex(root, files) {
   if (!Array.isArray(listed)) return [`${label} must be an array of recipe ids`];
   const ids = files.map((path) => basename(path, '.json'));
   return [
+    ...listed
+      .filter((id, index) => listed.indexOf(id) !== index)
+      .map((id) => `${INDEX_FILE} lists ${id} twice`),
     ...listed
       .filter((id) => !ids.includes(id))
       .map((id) => `${INDEX_FILE} lists ${id} but ${RECIPE_FOLDER}/${id}.json does not exist`),

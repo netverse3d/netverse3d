@@ -191,7 +191,7 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
           "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
         }
       }
@@ -218,7 +218,7 @@
         </div>
         <div id="meter">
           <span>máy<b id="mStations">0</b></span>
-          <span>lời gọi vẽ<b id="mCalls">0</b></span>
+          <span>lời gọi vẽ, cả hậu xử lý<b id="mCalls">0</b></span>
           <span>tam giác<b id="mTris">0</b></span>
         </div>
       </div>
@@ -264,7 +264,7 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import {
-        instanceGroups,
+        doorwayCell,
         kitAnchors,
         paletteImage,
         paletteRows,
@@ -377,6 +377,18 @@
       let materials = shopMaterials(THREE, state.recipe, rows);
       let signMesh = null;
 
+      function disposeGroup(group) {
+        group.traverse((object) => {
+          if (object.isInstancedMesh) object.dispose();
+          else if (object.isMesh) {
+            object.geometry.dispose();
+            object.material.map?.dispose();
+            object.material.dispose();
+          }
+        });
+        group.clear();
+      }
+
       function repaint() {
         const palette = paletteTexture(THREE, paletteImage(rows, state.recipe.palette));
         const emissive = paletteTexture(THREE, paletteImage(rows, state.recipe.emissive ?? {}));
@@ -442,12 +454,7 @@
         const { cells, door } = state.recipe.layout;
         const yaw = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 }[door.wall];
         const [width, depth] = cells;
-        const cell = {
-          north: [door.at, 0],
-          south: [door.at, depth - 1],
-          west: [0, door.at],
-          east: [width - 1, door.at],
-        }[door.wall];
+        const cell = doorwayCell(door, cells);
         const centre = new THREE.Vector3(
           (cell[0] - (width - 1) / 2) * 2,
           0,
@@ -464,7 +471,7 @@
       }
 
       function helperLayer(plan) {
-        helperGroup.clear();
+        disposeGroup(helperGroup);
         if (!state.anchors && !state.collision) return;
         const sphere = new THREE.SphereGeometry(0.03, 10, 8);
         const colors = { socket: '#5ce1ff', interact: '#ffd34d', seat: '#ff5cf3' };
@@ -510,7 +517,7 @@
 
       let currentPlan = [];
       function rebuild() {
-        shopGroup.clear();
+        disposeGroup(shopGroup);
         signMesh = null;
         const room = roomPlan(state.recipe).filter(
           (placement) => state.ceiling || placement.slot !== 'ceiling',
