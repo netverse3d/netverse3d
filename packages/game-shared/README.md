@@ -42,7 +42,7 @@ Client nói chuyện với phòng qua `createRoomClient(connection)` trong `@net
 - `listen(onText)`: đăng ký nhận thông điệp, trả về hàm huỷ đăng ký.
 - `close()`: đóng kết nối. Client là bên giữ kết nối và gọi hàm này đúng một lần.
 
-Client có `join`, `move`, `requestSeat`, `leaveSeat`, `subscribe`, `close`. Sau `close()` các hàm này ném lỗi.
+Client có `join`, `move`, `requestSeat`, `leaveSeat`, `subscribe`, `close`. Sau `close()` thì `close()` gọi lại không làm gì, các hàm còn lại ném lỗi.
 
 `room()` trả trạng thái phòng:
 
@@ -52,7 +52,15 @@ Client có `join`, `move`, `requestSeat`, `leaveSeat`, `subscribe`, `close`. Sau
 - `denied`: lần bị từ chối máy gần nhất, được gỡ lúc xin máy lần nữa.
 - `error`: lỗi gần nhất từ server, được gỡ lúc nhận snapshot kế tiếp.
 
-Thông điệp hỏng không làm đổi trạng thái và được đếm ở `rejected()`. Người nghe chỉ được báo lúc phòng thật sự đổi.
+Thông điệp hỏng không làm đổi trạng thái và được đếm ở `rejected()`.
+
+Người nghe đăng ký bằng `subscribe`:
+
+- Được báo sau mỗi thông điệp server được áp, kể cả thông điệp lặp lại nội dung cũ. Thông điệp bị bỏ (hỏng, delta cũ, cấp máy cho người không có trong phòng) thì không báo.
+- Thay đổi phát sinh giữa một lượt báo được xếp hàng: mọi người nghe thấy đủ từng trạng thái, đúng thứ tự.
+- Người nghe ném lỗi thì các người nghe còn lại vẫn được báo, sau đó lỗi được gom vào một `AggregateError` có thông điệp `Room listeners failed`. Lỗi gửi của `connection` thì ném nguyên dạng.
+
+Người chơi trên đường truyền không có khoá `seatId` được hiểu là không ngồi máy nào.
 
 Thông điệp theo giao thức nháp `packages/contracts/realtime/protocol.v1.schema.json`. Phần dựng và đọc thông điệp nằm ở `@netverse/game-shared/room-protocol`.
 

@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { stepPlayer, type MoveIntent, type PlayerState } from './movement.ts';
 import {
   MAX_TICKS_PER_FRAME,
+  TICK_RATE,
   TICK_SECONDS,
   advanceSimulation,
   createSimulation,
@@ -167,4 +168,28 @@ test('nội suy hướng nhìn bỏ qua các vòng quay thừa', () => {
   const after = { x: 0, z: 0, yaw: 0.6 + Math.PI * 6 };
   const shown = interpolatePlayer(before, after, 0.5);
   assert.ok(Math.abs(shown.yaw - 0.4) < 1e-9, `spun to ${shown.yaw}`);
+});
+
+test('luật chơi chạy ba mươi nhịp mỗi giây và chạy bù tối đa năm nhịp một khung hình', () => {
+  assert.equal(TICK_RATE, 30);
+  assert.equal(TICK_SECONDS, 1 / 30);
+  assert.equal(MAX_TICKS_PER_FRAME, 5);
+});
+
+test('khung hình chưa chạy nhịp nào thì giữ nguyên trạng thái của nhịp trước', () => {
+  let simulation = createSimulation(START);
+  simulation = advanceSimulation(simulation, TICK_SECONDS, (state) => ({
+    ...state,
+    x: state.x + 1,
+  }));
+  simulation = advanceSimulation(simulation, TICK_SECONDS / 4, keep);
+  assert.equal(simulation.previous.x, 0);
+  assert.equal(simulation.current.x, 1);
+});
+
+test('nội suy hướng nhìn theo cung ngắn nhất qua mốc pi theo cả hai chiều', () => {
+  const before = { x: 0, z: 0, yaw: -Math.PI + 0.1 };
+  const after = { x: 0, z: 0, yaw: Math.PI - 0.1 };
+  const shown = interpolatePlayer(before, after, 0.5);
+  assert.ok(Math.abs(Math.abs(shown.yaw) - Math.PI) < 1e-9, `turned the long way to ${shown.yaw}`);
 });

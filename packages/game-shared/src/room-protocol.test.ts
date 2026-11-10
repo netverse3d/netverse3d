@@ -266,3 +266,49 @@ test('tên người chơi trùng tên thuộc tính có sẵn của đối tư�
   const room = received(emptyRoom(), snapshot(1, [{ ...AN, playerId: '__proto__' }]));
   assert.equal(room.players.get('__proto__')?.x, 1);
 });
+
+test('phòng mới chưa nhận gì có tick âm một', () => {
+  assert.equal(emptyRoom().tick, -1);
+});
+
+test('người chơi không có khoá seatId trên đường truyền được hiểu là không ngồi máy nào', () => {
+  const standing = { playerId: 'binh', position: { x: 3, y: 0, z: 4 }, yaw: 1 };
+  let room = received(emptyRoom(), snapshot(1, [BINH]));
+  room = received(room, { kind: 'delta', tick: 2, changed: [standing] });
+  assert.equal(room.players.get('binh')?.seatId, null);
+  assert.equal(room.seats.size, 0);
+});
+
+test('người vừa đổi vừa rời trong cùng một delta thì coi như đã rời', () => {
+  let room = received(emptyRoom(), snapshot(1, [AN, BINH]));
+  room = received(room, { kind: 'delta', tick: 2, changed: [BINH], left: ['binh'] });
+  assert.equal(room.players.has('binh'), false);
+  assert.equal(room.seats.size, 0);
+});
+
+test('lý do bị từ chối sống qua snapshot, chỉ được gỡ lúc xin máy lại', () => {
+  let room = received(emptyRoom(), { kind: 'seat.denied', seatId: 'seat-1', reason: 'no_balance' });
+  room = received(room, snapshot(2, [AN]));
+  assert.deepEqual(room.denied, { seatId: 'seat-1', reason: 'no_balance' });
+});
+
+test('không còn gì để gỡ thì gỡ lý do từ chối trả lại đúng phòng cũ', () => {
+  const room = received(emptyRoom(), snapshot(1, [AN]));
+  assert.equal(withoutDenial(room), room);
+});
+
+test('thông điệp thiếu hoặc sai kiểu ở từng trường bắt buộc đều bị từ chối', () => {
+  const broken = [
+    { kind: 'delta' },
+    { kind: 'delta', tick: -1 },
+    { kind: 'delta', tick: 0.5 },
+    { kind: 'seat.granted', playerId: 'an' },
+    { kind: 'seat.granted', seatId: 7, playerId: 'an' },
+    { kind: 'error', code: 7 },
+    { kind: 'snapshot', tick: 1, players: [{ ...AN, position: { y: 0, z: 2 } }] },
+  ];
+  for (const message of broken) {
+    assert.equal(readServerMessage(JSON.stringify(message)), null, JSON.stringify(message));
+    assert.equal(matchesProtocol(message), false, JSON.stringify(message));
+  }
+});

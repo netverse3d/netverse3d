@@ -36,28 +36,43 @@ interface Subscription {
 }
 
 const CLOSED_MESSAGE = 'Room client is closed';
+const LISTENERS_FAILED_MESSAGE = 'Room listeners failed';
 
 export function createRoomClient(connection: RoomConnection): RoomClient {
   const subscriptions = new Set<Subscription>();
+  const unannounced: RoomState[] = [];
   let room = emptyRoom();
   let rejected = 0;
   let sequence = 0;
   let closed = false;
+  let announcing = false;
 
-  function show(next: RoomState): void {
-    if (next === room) return;
-    room = next;
-    const failures: unknown[] = [];
+  function announce(shown: RoomState, failures: unknown[]): void {
     for (const subscription of [...subscriptions]) {
       if (!subscriptions.has(subscription)) continue;
       try {
-        subscription.listener(room);
+        subscription.listener(shown);
       } catch (failure) {
         failures.push(failure);
       }
     }
-    if (failures.length === 1) throw failures[0];
-    if (failures.length > 1) throw new AggregateError(failures, 'Room listeners failed');
+  }
+
+  function show(next: RoomState): void {
+    if (next === room) return;
+    room = next;
+    unannounced.push(next);
+    if (announcing) return;
+    const failures: unknown[] = [];
+    announcing = true;
+    try {
+      for (let shown = unannounced.shift(); shown; shown = unannounced.shift()) {
+        announce(shown, failures);
+      }
+    } finally {
+      announcing = false;
+    }
+    if (failures.length > 0) throw new AggregateError(failures, LISTENERS_FAILED_MESSAGE);
   }
 
   function send(message: ClientMessage): void {
@@ -100,8 +115,12 @@ export function createRoomClient(connection: RoomConnection): RoomClient {
       if (closed) return;
       closed = true;
       subscriptions.clear();
-      stopListening();
-      connection.close();
+      unannounced.length = 0;
+      try {
+        stopListening();
+      } finally {
+        connection.close();
+      }
     },
   };
 }

@@ -11,7 +11,7 @@ interface FakeConnection {
   failSending: boolean;
 }
 
-function fakeConnection({ deafStop = false } = {}): FakeConnection {
+function fakeConnection({ deafStop = false, brokenStop = false } = {}): FakeConnection {
   const listeners = new Set<(text: string) => void>();
   let closes = 0;
   const fake: FakeConnection = {
@@ -31,6 +31,7 @@ function fakeConnection({ deafStop = false } = {}): FakeConnection {
       listen: (listener) => {
         listeners.add(listener);
         return () => {
+          if (brokenStop) throw new Error('stop boom');
           if (!deafStop) listeners.delete(listener);
         };
       },
@@ -159,7 +160,13 @@ test('một người nghe ném lỗi thì những người nghe khác vẫn đư
     throw new Error('listener boom');
   });
   client.subscribe((room) => seen.push(room.tick));
-  assert.throws(() => deliver(snapshot(1)), /listener boom/);
+  assert.throws(
+    () => deliver(snapshot(1)),
+    (failure: unknown) =>
+      failure instanceof AggregateError &&
+      failure.errors.length === 1 &&
+      failure.errors[0].message === 'listener boom',
+  );
   assert.equal(client.room().tick, 1);
   assert.deepEqual(seen, [1]);
 });
@@ -262,4 +269,85 @@ test('đóng ngay trong lúc được báo thì những người nghe phía sau 
   });
   deliver(snapshot(1));
   assert.equal(late, 0);
+});
+
+test('thay đổi phát sinh giữa lượt báo được xếp hàng: mọi người nghe thấy đủ từng trạng thái, đúng thứ tự, một lần', () => {
+  const { deliver, connection } = fakeConnection();
+  const client = createRoomClient(connection);
+  const seen: string[] = [];
+  deliver(snapshot(1));
+  client.subscribe((room) => {
+    seen.push(`first:${room.denied?.reason ?? 'none'}`);
+    if (room.denied) client.requestSeat('seat-2');
+  });
+  client.subscribe((room) => seen.push(`second:${room.denied?.reason ?? 'none'}`));
+  deliver({ kind: 'seat.denied', seatId: 'seat-1', reason: 'too_far' });
+  assert.deepEqual(seen, ['first:too_far', 'second:too_far', 'first:none', 'second:none']);
+});
+
+test('người nghe ném lỗi ở lượt báo xếp hàng thì mỗi lỗi chỉ được gom một lần', () => {
+  const { deliver, connection } = fakeConnection();
+  const client = createRoomClient(connection);
+  deliver(snapshot(1));
+  client.subscribe((room) => {
+    if (room.denied) client.requestSeat('seat-2');
+  });
+  client.subscribe((room) => {
+    if (!room.denied) throw new Error('late boom');
+  });
+  assert.throws(
+    () => deliver({ kind: 'seat.denied', seatId: 'seat-1', reason: 'too_far' }),
+    (failure: unknown) => failure instanceof AggregateError && failure.errors.length === 1,
+  );
+});
+
+test('lỗi của người nghe luôn được bọc lại để phân biệt với lỗi gửi', () => {
+  const fake = fakeConnection();
+  const client = createRoomClient(fake.connection);
+  fake.deliver({ kind: 'seat.denied', seatId: 'seat-1', reason: 'too_far' });
+  client.subscribe(() => {
+    throw new Error('listener boom');
+  });
+  assert.throws(() => client.requestSeat('seat-1'), /Room listeners failed/);
+  assert.equal(fake.sent.length, 1);
+  assert.equal(client.room().denied, null);
+});
+
+test('xin máy lúc không có lý do từ chối nào và rời máy đều không báo người nghe', () => {
+  const { deliver, connection } = fakeConnection();
+  const client = createRoomClient(connection);
+  let calls = 0;
+  deliver(snapshot(1));
+  deliver({ kind: 'seat.denied', seatId: 'seat-1', reason: 'too_far' });
+  client.subscribe(() => {
+    calls += 1;
+  });
+  client.leaveSeat();
+  assert.equal(client.room().denied?.reason, 'too_far');
+  client.requestSeat('seat-1');
+  client.requestSeat('seat-1');
+  assert.equal(calls, 1);
+});
+
+test('hàm huỷ nghe của kết nối ném lỗi thì kết nối vẫn được đóng', () => {
+  const { closes, connection } = fakeConnection({ brokenStop: true });
+  const client = createRoomClient(connection);
+  assert.throws(() => client.close(), /stop boom/);
+  assert.equal(closes(), 1);
+  client.close();
+  assert.equal(closes(), 1);
+});
+
+test('nhiều thay đổi dồn lại trong một lượt báo được báo lần lượt, không bỏ trạng thái giữa chừng', () => {
+  const { deliver, connection } = fakeConnection();
+  const client = createRoomClient(connection);
+  const seen: number[] = [];
+  client.subscribe((room) => {
+    if (room.tick !== 1) return;
+    deliver(snapshot(2));
+    deliver(snapshot(3));
+  });
+  client.subscribe((room) => seen.push(room.tick));
+  deliver(snapshot(1));
+  assert.deepEqual(seen, [1, 2, 3]);
 });
