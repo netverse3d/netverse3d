@@ -65,7 +65,9 @@ V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo
 
 ### Module phòng
 
-Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép.
+Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép. Trụ ốp ở hai mép module chỉ chạy từ mép trên dải chân tường tới mép dưới dải đèn, vì trụ cao hết tường có mặt trên trùng phẳng với dải băng trần và nhấp nháy khi nhìn từ trên xuống.
+
+Hai mặt cùng phẳng, cùng hướng pháp tuyến mà chồng lên nhau là nguồn nhấp nháy (z-fighting), nên `tools/coplanar.mjs` quét mọi bộ ô đồ khi kiểm và khi xuất: gom các mặt vuông góc trục theo mặt phẳng, tính diện tích giao từng cặp, bỏ qua cặp bị một mặt ngược chiều cùng phẳng che kín (hộp dán lên khối khác) và cặp chỉ chạm mép. Nó kiểm từng món rồi kiểm các cụm ghép của bộ phòng (hai tường liền, góc với hai tường, cửa và cửa sổ giữa hai tường); còn một cặp là lệnh xuất từ chối ghi dấu.
 
 ### Công thức tiệm
 

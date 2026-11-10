@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { checkCoplanar, roomAssemblies } from './coplanar.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
@@ -308,6 +309,10 @@ export function checkModel(file, gltf, expected, bin) {
   checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   else if (expected.kit) fail('kits need a palette in the config');
+  if (expected.kit) {
+    const parts = Object.keys(expected.meshes);
+    for (const message of checkCoplanar(gltf, bin, parts, roomAssemblies(parts))) fail(message);
+  }
   return errors;
 }
 
