@@ -1,6 +1,6 @@
 # ADR-0015: Tệp Blender là bản gốc của tài sản 3D
 
-- Trạng thái: proposed
+- Trạng thái: accepted
 - Ngày: 2026-11-09
 
 ## Bối cảnh
