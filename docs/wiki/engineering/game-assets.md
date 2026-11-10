@@ -75,7 +75,7 @@ Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng
 
 ### Mã chạy
 
-`runtime/shop-look.mjs` dựng ảnh dải màu 128×12 từ công thức (nội suy trong không gian tuyến tính rồi đưa về sRGB), đọc socket từ glTF và lập kế hoạch đặt từng món của mọi máy theo `layout`. `runtime/three-shop.mjs` biến kế hoạch đó thành `InstancedMesh` của three.js, mỗi hình khối một lần cho cả tiệm; mô-đun không kéo three.js vào, hàm nào cần three thì nhận nó làm tham số. Đo trên Chrome headless với bộ máy hiện tại: một máy 24 lời gọi vẽ, 50 máy vẫn 24 trong lúc nhân bản thường tốn 1.300; mỗi máy 12.334 tam giác (loa tính hai lần). Trên máy phát triển với Intel Iris Xe, 50 máy instancing mất 0,2 ms CPU mỗi khung so với 8,8 ms của nhân bản thường; thời gian GPU chưa đo.
+`runtime/shop-look.mjs` dựng ảnh dải màu 128×12 từ công thức (nội suy trong không gian tuyến tính rồi đưa về sRGB), đọc socket từ glTF và lập kế hoạch đặt từng món của mọi máy theo `layout`. `runtime/three-shop.mjs` biến kế hoạch đó thành `InstancedMesh` của three.js, mỗi hình khối một lần cho cả tiệm; mô-đun không kéo three.js vào, hàm nào cần three thì nhận nó làm tham số. Đo trên Chrome headless với bộ máy hiện tại: một máy 24 lời gọi vẽ, 50 máy vẫn 24 trong lúc nhân bản thường tốn 1.300; mỗi máy 12.334 tam giác (loa tính hai lần). Đo một lần trên máy phát triển với Intel Iris Xe bằng trang đo ngoài repo: 50 máy instancing mất 0,2 ms CPU mỗi khung so với 8,8 ms của nhân bản thường; thời gian GPU chưa đo. Vật liệu `display` và `decal` hiện chỉ là chỗ giữ tối màu, ảnh màn hình và logo của tiệm làm sau.
 
 ## Chuẩn bị
 

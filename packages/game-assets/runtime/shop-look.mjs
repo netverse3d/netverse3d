@@ -50,6 +50,7 @@ export function paletteImage(rows, stopsByRow, width = PALETTE_WIDTH) {
 export function kitAnchors(gltf) {
   const anchors = {};
   for (const node of gltf.nodes ?? []) {
+    if (node.mesh !== undefined) continue;
     const [part, anchor] = node.name.split(ANCHOR_SEPARATOR);
     if (!anchor) continue;
     anchors[part] ??= {};

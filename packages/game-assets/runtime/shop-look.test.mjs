@@ -106,9 +106,12 @@ test('ảnh dải màu có một hàng cho mỗi hàng màu của hợp đồng'
   assert.deepEqual([...image.data.slice(strip, strip + 4)], [0, 0, 0, 255]);
 });
 
-test('đọc được socket và hộp va chạm từ tệp glTF', () => {
-  const anchors = kitAnchors(fakeKit());
+test('đọc được socket từ tệp glTF và bỏ qua node lưới trùng kiểu tên', () => {
+  const kit = fakeKit();
+  kit.nodes.push({ name: 'desk_a__socket_fake', mesh: 0 });
+  const anchors = kitAnchors(kit);
   assert.deepEqual(anchors.desk_a.socket_keyboard.position, SOCKETS.socket_keyboard);
+  assert.equal(anchors.desk_a.socket_fake, undefined);
 });
 
 test('đổi biến thể phím thì phím mới đặt đúng socket', () => {
@@ -139,6 +142,8 @@ test('máy đứng giữa ô của nó và quay theo hướng người ngồi nh
   const desk = plan.find((placement) => placement.slot === 'desk');
   assert.deepEqual(desk.position, [-1, 0, -1]);
   assert.equal(desk.yaw, Math.PI / 2);
+  const monitor = plan.find((placement) => placement.slot === 'monitor');
+  assert.deepEqual(monitor.position, [-0.38, 0.7, -1]);
   const south = shopPlan(recipeWith([{ cell: [1, 1], facing: 'south' }]), anchors);
   assert.equal(south.find((placement) => placement.slot === 'desk').yaw, 0);
 });
@@ -161,8 +166,9 @@ test('50 máy cùng công thức không tăng số hình khối hay lời gọi 
 test('bộ máy thật có đủ socket cho mọi ô trong công thức mẫu', (context) => {
   const buffer = readFileSync(join(ROOT, 'exported', 'station-parts.glb'));
   if (isLfsPointer(buffer)) return context.skip('station-parts.glb chưa tải nội dung LFS');
-  const anchors = kitAnchors(readGlb(buffer));
+  const gltf = readGlb(buffer);
   const recipe = JSON.parse(readFileSync(join(ROOT, 'recipes', 'tim-neon.json'), 'utf8'));
-  const plan = shopPlan(recipe, anchors);
+  const plan = shopPlan(recipe, kitAnchors(gltf));
   assert.equal(plan.length, recipe.layout.stations.length * 11);
+  assert.equal(drawCalls(gltf, plan), 24);
 });
