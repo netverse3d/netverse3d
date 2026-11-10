@@ -1,0 +1,59 @@
+{
+  "id": "tim-neon",
+  "name": "Tím Neon",
+  "palette": {
+    "body": ["#1a1428"],
+    "metal": ["#3a3350"],
+    "soft": ["#14101d"],
+    "top": ["#3b2a68"],
+    "floor": ["#120c24"],
+    "wall": ["#1b1240"],
+    "ceiling": ["#0d0a1a"],
+    "trim": ["#c13cf0", "#7a2be0", "#9436ea", "#7a2be0", "#c13cf0"],
+    "strip": ["#a835ff"],
+    "keycap": ["#0aa0c8", "#2a3fd0", "#7a1fd0", "#c0189a"],
+    "screen": ["#1f8fff", "#2a55ff"],
+    "accent": ["#8a2bff", "#c23cff"]
+  },
+  "emissive": {
+    "trim": ["#40105f", "#1c0a40", "#2a1050", "#1c0a40", "#40105f"]
+  },
+  "variants": {
+    "desk": "a",
+    "monitor": "a",
+    "keyboard": "a",
+    "mouse": "a",
+    "mat": "a",
+    "headset": "a",
+    "mic": "a",
+    "speaker": "a",
+    "chair": "a",
+    "case": "a",
+    "floor": "a",
+    "wall": "a",
+    "corner": "a",
+    "door": "a",
+    "window": "a",
+    "ceiling": "a",
+    "light": "a",
+    "marker": "a"
+  },
+  "layout": {
+    "cells": [4, 3],
+    "stations": [
+      { "cell": [0, 0], "facing": "south" },
+      { "cell": [1, 0], "facing": "south" },
+      { "cell": [2, 0], "facing": "south" },
+      { "cell": [0, 2], "facing": "north" },
+      { "cell": [1, 2], "facing": "north" },
+      { "cell": [2, 2], "facing": "north" }
+    ],
+    "door": { "wall": "south", "at": 3 },
+    "windows": [
+      { "wall": "north", "at": 1 },
+      { "wall": "north", "at": 2 }
+    ]
+  },
+  "sign": { "text": "TÍM NEON", "style": "neon" },
+  "lighting": "neon"
+}

@@ -9,5 +9,9 @@
     "export": "node tools/export.mjs",
     "check": "node tools/check.mjs",
     "library": "node tools/serve-library.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
   }
 }

@@ -12,7 +12,7 @@ import {
 } from './lib.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const FOLDERS = ['openapi', 'events', 'realtime'];
+const FOLDERS = ['openapi', 'events', 'realtime', 'world'];
 
 function isContractFile(name) {
   return name.endsWith('.json') || name.endsWith('.yaml');

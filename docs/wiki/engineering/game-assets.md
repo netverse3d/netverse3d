@@ -67,6 +67,10 @@ V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo
 
 Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`.
 
+### Công thức tiệm
+
+Mỗi tiệm là một tệp JSON trong `recipes/`, theo hợp đồng `packages/contracts/world/shop-look.v1.schema.json`: `palette` (mỗi hàng màu là một dải gồm một hay nhiều màu), `emissive` (dải phát sáng nhẹ cho hàng bề mặt, tuỳ chọn), `variants` (biến thể cho từng ô đồ), `layout` (kích thước phòng theo ô 2 m, vị trí và hướng từng máy, cửa, cửa sổ), `sign` và `lighting`. Ba tiệm mẫu khác hẳn nhau: `tim-neon`, `bien-sau`, `cam-retro`. `pnpm assets:check` từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, đặt máy ngoài phòng, hai máy chung một ô, hoặc tên tệp khác `id`.
+
 ## Chuẩn bị
 
 Cần Git LFS và Blender 5.2 trở lên. `pnpm bootstrap` đã bật Git LFS và tải sẵn các tệp. Blender nằm ở vị trí lạ thì đặt biến `BLENDER_PATH`.

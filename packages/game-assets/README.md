@@ -10,6 +10,7 @@ Tệp Blender gốc, mô hình glTF xuất ra và bộ kiểm của nhân vật,
 source/              tệp .blend, là bản gốc, lưu bằng Git LFS
 exported/            tệp .glb do lệnh xuất tạo ra, không sửa tay
 assets.config.json   hợp đồng: xương, clip, mesh, ô đồ, điểm neo, bộ màu, ngân sách tam giác
+recipes/             công thức tiệm mẫu theo hợp đồng shop-look của contracts
 library/             trang xem trực quan các thiết kế đã có
 tools/               lệnh xuất, bộ kiểm, máy chủ xem thư viện
 ```

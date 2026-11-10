@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/world/shop-look.v1.schema.json",
+  "title": "Shop look",
+  "description": "Công thức bản sắc của một tiệm: bộ màu, biến thể theo ô đồ, bố cục, biển hiệu, kiểu đèn. Tên hàng màu và tên ô đồ lấy từ assets.config.json của game-assets.",
+  "x-status": "draft",
+  "type": "object",
+  "required": ["id", "name", "palette", "variants", "layout", "sign", "lighting"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "palette": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/stops" }
+    },
+    "emissive": { "type": "object", "additionalProperties": { "$ref": "#/$defs/stops" } },
+    "variants": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^[a-z]$" }
+    },
+    "layout": { "$ref": "#/$defs/layout" },
+    "sign": {
+      "type": "object",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 24 },
+        "style": { "enum": ["neon", "led", "painted"] }
+      }
+    },
+    "lighting": { "enum": ["neon", "dim", "warm", "daylight"] }
+  },
+  "$defs": {
+    "color": { "type": "string", "pattern": "^#[0-9a-f]{6}$" },
+    "stops": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/color" }
+    },
+    "cell": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "wall": { "enum": ["north", "south", "east", "west"] },
+    "opening": {
+      "type": "object",
+      "required": ["wall", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "wall": { "$ref": "#/$defs/wall" },
+        "at": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "required": ["cells", "stations"],
+      "additionalProperties": false,
+      "properties": {
+        "cells": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer", "minimum": 1, "maximum": 16 }
+        },
+        "stations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["cell", "facing"],
+            "additionalProperties": false,
+            "properties": {
+              "cell": { "$ref": "#/$defs/cell" },
+              "facing": { "$ref": "#/$defs/wall" }
+            }
+          }
+        },
+        "door": { "$ref": "#/$defs/opening" },
+        "windows": { "type": "array", "items": { "$ref": "#/$defs/opening" } }
+      }
+    }
+  }
+}
