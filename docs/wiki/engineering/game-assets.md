@@ -95,7 +95,7 @@ Tiệm đổi màu theo công thức lúc chạy nên không nướng màu đư�
 
 ### Phòng lab
 
-Tab "Phòng lab" mở `library/lab.html`: xem riêng từng món của hai bộ ô đồ trên bục xoay dưới ba đèn studio trung tính, kèm số tam giác, kích thước so với khung ô và danh sách điểm neo. Bật được khung dây, điểm neo, hộp va chạm, khung ô và lưới sàn; bốn bộ ghép thử mối nối (góc tường, cửa giữa hai tường, cửa sổ giữa hai tường, trần và đèn) để soi chỗ các module gặp nhau trước khi ghép cả tiệm. Cả hai trang vẽ qua composer có khử răng cưa MSAA bốn mẫu, vì `antialias` của canvas không tác dụng khi đi qua hậu xử lý.
+Tab "Phòng lab" mở `library/lab.html`: xem riêng từng món của hai bộ ô đồ trên bục xoay dưới ba đèn studio trung tính, kèm số tam giác, kích thước so với khung ô và danh sách điểm neo. Bật được khung dây, điểm neo, hộp va chạm, khung ô và lưới sàn; bốn bộ ghép thử mối nối (góc tường, cửa giữa hai tường, cửa sổ giữa hai tường, trần và đèn) để soi chỗ các module gặp nhau trước khi ghép cả tiệm. Cả hai trang vẽ qua composer có khử răng cưa MSAA bốn mẫu, vì `antialias` của canvas không tác dụng khi đi qua hậu xử lý. Trang lab nhận tham số trên URL để chia sẻ đúng một góc nhìn: `part` (tên món), `view` (`front`, `back`, `side`, `top`, `iso`, `low`), `zoom` (hệ số phóng), `focus` (toạ độ x,y,z tính bằng mét làm tâm nhìn) và `spin=0` để dừng bục xoay; ví dụ `lab.html?part=chair_a&view=low&zoom=2.4&focus=0,0.1,0&spin=0` soi chân ghế.
 
 ## Chuẩn bị
 

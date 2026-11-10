@@ -611,18 +611,24 @@
           );
       }
 
+      const query = new URLSearchParams(location.search);
+
       function frame(view, keepZoom = false) {
         const box = new THREE.Box3().setFromObject(stageGroup);
         const size = box.getSize(new THREE.Vector3());
         const centre = box.getCenter(new THREE.Vector3());
-        const radius = Math.max(size.x, size.y, size.z) * 1.4 + 0.05;
+        const zoom = Number(query.get('zoom')) || 1;
+        const radius = (Math.max(size.x, size.y, size.z) * 1.4 + 0.05) / zoom;
+        const focus = query.get('focus');
+        if (focus) centre.set(...focus.split(',').map(Number));
         const dir = {
           front: [0, 0.35, -1],
           back: [0, 0.35, 1],
           side: [1, 0.35, 0],
           top: [0.001, 1, 0.001],
           iso: [0.8, 0.6, -1],
-        }[view];
+          low: [0.9, 0.25, -1],
+        }[view] ?? [0.8, 0.6, -1];
         const offset = new THREE.Vector3(...dir).normalize().multiplyScalar(radius * 1.9);
         controls.target.copy(centre);
         camera.position.copy(centre).add(offset);
@@ -731,7 +737,14 @@
       rebuildMaterials();
       renderLists();
       resize();
+      const linkedPart = query.get('part');
+      if (linkedPart && slotOf[linkedPart]) state.selection = { kind: 'part', name: linkedPart };
+      if (query.get('spin') === '0') {
+        state.spin = false;
+        document.querySelector('[data-toggle="spin"]').setAttribute('aria-pressed', 'false');
+      }
       show();
+      if (query.get('view')) frame(query.get('view'));
 
       const clock = new THREE.Clock();
       renderer.setAnimationLoop(() => {
