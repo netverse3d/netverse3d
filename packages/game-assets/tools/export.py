@@ -17,6 +17,8 @@ GLTF_OPTIONS = {
     'export_yup': True,
     'export_morph': False,
     'export_texcoords': True,
+    'export_image_format': 'JPEG',
+    'export_jpeg_quality': 90,
     'export_vertex_color': 'NAME',
     'export_vertex_color_name': 'Col',
     'export_all_vertex_colors': False,
@@ -194,6 +196,29 @@ def export_prop(prop):
     print('EXPORTED', prop['file'], triangles(ob))
 
 
+def export_scene(scene):
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    objects = append_objects(scene['source'])
+    bpy.context.view_layer.update()
+    meshes = [ob for ob in objects if ob.type == 'MESH']
+    select_only(meshes, meshes[0])
+    bpy.ops.export_scene.gltf(
+        filepath=os.path.join(EXPORT_DIR, scene['file']),
+        export_animations=False,
+        **GLTF_OPTIONS,
+    )
+    path = os.path.join(SOURCE_DIR, scene['source'])
+    with bpy.data.libraries.load(path, link=False) as (source, target):
+        target.images = [name for name in scene['images'].values() if name in source.images]
+    bpy.context.scene.render.image_settings.quality = 90
+    for key, name in scene['images'].items():
+        image = bpy.data.images[name]
+        image.filepath_raw = os.path.join(EXPORT_DIR, scene['files'][key])
+        image.file_format = 'JPEG'
+        image.save()
+    print('EXPORTED', scene['file'], sum(triangles(ob) for ob in meshes), 'images', ', '.join(scene['files'].values()))
+
+
 def export_kit(kit):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     objects = append_objects(kit['source'])
@@ -213,3 +238,5 @@ for item in CONFIG['props']:
     export_prop(item)
 for item in CONFIG.get('kits', []):
     export_kit(item)
+for item in CONFIG.get('scenes', []):
+    export_scene(item)

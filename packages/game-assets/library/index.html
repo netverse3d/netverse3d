@@ -413,6 +413,9 @@
         <button id="tab-look" data-view="look">Bộ sưu tập</button>
         <button id="tab-studio" data-view="studio">Xưởng và tiệm</button>
         <button id="tab-shop" data-view="shop">Phòng thử tiệm</button>
+        <button id="tab-lab" data-view="lab">Phòng lab</button>
+        <button id="tab-showcase" data-view="showcase">Tiệm giới thiệu</button>
+        <button id="tab-gallery" data-view="gallery">Danh mục món</button>
       </div>
       <div class="states" id="actBar" role="group" aria-label="Cách xem"></div>
       <div id="actNow" aria-live="polite"></div>
@@ -5252,8 +5255,14 @@
     document.querySelector('.tabs').addEventListener('click', (e) => {
       const button = e.target.closest('[data-view]');
       if (!button) return;
-      if (button.dataset.view === 'shop') {
-        location.href = 'shop.html';
+      const pages = {
+        shop: 'shop.html',
+        lab: 'lab.html',
+        showcase: 'showcase.html',
+        gallery: 'gallery.html',
+      };
+      if (pages[button.dataset.view]) {
+        location.href = pages[button.dataset.view];
         return;
       }
       world.setView(button.dataset.view);

@@ -78,18 +78,37 @@
     "rigSource": "character-base.blend",
     "clipSource": "clips.blend",
     "meshes": {
-      "body": { "source": "character-base.blend", "maxTriangles": 28000, "lodTriangles": 7000 },
+      "body": {
+        "source": "character-base.blend",
+        "maxTriangles": 28000,
+        "lodTriangles": 7000
+      },
       "hair": {
         "source": "hair-default.blend",
         "maxTriangles": 9000,
         "lodTriangles": 3000,
         "requiredAttributes": ["COLOR_0"]
       },
-      "glasses": { "source": "accessories.blend", "maxTriangles": 1200 },
-      "headset": { "source": "accessories.blend", "maxTriangles": 2800 },
-      "backpack": { "source": "accessories.blend", "maxTriangles": 1600 },
-      "cup": { "source": "accessories.blend", "maxTriangles": 500 },
-      "crate": { "source": "accessories.blend", "maxTriangles": 400 }
+      "glasses": {
+        "source": "accessories.blend",
+        "maxTriangles": 1200
+      },
+      "headset": {
+        "source": "accessories.blend",
+        "maxTriangles": 2800
+      },
+      "backpack": {
+        "source": "accessories.blend",
+        "maxTriangles": 1600
+      },
+      "cup": {
+        "source": "accessories.blend",
+        "maxTriangles": 500
+      },
+      "crate": {
+        "source": "accessories.blend",
+        "maxTriangles": 400
+      }
     }
   },
   "props": [
@@ -109,9 +128,11 @@
     {
       "file": "station-parts.glb",
       "source": "parts-station.blend",
+      "generator": "pipeline/make_station_hero.py",
+      "lightmap": true,
       "slots": {
         "desk": {
-          "variants": ["a"],
+          "variants": ["a", "b", "c"],
           "maxTriangles": 2200,
           "size": [1.7, 0.9, 0.8],
           "anchors": [
@@ -129,16 +150,44 @@
             "collision_main"
           ]
         },
-        "monitor": { "variants": ["a"], "maxTriangles": 1500, "size": [1.0, 0.7, 0.35] },
-        "keyboard": { "variants": ["a"], "maxTriangles": 1100, "size": [0.46, 0.06, 0.2] },
-        "mouse": { "variants": ["a"], "maxTriangles": 600, "size": [0.1, 0.06, 0.14] },
-        "mat": { "variants": ["a"], "maxTriangles": 300, "size": [0.9, 0.02, 0.4] },
-        "headset": { "variants": ["a"], "maxTriangles": 1600, "size": [0.3, 0.32, 0.18] },
-        "mic": { "variants": ["a"], "maxTriangles": 900, "size": [0.18, 0.3, 0.18] },
-        "speaker": { "variants": ["a"], "maxTriangles": 700, "size": [0.18, 0.3, 0.2] },
+        "monitor": {
+          "variants": ["a"],
+          "maxTriangles": 1500,
+          "size": [1, 0.7, 0.35]
+        },
+        "keyboard": {
+          "variants": ["a"],
+          "maxTriangles": 1100,
+          "size": [0.46, 0.06, 0.2]
+        },
+        "mouse": {
+          "variants": ["a"],
+          "maxTriangles": 1400,
+          "size": [0.1, 0.06, 0.14]
+        },
+        "mat": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [0.9, 0.02, 0.4]
+        },
+        "headset": {
+          "variants": ["a"],
+          "maxTriangles": 1600,
+          "size": [0.3, 0.32, 0.18]
+        },
+        "mic": {
+          "variants": ["a", "b"],
+          "maxTriangles": 2200,
+          "size": [0.5, 0.62, 0.36]
+        },
+        "speaker": {
+          "variants": ["a"],
+          "maxTriangles": 700,
+          "size": [0.18, 0.3, 0.2]
+        },
         "chair": {
           "variants": ["a"],
-          "maxTriangles": 5400,
+          "maxTriangles": 8000,
           "size": [0.75, 1.4, 0.8],
           "anchors": ["seat_anchor", "collision_main"]
         },
@@ -153,49 +202,94 @@
     {
       "file": "room-kit.glb",
       "source": "environment-kit.blend",
+      "generator": "pipeline/make_room_kit.py",
+      "lightmap": true,
       "slots": {
         "floor": {
           "variants": ["a"],
           "maxTriangles": 400,
           "size": [2.01, 0.2, 2.01],
-          "grid": { "size": 2, "axes": [0, 2] }
+          "grid": {
+            "size": 2,
+            "axes": [0, 2]
+          }
         },
         "wall": {
           "variants": ["a"],
           "maxTriangles": 500,
           "size": [2.01, 3.1, 2.01],
-          "grid": { "size": 2, "axes": [0] },
+          "grid": {
+            "size": 2,
+            "axes": [0]
+          },
           "anchors": ["collision_main"]
         },
         "corner": {
           "variants": ["a"],
           "maxTriangles": 1000,
           "size": [2.01, 3.1, 2.01],
-          "grid": { "size": 2, "axes": [0, 2] },
+          "grid": {
+            "size": 2,
+            "axes": [0, 2]
+          },
           "anchors": ["collision_a", "collision_b"]
         },
         "door": {
           "variants": ["a"],
           "maxTriangles": 900,
           "size": [2.01, 3.1, 2.01],
-          "grid": { "size": 2, "axes": [0] },
+          "grid": {
+            "size": 2,
+            "axes": [0]
+          },
           "anchors": ["collision_left", "collision_right"]
         },
         "window": {
           "variants": ["a"],
           "maxTriangles": 800,
           "size": [2.01, 3.1, 2.01],
-          "grid": { "size": 2, "axes": [0] },
+          "grid": {
+            "size": 2,
+            "axes": [0]
+          },
           "anchors": ["collision_main"]
         },
         "ceiling": {
           "variants": ["a"],
           "maxTriangles": 400,
           "size": [2.01, 0.42, 2.01],
-          "grid": { "size": 2, "axes": [0, 2] }
+          "grid": {
+            "size": 2,
+            "axes": [0, 2]
+          }
         },
-        "light": { "variants": ["a"], "maxTriangles": 300, "size": [1.2, 0.14, 0.16] },
-        "marker": { "variants": ["a"], "maxTriangles": 500, "size": [1.0, 0.08, 1.0] }
+        "light": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [1.2, 0.14, 0.16]
+        },
+        "marker": {
+          "variants": ["a"],
+          "maxTriangles": 500,
+          "size": [1, 0.08, 1]
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "id": "showcase-tim-neon",
+      "source": "showcase-tim-neon.blend",
+      "generator": "pipeline/make_showcase.py",
+      "file": "showcase-tim-neon.glb",
+      "recipe": "tim-neon",
+      "images": {
+        "base": "showcase-base",
+        "spill": "showcase-spill"
+      },
+      "files": {
+        "base": "showcase-tim-neon-base.jpg",
+        "spill": "showcase-tim-neon-spill.jpg"
       }
     }
   ]

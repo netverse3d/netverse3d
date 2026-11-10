@@ -1,6 +1,6 @@
 # ADR-0015: Tệp Blender là bản gốc của tài sản 3D
 
-- Trạng thái: proposed
+- Trạng thái: accepted
 - Ngày: 2026-11-09
 
 ## Bối cảnh
@@ -21,7 +21,7 @@ Script sinh không phải thứ cả nhóm sửa tiếp được: chỉnh tay tr
 
 **Bản gốc**
 
-- Tệp `.blend` trong `source/` là bản gốc. Script sinh phần base chỉ chạy một lần và không vào repo. Từ đây mọi sửa đổi làm trong Blender.
+- Tệp `.blend` trong `source/` là bản gốc. Script sinh phần base chỉ chạy một lần và không vào repo. Từ đây mọi sửa đổi làm trong Blender. Từ 2026-11-10, bàn máy, phòng và cảnh giới thiệu theo [ADR-0018](./ADR-0018-script-generated-asset-sources.md): bản gốc là script trong repo.
 - Tệp `.glb` trong `exported/` chỉ do lệnh xuất tạo ra.
 - Mỗi nhóm việc một tệp: thân và xương, clip, tóc, phụ kiện, đồ vật. Trước khi sửa thì khoá tệp bằng Git LFS.
 

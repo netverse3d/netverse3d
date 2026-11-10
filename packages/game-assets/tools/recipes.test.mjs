@@ -31,7 +31,7 @@ const RECIPE = {
   },
   variants: { chair: 'a' },
   layout: {
-    cells: [2, 2],
+    cells: [3, 2],
     stations: [{ cell: [0, 1], facing: 'south' }],
     door: { wall: 'south', at: 1 },
   },
@@ -173,19 +173,31 @@ test('hai máy đặt cùng một ô bị từ chối', () => {
 });
 
 test('máy đặt ngoài phòng bị từ chối', () => {
-  const stations = [{ cell: [2, 0], facing: 'south' }];
+  const stations = [{ cell: [3, 0], facing: 'south' }];
   assert.match(
     errorsOf({ layout: { ...RECIPE.layout, stations } }),
-    /tim-neon: station at 2,0 is outside the 2 x 2 room/,
+    /tim-neon: station at 3,0 is outside the 3 x 2 room/,
   );
 });
 
 test('cửa đặt ngoài bức tường bị từ chối', () => {
-  const door = { wall: 'south', at: 2 };
+  const door = { wall: 'south', at: 3 };
   assert.match(
     errorsOf({ layout: { ...RECIPE.layout, door } }),
-    /tim-neon: door at 2 is outside the south wall/,
+    /tim-neon: door at 3 is outside the south wall/,
   );
+});
+
+test('cửa hay cửa sổ ở ô góc bị từ chối vì module góc không có chỗ mở', () => {
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, door: { wall: 'south', at: 0 } } }),
+    /tim-neon: door at 0 sits in a corner of the south wall/,
+  );
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, windows: [{ wall: 'east', at: 1 }] } }),
+    /tim-neon: window at 1 sits in a corner of the east wall/,
+  );
+  assert.equal(errorsOf({ layout: { ...RECIPE.layout, windows: [{ wall: 'north', at: 1 }] } }), '');
 });
 
 test('kiểu đèn ngoài danh sách bị từ chối', () => {

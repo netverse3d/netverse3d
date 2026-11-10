@@ -1,19 +1,23 @@
 {
-  "config": "5eb94e022d6ec7b466322e6a7510f8abc6c55b022715ccf101d9c469b2ef77cc",
+  "config": "71d785970dcc575565b4c176d8501999c87f046b0694fcd172155a4d11f1774d",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "58b6a362da4e61729197b8166770e0e4fb44a6155756dd24b7e7f8f28bf52654",
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "71d5c5cf6cb6978975c07e5fce418169ad6d6d69a0ab28169be6527d156ab120",
-    "environment-kit.blend": "efafc5a3e6bfc36e436b4caaf6a59d9ad5c3ad51493a8adba4e66ae68ee44c8e"
+    "parts-station.blend": "26b066cd85bc4f66f354ace587f7f790c880a428a8283368d52872c15676fe64",
+    "environment-kit.blend": "2c8c75211ee3fb7b3465269647d24f03297eae265ed46f86a414dd294fcc49cd",
+    "showcase-tim-neon.blend": "39e29118686b5528f864d0e06d960be1fc4d82e705c112eae5fde7cc3d5db81a"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "a4023cbef70defcb8c542bead324265feba3f98b9830da2a1c3c0e6d7543deaa",
-    "room-kit.glb": "99d6a26020c536dd58eec3f2b2ae60c1dd5e5c0642be03558e4218136dbea99b"
+    "station-parts.glb": "9b3a3b4266e1b19ffab66218c83cb06d7774dfba6cc5f68b9e551224b565160a",
+    "room-kit.glb": "aa2e4b00bffd422f151fd98a15fbd52a2db005d810c8e6f542a2cfe948c0064c",
+    "showcase-tim-neon.glb": "b79b7beb1bbb66096697a127e090a4ded88fd529120f1656b137e459ef4a82d5",
+    "showcase-tim-neon-base.jpg": "8578081890e22c8c860856631fe1f4e20b82415789bf0296b0c6eae1821299f9",
+    "showcase-tim-neon-spill.jpg": "864b47d3c975a41fe140e6ed7356cf01a3c7121057dbef076b65d8f34256b4a3"
   }
 }

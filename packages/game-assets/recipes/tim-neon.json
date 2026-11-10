@@ -48,7 +48,7 @@
       { "cell": [1, 2], "facing": "north" },
       { "cell": [2, 2], "facing": "north" }
     ],
-    "door": { "wall": "south", "at": 3 },
+    "door": { "wall": "east", "at": 1 },
     "windows": [
       { "wall": "north", "at": 1 },
       { "wall": "north", "at": 2 }

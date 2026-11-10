@@ -1,6 +1,6 @@
 # ADR-0016: Bản sắc tiệm là dữ liệu, mô hình không mang màu cố định
 
-- Trạng thái: proposed
+- Trạng thái: accepted
 - Ngày: 2026-11-09
 - Thay phần màu môi trường trong [ADR-0014](./ADR-0014-saigon-cyber-and-own-characters.md)
 

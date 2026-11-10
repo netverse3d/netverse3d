@@ -19,6 +19,7 @@
     "trace:link": "node scripts/drift/link.mjs",
     "catalog:check": "node scripts/catalog/check.mjs",
     "boundaries:check": "node scripts/boundaries/check.mjs",
+    "assets:generate": "pnpm --filter @netverse/game-assets run generate",
     "assets:export": "pnpm --filter @netverse/game-assets run export",
     "assets:check": "pnpm --filter @netverse/game-assets run check",
     "assets:library": "pnpm --filter @netverse/game-assets run library",

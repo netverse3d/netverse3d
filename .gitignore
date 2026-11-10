@@ -40,3 +40,4 @@ apps/web-3d/next-env.d.ts
 !.vscode/settings.json
 .DS_Store
 Thumbs.db
+packages/game-assets/pipeline/showcase-plan.json
