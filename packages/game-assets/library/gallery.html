@@ -181,6 +181,7 @@
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import { paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import { legendTexture } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -220,9 +221,10 @@
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.setScissorTest(true);
 
-      const [config, ids] = await Promise.all([
+      const [config, ids, keyboards] = await Promise.all([
         fetch('../assets.config.json').then((r) => r.json()),
         fetch('../recipes/index.json').then((r) => r.json()),
+        fetch('../keyboards.json').then((r) => r.json()),
       ]);
       const rows = paletteRows(config.palette);
       const recipes = Object.fromEntries(
@@ -259,6 +261,7 @@
             material.dispose();
           }
         }
+        const legends = legendTexture(THREE, keyboards, recipes[state.recipeId]);
         materialSets = Object.fromEntries(
           Object.entries(kits).map(([file, gltf]) => [
             file,
@@ -266,6 +269,7 @@
               glowBoost: 1.1,
               lightmap: kitLightmap(gltf.scene),
               lightmapIntensity: state.ao ? 1 : 0,
+              legends,
             }),
           ]),
         );

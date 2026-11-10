@@ -216,7 +216,7 @@ def main():
     scene.unit_settings.system = 'METRIC'
     scene.unit_settings.scale_length = 1.0
     collection = scene.collection
-    materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal')]
+    materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal', 'legend')]
     for material in materials:
         material.use_nodes = True
     builders = [build_floor, build_wall, build_corner, build_door, build_window, build_ceiling, build_light, build_marker]

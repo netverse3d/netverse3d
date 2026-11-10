@@ -130,36 +130,6 @@ def build_case(name='case_a'):
     return case
 
 
-def build_keyboard(name='keyboard_a'):
-    keyboard = HeroPart(name)
-    keyboard.slab(0, 0, 0.222, 0.086, 0.014, [
-        (0.0, 0.006, 'strip'),
-        (0.009, 0.0, 'strip'),
-        (0.015, 0.0, 'body'),
-        (0.024, 0.0, 'soft'),
-        (0.027, 0.005, 'soft'),
-    ])
-    rows = [13, 14, 14, 13, 12]
-    pitch = 0.0255
-    top = 0.0695
-    left, span = -0.208, 0.416
-    gap = 0.0042
-    key_low, key_high = 0.026, 0.048
-    for r, count in enumerate(rows):
-        y1 = top - r * pitch
-        width = span / count
-        for c in range(count):
-            u = 0.82 * (c + 0.5) / count + 0.18 * r / len(rows)
-            keyboard.key(left + c * width, left + (c + 1) * width - gap, y1 - pitch + gap, y1, key_low, key_high, u)
-    widths = [0.05, 0.05, 0.05, 0.13, 0.046, 0.046, 0.044]
-    x0 = left
-    y1 = top - len(rows) * pitch
-    for i, width in enumerate(widths):
-        keyboard.key(x0, x0 + width - gap, y1 - pitch + gap, y1, key_low, key_high, (i + 0.5) / len(widths))
-        x0 += width
-    return keyboard
-
-
 MOUSE_LENGTH = 0.124
 MOUSE_SEAM = 0.012
 MOUSE_WIDTH = [(0.0, 0.011), (0.035, 0.017), (0.14, 0.025), (0.26, 0.029), (0.36, 0.0305), (0.46, 0.0315), (0.6, 0.0325), (0.76, 0.0305), (0.9, 0.025), (0.965, 0.019), (1.0, 0.012)]
@@ -222,7 +192,7 @@ def build_mouse(name='mouse_a'):
         return [Vector((centre.x + (p.x - centre.x) * scale, centre.y + (p.y - centre.y) * scale, z)) for p in outline]
     shell = [shell_ring(0.0, 0.93), shell_ring(0.003, 1.0), shell_ring(MOUSE_STRIP_BOTTOM, 1.0), shell_ring(MOUSE_SEAM, 1.0)]
     mouse.loft(shell, lambda r, c: 'strip' if r == 2 else 'body', levels=0, cap=False)
-    mouse.poly([tuple(p) for p in reversed(ring(0.0, 0.93))], 'soft')
+    mouse.poly([tuple(p) for p in reversed(shell_ring(0.0, 0.93))], 'soft')
 
     wheel_u = (MOUSE_U[MOUSE_SLOT_ROW] + MOUSE_U[MOUSE_SLOT_ROW + 1]) / 2
     wheel_top = MOUSE_SEAM + mouse_rise(wheel_u, 0.0)

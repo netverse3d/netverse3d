@@ -122,7 +122,7 @@
   "palette": {
     "surface": ["body", "metal", "soft", "top", "floor", "wall", "ceiling", "trim"],
     "glow": ["strip", "keycap", "screen", "accent"],
-    "images": ["display", "decal"]
+    "images": ["display", "decal", "legend"]
   },
   "kits": [
     {
@@ -156,8 +156,8 @@
           "size": [1, 0.7, 0.35]
         },
         "keyboard": {
-          "variants": ["a"],
-          "maxTriangles": 1100,
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 2400,
           "size": [0.46, 0.06, 0.2]
         },
         "mouse": {

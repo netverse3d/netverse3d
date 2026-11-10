@@ -9,6 +9,8 @@ const RUNTIME_FOLDER = 'runtime';
 const RECIPE_FOLDER = 'recipes';
 const TEST_SUFFIX = '.test.mjs';
 const CONFIG_FILE = 'assets.config.json';
+const KEYBOARDS_FILE = 'keyboards.json';
+const ROOT_FILES = new Set([CONFIG_FILE, KEYBOARDS_FILE]);
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.glb': 'model/gltf-binary',
@@ -29,7 +31,7 @@ export function resolveRequestPath(root, requestUrl) {
   const target = resolve(root, `.${pathname}`);
   const inside = relative(root, target);
   if (inside.startsWith('..') || isAbsolute(inside)) return null;
-  if (inside !== CONFIG_FILE && !SERVED_FOLDERS.has(inside.split(sep)[0])) return null;
+  if (!ROOT_FILES.has(inside) && !SERVED_FOLDERS.has(inside.split(sep)[0])) return null;
   return inside === 'library' ? join(target, 'index.html') : target;
 }
 
@@ -55,7 +57,7 @@ function requiredModels(root) {
 export function findUnusableModels(root) {
   return requiredModels(root).filter((file) => {
     const path = join(root, file);
-    return !existsSync(path) || !hasGlbHeader(readFileSync(path));
+    return !existsSync(path) || (file.endsWith('.glb') && !hasGlbHeader(readFileSync(path)));
   });
 }
 
@@ -72,6 +74,6 @@ export function copyLibrary(root, target) {
     filter: (source) => !source.endsWith(TEST_SUFFIX),
   });
   cpSync(join(root, RECIPE_FOLDER), join(target, RECIPE_FOLDER), { recursive: true });
-  copyFileSync(join(root, CONFIG_FILE), join(target, CONFIG_FILE));
+  for (const file of ROOT_FILES) copyFileSync(join(root, file), join(target, file));
   return [];
 }
