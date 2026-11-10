@@ -96,6 +96,22 @@ test('hai hộp cùng dán đáy lên một hộp nền không bị báo vì m�
   assert.deepEqual(buried, []);
 });
 
+test('tấm mỏng bằng không dán lên mặt bàn bị báo vì mặt che thuộc chính khối đó', () => {
+  const desk = box([-0.5, 0.5], [0, 0.7], [-0.3, 0.3]);
+  const skin = box([0.1, 0.2], [0.7, 0.7], [0.1, 0.2]);
+  const overlaps = coplanarOverlaps([{ label: 'desk_a', triangles: [...desk, ...skin] }]);
+  assert.ok(overlaps.some((item) => item.axis === 'y' && item.sign === '+'));
+});
+
+test('hai mặt cùng hướng cách nhau dưới 1,5 mm bị báo, cách 3 mm thì không', () => {
+  const desk = box([-0.5, 0.5], [0, 0.7], [-0.3, 0.3]);
+  const near = box([0.1, 0.2], [0.7, 0.7005], [0.1, 0.2]);
+  const clear = box([0.1, 0.2], [0.7, 0.703], [0.1, 0.2]);
+  const flagged = coplanarOverlaps([{ label: 'desk_a', triangles: [...desk, ...near] }]);
+  assert.ok(flagged.some((item) => item.axis === 'y' && item.sign === '+' && item.gap > 0));
+  assert.deepEqual(coplanarOverlaps([{ label: 'desk_a', triangles: [...desk, ...clear] }]), []);
+});
+
 test('trụ ốp cao hết tường có mặt trên trùng phẳng với dải băng trần thì bị báo', () => {
   const pilaster = box([0.88, 1], [0, 3], [-0.8, -0.7]);
   const band = box([-1, 1], [2.6, 3], [-0.8, -0.68]);

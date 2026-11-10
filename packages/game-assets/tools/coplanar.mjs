@@ -1,5 +1,6 @@
 const AXIS_ALIGNMENT = 1 - 1e-4;
-const PLANE_TOLERANCE = 1e-4;
+const PLANE_TOLERANCE = 1.5e-3;
+const WELD_TOLERANCE = 1e-6;
 const MIN_OVERLAP_AREA = 1e-5;
 const BURIED_FRACTION = 0.98;
 const COMPONENT_READERS = {
@@ -71,6 +72,33 @@ function signedArea(polygon) {
   return total / 2;
 }
 
+export function connectedComponents(triangles) {
+  const ids = new Map();
+  const parent = [];
+  const find = (index) => {
+    while (parent[index] !== index) {
+      parent[index] = parent[parent[index]];
+      index = parent[index];
+    }
+    return index;
+  };
+  const vertexId = (point) => {
+    const key = point.map((value) => Math.round(value / WELD_TOLERANCE)).join(',');
+    if (!ids.has(key)) {
+      ids.set(key, parent.length);
+      parent.push(parent.length);
+    }
+    return ids.get(key);
+  };
+  const firsts = triangles.map(([a, b, c]) => {
+    const [ia, ib, ic] = [vertexId(a), vertexId(b), vertexId(c)];
+    parent[find(ib)] = find(ia);
+    parent[find(ic)] = find(ia);
+    return ia;
+  });
+  return firsts.map((first) => find(first));
+}
+
 function axisFace(triangle) {
   const [a, b, c] = triangle;
   const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
@@ -140,12 +168,15 @@ function indexByPlane(faces) {
 
 function facesOnPlane(index, axis, sign, coord) {
   const bucket = Math.round(coord / PLANE_TOLERANCE);
-  return [-1, 0, 1].flatMap((step) => index.get(planeKey(axis, sign, bucket + step)) ?? []);
+  return [-1, 0, 1]
+    .flatMap((step) => index.get(planeKey(axis, sign, bucket + step)) ?? [])
+    .filter((face) => Math.abs(face.coord - coord) <= PLANE_TOLERANCE);
 }
 
-function isBuried(polygon, area, opposite) {
+function isBuried(polygon, area, opposite, components) {
   let covered = 0;
   for (const face of opposite) {
+    if (components.has(face.component)) continue;
     covered += overlapArea(polygon, face.polygon);
     if (covered >= area * BURIED_FRACTION) return true;
   }
@@ -155,10 +186,11 @@ function isBuried(polygon, area, opposite) {
 export function coplanarOverlaps(placements, { acrossOnly = false } = {}) {
   const faces = [];
   placements.forEach(({ label, triangles }, owner) => {
-    for (const triangle of triangles) {
+    const components = connectedComponents(triangles);
+    triangles.forEach((triangle, index) => {
       const face = axisFace(triangle);
-      if (face) faces.push({ ...face, label, owner });
-    }
+      if (face) faces.push({ ...face, label, owner, component: `${owner}:${components[index]}` });
+    });
   });
   faces.sort((a, b) => a.axis - b.axis || a.sign - b.sign || a.coord - b.coord);
   const index = indexByPlane(faces);
@@ -173,7 +205,8 @@ export function coplanarOverlaps(placements, { acrossOnly = false } = {}) {
       const polygon = clipPolygon(face.polygon, other.polygon);
       const area = Math.abs(signedArea(polygon));
       if (area < MIN_OVERLAP_AREA) continue;
-      if (isBuried(polygon, area, facesOnPlane(index, face.axis, -face.sign, face.coord))) continue;
+      const opposite = facesOnPlane(index, face.axis, -face.sign, face.coord);
+      if (isBuried(polygon, area, opposite, new Set([face.component, other.component]))) continue;
       const [p, q] = centroid(polygon);
       const at = [];
       at[face.axis] = face.coord;
@@ -183,6 +216,7 @@ export function coplanarOverlaps(placements, { acrossOnly = false } = {}) {
         axis: AXIS_NAMES[face.axis],
         sign: face.sign > 0 ? '+' : '-',
         coord: face.coord,
+        gap: Math.abs(other.coord - face.coord),
         area,
         at,
         labels: [face.label, other.label],
@@ -196,7 +230,8 @@ export function describeOverlaps(name, overlaps) {
   const worst = overlaps.reduce((best, item) => (item.area > best.area ? item : best));
   const at = worst.at.map((value) => value.toFixed(3)).join(', ');
   const pair = worst.labels[0] === worst.labels[1] ? worst.labels[0] : worst.labels.join(' and ');
-  return `${name}: ${overlaps.length} coplanar overlaps, largest ${(worst.area * 1e4).toFixed(1)} cm² on ${worst.sign}${worst.axis} at ${worst.coord.toFixed(3)} near (${at}) in ${pair}`;
+  const gap = worst.gap < 1e-6 ? 'in the same plane' : `${(worst.gap * 1e3).toFixed(2)} mm apart`;
+  return `${name}: ${overlaps.length} coplanar overlaps, largest ${(worst.area * 1e4).toFixed(1)} cm² on ${worst.sign}${worst.axis} at ${worst.coord.toFixed(4)} (${gap}) near (${at}) in ${pair}`;
 }
 
 export function roomAssemblies(parts) {

@@ -1,19 +1,19 @@
 {
-  "config": "5eb94e022d6ec7b466322e6a7510f8abc6c55b022715ccf101d9c469b2ef77cc",
+  "config": "814eda137c7b370f91de353b21b840dcecfcb9609f4ecaf7a91a605296156436",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "58b6a362da4e61729197b8166770e0e4fb44a6155756dd24b7e7f8f28bf52654",
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "71d5c5cf6cb6978975c07e5fce418169ad6d6d69a0ab28169be6527d156ab120",
-    "environment-kit.blend": "e464ab5c63705d099603497240bdd66583e775cdf29c66e6f6e230cdb261d775"
+    "parts-station.blend": "64cb5cf8795c73945a726cd77776188ea21f03cc3d0394f6836235948b9bef99",
+    "environment-kit.blend": "3beabe04bfb35e1a7c78bb13a755e7c2e99fbd554a709f9fd160c7e89eed9e8b"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "a4023cbef70defcb8c542bead324265feba3f98b9830da2a1c3c0e6d7543deaa",
-    "room-kit.glb": "f9f5606d52b1699ae0db63c69e6dd581f9dbeb59f5a16c15cdb9fae18e47490e"
+    "station-parts.glb": "267a54321a7001dafb853a8654b00cc9dd523c354291b11a43c44ab61d489963",
+    "room-kit.glb": "cf377f35a7b4876239a28748fed8e44ca2acc56033f38ae394b3fa6b0ef64ea0"
   }
 }

@@ -138,7 +138,7 @@
         "speaker": { "variants": ["a"], "maxTriangles": 700, "size": [0.18, 0.3, 0.2] },
         "chair": {
           "variants": ["a"],
-          "maxTriangles": 5400,
+          "maxTriangles": 6800,
           "size": [0.75, 1.4, 0.8],
           "anchors": ["seat_anchor", "collision_main"]
         },
