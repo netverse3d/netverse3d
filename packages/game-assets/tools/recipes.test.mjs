@@ -228,3 +228,34 @@ test('ba tiệm mẫu khác hẳn nhau về bộ màu', () => {
     }
   }
 });
+
+test('máy kê ghế sát tường, người chơi không tới được ghế, bị từ chối', () => {
+  const againstWalls = [
+    [{ cell: [1, 0], facing: 'south' }, 'north'],
+    [{ cell: [1, 1], facing: 'north' }, 'south'],
+    [{ cell: [0, 1], facing: 'east' }, 'west'],
+    [{ cell: [2, 0], facing: 'west' }, 'east'],
+  ];
+  for (const [station, wall] of againstWalls) {
+    assert.match(
+      errorsOf({ layout: { ...RECIPE.layout, stations: [station] } }),
+      new RegExp(
+        `tim-neon: station at ${station.cell.join(',')} has its chair against the ${wall} wall`,
+      ),
+    );
+  }
+});
+
+test('máy sát tường quay màn hình vào tường, hoặc quay ngang, thì hợp lệ', () => {
+  const stations = [
+    { cell: [1, 0], facing: 'north' },
+    { cell: [2, 0], facing: 'east' },
+    { cell: [0, 1], facing: 'west' },
+    { cell: [2, 1], facing: 'south' },
+    { cell: [0, 0], facing: 'north' },
+  ];
+  assert.equal(
+    errorsOf({ layout: { ...RECIPE.layout, door: { wall: 'south', at: 1 }, stations } }),
+    '',
+  );
+});
