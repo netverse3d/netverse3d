@@ -54,6 +54,9 @@ export const RULES = [
       'the interface reaches the game only through the state store',
     ),
   ]),
+  webLayer('src', [
+    noWebLayers(['dev'], 'the fake room is a development stand-in, never part of the game code'),
+  ]),
   webLayer('app', [NO_THREE]),
   webLayer('dev', [
     NO_REACT,

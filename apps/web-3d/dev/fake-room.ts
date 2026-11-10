@@ -14,7 +14,7 @@ export interface FakeRoom {
 
 interface Guest {
   readonly playerId: string;
-  position: (FloorPoint & { yaw: number }) | null;
+  position: FloorPoint & { yaw: number };
   seatId: string | null;
 }
 
@@ -27,6 +27,7 @@ interface Line {
 type Wire = Extract<ServerMessage, { kind: 'snapshot' }>['players'][number];
 
 const CLOSED_MESSAGE = 'Fake room connection is closed';
+const DOORSTEP = { x: 0, z: 0, yaw: 0 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -69,8 +70,8 @@ function readClientMessage(text: string): ClientMessage | null {
 function wireOf(guest: Guest): Wire {
   return {
     playerId: guest.playerId,
-    position: { x: guest.position?.x ?? 0, y: 0, z: guest.position?.z ?? 0 },
-    yaw: guest.position?.yaw ?? 0,
+    position: { x: guest.position.x, y: 0, z: guest.position.z },
+    yaw: guest.position.yaw,
     seatId: guest.seatId,
   };
 }
@@ -78,6 +79,7 @@ function wireOf(guest: Guest): Wire {
 export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
   const lines = new Set<Line>();
   const footprints = new Map(seats.map((seat) => [seat.seatId, seat.footprint]));
+  if (footprints.size !== seats.length) throw new TypeError('Seat ids must be unique');
   let tick = 0;
 
   const guests = (): Guest[] => [...lines].flatMap((line) => (line.guest ? [line.guest] : []));
@@ -85,7 +87,14 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
   function tell(line: Line, message: ServerMessage): void {
     const text = JSON.stringify(message);
     queueMicrotask(() => {
-      for (const listener of [...line.listeners]) listener(text);
+      for (const listener of [...line.listeners]) {
+        if (!line.listeners.has(listener)) continue;
+        try {
+          listener(text);
+        } catch (failure) {
+          console.error(failure);
+        }
+      }
     });
   }
 
@@ -107,7 +116,7 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
   function join(line: Line, ticket: string): void {
     if (line.guest) return refuse(line, 'already_joined');
     if (guests().some((guest) => guest.playerId === ticket)) return refuse(line, 'ticket_in_use');
-    const guest: Guest = { playerId: ticket, position: null, seatId: null };
+    const guest: Guest = { playerId: ticket, position: DOORSTEP, seatId: null };
     line.guest = guest;
     if (guests().length > 1) shareChange(guest, line);
     tell(line, { kind: 'snapshot', tick, players: guests().map(wireOf) });
@@ -120,7 +129,7 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
     if (guests().some((other) => other.seatId === seatId)) {
       return tell(line, { kind: 'seat.denied', seatId, reason: 'occupied' });
     }
-    if (!guest.position || !withinSeatReach(guest.position, footprint)) {
+    if (!withinSeatReach(guest.position, footprint)) {
       return tell(line, { kind: 'seat.denied', seatId, reason: 'too_far' });
     }
     guest.seatId = seatId;
@@ -165,6 +174,7 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
           receive(line, text);
         },
         listen(onText) {
+          if (!line.open) throw new Error(CLOSED_MESSAGE);
           line.listeners.add(onText);
           return () => {
             line.listeners.delete(onText);

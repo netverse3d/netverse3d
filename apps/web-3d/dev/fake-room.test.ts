@@ -61,19 +61,19 @@ function codes(visitor: Guest): string[] {
 test('vào phòng thì nhận ảnh chụp có chính mình, tên người chơi là vé đã gửi, chưa ngồi máy nào', async () => {
   const room = createFakeRoom(SEATS);
   const first = guest(room);
-  first.client.join('tim-neon', 'guest-first');
+  first.client.join('tim-neon', 'guest-1');
   await settle();
   const state = first.client.room();
   assert.equal(state.tick, 0);
-  assert.deepEqual([...state.players.keys()], ['guest-first']);
-  assert.equal(state.players.get('guest-first')?.seatId, null);
+  assert.deepEqual([...state.players.keys()], ['guest-1']);
+  assert.equal(state.players.get('guest-1')?.seatId, null);
   assert.equal(state.seats.size, 0);
 });
 
 test('thông điệp tới sau lời gọi gửi, không chen vào giữa lời gọi đó', () => {
   const room = createFakeRoom(SEATS);
   const first = guest(room);
-  first.client.join('tim-neon', 'guest-first');
+  first.client.join('tim-neon', 'guest-1');
   assert.equal(first.heard.length, 0);
 });
 
@@ -90,48 +90,57 @@ test('chưa vào phòng mà di chuyển hoặc xin máy thì bị báo lỗi, kh
 
 test('đứng cạnh máy trống mà xin thì được cấp máy', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   first.client.requestSeat('seat-1');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-1'), 'guest-first');
-  assert.equal(first.client.room().players.get('guest-first')?.seatId, 'seat-1');
+  assert.equal(first.client.room().seats.get('seat-1'), 'guest-1');
+  assert.equal(first.client.room().players.get('guest-1')?.seatId, 'seat-1');
   assert.equal(first.client.room().denied, null);
 });
 
 test('hai người xin cùng một máy thì người xin sau bị từ chối vì máy bận', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
-  const second = await joined(room, 'guest-second');
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
   first.client.requestSeat('seat-1');
   second.client.requestSeat('seat-1');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-1'), 'guest-first');
+  assert.equal(first.client.room().seats.get('seat-1'), 'guest-1');
   assert.deepEqual(second.client.room().denied, { seatId: 'seat-1', reason: 'occupied' });
-  assert.equal(second.client.room().seats.get('seat-1'), 'guest-first');
-  assert.equal(second.client.room().players.get('guest-second')?.seatId, null);
+  assert.equal(second.client.room().seats.get('seat-1'), 'guest-1');
+  assert.equal(second.client.room().players.get('guest-2')?.seatId, null);
 });
 
 test('đứng xa máy mà xin thì bị từ chối vì quá xa, máy vẫn trống', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first', FAR_AWAY);
+  const first = await joined(room, 'guest-1', FAR_AWAY);
   first.client.requestSeat('seat-1');
   await settle();
   assert.deepEqual(first.client.room().denied, { seatId: 'seat-1', reason: 'too_far' });
   assert.equal(first.client.room().seats.size, 0);
 });
 
-test('vừa vào phòng chưa báo vị trí thì chưa đủ căn cứ để cấp máy', async () => {
+test('vừa vào phòng chưa báo vị trí thì phòng coi người chơi đứng ở gốc toạ độ, đúng như ảnh chụp đã gửi', async () => {
   const room = createFakeRoom(SEATS);
   const first = guest(room);
-  first.client.join('tim-neon', 'guest-first');
+  first.client.join('tim-neon', 'guest-1');
   first.client.requestSeat('seat-1');
   await settle();
   assert.deepEqual(first.client.room().denied, { seatId: 'seat-1', reason: 'too_far' });
+  const lobby = createFakeRoom([
+    { seatId: 'seat-1', footprint: { minX: -1, maxX: 1, minZ: 0.3, maxZ: 1 } },
+  ]);
+  const second = guest(lobby);
+  second.client.join('tim-neon', 'guest-2');
+  second.client.requestSeat('seat-1');
+  await settle();
+  const self = second.client.room().players.get('guest-2');
+  assert.deepEqual([self?.x, self?.z, self?.seatId], [0, 0, 'seat-1']);
 });
 
 test('xin máy không có trong tiệm thì bị báo lỗi', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   first.client.requestSeat('seat-99');
   await settle();
   assert.deepEqual(codes(first), ['unknown_seat']);
@@ -140,8 +149,8 @@ test('xin máy không có trong tiệm thì bị báo lỗi', async () => {
 
 test('rời máy thì máy trống lại và người khác ngồi được', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
-  const second = await joined(room, 'guest-second');
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
   first.client.requestSeat('seat-1');
   await settle();
   first.client.leaveSeat();
@@ -149,18 +158,18 @@ test('rời máy thì máy trống lại và người khác ngồi được', as
   assert.equal(second.client.room().seats.size, 0);
   second.client.requestSeat('seat-1');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-1'), 'guest-second');
+  assert.equal(first.client.room().seats.get('seat-1'), 'guest-2');
 });
 
 test('đang ngồi thì báo di chuyển không làm đổi vị trí, và phải rời máy mới xin được máy khác', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   first.client.requestSeat('seat-1');
   await settle();
   first.client.move(BESIDE_SECOND);
   first.client.requestSeat('seat-2');
   await settle();
-  const seated = first.client.room().players.get('guest-first');
+  const seated = first.client.room().players.get('guest-1');
   assert.equal(seated?.x, BESIDE_FIRST.x);
   assert.equal(seated?.seatId, 'seat-1');
   assert.deepEqual(codes(first), ['already_seated']);
@@ -168,13 +177,13 @@ test('đang ngồi thì báo di chuyển không làm đổi vị trí, và phả
   first.client.move(BESIDE_SECOND);
   first.client.requestSeat('seat-2');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-2'), 'guest-first');
+  assert.equal(first.client.room().seats.get('seat-2'), 'guest-1');
   assert.equal(first.client.room().seats.has('seat-1'), false);
 });
 
 test('rời máy lúc không ngồi máy nào thì không có gì xảy ra', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   const before = first.heard.length;
   first.client.leaveSeat();
   await settle();
@@ -183,33 +192,36 @@ test('rời máy lúc không ngồi máy nào thì không có gì xảy ra', asy
 
 test('người khác thấy mình di chuyển, ngồi xuống và rời phòng', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
-  const second = await joined(room, 'guest-second', BESIDE_SECOND);
-  assert.equal(first.client.room().players.get('guest-second')?.x, BESIDE_SECOND.x);
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2', BESIDE_SECOND);
+  assert.equal(first.client.room().players.get('guest-2')?.x, BESIDE_SECOND.x);
+  second.client.move({ ...BESIDE_SECOND, yaw: 1.25 });
+  await settle();
+  assert.equal(first.client.room().players.get('guest-2')?.yaw, 1.25);
   second.client.requestSeat('seat-2');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-2'), 'guest-second');
+  assert.equal(first.client.room().seats.get('seat-2'), 'guest-2');
   second.client.close();
   await settle();
-  assert.equal(first.client.room().players.has('guest-second'), false);
+  assert.equal(first.client.room().players.has('guest-2'), false);
   assert.equal(first.client.room().seats.size, 0);
 });
 
 test('vé đang có người dùng hoặc vào phòng lần hai thì bị báo lỗi', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   const copy = guest(room);
-  copy.client.join('tim-neon', 'guest-first');
-  first.client.join('tim-neon', 'guest-first');
+  copy.client.join('tim-neon', 'guest-1');
+  first.client.join('tim-neon', 'guest-1');
   await settle();
   assert.deepEqual(codes(copy), ['ticket_in_use']);
   assert.deepEqual(codes(first), ['already_joined']);
-  assert.deepEqual([...first.client.room().players.keys()], ['guest-first']);
+  assert.deepEqual([...first.client.room().players.keys()], ['guest-1']);
 });
 
 test('thông điệp hỏng hoặc không thuộc giao thức thì bị báo lỗi, phòng không sập', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   const broken = [
     '{oops',
     '[]',
@@ -219,6 +231,9 @@ test('thông điệp hỏng hoặc không thuộc giao thức thì bị báo l�
     JSON.stringify({ kind: 'move', sequence: -1, position: { x: 0, y: 0, z: 0 }, yaw: 0 }),
     JSON.stringify({ kind: 'join', shopId: 'tim-neon' }),
     JSON.stringify({ kind: 'join', ticket: 'guest-3' }),
+    JSON.stringify({ kind: 'join', shopId: 'tim-neon', ticket: '' }),
+    JSON.stringify({ kind: 'move', sequence: 1, position: { x: 0, y: 0, z: 0 } }),
+    JSON.stringify({ kind: 'move', sequence: 1, position: { x: 0, z: 0 }, yaw: 0 }),
   ];
   for (const text of broken) first.connection.send(text);
   await settle();
@@ -228,13 +243,13 @@ test('thông điệp hỏng hoặc không thuộc giao thức thì bị báo l�
   );
   first.client.requestSeat('seat-1');
   await settle();
-  assert.equal(first.client.room().seats.get('seat-1'), 'guest-first');
+  assert.equal(first.client.room().seats.get('seat-1'), 'guest-1');
 });
 
 test('kết nối đã đóng thì gửi báo lỗi ngay và không còn nhận gì', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
-  const second = await joined(room, 'guest-second');
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
   first.connection.close();
   first.connection.close();
   const before = first.heard.length;
@@ -246,7 +261,7 @@ test('kết nối đã đóng thì gửi báo lỗi ngay và không còn nhận 
 
 test('nhịp của phòng tăng dần qua mọi thông điệp có nhịp', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
+  const first = await joined(room, 'guest-1');
   first.client.requestSeat('seat-1');
   await settle();
   first.client.leaveSeat();
@@ -263,8 +278,8 @@ test('nhịp của phòng tăng dần qua mọi thông điệp có nhịp', asyn
 
 test('mọi thông điệp phòng gửi ra đều đúng schema của giao thức nháp', async () => {
   const room = createFakeRoom(SEATS);
-  const first = await joined(room, 'guest-first');
-  const second = await joined(room, 'guest-second', FAR_AWAY);
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2', FAR_AWAY);
   first.client.requestSeat('seat-1');
   second.client.requestSeat('seat-1');
   second.client.requestSeat('seat-2');
@@ -345,4 +360,98 @@ test('thông điệp đang trên đường tới thì bị bỏ nếu kết nố
   first.connection.close();
   await settle();
   assert.equal(first.heard.length, before);
+});
+
+test('người vào sau thấy ngay máy nào đang có người ngồi, và nhịp của ảnh chụp không lùi về không', async () => {
+  const room = createFakeRoom(SEATS);
+  const first = await joined(room, 'guest-1');
+  first.client.requestSeat('seat-1');
+  await settle();
+  const second = guest(room);
+  second.client.join('tim-neon', 'guest-2');
+  await settle();
+  assert.equal(second.client.room().seats.get('seat-1'), 'guest-1');
+  assert.ok(second.client.room().tick > 0, `tick ${second.client.room().tick}`);
+  assert.equal(second.client.room().tick, first.client.room().tick);
+});
+
+test('người đang ngồi mà rớt kết nối thì máy trống lại cho người khác', async () => {
+  const room = createFakeRoom(SEATS);
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
+  first.client.requestSeat('seat-1');
+  await settle();
+  first.client.close();
+  await settle();
+  second.client.requestSeat('seat-1');
+  await settle();
+  assert.equal(second.client.room().seats.get('seat-1'), 'guest-2');
+  assert.equal(second.client.room().denied, null);
+});
+
+test('máy đang bận thì lý do từ chối là máy bận, kể cả khi người xin đứng xa', async () => {
+  const room = createFakeRoom(SEATS);
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2', FAR_AWAY);
+  first.client.requestSeat('seat-1');
+  second.client.requestSeat('seat-1');
+  await settle();
+  assert.deepEqual(second.client.room().denied, { seatId: 'seat-1', reason: 'occupied' });
+});
+
+test('được cấp máy thì mọi người trong phòng nhận cả tin cấp máy lẫn trạng thái mới của người ngồi', async () => {
+  const room = createFakeRoom(SEATS);
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
+  const before = second.heard.length;
+  first.client.requestSeat('seat-1');
+  await settle();
+  const kinds = second.heard.slice(before).map((message) => (message as { kind: string }).kind);
+  assert.deepEqual(kinds, ['seat.granted', 'delta']);
+  assert.deepEqual(
+    first.heard.slice(-2).map((message) => (message as { kind: string }).kind),
+    ['seat.granted', 'delta'],
+  );
+});
+
+test('một người nghe ném lỗi thì các người nghe khác trên cùng kết nối vẫn nhận thông điệp', async () => {
+  const room = createFakeRoom(SEATS);
+  const connection = room.connect();
+  const heard: string[] = [];
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    connection.listen(() => {
+      throw new Error('listener boom');
+    });
+    connection.listen((text) => heard.push(text));
+    connection.send(JSON.stringify({ kind: 'join', shopId: 'tim-neon', ticket: 'guest-1' }));
+    await settle();
+  } finally {
+    console.error = originalError;
+  }
+  assert.equal(heard.length, 1);
+});
+
+test('người nghe bị gỡ giữa lúc phát thì không nhận thông điệp đang phát', async () => {
+  const room = createFakeRoom(SEATS);
+  const connection = room.connect();
+  const heard: string[] = [];
+  let stopLate = (): void => {};
+  connection.listen(() => stopLate());
+  stopLate = connection.listen((text) => heard.push(text));
+  connection.send(JSON.stringify({ kind: 'join', shopId: 'tim-neon', ticket: 'guest-1' }));
+  await settle();
+  assert.deepEqual(heard, []);
+});
+
+test('kết nối đã đóng thì không đăng ký nghe được nữa', () => {
+  const room = createFakeRoom(SEATS);
+  const connection = room.connect();
+  connection.close();
+  assert.throws(() => connection.listen(() => {}), /closed/);
+});
+
+test('hai máy trùng tên trong danh sách thì phòng không được tạo', () => {
+  assert.throws(() => createFakeRoom([...SEATS, ...SEATS.slice(0, 1)]), TypeError);
 });
