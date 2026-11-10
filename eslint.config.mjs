@@ -15,7 +15,6 @@ export default [
       'services/**',
       'workers/**',
       'packages/config/**',
-      'packages/game-shared/**',
       'packages/ui/**',
     ],
   },

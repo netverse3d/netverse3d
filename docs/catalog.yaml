@@ -86,9 +86,9 @@ components:
   - id: game-shared
     path: packages/game-shared
     kind: package
-    stack: TypeScript
-    summary: Kiểu và hằng số dùng chung giữa client và game server
-    milestone: M5
+    stack: JavaScript
+    summary: Luật di chuyển và va chạm dùng chung giữa client và game server
+    milestone: M2
   - id: ui
     path: packages/ui
     kind: package

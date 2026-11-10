@@ -1,0 +1,13 @@
+{
+  "name": "@netverse/game-shared",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./movement": "./src/movement.mjs"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.mjs\""
+  }
+}

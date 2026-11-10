@@ -70,6 +70,8 @@ importers:
         specifier: 0.170.0
         version: 0.170.0
 
+  packages/game-shared: {}
+
 packages:
 
   '@algolia/abtesting@1.27.0':
