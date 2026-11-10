@@ -3,7 +3,10 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", ".vitepress/dist/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**", ".vitepress/dist/**"]
+    },
+    "@netverse/web-3d#test": {
+      "dependsOn": ["build"]
     },
     "lint": {
       "dependsOn": ["^build"]
