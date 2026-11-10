@@ -16,7 +16,7 @@
     "accent": ["#22e0c0"]
   },
   "variants": {
-    "desk": "a",
+    "desk": "b",
     "monitor": "a",
     "keyboard": "a",
     "mouse": "a",
@@ -44,7 +44,7 @@
       { "cell": [2, 0], "facing": "west" },
       { "cell": [2, 1], "facing": "west" }
     ],
-    "door": { "wall": "east", "at": 3 },
+    "door": { "wall": "east", "at": 2 },
     "windows": [{ "wall": "south", "at": 1 }]
   },
   "sign": { "text": "BIỂN SÂU", "style": "led" },

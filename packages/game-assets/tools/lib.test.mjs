@@ -343,6 +343,97 @@ test('ô đồ đủ điểm gắn thì được ghi dấu xuất', () => {
   assert.deepEqual(finishExport(makeKitRoot(makeKitModel())), []);
 });
 
+const LIGHTMAP_KIT = {
+  kits: [
+    {
+      file: 'parts.glb',
+      source: 'parts.blend',
+      lightmap: true,
+      slots: { chair: { variants: ['a'], maxTriangles: 100, anchors: ['seat_anchor'] } },
+    },
+  ],
+};
+
+function litKitModel(texCoord) {
+  return makeKitModel({
+    meshes: [
+      {
+        primitives: [
+          { indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2, TEXCOORD_1: 2 } },
+        ],
+      },
+    ],
+    materials: [{ name: 'surface', occlusionTexture: { index: 0, texCoord } }],
+    textures: [{ source: 0 }],
+    images: [{ mimeType: 'image/png', bufferView: 0 }],
+  });
+}
+
+test('bộ ô đồ khai lightmap mà thiếu UV thứ hai và ảnh che khuất bị từ chối', () => {
+  const errors = finishExport(makeKitRoot(makeKitModel(), {}, LIGHTMAP_KIT)).join('\n');
+  assert.match(errors, /chair_a is missing attribute TEXCOORD_1/);
+  assert.match(errors, /surface material has no baked occlusion texture/);
+});
+
+test('ảnh che khuất phải nằm trên UV thứ hai', () => {
+  const errors = finishExport(makeKitRoot(litKitModel(0), {}, LIGHTMAP_KIT)).join('\n');
+  assert.match(errors, /surface occlusion must use UV set 1/);
+});
+
+test('bộ ô đồ có lightmap đúng chỗ thì được ghi dấu xuất', () => {
+  assert.deepEqual(finishExport(makeKitRoot(litKitModel(1), {}, LIGHTMAP_KIT)), []);
+});
+
+const SCENE = {
+  id: 'showcase',
+  source: 'showcase.blend',
+  file: 'showcase.glb',
+  recipe: 'tim-neon',
+  images: { base: 'showcase-base', spill: 'showcase-spill' },
+  files: { base: 'showcase-base.jpg', spill: 'showcase-spill.jpg' },
+};
+
+function makeSceneRoot(model, { images = true } = {}) {
+  const { root, config } = makeRoot();
+  writeFileSync(
+    join(root, 'assets.config.json'),
+    JSON.stringify({ ...config, palette: PALETTE, scenes: [SCENE] }),
+  );
+  writeFileSync(join(root, 'source/showcase.blend'), 'showcase');
+  writeFileSync(join(root, 'exported/showcase.glb'), makeGlb(model, uvBuffer(0.5, 0.375)));
+  if (images) {
+    for (const file of Object.values(SCENE.files))
+      writeFileSync(join(root, 'exported', file), 'jpg');
+  }
+  return root;
+}
+
+test('cảnh giới thiệu thiếu UV thứ hai hay thiếu ảnh bake bị từ chối', () => {
+  const model = makeKitModel({ nodes: [{ name: 'wall_a_01', mesh: 0 }] });
+  const errors = finishExport(makeSceneRoot(model, { images: false })).join('\n');
+  assert.match(errors, /showcase\.glb: wall_a_01 is missing attribute TEXCOORD_1/);
+  assert.match(errors, /showcase\.glb: baked image showcase-base\.jpg is missing/);
+});
+
+test('cảnh giới thiệu đủ UV và ảnh bake thì được ghi dấu xuất cùng hai ảnh', () => {
+  const model = makeKitModel({
+    nodes: [{ name: 'wall_a_01', mesh: 0 }],
+    meshes: [
+      {
+        primitives: [
+          { indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2, TEXCOORD_1: 2 } },
+        ],
+      },
+    ],
+  });
+  const root = makeSceneRoot(model);
+  assert.deepEqual(finishExport(root), []);
+  const stamp = JSON.parse(readFileSync(stampPath(root), 'utf8'));
+  assert.ok(stamp.exported['showcase-base.jpg']);
+  assert.ok(stamp.exported['showcase-spill.jpg']);
+  assert.ok(stamp.sources['showcase.blend']);
+});
+
 test('báo ghế thiếu điểm ngồi', () => {
   const nodes = [{ name: 'chair_a', mesh: 0 }];
   const errors = finishExport(makeKitRoot(makeKitModel({ nodes })));

@@ -7,11 +7,13 @@ import { isLfsPointer, loadConfig, readGlb } from '../tools/lib.mjs';
 import {
   PALETTE_WIDTH,
   colorAt,
+  doorwayCell,
   drawCalls,
   instanceGroups,
   kitAnchors,
   paletteImage,
   paletteRows,
+  roomPlan,
   shopPlan,
   stationPlan,
 } from './shop-look.mjs';
@@ -161,6 +163,80 @@ test('50 máy cùng công thức không tăng số hình khối hay lời gọi 
   assert.equal(instanceGroups(fifty).size, instanceGroups(one).size);
   assert.equal(drawCalls(kit, fifty), drawCalls(kit, one));
   assert.equal(drawCalls(kit, one), 2 + 9);
+});
+
+const ROOM_VARIANTS = { floor: 'a', wall: 'a', corner: 'a', door: 'a', window: 'a', ceiling: 'a' };
+
+function roomRecipe(cells, door, windows = []) {
+  return {
+    variants: { ...VARIANTS, ...ROOM_VARIANTS },
+    layout: { cells, stations: [], door, windows },
+  };
+}
+
+function partsOf(plan) {
+  return Object.fromEntries(
+    [...instanceGroups(plan)].map(([part, placements]) => [part, placements.length]),
+  );
+}
+
+function placementAt(plan, slot, position) {
+  return plan.find((p) => p.slot === slot && p.position.join(',') === position.join(','));
+}
+
+test('phòng 2×2 có bốn sàn, bốn trần, ba góc, một cửa và một tường', () => {
+  const plan = roomPlan(roomRecipe([2, 2], { wall: 'south', at: 0 }));
+  assert.deepEqual(partsOf(plan), {
+    floor_a: 4,
+    ceiling_a: 4,
+    corner_a: 3,
+    door_a: 1,
+    wall_a: 1,
+  });
+});
+
+test('tường và góc quay mặt vào trong theo từng cạnh', () => {
+  const plan = roomPlan(roomRecipe([3, 3], { wall: 'south', at: 1 }));
+  assert.equal(placementAt(plan, 'door', [0, 0, 2]).yaw, 0);
+  assert.equal(placementAt(plan, 'wall', [0, 0, -2]).yaw, Math.PI);
+  assert.equal(placementAt(plan, 'wall', [-2, 0, 0]).yaw, -Math.PI / 2);
+  assert.equal(placementAt(plan, 'wall', [2, 0, 0]).yaw, Math.PI / 2);
+  assert.equal(placementAt(plan, 'corner', [-2, 0, 2]).yaw, 0);
+  assert.equal(placementAt(plan, 'corner', [2, 0, 2]).yaw, Math.PI / 2);
+  assert.equal(placementAt(plan, 'corner', [2, 0, -2]).yaw, Math.PI);
+  assert.equal(placementAt(plan, 'corner', [-2, 0, -2]).yaw, -Math.PI / 2);
+});
+
+test('cửa sổ thay tường ở đúng vị trí của nó', () => {
+  const plan = roomPlan(roomRecipe([3, 3], { wall: 'south', at: 1 }, [{ wall: 'north', at: 1 }]));
+  assert.equal(placementAt(plan, 'window', [0, 0, -2]).yaw, Math.PI);
+  assert.equal(placementAt(plan, 'wall', [0, 0, -2]), undefined);
+});
+
+test('cửa ở ô góc thì ô đó có cửa và một tường thay cho góc', () => {
+  const plan = roomPlan(roomRecipe([2, 2], { wall: 'south', at: 1 }));
+  assert.equal(placementAt(plan, 'door', [1, 0, 1]).yaw, 0);
+  assert.equal(placementAt(plan, 'wall', [1, 0, 1]).yaw, Math.PI / 2);
+  assert.equal(placementAt(plan, 'corner', [1, 0, 1]), undefined);
+});
+
+test('phòng một ô rộng không có góc, hai tường đối diện đứng riêng', () => {
+  for (const cells of [
+    [1, 3],
+    [3, 1],
+  ]) {
+    const plan = roomPlan(roomRecipe(cells, { wall: 'south', at: 0 }));
+    assert.deepEqual(partsOf(plan), { floor_a: 3, ceiling_a: 3, door_a: 1, wall_a: 7 });
+    assert.ok(plan.every((placement) => Number.isFinite(placement.yaw)));
+  }
+});
+
+test('ô sàn ngay trong cửa tính theo từng tường', () => {
+  const cells = [3, 4];
+  assert.deepEqual(doorwayCell({ wall: 'north', at: 1 }, cells), [1, 0]);
+  assert.deepEqual(doorwayCell({ wall: 'south', at: 1 }, cells), [1, 3]);
+  assert.deepEqual(doorwayCell({ wall: 'west', at: 2 }, cells), [0, 2]);
+  assert.deepEqual(doorwayCell({ wall: 'east', at: 2 }, cells), [2, 2]);
 });
 
 test('bộ máy thật có đủ socket cho mọi ô trong công thức mẫu', (context) => {

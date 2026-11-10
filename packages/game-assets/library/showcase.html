@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tiệm giới thiệu Netverse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0b0a12;
+        --panel: #15131f;
+        --line: #2a2738;
+        --ink: #f0eef7;
+        --muted: #9b93b8;
+        --cyan: #5ce1ff;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      }
+      #app {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        height: 100%;
+      }
+      #stage {
+        position: relative;
+        min-width: 0;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      #noGL[hidden] {
+        display: none;
+      }
+      #noGL {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .brand {
+        position: absolute;
+        left: 16px;
+        top: 12px;
+      }
+      .brand h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+      .brand p {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      a {
+        color: var(--cyan);
+      }
+      .bar {
+        position: absolute;
+        left: 16px;
+        bottom: 14px;
+        display: flex;
+        gap: 6px;
+      }
+      button,
+      select {
+        font: inherit;
+        color: var(--ink);
+        background: #1f1c2c;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      button[aria-pressed='true'] {
+        border-color: #a66bff;
+        background: #2e2548;
+      }
+      #panel {
+        box-sizing: border-box;
+        background: var(--panel);
+        border-left: 1px solid var(--line);
+        overflow: auto;
+        padding: 14px;
+        font-size: 13px;
+      }
+      h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 14px 0 6px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 96px 1fr 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+      }
+      .row input[type='range'] {
+        width: 100%;
+      }
+      .row output {
+        text-align: right;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      p.note {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      #meter {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        display: flex;
+        gap: 12px;
+      }
+      #meter b {
+        color: var(--ink);
+        margin-left: 4px;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="stage">
+        <canvas id="gl" aria-label="Tiệm giới thiệu với ánh sáng nướng sẵn"></canvas>
+        <p id="noGL" hidden>
+          Trình duyệt này chưa bật WebGL 2 nên chưa vẽ được. Nếu Chrome vừa mất GPU, gõ
+          chrome://restart vào thanh địa chỉ rồi thử lại.
+        </p>
+        <div class="brand">
+          <h1>Tiệm giới thiệu</h1>
+          <p>
+            Ánh sáng nướng sẵn, không đèn thời gian thực; màu vẫn đổi theo công thức.
+            <a href="./">Về thư viện</a> · <a href="shop.html">Phòng thử</a> ·
+            <a href="lab.html">Phòng lab</a>
+          </p>
+        </div>
+        <div class="bar" id="recipeBar" role="group" aria-label="Bộ màu"></div>
+        <div id="meter">
+          <span>lời gọi vẽ<b id="mCalls">0</b></span>
+          <span>tam giác<b id="mTris">0</b></span>
+        </div>
+      </div>
+      <aside id="panel">
+        <h2>Lớp ánh sáng</h2>
+        <div class="row">
+          <span>Nền nướng</span>
+          <input id="ambient" type="range" min="0" max="20" step="0.1" value="6" />
+          <output for="ambient">6.00</output>
+        </div>
+        <div class="row">
+          <span>Lan sáng dải</span>
+          <input id="strip" type="range" min="0" max="20" step="0.1" value="8" />
+          <output for="strip">8.0</output>
+        </div>
+        <div class="row">
+          <span>Lan sáng màn</span>
+          <input id="screen" type="range" min="0" max="20" step="0.1" value="6" />
+          <output for="screen">6.0</output>
+        </div>
+        <div class="row">
+          <span>Lan sáng điểm</span>
+          <input id="accent" type="range" min="0" max="20" step="0.1" value="6" />
+          <output for="accent">6.0</output>
+        </div>
+        <div class="row">
+          <span>Phát sáng</span>
+          <input id="glow" type="range" min="0.5" max="2.5" step="0.05" value="1.2" />
+          <output for="glow">1.20</output>
+        </div>
+        <div class="row">
+          <span>Phơi sáng</span>
+          <input id="exposure" type="range" min="0.4" max="2" step="0.05" value="1" />
+          <output for="exposure">1.00</output>
+        </div>
+        <div class="row">
+          <span>Bloom</span>
+          <input id="bloom" type="range" min="0" max="1" step="0.05" value="0.2" />
+          <output for="bloom">0.20</output>
+        </div>
+        <h2>Xem lớp</h2>
+        <select id="layer">
+          <option value="all">Kết hợp</option>
+          <option value="base">Chỉ nền nướng</option>
+          <option value="spill">Chỉ lan sáng</option>
+        </select>
+        <p class="note">
+          Cảnh dùng đúng bộ máy và module phòng của thư viện; hai ảnh nướng trong Blender: ánh sáng
+          nền với albedo trắng và mặt nạ lan sáng ba kênh cho dải, màn hình, điểm nhấn.
+        </p>
+      </aside>
+    </div>
+    <script type="module">
+      import * as THREE from 'three';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+      import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+      import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+      import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+      import { paletteRows } from '../runtime/shop-look.mjs';
+      import { recolorShowcase, showcaseMaterials } from '../runtime/three-shop.mjs';
+
+      const $ = (id) => document.getElementById(id);
+      const canvas = $('gl');
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: true,
+          powerPreference: 'high-performance',
+        });
+      } catch {
+        $('noGL').hidden = false;
+        throw new Error('WebGL 2 is not available');
+      }
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+      const [config, ids] = await Promise.all([
+        fetch('../assets.config.json').then((r) => r.json()),
+        fetch('../recipes/index.json').then((r) => r.json()),
+      ]);
+      const scene3d = config.scenes[0];
+      const rows = paletteRows(config.palette);
+      const recipes = Object.fromEntries(
+        await Promise.all(
+          ids.map(async (id) => [id, await fetch(`../recipes/${id}.json`).then((r) => r.json())]),
+        ),
+      );
+      const textures = new THREE.TextureLoader();
+      const bakeTexture = async (file) => {
+        const texture = await textures.loadAsync(`../exported/${file}`);
+        texture.flipY = false;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        return texture;
+      };
+      const [gltf, base, spill] = await Promise.all([
+        new GLTFLoader().loadAsync(`../exported/${scene3d.file}`),
+        bakeTexture(scene3d.files.base),
+        bakeTexture(scene3d.files.spill),
+      ]);
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#0b0a12');
+      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 80);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.minAzimuthAngle = 0.12;
+      controls.maxAzimuthAngle = Math.PI / 2 - 0.12;
+      controls.minPolarAngle = Math.PI * 0.12;
+      controls.maxPolarAngle = Math.PI * 0.46;
+      controls.minDistance = 3;
+      controls.maxDistance = 16;
+      controls.target.set(-0.6, 0.9, -0.4);
+      camera.position.set(6.8, 4.6, 6.8);
+      controls.update();
+      const composer = new EffectComposer(
+        renderer,
+        new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
+      );
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.4, 0.9);
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+
+      const state = {
+        id: scene3d.recipe,
+        ambient: 6,
+        strip: 8,
+        screen: 6,
+        accent: 6,
+        glow: 1.2,
+        layer: 'all',
+      };
+      const materials = showcaseMaterials(THREE, recipes[state.id], rows, {
+        base,
+        spill,
+        ambient: state.ambient,
+        spillStrength: [state.strip, state.screen, state.accent],
+        glowBoost: state.glow,
+      });
+      let triangles = 0;
+      gltf.scene.traverse((mesh) => {
+        if (!mesh.isMesh) return;
+        const material = materials[mesh.material.name];
+        if (!material)
+          throw new Error(`scene uses material ${mesh.material.name} without a showcase material`);
+        mesh.material = material;
+        const geometry = mesh.geometry;
+        triangles += geometry.index
+          ? geometry.index.count / 3
+          : geometry.attributes.position.count / 3;
+      });
+      scene.add(gltf.scene);
+
+      function applyLayers() {
+        const { uniforms } = materials.surface;
+        const combined = state.layer === 'all';
+        uniforms.ambient.value = state.layer === 'spill' ? 0 : state.ambient;
+        uniforms.spillStrength.value.set(
+          state.layer === 'base' ? 0 : state.strip,
+          state.layer === 'base' ? 0 : state.screen,
+          state.layer === 'base' ? 0 : state.accent,
+        );
+        materials.glow.visible = combined || state.layer === 'spill';
+        materials.glow.color.setScalar(state.glow);
+      }
+
+      const sliders = {
+        ambient: (v) => (state.ambient = v),
+        strip: (v) => (state.strip = v),
+        screen: (v) => (state.screen = v),
+        accent: (v) => (state.accent = v),
+        glow: (v) => (state.glow = v),
+        exposure: (v) => (renderer.toneMappingExposure = v),
+        bloom: (v) => (bloom.strength = v),
+      };
+      for (const [id, apply] of Object.entries(sliders)) {
+        const input = $(id);
+        const out = document.querySelector(`output[for="${id}"]`);
+        input.addEventListener('input', () => {
+          const value = Number(input.value);
+          apply(value);
+          out.textContent = value.toFixed(['strip', 'screen', 'accent'].includes(id) ? 1 : 2);
+          applyLayers();
+        });
+      }
+      $('layer').addEventListener('change', (event) => {
+        state.layer = event.target.value;
+        applyLayers();
+      });
+
+      const bar = $('recipeBar');
+      for (const id of ids) {
+        const button = document.createElement('button');
+        button.textContent = recipes[id].name;
+        button.setAttribute('aria-pressed', String(id === state.id));
+        button.addEventListener('click', () => {
+          state.id = id;
+          recolorShowcase(THREE, materials, recipes[id], rows);
+          for (const other of bar.children)
+            other.setAttribute('aria-pressed', String(other === button));
+        });
+        bar.append(button);
+      }
+
+      function resize() {
+        const { clientWidth, clientHeight } = canvas.parentElement;
+        renderer.setSize(clientWidth, clientHeight, false);
+        composer.setSize(clientWidth, clientHeight);
+        camera.aspect = clientWidth / clientHeight;
+        camera.updateProjectionMatrix();
+      }
+      addEventListener('resize', resize);
+      resize();
+      applyLayers();
+      $('mTris').textContent = Math.round(triangles).toLocaleString('vi-VN');
+
+      renderer.info.autoReset = false;
+      renderer.setAnimationLoop(() => {
+        controls.update();
+        renderer.info.reset();
+        composer.render();
+        $('mCalls').textContent = renderer.info.render.calls;
+      });
+    </script>
+  </body>
+</html>

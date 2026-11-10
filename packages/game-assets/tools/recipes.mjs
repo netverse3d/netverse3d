@@ -2,8 +2,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join } from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
+import { doorwayCell } from '../runtime/shop-look.mjs';
 
 const RECIPE_FOLDER = 'recipes';
+const INDEX_FILE = 'index.json';
 const RECIPE_SCHEMA = createRequire(import.meta.url).resolve(
   '@netverse/contracts/world/shop-look.v1.schema.json',
 );
@@ -54,16 +56,12 @@ function checkRecipeVariants(recipe, kits, label) {
   return errors;
 }
 
-function cellInsideOpening({ wall, at }, [width, depth]) {
-  return { north: [at, 0], south: [at, depth - 1], west: [0, at], east: [width - 1, at] }[wall];
-}
-
 function checkRecipeLayout(recipe, label) {
   const errors = [];
   const { cells, stations, door, windows = [] } = recipe.layout;
   const [width, depth] = cells;
   const taken = new Set();
-  const doorway = cellInsideOpening(door, cells).join(',');
+  const doorway = doorwayCell(door, cells).join(',');
   for (const { cell } of stations) {
     const [x, z] = cell;
     const key = cell.join(',');
@@ -77,8 +75,13 @@ function checkRecipeLayout(recipe, label) {
   const placed = new Set();
   for (const [kind, opening] of [['door', door], ...windows.map((w) => ['window', w])]) {
     const place = `${opening.wall} ${opening.at}`;
-    if (opening.at >= cells[WALL_AXIS[opening.wall]]) {
+    const length = cells[WALL_AXIS[opening.wall]];
+    if (opening.at >= length) {
       errors.push(`${label}: ${kind} at ${opening.at} is outside the ${opening.wall} wall`);
+    } else if (length > 1 && (opening.at === 0 || opening.at === length - 1)) {
+      errors.push(
+        `${label}: ${kind} at ${opening.at} sits in a corner of the ${opening.wall} wall`,
+      );
     }
     if (placed.has(place)) errors.push(`${label}: two openings share ${place}`);
     placed.add(place);
@@ -90,13 +93,38 @@ export function listRecipes(root) {
   const folder = join(root, RECIPE_FOLDER);
   if (!existsSync(folder)) return [];
   return readdirSync(folder)
-    .filter((name) => name.endsWith('.json'))
+    .filter((name) => name.endsWith('.json') && name !== INDEX_FILE)
     .map((name) => join(folder, name));
 }
 
+function checkIndex(root, files) {
+  const label = `${RECIPE_FOLDER}/${INDEX_FILE}`;
+  const path = join(root, RECIPE_FOLDER, INDEX_FILE);
+  if (!existsSync(path)) return [`${label} is missing`];
+  let listed;
+  try {
+    listed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return [`${label}: invalid JSON`];
+  }
+  if (!Array.isArray(listed)) return [`${label} must be an array of recipe ids`];
+  const ids = files.map((path) => basename(path, '.json'));
+  return [
+    ...listed
+      .filter((id, index) => listed.indexOf(id) !== index)
+      .map((id) => `${INDEX_FILE} lists ${id} twice`),
+    ...listed
+      .filter((id) => !ids.includes(id))
+      .map((id) => `${INDEX_FILE} lists ${id} but ${RECIPE_FOLDER}/${id}.json does not exist`),
+    ...ids.filter((id) => !listed.includes(id)).map((id) => `${id} is not listed in ${label}`),
+  ];
+}
+
 export function checkRecipes(root, config) {
-  const errors = [];
-  for (const path of listRecipes(root)) {
+  const files = listRecipes(root);
+  if (!existsSync(join(root, RECIPE_FOLDER))) return [];
+  const errors = checkIndex(root, files);
+  for (const path of files) {
     const file = basename(path);
     let recipe;
     try {

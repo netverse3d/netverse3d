@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as THREE from 'three';
-import { buildShop, paletteTexture, shopMaterials } from './three-shop.mjs';
+import {
+  buildShop,
+  kitLightmap,
+  paletteTexture,
+  recolorShowcase,
+  rowColor,
+  shopMaterials,
+  showcaseMaterials,
+} from './three-shop.mjs';
 import { paletteImage } from './shop-look.mjs';
 
 const ROWS = ['body', 'soft', 'strip', 'keycap'];
@@ -62,6 +70,40 @@ test('vật liệu tiệm có đủ bốn tên của bộ ô đồ', () => {
   assert.ok(materials.surface.emissiveMap);
 });
 
+test('vật liệu bề mặt nhận lightmap nướng sẵn ở kênh UV thứ hai khi được đưa vào', () => {
+  const lightmap = new THREE.Texture();
+  lightmap.channel = 1;
+  const lit = shopMaterials(THREE, RECIPE, ROWS, { lightmap });
+  assert.equal(lit.surface.aoMap, lightmap);
+  assert.equal(lit.surface.aoMapIntensity, 1);
+  assert.equal(lit.glow.aoMap, null);
+  const plain = shopMaterials(THREE, RECIPE, ROWS);
+  assert.equal(plain.surface.aoMap, null);
+});
+
+test('không có lightmap thì không truyền khoá aoMap rỗng và không cảnh báo', () => {
+  const warned = [];
+  const original = console.warn;
+  console.warn = (...args) => warned.push(args.join(' '));
+  try {
+    const plain = shopMaterials(THREE, RECIPE, ROWS);
+    assert.equal(plain.surface.aoMap, null);
+    assert.deepEqual(warned, []);
+  } finally {
+    console.warn = original;
+  }
+});
+
+test('lấy lightmap từ vật liệu bề mặt của bộ ô đồ đã tải, không có thì trả null', () => {
+  const scene = kitScene();
+  assert.equal(kitLightmap(scene), null);
+  const lightmap = new THREE.Texture();
+  scene.traverse((object) => {
+    if (object.isMesh && object.material.name === 'surface') object.material.aoMap = lightmap;
+  });
+  assert.equal(kitLightmap(scene), lightmap);
+});
+
 test('mỗi primitive thành một InstancedMesh với số instance bằng số máy', () => {
   const materials = shopMaterials(THREE, RECIPE, ROWS);
   const stations = [
@@ -109,4 +151,29 @@ test('kế hoạch nhắc tới món không có trong bộ thì báo lỗi', () 
   const materials = shopMaterials(THREE, RECIPE, ROWS);
   const plan = [{ station: 0, slot: 'chair', part: 'chair_z', position: [0, 0, 0], yaw: 0 }];
   assert.throws(() => buildShop(THREE, kitScene(), plan, materials), /kit has no part chair_z/);
+});
+
+test('vật liệu showcase lấy màu lan sáng từ công thức và đổi theo khi đổi công thức', () => {
+  const base = new THREE.Texture();
+  const spill = new THREE.Texture();
+  const materials = showcaseMaterials(THREE, RECIPE, ROWS, {
+    base,
+    spill,
+    spillStrength: [2, 1, 0.5],
+  });
+  assert.ok(materials.surface.isShaderMaterial);
+  assert.equal(materials.surface.uniforms.base.value, base);
+  assert.equal(materials.surface.uniforms.spill.value, spill);
+  assert.equal(materials.surface.uniforms.stripColor.value.getHexString(), 'a835ff');
+  assert.deepEqual(materials.surface.uniforms.spillStrength.value.toArray(), [2, 1, 0.5]);
+  assert.equal(materials.surface.uniforms.palette.value, materials.glow.map);
+  recolorShowcase(THREE, materials, { palette: { ...RECIPE.palette, strip: ['#00ff00'] } }, ROWS);
+  assert.equal(materials.surface.uniforms.stripColor.value.getHexString(), '00ff00');
+  assert.equal(materials.surface.uniforms.palette.value, materials.glow.map);
+});
+
+test('màu của hàng nhiều mốc là trung bình các mốc', () => {
+  const color = rowColor(THREE, { palette: { keycap: ['#000000', '#ffffff'] } }, 'keycap');
+  assert.ok(Math.abs(color.r - 0.5) < 0.01);
+  assert.equal(rowColor(THREE, { palette: {} }, 'strip').getHexString(), 'ffffff');
 });

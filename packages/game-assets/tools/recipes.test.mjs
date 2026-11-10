@@ -31,7 +31,7 @@ const RECIPE = {
   },
   variants: { chair: 'a' },
   layout: {
-    cells: [2, 2],
+    cells: [3, 2],
     stations: [{ cell: [0, 1], facing: 'south' }],
     door: { wall: 'south', at: 1 },
   },
@@ -42,13 +42,45 @@ const RECIPE = {
 const roots = [];
 after(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
 
-function rootWithText(text, file) {
+function rootWithText(text, file, index = [file.replace(/\.json$/, '')]) {
   const root = mkdtempSync(join(tmpdir(), 'recipes-'));
   roots.push(root);
   mkdirSync(join(root, 'recipes'));
   writeFileSync(join(root, 'recipes', file), text);
+  if (index) writeFileSync(join(root, 'recipes', 'index.json'), JSON.stringify(index));
   return root;
 }
+
+test('danh mục công thức phải có và liệt kê đúng các tệp', () => {
+  const text = JSON.stringify(RECIPE);
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', null), CONFIG).join('\n'),
+    /recipes\/index\.json is missing/,
+  );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', ['khac']), CONFIG).join('\n'),
+    /index\.json lists khac but recipes\/khac\.json does not exist/,
+  );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', []), CONFIG).join('\n'),
+    /tim-neon is not listed in recipes\/index\.json/,
+  );
+  assert.match(
+    checkRecipes(rootWithText(text, 'tim-neon.json', ['tim-neon', 'tim-neon']), CONFIG).join('\n'),
+    /index\.json lists tim-neon twice/,
+  );
+});
+
+test('danh mục công thức hỏng hoặc không phải mảng được báo gọn', () => {
+  const root = rootWithText(JSON.stringify(RECIPE), 'tim-neon.json', null);
+  writeFileSync(join(root, 'recipes', 'index.json'), '{oops');
+  assert.match(checkRecipes(root, CONFIG).join('\n'), /recipes\/index\.json: invalid JSON/);
+  writeFileSync(join(root, 'recipes', 'index.json'), '{"a":1}');
+  assert.match(
+    checkRecipes(root, CONFIG).join('\n'),
+    /recipes\/index\.json must be an array of recipe ids/,
+  );
+});
 
 function rootWith(recipe, file = `${recipe.id}.json`) {
   return rootWithText(JSON.stringify(recipe), file);
@@ -141,19 +173,31 @@ test('hai máy đặt cùng một ô bị từ chối', () => {
 });
 
 test('máy đặt ngoài phòng bị từ chối', () => {
-  const stations = [{ cell: [2, 0], facing: 'south' }];
+  const stations = [{ cell: [3, 0], facing: 'south' }];
   assert.match(
     errorsOf({ layout: { ...RECIPE.layout, stations } }),
-    /tim-neon: station at 2,0 is outside the 2 x 2 room/,
+    /tim-neon: station at 3,0 is outside the 3 x 2 room/,
   );
 });
 
 test('cửa đặt ngoài bức tường bị từ chối', () => {
-  const door = { wall: 'south', at: 2 };
+  const door = { wall: 'south', at: 3 };
   assert.match(
     errorsOf({ layout: { ...RECIPE.layout, door } }),
-    /tim-neon: door at 2 is outside the south wall/,
+    /tim-neon: door at 3 is outside the south wall/,
   );
+});
+
+test('cửa hay cửa sổ ở ô góc bị từ chối vì module góc không có chỗ mở', () => {
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, door: { wall: 'south', at: 0 } } }),
+    /tim-neon: door at 0 sits in a corner of the south wall/,
+  );
+  assert.match(
+    errorsOf({ layout: { ...RECIPE.layout, windows: [{ wall: 'east', at: 1 }] } }),
+    /tim-neon: window at 1 sits in a corner of the east wall/,
+  );
+  assert.equal(errorsOf({ layout: { ...RECIPE.layout, windows: [{ wall: 'north', at: 1 }] } }), '');
 });
 
 test('kiểu đèn ngoài danh sách bị từ chối', () => {
@@ -170,7 +214,9 @@ test('ba tiệm mẫu đúng hợp đồng công thức', () => {
 
 test('ba tiệm mẫu khác hẳn nhau về bộ màu', () => {
   const folder = join(REAL_ROOT, 'recipes');
-  const recipes = readdirSync(folder).map((file) => JSON.parse(readFileSync(join(folder, file))));
+  const recipes = readdirSync(folder)
+    .filter((file) => file !== 'index.json')
+    .map((file) => JSON.parse(readFileSync(join(folder, file))));
   assert.equal(recipes.length, 3);
   for (const [index, first] of recipes.entries()) {
     for (const second of recipes.slice(index + 1)) {

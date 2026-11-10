@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test \"tools/**/*.test.mjs\" \"runtime/**/*.test.mjs\"",
+    "generate": "node tools/generate.mjs",
     "export": "node tools/export.mjs",
     "check": "node tools/check.mjs",
     "check:recipes": "node tools/check-recipes.mjs",
