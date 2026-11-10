@@ -9,6 +9,10 @@
       "types": "./dist/movement.d.ts",
       "default": "./dist/movement.js"
     },
+    "./collision": {
+      "types": "./dist/collision.d.ts",
+      "default": "./dist/collision.js"
+    },
     "./simulation": {
       "types": "./dist/simulation.d.ts",
       "default": "./dist/simulation.js"
