@@ -1,12 +1,12 @@
 {
-  "config": "ed60f92cb1edfae60b650a670d1b36a4bcab87ab68c1bbac93c40028f329ac7a",
+  "config": "024ac7dbf0ff61b4ae69a69fba1033bae258816f5e748fdd0ceb975d5fede99f",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "58b6a362da4e61729197b8166770e0e4fb44a6155756dd24b7e7f8f28bf52654",
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "ed101c9583b3d6a08dc4b59fc329e1438a011c9d621f18bd9fccd8eca97dfda8",
+    "parts-station.blend": "26b066cd85bc4f66f354ace587f7f790c880a428a8283368d52872c15676fe64",
     "environment-kit.blend": "2c8c75211ee3fb7b3465269647d24f03297eae265ed46f86a414dd294fcc49cd",
     "showcase-tim-neon.blend": "39e29118686b5528f864d0e06d960be1fc4d82e705c112eae5fde7cc3d5db81a"
   },
@@ -14,7 +14,7 @@
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "a1b63a6858617e111e7b9bbf78cbe387bcbfbb1248fef54827124d521b7caf1f",
+    "station-parts.glb": "9b3a3b4266e1b19ffab66218c83cb06d7774dfba6cc5f68b9e551224b565160a",
     "room-kit.glb": "aa2e4b00bffd422f151fd98a15fbd52a2db005d810c8e6f542a2cfe948c0064c",
     "showcase-tim-neon.glb": "b79b7beb1bbb66096697a127e090a4ded88fd529120f1656b137e459ef4a82d5",
     "showcase-tim-neon-base.jpg": "8578081890e22c8c860856631fe1f4e20b82415789bf0296b0c6eae1821299f9",
