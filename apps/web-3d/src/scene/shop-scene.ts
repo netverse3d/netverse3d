@@ -23,10 +23,17 @@ import {
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { FloorBox } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
-import { CELL_SIZE, shopInterior, shopPerimeter } from '../game/shop-bounds.ts';
+import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
 import { createWalk } from '../game/walk.ts';
 import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
-import { DEFAULT_ORBIT, cameraPose, turnOrbit } from './follow-camera.ts';
+import {
+  CAMERA_FIELD_OF_VIEW,
+  DEFAULT_ORBIT,
+  cameraPose,
+  cutaways,
+  turnOrbit,
+  zoomOrbit,
+} from './follow-camera.ts';
 import { QUALITY_PRESETS, pixelRatioFor } from './quality.ts';
 import { createPlayer, type Player, type Spawn } from './player.ts';
 
@@ -195,7 +202,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   renderer.info.autoReset = false;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0d0a18');
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 80);
+  renderer.localClippingEnabled = true;
+  const camera = new THREE.PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, 0.1, 80);
+  const cutPlanes = cutaways([0, 0, 0], { minX: 0, maxX: 0, minZ: 0, maxZ: 0 }).map(
+    ([x, y, z, constant]) => new THREE.Plane(new THREE.Vector3(x, y, z), constant),
+  );
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.8, 0.6, 0.72);
@@ -221,7 +232,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   const controls = createControls(canvas, window);
   const walk = createWalk({ x: 0, z: 0, yaw: 0 }, []);
   let orbit = DEFAULT_ORBIT;
-  let interior: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
+  let openFloor: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
   let frames = 0;
   let elapsed = 0;
 
@@ -273,13 +284,16 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   function play(delta: number): void {
     if (!player) return;
     const turn = controls.takeTurn();
-    orbit = turnOrbit(orbit, turn.right, turn.down);
+    orbit = zoomOrbit(turnOrbit(orbit, turn.right, turn.down), controls.takeZoom());
     const frame = walk.advance(delta, controls.intent(), orbit.yaw);
     player.moveTo(frame.player);
     player.playClip(frame.clip);
-    const pose = cameraPose(frame.player, orbit, interior);
+    const pose = cameraPose(frame.player, orbit);
     camera.position.set(...pose.eye);
     camera.lookAt(...pose.target);
+    cutaways(pose.eye, openFloor).forEach(([x, y, z, constant], index) => {
+      cutPlanes[index]?.set(new THREE.Vector3(x, y, z), constant);
+    });
   }
 
   function clearContent(): void {
@@ -295,6 +309,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
     materials = shopMaterials(THREE, recipe, assets.rows);
+    for (const material of Object.values(materials)) material.clippingPlanes = cutPlanes;
     const room = roomPlan(recipe);
     const stations = shopPlan(recipe, assets.anchors);
     const obstacles = [
@@ -307,7 +322,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
     walk.place(spawn, obstacles);
-    interior = shopInterior(recipe.layout.cells);
+    openFloor = shopOpenFloor(recipe.layout.cells);
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw };
     relight(recipe);
     play(0);
@@ -368,6 +383,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     buildEnvironment();
     resize();
     controls.takeTurn();
+    controls.takeZoom();
     rebuild(true);
     renderer.setAnimationLoop(tick);
   };

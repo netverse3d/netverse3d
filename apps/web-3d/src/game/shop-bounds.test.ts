@@ -3,7 +3,13 @@ import { test } from 'node:test';
 
 import { PLAYER_RADIUS, stepPlayer } from '@netverse/game-shared/movement';
 
-import { WALL_THICKNESS, shopInterior, shopPerimeter } from './shop-bounds.ts';
+import {
+  WALL_MODEL_DEPTH,
+  WALL_THICKNESS,
+  shopInterior,
+  shopOpenFloor,
+  shopPerimeter,
+} from './shop-bounds.ts';
 
 test('lòng tiệm là phần sàn nằm trong mặt trong của bốn tường', () => {
   assert.deepEqual(shopInterior([4, 3]), {
@@ -58,4 +64,16 @@ test('vành ngoài kín cả ở bốn góc', () => {
       `escaped to ${player.x},${player.z}`,
     );
   }
+});
+
+test('phần sàn trống nằm trong cả bề dày hình vẽ của tường, hẹp hơn lòng tiệm', () => {
+  const open = shopOpenFloor([4, 3]);
+  const interior = shopInterior([4, 3]);
+  assert.deepEqual(open, {
+    minX: -4 + WALL_MODEL_DEPTH,
+    maxX: 4 - WALL_MODEL_DEPTH,
+    minZ: -3 + WALL_MODEL_DEPTH,
+    maxZ: 3 - WALL_MODEL_DEPTH,
+  });
+  assert.ok(open.maxX < interior.maxX && open.maxZ < interior.maxZ);
 });

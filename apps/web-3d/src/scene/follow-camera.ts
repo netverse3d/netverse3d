@@ -7,19 +7,25 @@ export interface CameraOrbit {
 }
 
 export type Point3 = readonly [number, number, number];
+export type CutPlane = readonly [number, number, number, number];
 
 export interface CameraPose {
   readonly eye: Point3;
   readonly target: Point3;
 }
 
-export const LOOK_HEIGHT = 1.25;
-export const MIN_PITCH = 0.05;
-export const MAX_PITCH = 1.2;
-export const CAMERA_WALL_MARGIN = 0.15;
-export const MAX_EYE_HEIGHT = 2.45;
+export const LOOK_HEIGHT = 1.1;
+export const MIN_PITCH = 0.08;
+export const MAX_PITCH = 1.25;
+export const MIN_DISTANCE = 2.2;
+export const MAX_DISTANCE = 12;
 export const TURN_PER_PIXEL = 0.005;
-export const DEFAULT_ORBIT: CameraOrbit = { yaw: 0, pitch: 0.3, distance: 2.9 };
+export const ZOOM_PER_NOTCH = 1.12;
+export const CAMERA_FIELD_OF_VIEW = 55;
+export const CEILING_CUT_HEIGHT = 2.6;
+export const DEFAULT_ORBIT: CameraOrbit = { yaw: 0, pitch: 0.62, distance: 6.5 };
+
+const CUT_OFF = 1e6;
 
 function between(value: number, low: number, high: number): number {
   return Math.min(Math.max(value, low), high);
@@ -38,21 +44,31 @@ export function turnOrbit(
   };
 }
 
-export function cameraPose(player: FloorPoint, orbit: CameraOrbit, room: FloorBox): CameraPose {
-  const minX = room.minX + CAMERA_WALL_MARGIN;
-  const maxX = room.maxX - CAMERA_WALL_MARGIN;
-  const minZ = room.minZ + CAMERA_WALL_MARGIN;
-  const maxZ = room.maxZ - CAMERA_WALL_MARGIN;
+export function zoomOrbit(orbit: CameraOrbit, notchesOut: number): CameraOrbit {
+  if (!Number.isFinite(notchesOut)) return orbit;
+  const distance = orbit.distance * ZOOM_PER_NOTCH ** notchesOut;
+  return { ...orbit, distance: between(distance, MIN_DISTANCE, MAX_DISTANCE) };
+}
+
+export function cameraPose(player: FloorPoint, orbit: CameraOrbit): CameraPose {
   const flat = Math.cos(orbit.pitch) * orbit.distance;
-  const offsetX = -Math.sin(orbit.yaw) * flat;
-  const offsetZ = -Math.cos(orbit.yaw) * flat;
-  const eyeX = between(player.x + offsetX, minX, maxX);
-  const eyeZ = between(player.z + offsetZ, minZ, maxZ);
-  const gapX = eyeX - player.x;
-  const gapZ = eyeZ - player.z;
-  const rise = Math.sqrt(Math.max(orbit.distance * orbit.distance - gapX * gapX - gapZ * gapZ, 0));
   return {
-    eye: [eyeX, Math.min(LOOK_HEIGHT + rise, MAX_EYE_HEIGHT), eyeZ],
+    eye: [
+      player.x - Math.sin(orbit.yaw) * flat,
+      LOOK_HEIGHT + Math.sin(orbit.pitch) * orbit.distance,
+      player.z - Math.cos(orbit.yaw) * flat,
+    ],
     target: [player.x, LOOK_HEIGHT, player.z],
   };
+}
+
+export function cutaways(eye: Point3, room: FloorBox): CutPlane[] {
+  const [x, y, z] = eye;
+  return [
+    [-1, 0, 0, x > room.maxX ? room.maxX : CUT_OFF],
+    [1, 0, 0, x < room.minX ? -room.minX : CUT_OFF],
+    [0, 0, -1, z > room.maxZ ? room.maxZ : CUT_OFF],
+    [0, 0, 1, z < room.minZ ? -room.minZ : CUT_OFF],
+    [0, -1, 0, y > CEILING_CUT_HEIGHT ? CEILING_CUT_HEIGHT : CUT_OFF],
+  ];
 }

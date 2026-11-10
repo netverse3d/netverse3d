@@ -2,13 +2,22 @@ import type { FloorBox } from '@netverse/game-shared/movement';
 
 export const CELL_SIZE = 2;
 export const WALL_THICKNESS = 0.2;
+export const WALL_MODEL_DEPTH = 0.36;
 
 const PERIMETER_DEPTH = 1;
 
-export function shopInterior([width, depth]: readonly [number, number]): FloorBox {
-  const halfWidth = (width * CELL_SIZE) / 2 - WALL_THICKNESS;
-  const halfDepth = (depth * CELL_SIZE) / 2 - WALL_THICKNESS;
+function insetFloor([width, depth]: readonly [number, number], inset: number): FloorBox {
+  const halfWidth = (width * CELL_SIZE) / 2 - inset;
+  const halfDepth = (depth * CELL_SIZE) / 2 - inset;
   return { minX: -halfWidth, maxX: halfWidth, minZ: -halfDepth, maxZ: halfDepth };
+}
+
+export function shopInterior(cells: readonly [number, number]): FloorBox {
+  return insetFloor(cells, WALL_THICKNESS);
+}
+
+export function shopOpenFloor(cells: readonly [number, number]): FloorBox {
+  return insetFloor(cells, WALL_MODEL_DEPTH);
 }
 
 export function shopPerimeter([width, depth]: readonly [number, number]): FloorBox[] {

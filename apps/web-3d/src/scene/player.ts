@@ -23,12 +23,17 @@ export interface Player {
 }
 
 const IDLE_CLIP = 'idle';
+const HAND_PROPS = ['crate', 'cup'];
 let sharedLook: ActorLook | null = null;
 
 export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
   sharedLook ??= createActorLook(THREE);
   const root = SkeletonUtils.clone(gltf.scene);
   sharedLook.dress(root);
+  for (const name of HAND_PROPS) {
+    const prop = root.getObjectByName(name);
+    if (prop) prop.visible = false;
+  }
   root.position.set(spawn.x, 0, spawn.z);
   root.rotation.y = spawn.yaw;
   const mixer = new THREE.AnimationMixer(root);

@@ -259,3 +259,19 @@ test('mất quyền giữ con trỏ hoặc cửa sổ mất tiêu điểm thì n
   assert.deepEqual(controls.intent(), STILL);
   assert.deepEqual(controls.takeTurn(), { right: 0, down: 0 });
 });
+
+test('lăn chuột trên cảnh cộng dồn thành số nấc phóng, lấy ra rồi thì về không, trang không bị cuộn', () => {
+  const { surface, keys } = stage();
+  const controls = createControls(surface, keys);
+  const out = Object.assign(new Event('wheel', { cancelable: true }), { deltaY: 100 });
+  surface.dispatchEvent(out);
+  surface.dispatchEvent(Object.assign(new Event('wheel', { cancelable: true }), { deltaY: 50 }));
+  assert.equal(out.defaultPrevented, true);
+  assert.equal(controls.takeZoom(), 1.5);
+  assert.equal(controls.takeZoom(), 0);
+  surface.dispatchEvent(Object.assign(new Event('wheel', { cancelable: true }), { deltaY: -200 }));
+  assert.equal(controls.takeZoom(), -2);
+  controls.dispose();
+  surface.dispatchEvent(Object.assign(new Event('wheel', { cancelable: true }), { deltaY: 100 }));
+  assert.equal(controls.takeZoom(), 0);
+});

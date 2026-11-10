@@ -23,15 +23,16 @@ Tham số trên URL: `?shop=<id>` chọn tiệm mẫu, `?quality=low|medium|high
 
 ## Điều khiển
 
-| Việc        | Máy tính                  | Điện thoại                      |
-| ----------- | ------------------------- | ------------------------------- |
-| Đi          | W A S D hoặc phím mũi tên | Chạm và kéo ở nửa trái màn hình |
-| Chạy        | Giữ Shift                 | Kéo cần ảo ra gần hết vành      |
-| Xoay camera | Nhấn giữ chuột và kéo     | Chạm và kéo ở nửa phải màn hình |
+| Việc         | Máy tính                  | Điện thoại                      |
+| ------------ | ------------------------- | ------------------------------- |
+| Đi           | W A S D hoặc phím mũi tên | Chạm và kéo ở nửa trái màn hình |
+| Chạy         | Giữ Shift                 | Kéo cần ảo ra gần hết vành      |
+| Xoay camera  | Nhấn giữ chuột và kéo     | Chạm và kéo ở nửa phải màn hình |
+| Phóng camera | Lăn chuột                 | Chưa có                         |
 
 - Hướng đi tính theo hướng camera đang nhìn: tiến là đi ra xa camera.
 - Nhân vật bị chặn bởi hộp va chạm của tường, bàn, ghế, thùng máy lấy từ mô hình. Mép ngoài của tiệm cũng bị chặn, nên chưa đi ra khỏi cửa được cho tới khi có phố.
-- Camera không ra khỏi phòng: gặp tường thì trượt lên cao và nhìn xuống. Camera chưa tránh bàn ghế.
+- Camera mặc định là góc rộng từ trên cao. Camera được phép lùi ra ngoài phòng: tường và trần nằm giữa camera và lòng phòng tự cắt đi nên không che nhân vật. Lăn chuột để lại gần hoặc lùi xa. Camera chưa tránh bàn ghế.
 - Cần ảo chưa có hình vẽ trên màn hình.
 
 ## Cấu trúc

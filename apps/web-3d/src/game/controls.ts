@@ -23,6 +23,7 @@ export interface Turn {
 export interface Controls {
   intent(): LocalIntent;
   takeTurn(): Turn;
+  takeZoom(): number;
   dispose(): void;
 }
 
@@ -42,6 +43,10 @@ interface Touch extends Event {
   readonly buttons?: number;
 }
 
+interface Scroll extends Event {
+  readonly deltaY: number;
+}
+
 interface Drag {
   x: number;
   y: number;
@@ -52,6 +57,7 @@ export const STICK_RADIUS_PIXELS = 56;
 const TYPING_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const NO_TURN: Turn = { right: 0, down: 0 };
 const MAIN_BUTTON = 0;
+const WHEEL_PIXELS_PER_NOTCH = 100;
 
 function isTyping(event: Event): boolean {
   const tagName = (event.target as { tagName?: unknown } | null)?.tagName;
@@ -69,6 +75,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
   let stickOrigin: Drag = { x: 0, y: 0 };
   let stick: StickPosition | null = null;
   let turn: Turn = NO_TURN;
+  let zoom = 0;
 
   const release = (pointerId: number) => {
     looks.delete(pointerId);
@@ -141,6 +148,11 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
   const onContextMenu = (event: Event) => {
     event.preventDefault();
   };
+  const onWheel = (event: Event) => {
+    const { deltaY } = event as Scroll;
+    if (Number.isFinite(deltaY)) zoom += deltaY / WHEEL_PIXELS_PER_NOTCH;
+    event.preventDefault();
+  };
 
   const keyListeners: [string, (event: Event) => void][] = [
     ['keydown', onKeyDown],
@@ -154,6 +166,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
     ['pointercancel', onPointerEnd],
     ['lostpointercapture', onPointerEnd],
     ['contextmenu', onContextMenu],
+    ['wheel', onWheel],
   ];
   for (const [type, listener] of keyListeners) keys.addEventListener(type, listener);
   for (const [type, listener] of surfaceListeners) surface.addEventListener(type, listener);
@@ -168,11 +181,17 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       turn = NO_TURN;
       return taken;
     },
+    takeZoom() {
+      const taken = zoom;
+      zoom = 0;
+      return taken;
+    },
     dispose() {
       for (const [type, listener] of keyListeners) keys.removeEventListener(type, listener);
       for (const [type, listener] of surfaceListeners) surface.removeEventListener(type, listener);
       releaseAll();
       turn = NO_TURN;
+      zoom = 0;
     },
   };
 }
