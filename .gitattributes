@@ -23,4 +23,5 @@
 
 packages/game-assets/source/*.blend filter=lfs diff=lfs merge=lfs -text
 packages/game-assets/exported/*.glb filter=lfs diff=lfs merge=lfs -text
+packages/game-assets/exported/*.jpg filter=lfs diff=lfs merge=lfs -text
 packages/game-assets/library/models/*.glb filter=lfs diff=lfs merge=lfs -text

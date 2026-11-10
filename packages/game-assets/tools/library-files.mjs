@@ -14,6 +14,8 @@ const CONTENT_TYPES = {
   '.glb': 'model/gltf-binary',
   '.mjs': 'text/javascript',
   '.json': 'application/json',
+  '.jpg': 'image/jpeg',
+  '.png': 'image/png',
 };
 
 export function resolveRequestPath(root, requestUrl) {
