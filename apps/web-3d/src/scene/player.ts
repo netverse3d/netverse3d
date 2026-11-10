@@ -24,6 +24,7 @@ export interface Player {
 
 const IDLE_CLIP = 'idle';
 const HAND_PROPS = ['crate', 'cup'];
+const FOLLOW_UPS: Readonly<Record<string, string>> = { sit_down: 'typing' };
 let sharedLook: ActorLook | null = null;
 
 export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
@@ -66,6 +67,9 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
       if (actions.has(name)) clip = name;
     },
     update(delta) {
+      const next = FOLLOW_UPS[clip];
+      const playing = actions.get(clip);
+      if (next && playing && playing.time >= playing.getClip().duration - delta) clip = next;
       blend(delta);
       mixer.update(delta);
     },
