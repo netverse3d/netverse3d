@@ -18,7 +18,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `workers/ai` | worker | Python | Mô phỏng headless, huấn luyện và chạy bot học tăng cường; hàng đợi LLM, TTS | M6 |
 | `workers/jobs` | worker | Chưa chốt | Gia hạn, dọn dữ liệu, thống kê định kỳ | M3 |
 | `packages/contracts` | package | OpenAPI, JSON Schema | Hợp đồng HTTP, sự kiện Kafka và giao thức realtime | M0 |
-| `packages/game-shared` | package | TypeScript | Kiểu và hằng số dùng chung giữa client và game server | M5 |
+| `packages/game-shared` | package | TypeScript | Luật di chuyển và va chạm dùng chung giữa client và game server | M2 |
 | `packages/ui` | package | React | Thành phần giao diện dùng chung | M1 |
 | `packages/config` | package | TypeScript | Cấu hình dùng chung cho lint, TypeScript | M1 |
 | `packages/game-assets` | package | Blender, glTF | Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật | M1 |

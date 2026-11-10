@@ -116,6 +116,15 @@ importers:
         specifier: 0.170.0
         version: 0.170.0
 
+  packages/game-shared:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.20.5
+        version: 22.20.5
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+
 packages:
 
   '@algolia/abtesting@1.27.0':

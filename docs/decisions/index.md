@@ -20,3 +20,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0014](./ADR-0014-saigon-cyber-and-own-characters.md) | Bối cảnh Sài Gòn cyber, nhân vật và bot do nhóm tự thiết kế | Đề xuất |
 | [ADR-0015](./ADR-0015-blender-sources-as-master.md) | Tệp Blender là bản gốc của tài sản 3D | Đề xuất |
 | [ADR-0016](./ADR-0016-shop-identity-as-data.md) | Bản sắc tiệm là dữ liệu, mô hình không mang màu cố định | Đề xuất |
+| [ADR-0017](./ADR-0017-web-client-layers.md) | Client game chia lớp, cảnh 3D và giao diện chỉ gặp nhau ở kho trạng thái | Đã chốt |

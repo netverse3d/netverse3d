@@ -20,7 +20,6 @@ export default [
       'services/**',
       'workers/**',
       'packages/config/**',
-      'packages/game-shared/**',
       'packages/ui/**',
     ],
   },
@@ -33,10 +32,7 @@ export default [
       globals: globals.node,
     },
   },
-  ...tseslint.configs.recommended.map((config) => ({
-    ...config,
-    files: ['apps/web-3d/**/*.{ts,tsx}'],
-  })),
+  ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.{ts,tsx}'] })),
   {
     files: ['apps/web-3d/**/*.{ts,tsx}'],
     languageOptions: {
