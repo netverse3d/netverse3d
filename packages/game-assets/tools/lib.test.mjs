@@ -117,6 +117,18 @@ test('báo node lưới có góc xoay chưa áp dụng', () => {
   );
 });
 
+test('báo node lưới có ma trận chưa áp dụng', () => {
+  const nodes = [
+    { name: 'hips' },
+    { name: 'head' },
+    { name: 'body', mesh: 0, skin: 0, matrix: [2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] },
+  ];
+  assert.match(
+    checkModel('a.glb', makeModel({ nodes }), EXPECTED).join('\n'),
+    /body has an unapplied transform/,
+  );
+});
+
 test('xương được phép có transform riêng', () => {
   const nodes = [
     { name: 'hips', translation: [0, 0.7, 0], rotation: [0, 0.7, 0, 0.7] },
@@ -276,20 +288,40 @@ test('lệnh xuất dừng khi có tệp gốc chưa khai', () => {
   assert.equal(readFileSync(stampPath(root), 'utf8'), before);
 });
 
+const PALETTE = {
+  surface: ['body', 'soft'],
+  glow: ['strip', 'keycap'],
+  images: ['display', 'decal'],
+};
+
+function uvBuffer(u, v) {
+  const bin = Buffer.alloc(8);
+  bin.writeFloatLE(u, 0);
+  bin.writeFloatLE(v, 4);
+  return bin;
+}
+
 function makeKitModel(overrides = {}) {
   return {
     nodes: [
       { name: 'chair_a', mesh: 0, children: [1] },
       { name: 'chair_a__seat_anchor', translation: [0, 0.4, 0] },
     ],
-    meshes: [{ primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1 } }] }],
-    accessors: [{ count: 3 }, { count: 3, min: [-0.1, 0, -0.1], max: [0.1, 0.5, 0.1] }],
+    meshes: [
+      { primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] },
+    ],
+    accessors: [
+      { count: 3 },
+      { count: 3, min: [-0.1, 0, -0.1], max: [0.1, 0.5, 0.1] },
+      { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+    ],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 8 }],
     materials: [{ name: 'surface' }],
     ...overrides,
   };
 }
 
-function makeKitRoot(model, slotOverrides = {}, configOverrides = {}, bin = undefined) {
+function makeKitRoot(model, slotOverrides = {}, configOverrides = {}, bin = uvBuffer(0.5, 0.375)) {
   const { root, config } = makeRoot();
   const kit = {
     file: 'parts.glb',
@@ -300,7 +332,7 @@ function makeKitRoot(model, slotOverrides = {}, configOverrides = {}, bin = unde
   };
   writeFileSync(
     join(root, 'assets.config.json'),
-    JSON.stringify({ ...config, kits: [kit], ...configOverrides }),
+    JSON.stringify({ ...config, kits: [kit], palette: PALETTE, ...configOverrides }),
   );
   writeFileSync(join(root, 'source/parts.blend'), 'parts');
   writeFileSync(join(root, 'exported/parts.glb'), makeGlb(model, bin));
@@ -317,37 +349,64 @@ test('báo ghế thiếu điểm ngồi', () => {
   assert.match(errors.join('\n'), /chair_a is missing anchor seat_anchor/);
 });
 
+test('báo điểm gắn là lưới thay vì Empty', () => {
+  const model = makeKitModel({
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1] },
+      { name: 'chair_a__seat_anchor', mesh: 0 },
+    ],
+  });
+  const errors = finishExport(makeKitRoot(model));
+  assert.match(errors.join('\n'), /chair_a anchor seat_anchor must be an empty, not a mesh/);
+});
+
+test('báo hộp va chạm không có kích thước', () => {
+  const model = makeKitModel({
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1] },
+      { name: 'chair_a__collision_main', scale: [0.3, 0, 0.3] },
+    ],
+  });
+  const errors = finishExport(makeKitRoot(model, { anchors: ['collision_main'] }));
+  assert.match(errors.join('\n'), /chair_a anchor collision_main has no size/);
+});
+
+test('báo lưới kế thừa transform từ Empty cha', () => {
+  const model = makeKitModel({
+    nodes: [
+      { name: 'rig_root', scale: [3, 3, 3], children: [1] },
+      { name: 'chair_a', mesh: 0, children: [2] },
+      { name: 'chair_a__seat_anchor' },
+    ],
+  });
+  const errors = finishExport(makeKitRoot(model));
+  assert.match(errors.join('\n'), /chair_a inherits an unapplied transform from rig_root/);
+});
+
 test('báo thiếu biến thể đã khai trong cấu hình', () => {
   const errors = finishExport(makeKitRoot(makeKitModel(), { variants: ['a', 'b'] }));
   assert.match(errors.join('\n'), /missing mesh: chair_b/);
 });
 
-const PALETTE = {
-  surface: ['body', 'soft'],
-  glow: ['strip', 'keycap'],
-  images: ['display', 'decal'],
-};
+test('báo cấu hình có ô đồ mà thiếu bộ màu', () => {
+  const errors = finishExport(makeKitRoot(makeKitModel(), {}, { palette: undefined }));
+  assert.match(errors.join('\n'), /kits need a palette in the config/);
+});
+
+test('báo mặt không có vật liệu', () => {
+  const model = makeKitModel({
+    meshes: [{ primitives: [{ indices: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] }],
+  });
+  const errors = finishExport(makeKitRoot(model));
+  assert.match(errors.join('\n'), /chair_a has a primitive without a material/);
+});
 
 function makePaletteModel(u, v, material = 'surface') {
-  const bin = Buffer.alloc(8);
-  bin.writeFloatLE(u, 0);
-  bin.writeFloatLE(v, 4);
-  const model = makeKitModel({
-    meshes: [
-      { primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] },
-    ],
-    accessors: [
-      ...makeKitModel().accessors,
-      { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
-    ],
-    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 8 }],
-    materials: [{ name: material }],
-  });
-  return { model, bin };
+  return { model: makeKitModel({ materials: [{ name: material }] }), bin: uvBuffer(u, v) };
 }
 
 function finishPaletteExport({ model, bin }) {
-  return finishExport(makeKitRoot(model, {}, { palette: PALETTE }, bin)).join('\n');
+  return finishExport(makeKitRoot(model, {}, {}, bin)).join('\n');
 }
 
 test('bề mặt trỏ đúng hàng màu của nó thì đạt', () => {
@@ -389,7 +448,7 @@ test('màn hình và hình dán được dùng UV tự do trong ảnh', () => {
 test('báo UV của ảnh vượt ra ngoài khung ảnh', () => {
   assert.match(
     finishPaletteExport(makePaletteModel(1.2, 0.27, 'decal')),
-    /decal has an image UV outside 0\.\.1|has an image UV outside 0\.\.1/,
+    /chair_a has an image UV outside 0\.\.1/,
   );
 });
 
@@ -415,6 +474,17 @@ test('báo module lệch lưới', () => {
   const grid = { size: 2, axes: [0] };
   const errors = finishExport(makeKitRoot(makeKitModel(), { grid }));
   assert.match(errors.join('\n'), /chair_a spans 0\.200 m on axis 0, not a multiple of 2/);
+});
+
+test('báo module lệch tâm ô', () => {
+  const accessors = [
+    { count: 3 },
+    { count: 3, min: [0, 0, -0.1], max: [0.2, 0.5, 0.1] },
+    { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+  ];
+  const grid = { size: 0.1, axes: [0] };
+  const errors = finishExport(makeKitRoot(makeKitModel({ accessors }), { grid }));
+  assert.match(errors.join('\n'), /chair_a is off the cell centre on axis 0/);
 });
 
 test('món đồ nằm trong khung kích thước của ô thì đạt', () => {

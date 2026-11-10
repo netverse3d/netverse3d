@@ -120,7 +120,7 @@ Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ
 | Modifier chưa apply, vật liệu khác nhau giữa các tệp  | Lệnh xuất         |
 | Transform chưa apply, thiếu điểm neo                  | Lệnh xuất         |
 | Vật liệu ngoài bộ màu, UV lệch hàng hoặc ra ngoài ảnh | Lệnh xuất         |
-| Món to hơn ô, module lệch lưới                        | Lệnh xuất         |
+| Món to hơn ô, module lệch lưới hoặc lệch tâm ô        | Lệnh xuất         |
 
 Lệnh xuất chỉ ghi `export-stamp.json` khi mọi kiểm đều qua. Xuất lỗi thì `pnpm verify` đỏ cho tới khi sửa xong. Workflow `assets` kiểm lại nội dung thật trên PR, hiện chưa phải check bắt buộc.
 

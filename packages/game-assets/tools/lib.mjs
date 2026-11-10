@@ -17,6 +17,8 @@ const ANCHOR_SEPARATOR = '__';
 const TRANSFORM_TOLERANCE = 1e-5;
 const GRID_TOLERANCE = 0.005;
 const IDENTITY_TRANSFORM = { translation: [0, 0, 0], rotation: [0, 0, 0, 1], scale: [1, 1, 1] };
+const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+const COLLISION_PREFIX = 'collision_';
 const STAMP_FILE = 'export-stamp.json';
 const CONFIG_FILE = 'assets.config.json';
 
@@ -134,26 +136,55 @@ function checkAttributes(gltf, nodes, required, fail) {
   }
 }
 
+function isIdentity(values, identity) {
+  return values.every((value, index) => Math.abs(value - identity[index]) <= TRANSFORM_TOLERANCE);
+}
+
 function hasAppliedTransform(node) {
-  return Object.entries(IDENTITY_TRANSFORM).every(([key, identity]) =>
-    (node[key] ?? identity).every(
-      (value, index) => Math.abs(value - identity[index]) <= TRANSFORM_TOLERANCE,
-    ),
+  return (
+    isIdentity(node.matrix ?? IDENTITY_MATRIX, IDENTITY_MATRIX) &&
+    Object.entries(IDENTITY_TRANSFORM).every(([key, identity]) =>
+      isIdentity(node[key] ?? identity, identity),
+    )
   );
 }
 
-function checkTransforms(nodes, fail) {
+function parentIndexes(gltf) {
+  const parents = new Map();
+  (gltf.nodes ?? []).forEach((node, index) => {
+    for (const child of node.children ?? []) parents.set(child, index);
+  });
+  return parents;
+}
+
+function checkTransforms(gltf, nodes, fail) {
+  const parents = parentIndexes(gltf);
   for (const node of nodes) {
     if (!hasAppliedTransform(node)) fail(`${node.name} has an unapplied transform`);
+    let parent = parents.get(gltf.nodes.indexOf(node));
+    while (parent !== undefined) {
+      const ancestor = gltf.nodes[parent];
+      if (!hasAppliedTransform(ancestor)) {
+        fail(`${node.name} inherits an unapplied transform from ${ancestor.name}`);
+      }
+      parent = parents.get(parent);
+    }
   }
 }
 
 function checkAnchors(gltf, nodes, expected, fail) {
   for (const node of nodes) {
-    const children = new Set((node.children ?? []).map((index) => gltf.nodes[index].name));
+    const children = new Map(
+      (node.children ?? []).map((index) => [gltf.nodes[index].name, gltf.nodes[index]]),
+    );
     for (const anchor of expected[node.name] ?? []) {
-      if (!children.has(`${node.name}${ANCHOR_SEPARATOR}${anchor}`)) {
+      const child = children.get(`${node.name}${ANCHOR_SEPARATOR}${anchor}`);
+      if (!child) {
         fail(`${node.name} is missing anchor ${anchor}`);
+      } else if (child.mesh !== undefined) {
+        fail(`${node.name} anchor ${anchor} must be an empty, not a mesh`);
+      } else if (anchor.startsWith(COLLISION_PREFIX) && (child.scale ?? [1]).some((v) => v <= 0)) {
+        fail(`${node.name} anchor ${anchor} has no size`);
       }
     }
   }
@@ -194,8 +225,10 @@ function checkPalette(gltf, bin, nodes, palette, fail) {
   const images = new Set(palette.images ?? []);
   for (const node of nodes) {
     for (const primitive of gltf.meshes[node.mesh].primitives) {
-      const material = gltf.materials[primitive.material]?.name;
-      if (images.has(material)) {
+      const material = (gltf.materials ?? [])[primitive.material]?.name;
+      if (material === undefined) {
+        fail(`${node.name} has a primitive without a material`);
+      } else if (images.has(material)) {
         checkImagePrimitive(gltf, bin, node, primitive, fail);
       } else if (rowsOf[material] === undefined) {
         fail(`${node.name} uses material ${material} outside the palette`);
@@ -212,13 +245,18 @@ function checkPalette(gltf, bin, nodes, palette, fail) {
   }
 }
 
-function meshExtent(gltf, mesh) {
-  const bounds = mesh.primitives.map((primitive) => gltf.accessors[primitive.attributes.POSITION]);
-  return [0, 1, 2].map(
-    (axis) =>
-      Math.max(...bounds.map((accessor) => accessor.max[axis])) -
-      Math.min(...bounds.map((accessor) => accessor.min[axis])),
+function meshBounds(gltf, mesh) {
+  const positions = mesh.primitives.map(
+    (primitive) => gltf.accessors[primitive.attributes.POSITION],
   );
+  return [0, 1, 2].map((axis) => ({
+    min: Math.min(...positions.map((accessor) => accessor.min[axis])),
+    max: Math.max(...positions.map((accessor) => accessor.max[axis])),
+  }));
+}
+
+function meshExtent(gltf, mesh) {
+  return meshBounds(gltf, mesh).map(({ min, max }) => max - min);
 }
 
 function checkSizes(gltf, nodes, sizes, fail) {
@@ -237,13 +275,17 @@ function checkGrid(gltf, nodes, grids, fail) {
   for (const node of nodes) {
     const grid = grids[node.name];
     if (grid === undefined) continue;
-    const extent = meshExtent(gltf, gltf.meshes[node.mesh]);
+    const bounds = meshBounds(gltf, gltf.meshes[node.mesh]);
     for (const axis of grid.axes) {
-      const cells = extent[axis] / grid.size;
+      const { min, max } = bounds[axis];
+      const cells = (max - min) / grid.size;
       if (Math.abs(cells - Math.round(cells)) > GRID_TOLERANCE || Math.round(cells) === 0) {
         fail(
-          `${node.name} spans ${extent[axis].toFixed(3)} m on axis ${axis}, not a multiple of ${grid.size}`,
+          `${node.name} spans ${(max - min).toFixed(3)} m on axis ${axis}, not a multiple of ${grid.size}`,
         );
+      }
+      if (Math.abs(min + max) > GRID_TOLERANCE * grid.size) {
+        fail(`${node.name} is off the cell centre on axis ${axis}`);
       }
     }
   }
@@ -254,7 +296,7 @@ export function checkModel(file, gltf, expected, bin) {
   const fail = (message) => errors.push(`${file}: ${message}`);
   const meshNodes = (gltf.nodes ?? []).filter((node) => node.mesh !== undefined);
   checkMeshes(gltf, meshNodes, expected, fail);
-  checkTransforms(meshNodes, fail);
+  checkTransforms(gltf, meshNodes, fail);
   for (const material of gltf.materials ?? []) {
     if (NUMBERED_COPY.test(material.name)) fail(`duplicated material: ${material.name}`);
   }
@@ -265,6 +307,7 @@ export function checkModel(file, gltf, expected, bin) {
   checkSizes(gltf, meshNodes, expected.sizes ?? {}, fail);
   checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
+  else if (expected.kit) fail('kits need a palette in the config');
   return errors;
 }
 
@@ -301,6 +344,7 @@ function kitExpectation(kit, palette) {
   const perPart = (pick) => Object.fromEntries(parts.map(({ name, spec }) => [name, pick(spec)]));
   return {
     file: kit.file,
+    kit: true,
     meshes: perPart((spec) => spec.maxTriangles),
     anchors: perPart((spec) => spec.anchors ?? []),
     sizes: perPart((spec) => spec.size),

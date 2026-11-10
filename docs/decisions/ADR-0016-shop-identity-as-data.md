@@ -14,7 +14,7 @@ Bản thử trên bàn máy thật cho thấy một tệp GLB hiện được b�
 
 - Mô hình môi trường và đồ đạc không mang màu cố định. Mỗi bề mặt trỏ vào một hàng trong dải màu qua UV. Hàng có một màu hoặc một gradient.
 - Dải màu được dựng lúc chạy từ dữ liệu. Không vẽ tay texture cho từng tiệm.
-- Vật liệu chỉ có `surface` và `glow`.
+- Vật liệu chỉ có `surface` và `glow` cho bề mặt, cùng hai vật liệu ảnh `display` và `decal` cho màn hình và logo.
 - Đồ đạc chia thành các ô đồ: bàn, màn hình, bàn phím, chuột, ghế, thùng máy. Mỗi ô có nhiều biến thể khác hình dáng và lắp vào điểm gắn `socket_*`.
 - Lúc chạy, các món của cùng một công thức được gộp hoặc instancing, để nguồn tách rời mà số lời gọi vẽ không tăng theo số máy.
 - Điểm tương tác, chỗ ngồi và va chạm là Empty trong tệp Blender, tên `interact_point`, `seat_anchor`, `collision_*`.
