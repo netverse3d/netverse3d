@@ -109,6 +109,7 @@
     {
       "file": "station-parts.glb",
       "source": "parts-station.blend",
+      "lightmap": true,
       "slots": {
         "desk": {
           "variants": ["a"],
@@ -131,14 +132,14 @@
         },
         "monitor": { "variants": ["a"], "maxTriangles": 1500, "size": [1.0, 0.7, 0.35] },
         "keyboard": { "variants": ["a"], "maxTriangles": 1100, "size": [0.46, 0.06, 0.2] },
-        "mouse": { "variants": ["a"], "maxTriangles": 600, "size": [0.1, 0.06, 0.14] },
+        "mouse": { "variants": ["a"], "maxTriangles": 1400, "size": [0.1, 0.06, 0.14] },
         "mat": { "variants": ["a"], "maxTriangles": 300, "size": [0.9, 0.02, 0.4] },
         "headset": { "variants": ["a"], "maxTriangles": 1600, "size": [0.3, 0.32, 0.18] },
         "mic": { "variants": ["a"], "maxTriangles": 900, "size": [0.18, 0.3, 0.18] },
         "speaker": { "variants": ["a"], "maxTriangles": 700, "size": [0.18, 0.3, 0.2] },
         "chair": {
           "variants": ["a"],
-          "maxTriangles": 5400,
+          "maxTriangles": 6800,
           "size": [0.75, 1.4, 0.8],
           "anchors": ["seat_anchor", "collision_main"]
         },
@@ -153,6 +154,7 @@
     {
       "file": "room-kit.glb",
       "source": "environment-kit.blend",
+      "lightmap": true,
       "slots": {
         "floor": {
           "variants": ["a"],

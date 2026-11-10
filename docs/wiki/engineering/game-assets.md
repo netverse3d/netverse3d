@@ -65,13 +65,15 @@ V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo
 
 ### Module phòng
 
-Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`.
+Phòng ghép từ module trên lưới ô 2 m, tường cao 3 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép. Trụ ốp ở hai mép module chỉ chạy từ mép trên dải chân tường tới mép dưới dải đèn, vì trụ cao hết tường có mặt trên trùng phẳng với dải băng trần và nhấp nháy khi nhìn từ trên xuống.
+
+Hai mặt cùng hướng pháp tuyến, cùng phẳng hoặc cách nhau dưới 1,5 mm, mà chồng lên nhau là nguồn nhấp nháy (z-fighting; ở 10–15 m độ phân giải chiều sâu chỉ còn 0,1–0,2 mm), nên `tools/coplanar.mjs` quét mọi bộ ô đồ khi kiểm và khi xuất: gom các mặt vuông góc trục theo mặt phẳng, tính diện tích giao từng cặp, bỏ qua cặp chỉ chạm mép và cặp bị một mặt ngược chiều cùng phẳng của một khối khác che kín (hộp dán lên khối khác); mặt che thuộc chính một trong hai khối thì không được tha, vì đó là tấm mỏng bằng không như đĩa trong của vòng luồn dây trên bàn. Tấm dán mỏng vì vậy đặt cách mặt nền ít nhất 2 mm. Nó kiểm từng món rồi kiểm các cụm ghép của bộ phòng (hai tường liền, góc với hai tường, cửa và cửa sổ giữa hai tường); còn một cặp là lệnh xuất từ chối ghi dấu.
 
 ### Công thức tiệm
 
 Mỗi tiệm là một tệp JSON trong `recipes/`, theo hợp đồng `packages/contracts/world/shop-look.v1.schema.json`: `palette` (mỗi hàng màu là một dải gồm một hay nhiều màu), `emissive` (dải phát sáng nhẹ cho hàng bề mặt, tuỳ chọn), `variants` (biến thể cho từng ô đồ), `layout` (kích thước phòng theo ô 2 m, vị trí và hướng từng máy, cửa, cửa sổ), `sign` và `lighting`. Ba tiệm mẫu khác nhau về màu, bố cục, biển và đèn: `tim-neon`, `bien-sau`, `cam-retro`; biến thể của chúng đều là `a` vì mỗi ô mới có một biến thể.
 
-Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng ô 2 m; ô `[x, z]` có x đếm từ tường `west` (0) sang `east`, z đếm từ tường `north` (0) xuống `south`; `facing` là hướng người ngồi nhìn, màn hình nằm ở phía đó của ô; `at` của cửa và cửa sổ là chỉ số ô dọc theo tường. Mỗi tiệm có đúng một cửa và ô sàn ngay trong cửa phải để trống. Bộ kiểm công thức chạy trong `pnpm verify`, hoặc riêng bằng `pnpm --filter @netverse/game-assets check:recipes`; nó từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, dải phát sáng cho hàng không phải bề mặt, đặt máy ngoài phòng, hai máy chung một ô, máy chắn trước cửa, cửa và cửa sổ trùng chỗ, tệp không phải JSON, hoặc tên tệp khác `id`.
+Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng ô 2 m; ô `[x, z]` có x đếm từ tường `west` (0) sang `east`, z đếm từ tường `north` (0) xuống `south`; `facing` là hướng người ngồi nhìn, màn hình nằm ở phía đó của ô; `at` của cửa và cửa sổ là chỉ số ô dọc theo tường. Mỗi tiệm có đúng một cửa và ô sàn ngay trong cửa phải để trống. Cửa và cửa sổ không được đặt ở ô góc (ô đầu hay cuối của một bức tường) vì ô góc do module góc liền khối đảm nhiệm. Bộ kiểm công thức chạy trong `pnpm verify`, hoặc riêng bằng `pnpm --filter @netverse/game-assets check:recipes`; nó từ chối công thức trỏ tới biến thể không có, thiếu hay thừa hàng màu, dải phát sáng cho hàng không phải bề mặt, đặt máy ngoài phòng, hai máy chung một ô, máy chắn trước cửa, cửa hay cửa sổ ở ô góc, cửa và cửa sổ trùng chỗ, tệp không phải JSON, hoặc tên tệp khác `id`.
 
 ### Mã chạy
 
@@ -81,7 +83,15 @@ Quy ước toạ độ trong `layout`: `cells` là `[rộng, sâu]` tính bằng
 
 ### Phòng thử tiệm
 
-Tab "Phòng thử tiệm" của thư viện mở `library/shop.html`: trang dựng cả tiệm từ công thức bằng đúng mã chạy ở trên, gồm phòng ghép từ module theo `layout`, các máy đặt theo socket, biển hiệu trên cửa và đèn theo `lighting`. Trong trang có thể chọn một trong ba tiệm mẫu, sửa từng hàng màu và thêm mốc để thành dải chuyển màu, đổi biến thể theo ô, đổi biển và kiểu đèn, bật lớp điểm neo và hộp va chạm, rồi chép JSON ra để lưu thành công thức mới trong `recipes/` (nhớ thêm `id` vào `recipes/index.json`). Trần tắt mặc định để nhìn từ trên xuống.
+Tab "Phòng thử tiệm" của thư viện mở `library/shop.html`: trang dựng cả tiệm từ công thức bằng đúng mã chạy ở trên, gồm phòng ghép từ module theo `layout`, các máy đặt theo socket, biển hiệu trên cửa và đèn theo `lighting`. Trong trang có thể chọn một trong ba tiệm mẫu, sửa từng hàng màu và thêm mốc để thành dải chuyển màu, đổi biến thể theo ô, đổi biển và kiểu đèn, bật lớp điểm neo và hộp va chạm, rồi chép JSON ra để lưu thành công thức mới trong `recipes/` (nhớ thêm `id` vào `recipes/index.json`). Trần tắt mặc định để nhìn từ trên xuống. Nhóm thanh trượt "Ánh sáng" (phơi sáng, đèn nền, đèn điểm, phát sáng, độ mạnh và ngưỡng bloom) chỉnh trực tiếp trên cảnh để chốt mức sáng rồi ghi lại vào preset của `lighting`; mặc định hiện tại giữ bloom thấp (neon 0,35, ngưỡng 0,85) và phát sáng 1,2 để tiệm không bị loá.
+
+### Lightmap nướng sẵn
+
+Tiệm đổi màu theo công thức lúc chạy nên không nướng màu được như các phòng 3D tĩnh; thay vào đó mỗi bộ ô đồ mang một ảnh **AO xám** nướng trong Blender (Cycles, khoảng cách AO 0,6 m) trên lớp UV thứ hai `lightmap`, và vật liệu bề mặt nhân màu công thức với ảnh đó. Cụm bàn máy nướng một lần với mọi món đặt đúng socket, có mặt sàn và loa bên phải làm vật cản; từng module phòng nướng với sàn, trần và tường kề làm vật cản để có bóng tiếp xúc ở chân tường và góc. Mỗi món chiếm một ô vuông trong atlas 2048², cạnh tỉ lệ với căn bậc hai diện tích bề mặt. Ảnh đóng gói dạng JPEG trong tệp `.blend` và nối vào nhóm nút "glTF Material Output" nên GLB xuất ra có `occlusionTexture` trên UV 1; three.js tự gắn thành `aoMap`. Vì three.js chỉ nhân `aoMap` vào ánh sáng gián tiếp, `shopMaterials` vá một dòng shader để lightmap nhân cả ánh sáng trực tiếp. Bộ ô đồ khai `lightmap: true` trong `assets.config.json` bị từ chối khi thiếu `TEXCOORD_1` hoặc thiếu ảnh che khuất trên UV 1. Mỗi bộ một atlas nên phòng thử và phòng lab giữ một bộ vật liệu riêng cho từng bộ ô đồ; nút "AO nướng" tắt bật để so sánh.
+
+### Phòng lab
+
+Tab "Phòng lab" mở `library/lab.html`: xem riêng từng món của hai bộ ô đồ trên bục xoay dưới ba đèn studio trung tính, kèm số tam giác, kích thước so với khung ô và danh sách điểm neo. Bật được khung dây, điểm neo, hộp va chạm, khung ô và lưới sàn; bốn bộ ghép thử mối nối (góc tường, cửa giữa hai tường, cửa sổ giữa hai tường, trần và đèn) để soi chỗ các module gặp nhau trước khi ghép cả tiệm. Cả hai trang vẽ qua composer có khử răng cưa MSAA bốn mẫu, vì `antialias` của canvas không tác dụng khi đi qua hậu xử lý.
 
 ## Chuẩn bị
 
@@ -120,7 +130,7 @@ Vật liệu dùng chung, như `logo_canvas`, có bản sao trong nhiều tệp 
 
 ## Ngân sách
 
-Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ dùng khi cảnh đông người, tự giảm thân và tóc còn tổng khoảng 10.000 tam giác. Bộ bàn máy mười món hiện 11.706 tam giác, bộ module phòng 3.804. Muốn tăng ngân sách thì nêu lý do trong PR, và kiểm lại FPS trên GPU thật.
+Giới hạn tam giác từng món nằm trong `assets.config.json`. Bản nhẹ dùng khi cảnh đông người, tự giảm thân và tóc còn tổng khoảng 10.000 tam giác. Bộ bàn máy mười món hiện 14.186 tam giác, bộ module phòng 3.760. Ngày 2026-11-10, sau khi người dùng soi từng món trong phòng lab, ghế được nâng ngân sách từ 5.400 lên 6.800 để lưng có 25 vòng và đệm 13 vòng với nội suy mượt, và chuột từ 600 lên 1.400 để dựng lại thành vỏ trên dạng lưới cao độ đặt trên đế dưới với đường ron sắc, rãnh chia nút, khe bánh xe, dải sáng và logo đều là mặt của chính vỏ thay vì ống dán rời; 50 máy vẫn dưới một triệu tam giác mỗi khung. Muốn tăng ngân sách thì nêu lý do trong PR, và kiểm lại FPS trên GPU thật.
 
 ## Bộ kiểm chặn gì
 

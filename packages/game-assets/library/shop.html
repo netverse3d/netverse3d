@@ -187,6 +187,14 @@
           border-top: 1px solid var(--line);
         }
       }
+      .row input[type='range'] {
+        width: 100%;
+      }
+      .row output {
+        text-align: right;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
     </style>
     <script type="importmap">
       {
@@ -207,13 +215,17 @@
         </p>
         <div class="brand">
           <h1>Phòng thử tiệm</h1>
-          <p>Ghép tiệm từ công thức: bộ màu, món theo ô, bố cục. <a href="./">Về thư viện</a></p>
+          <p>
+            Ghép tiệm từ công thức: bộ màu, món theo ô, bố cục. <a href="./">Về thư viện</a> ·
+            <a href="lab.html">Phòng lab</a>
+          </p>
         </div>
         <div class="bar" id="recipeBar" role="group" aria-label="Tiệm mẫu"></div>
         <div class="bar" id="toggleBar" role="group" aria-label="Lớp hiển thị">
           <button data-toggle="anchors" aria-pressed="false">Điểm neo</button>
           <button data-toggle="collision" aria-pressed="false">Hộp va chạm</button>
           <button data-toggle="bloom" aria-pressed="true">Bloom</button>
+          <button data-toggle="ao" aria-pressed="true">AO nướng</button>
           <button data-toggle="ceiling" aria-pressed="false">Trần</button>
         </div>
         <div id="meter">
@@ -244,6 +256,39 @@
           </div>
         </section>
         <section>
+          <h2>Ánh sáng <small>kéo tới khi thấy thật rồi đọc số</small></h2>
+          <div class="row">
+            <span>Phơi sáng</span>
+            <input id="exposure" type="range" min="0.4" max="1.6" step="0.05" />
+            <output id="exposureOut"></output>
+          </div>
+          <div class="row">
+            <span>Đèn nền</span>
+            <input id="ambient" type="range" min="0" max="2" step="0.05" />
+            <output id="ambientOut"></output>
+          </div>
+          <div class="row">
+            <span>Đèn điểm</span>
+            <input id="point" type="range" min="0" max="20" step="0.5" />
+            <output id="pointOut"></output>
+          </div>
+          <div class="row">
+            <span>Phát sáng</span>
+            <input id="glow" type="range" min="0.5" max="2" step="0.05" />
+            <output id="glowOut"></output>
+          </div>
+          <div class="row">
+            <span>Bloom mạnh</span>
+            <input id="bloomStrength" type="range" min="0" max="1.5" step="0.05" />
+            <output id="bloomStrengthOut"></output>
+          </div>
+          <div class="row">
+            <span>Bloom ngưỡng</span>
+            <input id="bloomThreshold" type="range" min="0.3" max="1" step="0.01" />
+            <output id="bloomThresholdOut"></output>
+          </div>
+        </section>
+        <section>
           <h2>Món theo ô <small>biến thể trong bộ</small></h2>
           <div id="variantRows"></div>
         </section>
@@ -271,7 +316,12 @@
         roomPlan,
         shopPlan,
       } from '../runtime/shop-look.mjs';
-      import { buildShop, paletteTexture, shopMaterials } from '../runtime/three-shop.mjs';
+      import {
+        buildShop,
+        kitLightmap,
+        paletteTexture,
+        shopMaterials,
+      } from '../runtime/three-shop.mjs';
 
       const $ = (id) => document.getElementById(id);
       const LIGHTING = {
@@ -280,34 +330,46 @@
           ground: '#120c24',
           ambient: 0.5,
           points: ['#a66bff', '#5ce1ff'],
-          bloom: 0.9,
+          point: 7,
+          bloom: 0.35,
           exposure: 1.0,
         },
         dim: {
           sky: '#1f3a44',
           ground: '#06100f',
-          ambient: 0.35,
+          ambient: 0.3,
           points: ['#1ee8d2', '#0aa0ff'],
-          bloom: 0.6,
+          point: 5,
+          bloom: 0.3,
           exposure: 0.9,
         },
         warm: {
           sky: '#ffb347',
           ground: '#1a110a',
-          ambient: 0.7,
+          ambient: 0.6,
           points: ['#ff9f1c', '#ff6f3c'],
-          bloom: 0.35,
-          exposure: 1.05,
+          point: 7,
+          bloom: 0.15,
+          exposure: 1.0,
         },
         daylight: {
           sky: '#ffffff',
           ground: '#8899aa',
-          ambient: 1.4,
+          ambient: 1.2,
           points: ['#ffffff', '#ffffff'],
-          bloom: 0.12,
-          exposure: 1.1,
+          point: 3,
+          bloom: 0.05,
+          exposure: 1.05,
         },
       };
+      const LIGHT_SLIDERS = [
+        'exposure',
+        'ambient',
+        'point',
+        'glow',
+        'bloomStrength',
+        'bloomThreshold',
+      ];
       const UP = new THREE.Vector3(0, 1, 0);
 
       const canvas = $('gl');
@@ -353,9 +415,12 @@
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
       controls.maxPolarAngle = Math.PI * 0.49;
-      const composer = new EffectComposer(renderer);
+      const composer = new EffectComposer(
+        renderer,
+        new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
+      );
       composer.addPass(new RenderPass(scene, camera));
-      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.9, 0.6, 0.72);
+      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.35, 0.4, 0.85);
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
 
@@ -373,8 +438,17 @@
         collision: false,
         bloom: true,
         ceiling: false,
+        ao: true,
+        light: null,
       };
-      let materials = shopMaterials(THREE, state.recipe, rows);
+      const materials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(stationKit.scene),
+      });
+      const roomMaterials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(roomKit.scene),
+      });
+      const materialSets = [materials, roomMaterials];
+      const GLOW_DEFAULT = materials.glow.color.r;
       let signMesh = null;
 
       function disposeGroup(group) {
@@ -392,14 +466,33 @@
       function repaint() {
         const palette = paletteTexture(THREE, paletteImage(rows, state.recipe.palette));
         const emissive = paletteTexture(THREE, paletteImage(rows, state.recipe.emissive ?? {}));
-        for (const texture of [materials.surface.map, materials.surface.emissiveMap])
-          texture.dispose();
-        materials.surface.map = palette;
-        materials.surface.emissiveMap = emissive;
-        materials.glow.map = palette;
-        materials.surface.needsUpdate = true;
-        materials.glow.needsUpdate = true;
+        for (const set of materialSets) {
+          for (const texture of [set.surface.map, set.surface.emissiveMap]) texture.dispose();
+          set.surface.map = palette;
+          set.surface.emissiveMap = emissive;
+          set.glow.map = palette;
+          set.surface.needsUpdate = true;
+          set.glow.needsUpdate = true;
+        }
         paintSign();
+      }
+
+      function applyLight() {
+        const light = state.light;
+        renderer.toneMappingExposure = light.exposure;
+        for (const set of materialSets) {
+          set.glow.color.setScalar(light.glow);
+          set.surface.aoMapIntensity = state.ao ? 1 : 0;
+        }
+        bloom.strength = state.bloom ? light.bloomStrength : 0;
+        bloom.threshold = light.bloomThreshold;
+        for (const source of lightRig.children) {
+          source.intensity = source.isPointLight ? light.point : light.ambient;
+        }
+        for (const id of LIGHT_SLIDERS) {
+          $(id).value = light[id];
+          $(`${id}Out`).textContent = Number(light[id]).toFixed(2);
+        }
       }
 
       function relight() {
@@ -408,7 +501,7 @@
         lightRig.add(new THREE.HemisphereLight(preset.sky, preset.ground, preset.ambient));
         const [width, depth] = state.recipe.layout.cells;
         preset.points.forEach((color, index) => {
-          const light = new THREE.PointLight(color, 18, 12, 1.6);
+          const light = new THREE.PointLight(color, preset.point, 12, 1.6);
           light.position.set(
             (index ? 1 : -1) * (width - 0.5),
             2.6,
@@ -416,8 +509,15 @@
           );
           lightRig.add(light);
         });
-        bloom.strength = state.bloom ? preset.bloom : 0;
-        renderer.toneMappingExposure = preset.exposure;
+        state.light = {
+          exposure: preset.exposure,
+          ambient: preset.ambient,
+          point: preset.point,
+          glow: GLOW_DEFAULT,
+          bloomStrength: preset.bloom,
+          bloomThreshold: 0.85,
+        };
+        applyLight();
       }
 
       function signTexture() {
@@ -523,7 +623,7 @@
           (placement) => state.ceiling || placement.slot !== 'ceiling',
         );
         const stations = shopPlan(state.recipe, anchors);
-        shopGroup.add(buildShop(THREE, roomKit.scene, room, materials));
+        shopGroup.add(buildShop(THREE, roomKit.scene, room, roomMaterials));
         shopGroup.add(buildShop(THREE, stationKit.scene, stations, materials));
         placeSign();
         currentPlan = [...room, ...stations];
@@ -654,13 +754,19 @@
         relight();
         $('recipeOut').textContent = JSON.stringify(state.recipe, null, 2);
       });
+      for (const id of LIGHT_SLIDERS) {
+        $(id).addEventListener('input', (event) => {
+          state.light[id] = Number(event.target.value);
+          applyLight();
+        });
+      }
       $('toggleBar').addEventListener('click', (event) => {
         const button = event.target.closest('[data-toggle]');
         if (!button) return;
         const key = button.dataset.toggle;
         state[key] = !state[key];
         button.setAttribute('aria-pressed', String(state[key]));
-        if (key === 'bloom') relight();
+        if (key === 'bloom' || key === 'ao') applyLight();
         else if (key === 'ceiling') rebuild();
         else helperLayer(currentPlan);
       });

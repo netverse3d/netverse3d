@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { checkCoplanar, roomAssemblies } from './coplanar.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
@@ -8,6 +9,9 @@ const GLB_HEADER_SIZE = 20;
 const GLB_CHUNK_HEADER_SIZE = 8;
 const UV_PAIR_SIZE = 8;
 const PALETTE_ROW_TOLERANCE = 0.001;
+const LIGHTMAP_ATTRIBUTE = 'TEXCOORD_1';
+const LIGHTMAP_MATERIAL = 'surface';
+const LIGHTMAP_UV_SET = 1;
 const MAX_POINTER_SIZE = 1024;
 const LFS_POINTER =
   /^version https:\/\/git-lfs\.github\.com\/spec\/v1\noid sha256:([0-9a-f]{64})\nsize \d+\n$/;
@@ -291,6 +295,22 @@ function checkGrid(gltf, nodes, grids, fail) {
   }
 }
 
+function checkLightmap(gltf, fail) {
+  const surface = (gltf.materials ?? []).find((material) => material.name === LIGHTMAP_MATERIAL);
+  const occlusion = surface?.occlusionTexture;
+  if (!occlusion) {
+    fail(`${LIGHTMAP_MATERIAL} material has no baked occlusion texture`);
+    return;
+  }
+  if (occlusion.texCoord !== LIGHTMAP_UV_SET) {
+    fail(`${LIGHTMAP_MATERIAL} occlusion must use UV set ${LIGHTMAP_UV_SET}`);
+  }
+  const texture = (gltf.textures ?? [])[occlusion.index];
+  if (!texture || (gltf.images ?? [])[texture.source] === undefined) {
+    fail(`${LIGHTMAP_MATERIAL} occlusion texture has no image`);
+  }
+}
+
 export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
@@ -308,6 +328,11 @@ export function checkModel(file, gltf, expected, bin) {
   checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   else if (expected.kit) fail('kits need a palette in the config');
+  if (expected.kit) {
+    const parts = Object.keys(expected.meshes);
+    for (const message of checkCoplanar(gltf, bin, parts, roomAssemblies(parts))) fail(message);
+  }
+  if (expected.lightmap) checkLightmap(gltf, fail);
   return errors;
 }
 
@@ -345,7 +370,9 @@ function kitExpectation(kit, palette) {
   return {
     file: kit.file,
     kit: true,
+    lightmap: kit.lightmap === true,
     meshes: perPart((spec) => spec.maxTriangles),
+    attributes: kit.lightmap === true ? perPart(() => [LIGHTMAP_ATTRIBUTE]) : {},
     anchors: perPart((spec) => spec.anchors ?? []),
     sizes: perPart((spec) => spec.size),
     grids: perPart((spec) => spec.grid),

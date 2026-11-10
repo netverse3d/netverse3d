@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as THREE from 'three';
-import { buildShop, paletteTexture, shopMaterials } from './three-shop.mjs';
+import { buildShop, kitLightmap, paletteTexture, shopMaterials } from './three-shop.mjs';
 import { paletteImage } from './shop-look.mjs';
 
 const ROWS = ['body', 'soft', 'strip', 'keycap'];
@@ -60,6 +60,27 @@ test('vật liệu tiệm có đủ bốn tên của bộ ô đồ', () => {
   assert.deepEqual(Object.keys(materials).sort(), ['decal', 'display', 'glow', 'surface']);
   assert.equal(materials.surface.map, materials.glow.map);
   assert.ok(materials.surface.emissiveMap);
+});
+
+test('vật liệu bề mặt nhận lightmap nướng sẵn ở kênh UV thứ hai khi được đưa vào', () => {
+  const lightmap = new THREE.Texture();
+  lightmap.channel = 1;
+  const lit = shopMaterials(THREE, RECIPE, ROWS, { lightmap });
+  assert.equal(lit.surface.aoMap, lightmap);
+  assert.equal(lit.surface.aoMapIntensity, 1);
+  assert.equal(lit.glow.aoMap, null);
+  const plain = shopMaterials(THREE, RECIPE, ROWS);
+  assert.equal(plain.surface.aoMap, null);
+});
+
+test('lấy lightmap từ vật liệu bề mặt của bộ ô đồ đã tải, không có thì trả null', () => {
+  const scene = kitScene();
+  assert.equal(kitLightmap(scene), null);
+  const lightmap = new THREE.Texture();
+  scene.traverse((object) => {
+    if (object.isMesh && object.material.name === 'surface') object.material.aoMap = lightmap;
+  });
+  assert.equal(kitLightmap(scene), lightmap);
 });
 
 test('mỗi primitive thành một InstancedMesh với số instance bằng số máy', () => {

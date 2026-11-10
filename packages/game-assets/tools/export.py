@@ -17,6 +17,8 @@ GLTF_OPTIONS = {
     'export_yup': True,
     'export_morph': False,
     'export_texcoords': True,
+    'export_image_format': 'JPEG',
+    'export_jpeg_quality': 90,
     'export_vertex_color': 'NAME',
     'export_vertex_color_name': 'Col',
     'export_all_vertex_colors': False,

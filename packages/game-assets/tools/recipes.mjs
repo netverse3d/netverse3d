@@ -75,8 +75,13 @@ function checkRecipeLayout(recipe, label) {
   const placed = new Set();
   for (const [kind, opening] of [['door', door], ...windows.map((w) => ['window', w])]) {
     const place = `${opening.wall} ${opening.at}`;
-    if (opening.at >= cells[WALL_AXIS[opening.wall]]) {
+    const length = cells[WALL_AXIS[opening.wall]];
+    if (opening.at >= length) {
       errors.push(`${label}: ${kind} at ${opening.at} is outside the ${opening.wall} wall`);
+    } else if (length > 1 && (opening.at === 0 || opening.at === length - 1)) {
+      errors.push(
+        `${label}: ${kind} at ${opening.at} sits in a corner of the ${opening.wall} wall`,
+      );
     }
     if (placed.has(place)) errors.push(`${label}: two openings share ${place}`);
     placed.add(place);
