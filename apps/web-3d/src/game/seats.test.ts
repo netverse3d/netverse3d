@@ -3,7 +3,9 @@ import { test } from 'node:test';
 
 import { PLAYER_RADIUS } from '@netverse/game-shared/movement';
 
-import { SEAT_REACH, nearestSeat, shopSeats } from './seats.ts';
+import { SEAT_REACH } from '@netverse/game-shared/seating';
+
+import { nearestSeat, shopSeats } from './seats.ts';
 import type { Seat, StationPart } from './seats.ts';
 
 const EAST = Math.PI / 2;
@@ -166,10 +168,6 @@ test('cách đều ghế của hai máy thì luôn chọn cùng một máy, khô
 
 test('tiệm chưa có máy nào thì không có gợi ý', () => {
   assert.equal(nearestSeat({ x: 0, z: 0 }, [], NOBODY), null);
-});
-
-test('tầm với là thân người cộng hai mươi phân', () => {
-  assert.equal(SEAT_REACH, PLAYER_RADIUS + 0.2);
 });
 
 test('máy được gợi ý là máy có ghế gần hơn, không phải máy có vùng gần hơn', () => {
