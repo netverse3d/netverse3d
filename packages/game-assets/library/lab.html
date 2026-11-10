@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phòng lab vật thể Netverse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #141418;
+        --panel: #1b1b21;
+        --line: #2e2e38;
+        --ink: #f0eef7;
+        --muted: #9a98a8;
+        --cyan: #5ce1ff;
+        --violet: #a66bff;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      }
+      #app {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr) 300px;
+        height: 100%;
+      }
+      #parts,
+      #panel {
+        box-sizing: border-box;
+        background: var(--panel);
+        overflow: auto;
+        padding: 14px;
+        font-size: 13px;
+      }
+      #parts {
+        border-right: 1px solid var(--line);
+      }
+      #panel {
+        border-left: 1px solid var(--line);
+      }
+      #stage {
+        position: relative;
+        min-width: 0;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      #noGL[hidden] {
+        display: none;
+      }
+      #noGL {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        text-align: center;
+        color: var(--muted);
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 16px 0 6px;
+      }
+      p.note {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      a {
+        color: var(--cyan);
+      }
+      button,
+      select {
+        box-sizing: border-box;
+        font: inherit;
+        color: var(--ink);
+        background: #24242c;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      button[aria-pressed='true'] {
+        border-color: var(--violet);
+        background: #2e2548;
+      }
+      .list {
+        display: grid;
+        gap: 4px;
+      }
+      .list button {
+        text-align: left;
+        width: 100%;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 96px 1fr 44px;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+      }
+      .row input[type='range'] {
+        width: 100%;
+      }
+      .row output {
+        text-align: right;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .toggles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 4px 8px;
+        margin: 0;
+      }
+      dt {
+        color: var(--muted);
+      }
+      dd {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+      }
+      dd.bad {
+        color: #ff6f3c;
+      }
+      #meter {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        display: flex;
+        gap: 12px;
+      }
+      #meter b {
+        color: var(--ink);
+        margin-left: 4px;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <nav id="parts" aria-label="Vật thể">
+        <h1>Phòng lab</h1>
+        <p class="note">
+          Xem riêng từng vật thể dưới đèn studio. <a href="./">Về thư viện</a> ·
+          <a href="shop.html">Phòng thử tiệm</a>
+        </p>
+        <h2>Bộ màu</h2>
+        <select id="recipe"></select>
+        <h2>Bàn máy</h2>
+        <div class="list" id="stationList"></div>
+        <h2>Phòng</h2>
+        <div class="list" id="roomList"></div>
+        <h2>Ghép thử mối nối</h2>
+        <div class="list" id="setList"></div>
+      </nav>
+      <div id="stage">
+        <canvas id="gl" aria-label="Vật thể đang xem"></canvas>
+        <p id="noGL" hidden>
+          Trình duyệt này chưa bật WebGL 2 nên chưa vẽ được. Nếu Chrome vừa mất GPU, gõ
+          chrome://restart vào thanh địa chỉ rồi thử lại.
+        </p>
+        <div id="meter">
+          <span>lời gọi vẽ<b id="mCalls">0</b></span>
+          <span>tam giác vẽ<b id="mTris">0</b></span>
+        </div>
+      </div>
+      <aside id="panel">
+        <h2>Đang xem</h2>
+        <dl>
+          <dt>Tên</dt>
+          <dd id="iName">—</dd>
+          <dt>Tam giác</dt>
+          <dd id="iTris">—</dd>
+          <dt>Kích thước</dt>
+          <dd id="iSize">—</dd>
+          <dt>Khung ô</dt>
+          <dd id="iLimit">—</dd>
+          <dt>Điểm neo</dt>
+          <dd id="iAnchors">—</dd>
+        </dl>
+        <h2>Hiển thị</h2>
+        <div class="toggles" id="toggles">
+          <button data-toggle="spin" aria-pressed="true">Xoay</button>
+          <button data-toggle="wire" aria-pressed="false">Khung dây</button>
+          <button data-toggle="anchors" aria-pressed="false">Điểm neo</button>
+          <button data-toggle="collision" aria-pressed="false">Hộp va chạm</button>
+          <button data-toggle="bounds" aria-pressed="false">Khung ô</button>
+          <button data-toggle="grid" aria-pressed="true">Lưới sàn</button>
+          <button data-toggle="bloom" aria-pressed="false">Bloom</button>
+        </div>
+        <h2>Ánh sáng</h2>
+        <div class="row">
+          <span>Đèn chính</span
+          ><input id="key" type="range" min="0" max="4" step="0.1" value="2" /><output for="key"
+            >2.0</output
+          >
+        </div>
+        <div class="row">
+          <span>Môi trường</span
+          ><input id="env" type="range" min="0" max="1" step="0.05" value="0.35" /><output for="env"
+            >0.35</output
+          >
+        </div>
+        <div class="row">
+          <span>Phơi sáng</span
+          ><input id="exposure" type="range" min="0.5" max="1.6" step="0.05" value="1" /><output
+            for="exposure"
+            >1.00</output
+          >
+        </div>
+        <div class="row">
+          <span>Phát sáng</span
+          ><input id="glow" type="range" min="0.6" max="2" step="0.05" value="1.1" /><output
+            for="glow"
+            >1.10</output
+          >
+        </div>
+        <div class="row">
+          <span>Bloom mạnh</span
+          ><input
+            id="bloomStrength"
+            type="range"
+            min="0"
+            max="1.5"
+            step="0.05"
+            value="0.3"
+          /><output for="bloomStrength">0.30</output>
+        </div>
+        <div class="row">
+          <span>Bloom ngưỡng</span
+          ><input
+            id="bloomThreshold"
+            type="range"
+            min="0.3"
+            max="1"
+            step="0.01"
+            value="0.85"
+          /><output for="bloomThreshold">0.85</output>
+        </div>
+        <p class="note">Số bạn chốt ở đây sẽ thành mặc định cho phòng thử tiệm và khung web-3d.</p>
+        <h2>Góc nhìn</h2>
+        <div class="toggles" id="views">
+          <button data-view="front">Trước</button>
+          <button data-view="back">Sau</button>
+          <button data-view="side">Bên</button>
+          <button data-view="top">Trên</button>
+          <button data-view="iso" aria-pressed="true">Chéo</button>
+        </div>
+      </aside>
+    </div>
+    <script type="module">
+      import * as THREE from 'three';
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+      import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+      import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+      import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+      import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+      import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
+      import { shopMaterials } from '../runtime/three-shop.mjs';
+
+      const $ = (id) => document.getElementById(id);
+      const UP = new THREE.Vector3(0, 1, 0);
+      const SETS = {
+        'Góc tường': [
+          ['corner_a', [0, 0, 0], 0],
+          ['wall_a', [2, 0, 0], 0],
+          ['wall_a', [0, 0, -2], -Math.PI / 2],
+          ['floor_a', [0, 0, 0], 0],
+          ['floor_a', [2, 0, 0], 0],
+          ['floor_a', [0, 0, -2], 0],
+          ['floor_a', [2, 0, -2], 0],
+        ],
+        'Cửa giữa hai tường': [
+          ['wall_a', [-2, 0, 0], 0],
+          ['door_a', [0, 0, 0], 0],
+          ['wall_a', [2, 0, 0], 0],
+          ['floor_a', [-2, 0, 0], 0],
+          ['floor_a', [0, 0, 0], 0],
+          ['floor_a', [2, 0, 0], 0],
+        ],
+        'Cửa sổ giữa hai tường': [
+          ['wall_a', [-2, 0, 0], 0],
+          ['window_a', [0, 0, 0], 0],
+          ['wall_a', [2, 0, 0], 0],
+          ['floor_a', [-2, 0, 0], 0],
+          ['floor_a', [0, 0, 0], 0],
+          ['floor_a', [2, 0, 0], 0],
+        ],
+        'Trần và đèn': [
+          ['ceiling_a', [0, 0, 0], 0],
+          ['ceiling_a', [2, 0, 0], 0],
+          ['light_a', [1, 2.9, 0], 0],
+        ],
+      };
+
+      const canvas = $('gl');
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: true,
+          powerPreference: 'high-performance',
+        });
+      } catch {
+        $('noGL').hidden = false;
+        throw new Error('WebGL 2 is not available');
+      }
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.info.autoReset = false;
+
+      const [config, ids] = await Promise.all([
+        fetch('../assets.config.json').then((r) => r.json()),
+        fetch('../recipes/index.json').then((r) => r.json()),
+      ]);
+      const rows = paletteRows(config.palette);
+      const slotOf = {};
+      for (const kit of config.kits) {
+        for (const [slot, spec] of Object.entries(kit.slots)) {
+          for (const variant of spec.variants)
+            slotOf[`${slot}_${variant}`] = { slot, spec, kit: kit.file };
+        }
+      }
+      const recipes = Object.fromEntries(
+        await Promise.all(
+          ids.map(async (id) => [id, await fetch(`../recipes/${id}.json`).then((r) => r.json())]),
+        ),
+      );
+      const loader = new GLTFLoader();
+      const kits = Object.fromEntries(
+        await Promise.all(
+          config.kits.map(async (kit) => [
+            kit.file,
+            await loader.loadAsync(`../exported/${kit.file}`),
+          ]),
+        ),
+      );
+      const anchors = Object.assign(
+        {},
+        ...Object.values(kits).map((gltf) => kitAnchors(gltf.parser.json)),
+      );
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#141418');
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 60);
+      const controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      const composer = new EffectComposer(renderer);
+      composer.addPass(new RenderPass(scene, camera));
+      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.4, 0.85);
+      bloom.enabled = false;
+      composer.addPass(bloom);
+      composer.addPass(new OutputPass());
+
+      const key = new THREE.DirectionalLight('#fff4e6', 2);
+      key.position.set(3, 5, 4);
+      const fill = new THREE.DirectionalLight('#dbe6ff', 0.8);
+      fill.position.set(-4, 2.5, 2);
+      const rim = new THREE.DirectionalLight('#ffffff', 0.9);
+      rim.position.set(-1, 3.5, -5);
+      const hemi = new THREE.HemisphereLight('#ffffff', '#2a2a33', 0.4);
+      scene.add(key, fill, rim, hemi);
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(12, 64),
+        new THREE.MeshStandardMaterial({ color: '#17171c', roughness: 0.95, metalness: 0 }),
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.002;
+      scene.add(floor);
+      const grid = new THREE.GridHelper(12, 12, '#3a3a46', '#26262e');
+      scene.add(grid);
+
+      const stageGroup = new THREE.Group();
+      const helperGroup = new THREE.Group();
+      scene.add(stageGroup, helperGroup);
+
+      const state = {
+        recipeId: ids.includes('tim-neon') ? 'tim-neon' : ids[0],
+        selection: { kind: 'part', name: 'chair_a' },
+        spin: true,
+        wire: false,
+        anchors: false,
+        collision: false,
+        bounds: false,
+        grid: true,
+        bloom: false,
+        glow: 1.1,
+      };
+      let materials = null;
+      let display = null;
+      let decal = null;
+
+      function disposeGroup(group) {
+        group.traverse((object) => {
+          if (object.isMesh && object.userData.lab) {
+            object.geometry.dispose();
+            object.material.dispose();
+          }
+        });
+        group.clear();
+      }
+
+      function rebuildMaterials() {
+        for (const material of Object.values(materials ?? {})) {
+          material.map?.dispose();
+          material.emissiveMap?.dispose();
+          material.dispose();
+        }
+        materials = shopMaterials(THREE, recipes[state.recipeId], rows, { glowBoost: state.glow });
+        display = materials.display;
+        decal = materials.decal;
+        for (const material of Object.values(materials)) material.wireframe = state.wire;
+      }
+
+      function partClone(name) {
+        for (const gltf of Object.values(kits)) {
+          const source = gltf.scene.getObjectByName(name);
+          if (!source) continue;
+          const clone = source.clone(true);
+          clone.traverse((mesh) => {
+            if (!mesh.isMesh) return;
+            mesh.material = materials[mesh.material.name] ?? materials.surface;
+            mesh.frustumCulled = false;
+          });
+          return clone;
+        }
+        throw new Error(`kit has no part ${name}`);
+      }
+
+      function triangleCount(object) {
+        let total = 0;
+        object.traverse((mesh) => {
+          if (!mesh.isMesh) return;
+          const geometry = mesh.geometry;
+          total += geometry.index
+            ? geometry.index.count / 3
+            : geometry.attributes.position.count / 3;
+        });
+        return Math.round(total);
+      }
+
+      function placements() {
+        if (state.selection.kind === 'set') return SETS[state.selection.name];
+        return [[state.selection.name, [0, 0, 0], 0]];
+      }
+
+      function helperLayer() {
+        disposeGroup(helperGroup);
+        if (!state.anchors && !state.collision) return;
+        const sphere = new THREE.SphereGeometry(0.025, 10, 8);
+        const colors = { socket: '#5ce1ff', interact: '#ffd34d', seat: '#ff5cf3' };
+        for (const [name, position, yaw] of placements()) {
+          const origin = new THREE.Vector3(...position);
+          for (const [anchor, data] of Object.entries(anchors[name] ?? {})) {
+            const point = new THREE.Vector3(...data.position).applyAxisAngle(UP, yaw).add(origin);
+            let mesh;
+            if (anchor.startsWith('collision')) {
+              if (!state.collision) continue;
+              mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(data.scale[0] * 2, data.scale[1] * 2, data.scale[2] * 2),
+                new THREE.MeshBasicMaterial({
+                  color: '#ff6f3c',
+                  wireframe: true,
+                  toneMapped: false,
+                }),
+              );
+              mesh.rotation.y = yaw;
+            } else {
+              if (!state.anchors) continue;
+              const kind = anchor.startsWith('socket')
+                ? 'socket'
+                : anchor.startsWith('interact')
+                  ? 'interact'
+                  : 'seat';
+              mesh = new THREE.Mesh(
+                sphere.clone(),
+                new THREE.MeshBasicMaterial({ color: colors[kind], toneMapped: false }),
+              );
+            }
+            mesh.position.copy(point);
+            mesh.userData.lab = true;
+            helperGroup.add(mesh);
+          }
+        }
+        if (state.bounds && state.selection.kind === 'part') {
+          const limit = slotOf[state.selection.name]?.spec.size;
+          if (limit) {
+            const box = new THREE.Mesh(
+              new THREE.BoxGeometry(...limit),
+              new THREE.MeshBasicMaterial({ color: '#5ce1ff', wireframe: true, toneMapped: false }),
+            );
+            box.position.y = limit[1] / 2;
+            box.userData.lab = true;
+            helperGroup.add(box);
+          }
+        }
+      }
+
+      function describe(object) {
+        const box = new THREE.Box3().setFromObject(object);
+        const size = box.getSize(new THREE.Vector3());
+        const fixed = (v) => v.toFixed(2);
+        $('iName').textContent = state.selection.name;
+        $('iTris').textContent = triangleCount(object).toLocaleString('vi-VN');
+        $('iSize').textContent = `${fixed(size.x)} × ${fixed(size.y)} × ${fixed(size.z)} m`;
+        const info = slotOf[state.selection.name];
+        const limit = info?.spec.size;
+        const limitEl = $('iLimit');
+        if (limit && state.selection.kind === 'part') {
+          const over =
+            size.x > limit[0] + 0.005 || size.y > limit[1] + 0.005 || size.z > limit[2] + 0.005;
+          limitEl.textContent = `${limit.join(' × ')} m · ngân sách ${info.spec.maxTriangles} tam giác`;
+          limitEl.className = over ? 'bad' : '';
+        } else {
+          limitEl.textContent = '—';
+          limitEl.className = '';
+        }
+        const names =
+          state.selection.kind === 'part' ? Object.keys(anchors[state.selection.name] ?? {}) : [];
+        $('iAnchors').textContent = names.length ? names.join(', ') : 'không có';
+      }
+
+      function show() {
+        disposeGroup(stageGroup);
+        stageGroup.rotation.y = 0;
+        for (const [name, position, yaw] of placements()) {
+          const clone = partClone(name);
+          clone.position.set(...position);
+          clone.rotation.y = yaw;
+          stageGroup.add(clone);
+        }
+        describe(stageGroup);
+        helperLayer();
+        frame('iso', true);
+        document
+          .querySelectorAll('#parts [data-part], #parts [data-set]')
+          .forEach((b) =>
+            b.setAttribute(
+              'aria-pressed',
+              String(
+                (b.dataset.part &&
+                  state.selection.kind === 'part' &&
+                  b.dataset.part === state.selection.name) ||
+                  (b.dataset.set &&
+                    state.selection.kind === 'set' &&
+                    b.dataset.set === state.selection.name),
+              ),
+            ),
+          );
+      }
+
+      function frame(view, keepZoom = false) {
+        const box = new THREE.Box3().setFromObject(stageGroup);
+        const size = box.getSize(new THREE.Vector3());
+        const centre = box.getCenter(new THREE.Vector3());
+        const radius = Math.max(size.x, size.y, size.z) * 1.15 + 0.4;
+        const dir = {
+          front: [0, 0.35, 1],
+          back: [0, 0.35, -1],
+          side: [1, 0.35, 0],
+          top: [0.001, 1, 0.001],
+          iso: [0.8, 0.6, 1],
+        }[view];
+        const offset = new THREE.Vector3(...dir).normalize().multiplyScalar(radius * 1.9);
+        controls.target.copy(centre);
+        camera.position.copy(centre).add(offset);
+        controls.update();
+        document
+          .querySelectorAll('#views [data-view]')
+          .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+        if (!keepZoom) controls.update();
+      }
+
+      function renderLists() {
+        const station = $('stationList');
+        const room = $('roomList');
+        for (const [name, info] of Object.entries(slotOf)) {
+          const button = document.createElement('button');
+          button.textContent = name;
+          button.dataset.part = name;
+          button.addEventListener('click', () => {
+            state.selection = { kind: 'part', name };
+            show();
+          });
+          (info.kit === 'station-parts.glb' ? station : room).append(button);
+        }
+        const sets = $('setList');
+        for (const name of Object.keys(SETS)) {
+          const button = document.createElement('button');
+          button.textContent = name;
+          button.dataset.set = name;
+          button.addEventListener('click', () => {
+            state.selection = { kind: 'set', name };
+            show();
+          });
+          sets.append(button);
+        }
+        const recipe = $('recipe');
+        for (const id of ids) {
+          const option = document.createElement('option');
+          option.value = id;
+          option.textContent = recipes[id].name;
+          recipe.append(option);
+        }
+        recipe.value = state.recipeId;
+        recipe.addEventListener('change', () => {
+          state.recipeId = recipe.value;
+          rebuildMaterials();
+          show();
+        });
+      }
+
+      const sliders = {
+        key: (v) => (key.intensity = v),
+        env: (v) => (scene.environmentIntensity = v),
+        exposure: (v) => (renderer.toneMappingExposure = v),
+        glow: (v) => {
+          state.glow = v;
+          materials.glow.color.setScalar(v);
+        },
+        bloomStrength: (v) => (bloom.strength = v),
+        bloomThreshold: (v) => (bloom.threshold = v),
+      };
+      for (const [id, apply] of Object.entries(sliders)) {
+        const input = $(id);
+        const out = document.querySelector(`output[for="${id}"]`);
+        const update = () => {
+          const value = Number(input.value);
+          apply(value);
+          out.textContent = value.toFixed(id === 'key' ? 1 : 2);
+        };
+        input.addEventListener('input', update);
+      }
+
+      $('toggles').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-toggle]');
+        if (!button) return;
+        const name = button.dataset.toggle;
+        state[name] = !state[name];
+        button.setAttribute('aria-pressed', String(state[name]));
+        if (name === 'wire')
+          for (const material of Object.values(materials)) material.wireframe = state.wire;
+        if (name === 'grid') grid.visible = state.grid;
+        if (name === 'bloom') bloom.enabled = state.bloom;
+        if (name === 'anchors' || name === 'collision' || name === 'bounds') helperLayer();
+      });
+      $('views').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-view]');
+        if (button) frame(button.dataset.view);
+      });
+
+      function resize() {
+        const { clientWidth, clientHeight } = canvas.parentElement;
+        renderer.setSize(clientWidth, clientHeight, false);
+        composer.setSize(clientWidth, clientHeight);
+        camera.aspect = clientWidth / clientHeight;
+        camera.updateProjectionMatrix();
+      }
+      addEventListener('resize', resize);
+
+      scene.environmentIntensity = 0.35;
+      rebuildMaterials();
+      renderLists();
+      resize();
+      show();
+
+      const clock = new THREE.Clock();
+      renderer.setAnimationLoop(() => {
+        const delta = clock.getDelta();
+        if (state.spin) {
+          stageGroup.rotation.y += delta * 0.35;
+          helperGroup.rotation.y = stageGroup.rotation.y;
+        }
+        controls.update();
+        renderer.info.reset();
+        composer.render();
+        $('mCalls').textContent = renderer.info.render.calls;
+        $('mTris').textContent = renderer.info.render.triangles.toLocaleString('vi-VN');
+      });
+    </script>
+  </body>
+</html>
