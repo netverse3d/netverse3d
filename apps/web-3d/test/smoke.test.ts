@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { createReadStream, existsSync, mkdtempSync, rmSync, statSync } from 'node:fs';
+import {
+  closeSync,
+  createReadStream,
+  existsSync,
+  mkdtempSync,
+  openSync,
+  readSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve } from 'node:path';
@@ -18,6 +27,8 @@ interface ChromeRun {
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'out');
 const CHROME_TIMEOUT = 120000;
+const LFS_HEAD = 'version https://git-lfs';
+const PROBLEM_MESSAGE = /Uncaught|Error|INVALID_|THREE\.(?!WebGLRenderer: Context (Lost|Restored))/;
 const CHROME_CANDIDATES = [
   process.env.CHROME_PATH,
   '/usr/bin/google-chrome',
@@ -111,18 +122,34 @@ async function renderPage(path: string) {
       `Chrome exited with status ${result.status} signal ${result.signal} ${result.error?.message ?? ''}\n${result.stderr.slice(-1500)}`,
     );
   }
+  const message = (line: string) => line.replace(/^.*CONSOLE[:(][^\]]*\]\s*/, '');
   const consoleErrors = result.stderr
     .split('\n')
-    .filter((line) => /:ERROR:CONSOLE/.test(line))
-    .map((line) => line.replace(/^.*CONSOLE\(\d+\)\]\s*/, ''));
+    .filter((line) => /CONSOLE/.test(line))
+    .filter((line) => /:ERROR:CONSOLE/.test(line) || PROBLEM_MESSAGE.test(message(line)))
+    .map(message);
   const attribute = (name: string) =>
     result.stdout.match(new RegExp(`data-${name}="([^"]*)"`))?.[1];
   return { dom: result.stdout, consoleErrors, attribute };
 }
 
+function modelsArePointers(): boolean {
+  const model = join(OUT, 'game-assets', 'exported', 'player.glb');
+  if (!existsSync(model)) return true;
+  const head = Buffer.alloc(LFS_HEAD.length);
+  const handle = openSync(model, 'r');
+  readSync(handle, head, 0, head.length, 0);
+  closeSync(handle);
+  return head.toString('utf8') === LFS_HEAD;
+}
+
 function browserReady(context: TestContext): boolean {
   if (!existsSync(join(OUT, 'index.html'))) {
     context.skip('chưa có bản xuất tĩnh');
+    return false;
+  }
+  if (modelsArePointers()) {
+    context.skip('mô hình chỉ là con trỏ LFS, chạy git lfs pull để thử trang');
     return false;
   }
   if (!chrome) {
@@ -146,6 +173,7 @@ test('trang thử có canvas và nhân vật có mặt, không lỗi console', a
   assert.equal(page.attribute('ready'), 'true', page.dom.slice(0, 400));
   assert.equal(page.attribute('face'), 'true');
   assert.equal(page.attribute('recipe'), 'tim-neon');
+  assert.ok(Number(page.attribute('frames')) >= 1, `frames=${page.attribute('frames')}`);
   assert.deepEqual(page.consoleErrors, []);
 });
 
@@ -155,5 +183,6 @@ test('mất ngữ cảnh WebGL rồi khôi phục thì cảnh dựng lại, khô
   assert.equal(page.attribute('restored'), 'true');
   assert.equal(page.attribute('ready'), 'true');
   assert.ok(Number(page.attribute('rebuilds')) >= 2, `rebuilds=${page.attribute('rebuilds')}`);
+  assert.ok(Number(page.attribute('frames')) >= 1, `frames=${page.attribute('frames')}`);
   assert.deepEqual(page.consoleErrors, []);
 });

@@ -1,4 +1,4 @@
-import type { Object3D } from 'three';
+import type { Object3D, SkinnedMesh } from 'three';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import { createActorLook, type ActorLook } from '@netverse/game-assets/runtime/actor-look.mjs';
@@ -40,6 +40,10 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
     },
     dispose() {
       mixer.stopAllAction();
+      root.traverse((object) => {
+        const skinned = object as SkinnedMesh;
+        if (skinned.isSkinnedMesh) skinned.skeleton.dispose();
+      });
     },
   };
 }

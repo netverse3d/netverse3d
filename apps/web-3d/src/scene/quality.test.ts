@@ -1,23 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import {
-  QUALITY_LEVELS,
-  QUALITY_PRESETS,
-  detectQuality,
-  isQualityLevel,
-  pixelRatioFor,
-} from './quality.ts';
+import { QUALITY_LEVELS } from '../state/shop-slice.ts';
+import { QUALITY_PRESETS, detectQuality, pixelRatioFor } from './quality.ts';
 
-test('ba mức chất lượng, mỗi mức có đủ tham số', () => {
-  assert.deepEqual(QUALITY_LEVELS, ['low', 'medium', 'high']);
+test('mỗi mức chất lượng có đủ tham số', () => {
   for (const level of QUALITY_LEVELS) {
     const preset = QUALITY_PRESETS[level];
     assert.ok(preset.maxPixelRatio > 0);
     assert.equal(typeof preset.bloom, 'boolean');
-    assert.equal(typeof preset.shadows, 'boolean');
+    assert.ok(preset.environmentIntensity > 0);
   }
-  assert.equal(isQualityLevel('high'), true);
-  assert.equal(isQualityLevel('ultra'), false);
 });
 
 test('máy yếu hoặc điện thoại nhận mức thấp', () => {
@@ -30,6 +22,25 @@ test('máy yếu hoặc điện thoại nhận mức thấp', () => {
       renderer: 'Intel',
     }),
     'low',
+  );
+  assert.equal(
+    detectQuality({
+      hardwareConcurrency: 8,
+      devicePixelRatio: 1,
+      renderer: 'Intel(R) HD Graphics 4000',
+    }),
+    'low',
+  );
+});
+
+test('màn hình quá đậm đặc điểm ảnh thì card rời cũng chỉ ở mức vừa', () => {
+  assert.equal(
+    detectQuality({
+      hardwareConcurrency: 16,
+      devicePixelRatio: 4,
+      renderer: 'NVIDIA GeForce RTX 4090',
+    }),
+    'medium',
   );
 });
 

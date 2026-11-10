@@ -20,7 +20,8 @@ import {
   shopMaterials,
   type ShopMaterials,
 } from '@netverse/game-assets/runtime/three-shop.mjs';
-import { QUALITY_PRESETS, pixelRatioFor, type QualityLevel } from './quality.ts';
+import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
+import { QUALITY_PRESETS, pixelRatioFor } from './quality.ts';
 import { createPlayer, type Player, type Spawn } from './player.ts';
 
 export interface ShopAssets {
@@ -34,28 +35,22 @@ export interface ShopAssets {
   rows: string[];
 }
 
-export interface SceneStats {
-  fps: number;
-  calls: number;
-  triangles: number;
-}
-
-export interface SceneState {
-  recipeId: string;
-  quality: QualityLevel;
-  rebuilds: number;
-  restored: boolean;
-  lost: boolean;
-  ready: boolean;
-  face: boolean;
-}
-
 export interface ShopScene {
   setRecipe(id: string): void;
   setQuality(level: QualityLevel): void;
   rendererName(): string;
   simulateContextLoss(): boolean;
   dispose(): void;
+}
+
+export interface ShopSceneOptions {
+  canvas: HTMLCanvasElement;
+  assets: ShopAssets;
+  recipeId: string;
+  quality: QualityLevel;
+  onStats?: (stats: SceneStats) => void;
+  onState?: (state: SceneState) => void;
+  onError?: (message: string) => void;
 }
 
 interface LightPreset {
@@ -75,6 +70,7 @@ const CAMERA_DISTANCE = 2.4;
 const CAMERA_HEIGHT = 1.9;
 const CAMERA_MARGIN = 0.6;
 const STATS_INTERVAL = 0.5;
+const ENVIRONMENT_BLUR = 0.04;
 const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
   neon: {
     sky: '#4a36b8',
@@ -180,17 +176,15 @@ function spawnFor(recipe: ShopRecipe): Spawn {
   };
 }
 
-export function createShopScene(options: {
-  canvas: HTMLCanvasElement;
-  assets: ShopAssets;
-  recipeId: string;
-  quality: QualityLevel;
-  onStats?: (stats: SceneStats) => void;
-  onState?: (state: SceneState) => void;
-}): ShopScene {
+function describe(reason: unknown): string {
+  return reason instanceof Error ? reason.message : String(reason);
+}
+
+export function createShopScene(options: ShopSceneOptions): ShopScene {
   const { canvas, assets } = options;
   const onStats = options.onStats ?? (() => {});
   const onState = options.onState ?? (() => {});
+  const onError = options.onError ?? (() => {});
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -200,8 +194,6 @@ export function createShopScene(options: {
   renderer.info.autoReset = false;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0d0a18');
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 80);
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
@@ -216,17 +208,26 @@ export function createShopScene(options: {
     recipeId: options.recipeId,
     quality: options.quality,
     rebuilds: 0,
+    frames: 0,
     restored: false,
     lost: false,
     ready: false,
     face: false,
   };
+  let pmrem: THREE.PMREMGenerator | null = null;
   let materials: ShopMaterials | null = null;
   let player: Player | null = null;
   let frames = 0;
   let elapsed = 0;
 
   const emit = () => onState({ ...state });
+
+  function buildEnvironment(): void {
+    scene.environment?.dispose();
+    pmrem?.dispose();
+    pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), ENVIRONMENT_BLUR).texture;
+  }
 
   function resize(): void {
     const host = canvas.parentElement ?? canvas;
@@ -241,8 +242,9 @@ export function createShopScene(options: {
 
   function applyQuality(): void {
     const preset = QUALITY_PRESETS[state.quality];
-    renderer.setPixelRatio(pixelRatioFor(state.quality, window.devicePixelRatio));
-    renderer.shadowMap.enabled = preset.shadows;
+    const ratio = pixelRatioFor(state.quality, window.devicePixelRatio);
+    renderer.setPixelRatio(ratio);
+    composer.setPixelRatio(ratio);
     scene.environmentIntensity = preset.environmentIntensity;
     bloom.enabled = preset.bloom;
     resize();
@@ -277,10 +279,16 @@ export function createShopScene(options: {
     camera.lookAt(target);
   }
 
-  function build(): void {
+  function clearContent(): void {
     disposeGroup(content);
     player?.dispose();
+    player = null;
     disposeMaterials(materials);
+    materials = null;
+  }
+
+  function build(): void {
+    clearContent();
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
     materials = shopMaterials(THREE, recipe, assets.rows);
@@ -293,34 +301,32 @@ export function createShopScene(options: {
     relight(recipe);
     frameCamera(recipe, player);
     state.rebuilds += 1;
+    state.frames = 0;
     state.ready = true;
     state.face = player.hasFace;
     emit();
   }
 
-  canvas.addEventListener('webglcontextlost', (event) => {
-    event.preventDefault();
-    state.lost = true;
-    state.ready = false;
-    emit();
-  });
-  canvas.addEventListener('webglcontextrestored', () => {
-    state.lost = false;
-    state.restored = true;
-    build();
-  });
+  function rebuild(): void {
+    try {
+      build();
+    } catch (reason) {
+      state.ready = false;
+      emit();
+      onError(describe(reason));
+    }
+  }
 
-  const observer = new ResizeObserver(resize);
-  observer.observe(canvas.parentElement ?? canvas);
-
-  renderer.setAnimationLoop(() => {
-    if (state.lost) return;
+  function tick(): void {
+    if (state.lost || renderer.getContext().isContextLost()) return;
     const delta = clock.getDelta();
     player?.update(delta);
     renderer.info.reset();
     composer.render();
     frames += 1;
     elapsed += delta;
+    state.frames += 1;
+    if (state.frames === 1) emit();
     if (elapsed >= STATS_INTERVAL) {
       onStats({
         fps: Math.round(frames / elapsed),
@@ -330,16 +336,62 @@ export function createShopScene(options: {
       frames = 0;
       elapsed = 0;
     }
-  });
+  }
 
-  applyQuality();
-  build();
+  const onContextLost = (event: Event) => {
+    event.preventDefault();
+    state.lost = true;
+    state.ready = false;
+    clearContent();
+    scene.environment?.dispose();
+    scene.environment = null;
+    pmrem?.dispose();
+    pmrem = null;
+    emit();
+  };
+  const onContextRestored = () => {
+    state.lost = false;
+    state.restored = true;
+    buildEnvironment();
+    resize();
+    rebuild();
+    renderer.setAnimationLoop(tick);
+  };
+  canvas.addEventListener('webglcontextlost', onContextLost);
+  canvas.addEventListener('webglcontextrestored', onContextRestored);
+
+  const observer = new ResizeObserver(resize);
+  observer.observe(canvas.parentElement ?? canvas);
+
+  function dispose(): void {
+    renderer.setAnimationLoop(null);
+    observer.disconnect();
+    canvas.removeEventListener('webglcontextlost', onContextLost);
+    canvas.removeEventListener('webglcontextrestored', onContextRestored);
+    clearContent();
+    scene.environment?.dispose();
+    pmrem?.dispose();
+    composer.dispose();
+    renderer.dispose();
+    renderer.forceContextLoss();
+  }
+
+  try {
+    buildEnvironment();
+    applyQuality();
+    build();
+  } catch (reason) {
+    dispose();
+    throw reason;
+  }
+
+  renderer.setAnimationLoop(tick);
 
   return {
     setRecipe(id) {
       if (!assets.recipes[id]) return;
       state.recipeId = id;
-      build();
+      rebuild();
     },
     setQuality(level) {
       state.quality = level;
@@ -360,14 +412,6 @@ export function createShopScene(options: {
       setTimeout(() => extension.restoreContext(), CONTEXT_RESTORE_DELAY);
       return true;
     },
-    dispose() {
-      renderer.setAnimationLoop(null);
-      observer.disconnect();
-      disposeGroup(content);
-      player?.dispose();
-      disposeMaterials(materials);
-      pmrem.dispose();
-      renderer.dispose();
-    },
+    dispose,
   };
 }

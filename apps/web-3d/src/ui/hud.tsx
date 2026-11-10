@@ -1,44 +1,54 @@
 'use client';
 
-import { QUALITY_LEVELS, type QualityLevel } from '../scene/quality.ts';
-import type { SceneState, SceneStats } from '../scene/shop-scene.ts';
-
-const QUALITY_LABELS: Record<QualityLevel, string> = { low: 'thấp', medium: 'vừa', high: 'cao' };
-
-export interface HudProps {
-  stats: SceneStats;
-  state: SceneState;
-  recipes: { id: string; name: string }[];
-  error: string | null;
-  onRecipe: (id: string) => void;
-  onQuality: (level: QualityLevel) => void;
-}
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  QUALITY_LEVELS,
+  isQualityLevel,
+  qualityRequested,
+  recipeRequested,
+  type SceneState,
+} from '../state/shop-slice.ts';
+import type { AppDispatch, RootState } from '../state/store.ts';
+import styles from './hud.module.css';
+import { vi } from './text/vi.ts';
 
 function statusOf(state: SceneState, error: string | null): string {
-  if (error) return `Không vẽ được tiệm: ${error}`;
-  if (state.lost) return 'Mất ngữ cảnh WebGL, đang chờ khôi phục';
-  if (!state.ready) return 'Đang tải tiệm…';
-  return state.restored ? 'Đã dựng lại sau khi mất ngữ cảnh' : 'Sẵn sàng';
+  if (error) return vi.status.error(error);
+  if (state.lost) return vi.status.lost;
+  if (!state.ready) return vi.status.loading;
+  return state.restored ? vi.status.restored : vi.status.ready;
 }
 
-export default function Hud({ stats, state, recipes, error, onRecipe, onQuality }: HudProps) {
-  const warn = Boolean(error) || state.lost;
+export default function Hud() {
+  const dispatch = useDispatch<AppDispatch>();
+  const stats = useSelector((state: RootState) => state.shop.stats);
+  const scene = useSelector((state: RootState) => state.shop.scene);
+  const recipes = useSelector((state: RootState) => state.shop.recipes);
+  const error = useSelector((state: RootState) => state.shop.error);
+  const warn = Boolean(error) || scene.lost;
   return (
-    <div className="hud" role="status">
-      <div className="stats">
+    <div className={styles.hud} role="status">
+      <div className={styles.stats}>
         <span>
-          FPS<b>{stats.fps}</b>
+          {vi.hud.fps}
+          <b>{stats.fps}</b>
         </span>
         <span>
-          lời gọi vẽ<b>{stats.calls}</b>
+          {vi.hud.calls}
+          <b>{stats.calls}</b>
         </span>
         <span>
-          tam giác<b>{stats.triangles.toLocaleString('vi-VN')}</b>
+          {vi.hud.triangles}
+          <b>{stats.triangles.toLocaleString('vi-VN')}</b>
         </span>
       </div>
-      <label>
-        Tiệm
-        <select value={state.recipeId} onChange={(event) => onRecipe(event.target.value)}>
+      <label className={styles.field}>
+        {vi.hud.shop}
+        <select
+          className={styles.select}
+          value={scene.recipeId}
+          onChange={(event) => dispatch(recipeRequested(event.target.value))}
+        >
           {recipes.map((recipe) => (
             <option key={recipe.id} value={recipe.id}>
               {recipe.name}
@@ -46,21 +56,24 @@ export default function Hud({ stats, state, recipes, error, onRecipe, onQuality 
           ))}
         </select>
       </label>
-      <label>
-        Chất lượng
+      <label className={styles.field}>
+        {vi.hud.quality}
         <select
-          value={state.quality}
-          onChange={(event) => onQuality(event.target.value as QualityLevel)}
+          className={styles.select}
+          value={scene.quality}
+          onChange={(event) => {
+            if (isQualityLevel(event.target.value)) dispatch(qualityRequested(event.target.value));
+          }}
         >
           {QUALITY_LEVELS.map((level) => (
             <option key={level} value={level}>
-              {QUALITY_LABELS[level]}
+              {vi.quality[level]}
             </option>
           ))}
         </select>
       </label>
-      <div className="status" data-tone={warn ? 'warn' : 'ok'}>
-        {statusOf(state, error)}
+      <div className={styles.status} data-tone={warn ? 'warn' : 'ok'}>
+        {statusOf(scene, error)}
       </div>
     </div>
   );

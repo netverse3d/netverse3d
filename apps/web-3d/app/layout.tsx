@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { vi } from '../src/ui/text/vi.ts';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Netverse 3D',
-  description: 'Tiệm net 3D của Netverse',
+  title: vi.app.title,
+  description: vi.app.description,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

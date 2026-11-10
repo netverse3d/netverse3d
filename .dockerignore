@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/.next
+**/out
+**/dist
+**/.turbo
+**/coverage
+apps/web-3d/public/game-assets
+docs/.vitepress/dist
+docs/.vitepress/cache
+*.log
+.env
+.env.*
