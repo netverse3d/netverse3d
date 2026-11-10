@@ -7,6 +7,7 @@ Hợp đồng dùng chung giữa các thành phần. Service chỉ nói chuyện
 | `openapi/`  | API HTTP, OpenAPI 3.1                                               |
 | `events/`   | Sự kiện Kafka, JSON Schema. Mọi sự kiện dùng vỏ chung `envelope.v1` |
 | `realtime/` | Giao thức giữa client và game server, JSON Schema                   |
+| `world/`    | Dữ liệu thế giới game: công thức tiệm `shop-look`, JSON Schema      |
 
 ## Đổi hợp đồng
 

@@ -1,0 +1,51 @@
+{
+  "id": "cam-retro",
+  "name": "Cam Retro",
+  "palette": {
+    "body": ["#2b1b12"],
+    "metal": ["#7a5a3a"],
+    "soft": ["#1f140c"],
+    "top": ["#5a3a1e"],
+    "floor": ["#1a110a"],
+    "wall": ["#3a2416"],
+    "ceiling": ["#140d08"],
+    "trim": ["#ffb347", "#ff6f3c", "#ffb347"],
+    "strip": ["#ff9f1c"],
+    "keycap": ["#ffd166", "#ef476f"],
+    "screen": ["#ffd9a0", "#ff9f1c"],
+    "accent": ["#ff6f3c"]
+  },
+  "variants": {
+    "desk": "a",
+    "monitor": "a",
+    "keyboard": "a",
+    "mouse": "a",
+    "mat": "a",
+    "headset": "a",
+    "mic": "a",
+    "speaker": "a",
+    "chair": "a",
+    "case": "a",
+    "floor": "a",
+    "wall": "a",
+    "corner": "a",
+    "door": "a",
+    "window": "a",
+    "ceiling": "a",
+    "light": "a",
+    "marker": "a"
+  },
+  "layout": {
+    "cells": [3, 3],
+    "stations": [
+      { "cell": [0, 0], "facing": "south" },
+      { "cell": [1, 0], "facing": "south" },
+      { "cell": [0, 1], "facing": "south" },
+      { "cell": [1, 1], "facing": "south" }
+    ],
+    "door": { "wall": "south", "at": 2 },
+    "windows": [{ "wall": "west", "at": 1 }]
+  },
+  "sign": { "text": "CAM RETRO", "style": "painted" },
+  "lighting": "warm"
+}

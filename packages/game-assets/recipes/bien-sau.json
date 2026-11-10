@@ -1,0 +1,52 @@
+{
+  "id": "bien-sau",
+  "name": "Biển Sâu",
+  "palette": {
+    "body": ["#0e1f24"],
+    "metal": ["#2f4b52"],
+    "soft": ["#0a171b"],
+    "top": ["#143a42"],
+    "floor": ["#081417"],
+    "wall": ["#0c2229"],
+    "ceiling": ["#06100f"],
+    "trim": ["#19d3c5", "#0aa0ff", "#19d3c5"],
+    "strip": ["#1ee8d2"],
+    "keycap": ["#0fd4ff", "#19ffb0"],
+    "screen": ["#36c7ff", "#9af5ff"],
+    "accent": ["#22e0c0"]
+  },
+  "variants": {
+    "desk": "a",
+    "monitor": "a",
+    "keyboard": "a",
+    "mouse": "a",
+    "mat": "a",
+    "headset": "a",
+    "mic": "a",
+    "speaker": "a",
+    "chair": "a",
+    "case": "a",
+    "floor": "a",
+    "wall": "a",
+    "corner": "a",
+    "door": "a",
+    "window": "a",
+    "ceiling": "a",
+    "light": "a",
+    "marker": "a"
+  },
+  "layout": {
+    "cells": [3, 4],
+    "stations": [
+      { "cell": [0, 0], "facing": "east" },
+      { "cell": [0, 1], "facing": "east" },
+      { "cell": [0, 2], "facing": "east" },
+      { "cell": [2, 0], "facing": "west" },
+      { "cell": [2, 1], "facing": "west" }
+    ],
+    "door": { "wall": "east", "at": 3 },
+    "windows": [{ "wall": "south", "at": 1 }]
+  },
+  "sign": { "text": "BIỂN SÂU", "style": "led" },
+  "lighting": "dim"
+}

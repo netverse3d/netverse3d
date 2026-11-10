@@ -52,6 +52,15 @@ test('xoá hợp đồng chính thức trong thư mục con bị chặn', () => 
   assert.match(result.stderr, /a published file was removed/);
 });
 
+test('hợp đồng dữ liệu thế giới trong thư mục world cũng được kiểm', () => {
+  const cwd = createRepository({
+    'world/shop.schema.json': JSON.stringify({ title: 'Shop', type: 'object' }),
+  });
+  const result = check(cwd);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /world\/shop\.schema\.json: missing \$id/);
+});
+
 test('xoá tệp cuối cùng của thư mục không làm công cụ hỏng', () => {
   const cwd = createRepository({ 'realtime/d.schema.json': DRAFT });
   rmSync(join(cwd, 'realtime'), { recursive: true });
