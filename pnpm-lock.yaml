@@ -44,6 +44,9 @@ importers:
       '@netverse/game-assets':
         specifier: workspace:*
         version: link:../../packages/game-assets
+      '@netverse/game-shared':
+        specifier: workspace:*
+        version: link:../../packages/game-shared
       '@reduxjs/toolkit':
         specifier: ^2.14.0
         version: 2.14.0(@types/react@19.3.0)(react-redux@9.3.1(@types/react@19.3.0)(react@19.3.1)(redux@5.0.1))(react@19.3.1)

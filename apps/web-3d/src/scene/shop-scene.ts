@@ -20,7 +20,13 @@ import {
   shopMaterials,
   type ShopMaterials,
 } from '@netverse/game-assets/runtime/three-shop.mjs';
+import { collisionBoxes } from '@netverse/game-shared/collision';
+import type { FloorBox } from '@netverse/game-shared/movement';
+import { createControls } from '../game/controls.ts';
+import { CELL_SIZE, shopInterior, shopPerimeter } from '../game/shop-bounds.ts';
+import { createWalk } from '../game/walk.ts';
 import type { QualityLevel, SceneState, SceneStats } from '../state/shop-slice.ts';
+import { DEFAULT_ORBIT, cameraPose, turnOrbit } from './follow-camera.ts';
 import { QUALITY_PRESETS, pixelRatioFor } from './quality.ts';
 import { createPlayer, type Player, type Spawn } from './player.ts';
 
@@ -62,13 +68,8 @@ interface LightPreset {
   exposure: number;
 }
 
-const CELL_SIZE = 2;
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 } as const;
-const UP = new THREE.Vector3(0, 1, 0);
 const CONTEXT_RESTORE_DELAY = 400;
-const CAMERA_DISTANCE = 2.4;
-const CAMERA_HEIGHT = 1.9;
-const CAMERA_MARGIN = 0.6;
 const STATS_INTERVAL = 0.5;
 const ENVIRONMENT_BLUR = 0.04;
 const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
@@ -217,6 +218,10 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   let pmrem: THREE.PMREMGenerator | null = null;
   let materials: ShopMaterials | null = null;
   let player: Player | null = null;
+  const controls = createControls(canvas, window);
+  const walk = createWalk({ x: 0, z: 0, yaw: 0 }, []);
+  let orbit = DEFAULT_ORBIT;
+  let interior: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
   let frames = 0;
   let elapsed = 0;
 
@@ -265,18 +270,16 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     renderer.toneMappingExposure = preset.exposure;
   }
 
-  function frameCamera(recipe: ShopRecipe, actor: Player): void {
-    const [width, depth] = recipe.layout.cells;
-    const forward = new THREE.Vector3(Math.sin(actor.yaw), 0, Math.cos(actor.yaw));
-    const eye = actor.root.position
-      .clone()
-      .addScaledVector(forward, -CAMERA_DISTANCE)
-      .add(UP.clone().multiplyScalar(CAMERA_HEIGHT));
-    eye.x = THREE.MathUtils.clamp(eye.x, -(width - CAMERA_MARGIN), width - CAMERA_MARGIN);
-    eye.z = THREE.MathUtils.clamp(eye.z, -(depth - CAMERA_MARGIN), depth - CAMERA_MARGIN);
-    const target = actor.root.position.clone().addScaledVector(forward, 2.5).setY(1.1);
-    camera.position.copy(eye);
-    camera.lookAt(target);
+  function play(delta: number): void {
+    if (!player) return;
+    const turn = controls.takeTurn();
+    orbit = turnOrbit(orbit, turn.right, turn.down);
+    const frame = walk.advance(delta, controls.intent(), orbit.yaw);
+    player.moveTo(frame.player);
+    player.playClip(frame.clip);
+    const pose = cameraPose(frame.player, orbit, interior);
+    camera.position.set(...pose.eye);
+    camera.lookAt(...pose.target);
   }
 
   function clearContent(): void {
@@ -292,14 +295,21 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const recipe = assets.recipes[state.recipeId];
     if (!recipe) throw new Error(`unknown recipe ${state.recipeId}`);
     materials = shopMaterials(THREE, recipe, assets.rows);
-    content.add(buildShop(THREE, assets.room.scene, roomPlan(recipe), materials));
-    content.add(
-      buildShop(THREE, assets.station.scene, shopPlan(recipe, assets.anchors), materials),
-    );
-    player = createPlayer(THREE, assets.player, spawnFor(recipe));
+    const room = roomPlan(recipe);
+    const stations = shopPlan(recipe, assets.anchors);
+    content.add(buildShop(THREE, assets.room.scene, room, materials));
+    content.add(buildShop(THREE, assets.station.scene, stations, materials));
+    const spawn = spawnFor(recipe);
+    player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
+    walk.place(spawn, [
+      ...collisionBoxes([...room, ...stations], assets.anchors),
+      ...shopPerimeter(recipe.layout.cells),
+    ]);
+    interior = shopInterior(recipe.layout.cells);
+    orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw };
     relight(recipe);
-    frameCamera(recipe, player);
+    play(0);
     state.rebuilds += 1;
     state.frames = 0;
     state.ready = true;
@@ -320,6 +330,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   function tick(): void {
     if (state.lost || renderer.getContext().isContextLost()) return;
     const delta = clock.getDelta();
+    play(delta);
     player?.update(delta);
     renderer.info.reset();
     composer.render();
@@ -365,6 +376,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
 
   function dispose(): void {
     renderer.setAnimationLoop(null);
+    controls.dispose();
     observer.disconnect();
     canvas.removeEventListener('webglcontextlost', onContextLost);
     canvas.removeEventListener('webglcontextrestored', onContextRestored);
