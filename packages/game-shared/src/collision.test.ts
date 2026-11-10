@@ -13,8 +13,9 @@ const WALL_INNER_FACE = 0.8;
 
 const ANCHORS: KitAnchors = {
   desk_a: {
-    socket_chair: { position: [0, 0, -0.6], scale: [1, 1, 1] },
-    interact_point: { position: [0, 0, -1], scale: [1, 1, 1] },
+    socket_chair: { position: [0, 0, -0.24], scale: [1, 1, 1] },
+    interact_point: { position: [0, 0, -0.95], scale: [1, 1, 1] },
+    not_collision_marker: { position: [5, 0, 5], scale: [1, 1, 1] },
     collision_main: { position: [0, 0.36, 0.46], scale: [0.76, 0.36, 0.35] },
   },
   chair_a: {
@@ -81,7 +82,7 @@ test('món không xoay cho hộp nằm quanh điểm neo, rộng theo x và sâu
   near(boxes[0], { minX: 3.24, maxX: 4.76, minZ: -1.89, maxZ: -1.19 });
 });
 
-test('máy quay 90 độ thì hộp đổi chiều rộng và chiều sâu, tâm hộp quay theo', () => {
+test('món quay 90 độ thì hộp đổi chiều rộng và chiều sâu, tâm hộp quay theo', () => {
   const boxes = collisionBoxes([placed('desk_a', 4, -2, EAST)], ANCHORS);
   near(boxes[0], { minX: 4.11, maxX: 4.81, minZ: -2.76, maxZ: -1.24 });
 });
@@ -173,7 +174,8 @@ test('đi chéo vào góc phòng thì dừng trong góc, không lọt ra ngoài'
     [-1, -1],
   ] as const) {
     const end = walk({ x: 0, z: 0, yaw: 0 }, { x, z }, boxes);
-    assert.ok(Math.abs(end.x) <= limit + 1e-6 && Math.abs(end.z) <= limit + 1e-6, `${x},${z}`);
+    assert.ok(Math.abs(end.x - x * limit) < 1e-6, `${x},${z} ended at x ${end.x}`);
+    assert.ok(Math.abs(end.z - z * limit) < 1e-6, `${x},${z} ended at z ${end.z}`);
   }
 });
 
@@ -183,4 +185,26 @@ test('ô cửa cho người chơi đi qua giữa hai trụ, còn hai trụ vẫn
   assert.ok(through.z > 2.5, `stuck in the doorway at ${through.z}`);
   const beside = walk({ x: 0.2, z: 0, yaw: 0 }, { x: 0, z: 1 }, boxes, 90);
   assert.ok(beside.z < 2, `walked through the door post to ${beside.z}`);
+});
+
+test('nửa kích thước âm, điểm neo thiếu số đo đều bị báo lỗi kèm tên món và tên điểm neo', () => {
+  const mirrored: KitAnchors = {
+    crate_a: { collision_main: { position: [0, 0, 0], scale: [-0.5, 1, 0.5] } },
+  };
+  assert.throws(
+    () => collisionBoxes([placed('crate_a', 0, 0)], mirrored),
+    /crate_a collision_main/,
+  );
+  const hollow = { crate_a: { collision_main: {} } } as unknown as KitAnchors;
+  assert.throws(() => collisionBoxes([placed('crate_a', 0, 0)], hollow), /crate_a collision_main/);
+});
+
+test('món đặt có số đo hỏng bị báo lỗi kể cả khi món đó không có hộp va chạm', () => {
+  assert.throws(() => collisionBoxes([placed('floor_a', Number.NaN, 0)], ANCHORS), /floor_a/);
+  assert.throws(() => collisionBoxes([placed('poster_a', 0, 0, Number.NaN)], ANCHORS), /poster_a/);
+});
+
+test('cạnh hộp bằng không được ghi là số không dương', () => {
+  const [box] = collisionBoxes([placed('wall_a', 1, -1, WEST)], ANCHORS);
+  assert.ok(Object.is(box?.minX, 0), 'minX is negative zero');
 });

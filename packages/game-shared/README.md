@@ -28,12 +28,13 @@ Người chơi là hình tròn bán kính `PLAYER_RADIUS`.
 
 `collisionBoxes(placements, anchors)` đổi các điểm neo `collision_*` trong tệp mô hình thành danh sách hộp cho `stepPlayer`. Client và server gọi cùng hàm này nên hai bên chặn người chơi ở cùng một chỗ.
 
-- `placements` là danh sách món đã đặt, mỗi món `{ part, position, yaw }` với `position` là `[x, y, z]`. Đây là hình dạng mà `shopPlan` và `roomPlan` của `game-assets` trả về, nối hai danh sách lại rồi đưa vào.
+- `placements` là danh sách món đã đặt, mỗi món `{ part, position, yaw }` với `position` là `[x, y, z]`. Đây là hình dạng món đặt mà `shopPlan` của `game-assets` trả về; có nhiều danh sách thì nối lại rồi đưa vào.
 - `anchors` là kết quả `kitAnchors` của từng tệp mô hình gộp lại: theo tên món, rồi theo tên điểm neo, mỗi điểm neo có `position` là tâm hộp tính từ gốc món và `scale` là nửa kích thước hộp.
-- Món xoay 90 độ thì hộp đổi chiều rộng và chiều sâu. Món xoay lệch góc vuông cho hộp song song trục bao trọn hộp đã xoay, nên chặn rộng hơn hình thật một chút.
+- Món xoay 90 độ thì hộp đổi chiều rộng và chiều sâu. Món xoay lệch góc vuông cho hộp song song trục bao quanh hộp đã xoay, nên chặn rộng hơn hình thật một chút.
 - Độ cao bị bỏ qua: mọi hộp đều chặn từ sàn lên.
-- Món không có điểm neo va chạm thì không sinh hộp. Số đo không hữu hạn hoặc nửa kích thước không dương thì ném `TypeError` kèm tên món.
-- Cạnh hộp được làm tròn tới phần triệu mét để hai máy ra cùng một số.
+- Món không có điểm neo va chạm, hoặc không có tên trong `anchors`, thì không sinh hộp và không báo lỗi. Gộp thiếu một tệp mô hình vì thế cho ra tường đi xuyên được; nơi gọi phải gộp đủ.
+- Số đo không hữu hạn hoặc nửa kích thước không dương thì ném `TypeError` kèm tên món.
+- Cạnh hộp được làm tròn tới phần triệu mét. Với món đặt theo góc vuông, mọi máy ra cùng một số; góc lệch thì có thể chênh một phần triệu mét giữa các máy.
 
 ## Nhịp mô phỏng cố định
 
