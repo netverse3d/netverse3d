@@ -1,9 +1,9 @@
+import { YAW, snap } from './shop-look.mjs';
+
 export const STREET_CELL = 4;
 export const STOREY_HEIGHT = 3.4;
 export const LOT_CELLS = 2;
 const SIDEWALK_DEPTH = 1;
-const PRECISION = 1000;
-const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
 const ROAD_VARIANT = { straight: 'a', corner: 'b', tee: 'c' };
 const OUTWARD = { south: [0, 1], north: [0, -1], east: [1, 0], west: [-1, 0] };
 const ALONG = { south: [1, 0], north: [-1, 0], east: [0, 1], west: [0, -1] };
@@ -20,10 +20,6 @@ const DEFAULT_VARIANTS = {
   storey: 'a',
   roof: 'a',
 };
-
-function snap(value) {
-  return Math.round(value * PRECISION) / PRECISION + 0;
-}
 
 function cellCentre([x, z], [width, depth]) {
   return [(x - (width - 1) / 2) * STREET_CELL, (z - (depth - 1) / 2) * STREET_CELL];
