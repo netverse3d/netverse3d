@@ -12,6 +12,7 @@ import {
   seatedClips,
   seatPoint,
   stationChoices,
+  thighSink,
   withVariant,
 } from '../library/shared/checks-data.mjs';
 import { kitAnchors, stationPlan } from '../runtime/shop-look.mjs';
@@ -203,5 +204,40 @@ test('bộ máy thật: không phần nào của ghế nằm trong vùng đặt 
     const triangles = partTriangles(gltf, readGlbBinary(buffer), part);
     assert.ok(triangles.length > 0, part);
     assert.equal(footZoneHits(triangles, anchors[part].seat_anchor), 0, part);
+  }
+});
+
+test('độ lún của đùi là phần mặt đệm nhô cao hơn đáy đùi, đo dọc từ hông tới đầu gối', () => {
+  const hip = { position: [0, 0, 0.24] };
+  const flat = (height) => [
+    [
+      [0.1, height, 0.1],
+      [0.12, height, 0.2],
+      [0.08, height, 0.3],
+    ],
+  ];
+  assert.equal(thighSink(flat(0.3), hip), 0);
+  assert.ok(Math.abs(thighSink(flat(0.42), hip) - 0.104) < 0.002);
+  assert.equal(
+    thighSink([[[0.3, 0.45, 0.1]].concat([[0.3, 0.45, 0.2]], [[0.3, 0.45, 0.3]])], hip),
+    0,
+  );
+  assert.equal(thighSink(flat(0.62), hip), 0);
+  assert.equal(thighSink([], hip), 0);
+});
+
+test('bộ máy thật: nhân vật ngồi không lún vào đệm của mẫu ghế nào quá một phân', (context) => {
+  const buffer = readFileSync(join(ROOT, 'exported', 'station-parts.glb'));
+  if (isLfsPointer(buffer)) return context.skip('station-parts.glb chưa tải nội dung LFS');
+  const gltf = readGlb(buffer);
+  const anchors = kitAnchors(gltf);
+  const chairs = loadConfig(ROOT).kits.find((kit) => kit.file === 'station-parts.glb').slots.chair;
+  for (const variant of chairs.variants) {
+    const part = `chair_${variant}`;
+    const sink = thighSink(
+      partTriangles(gltf, readGlbBinary(buffer), part),
+      anchors[part].seat_anchor,
+    );
+    assert.ok(sink <= 0.01, `${part} sinks ${Math.round(sink * 1000)} mm`);
   }
 });

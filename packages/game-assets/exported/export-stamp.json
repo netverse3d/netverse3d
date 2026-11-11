@@ -6,24 +6,24 @@
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "210d757e9f14275dce4df8c8a81292e3b27ad99603b4aa0db62ec31a3da9f5df",
+    "parts-station.blend": "32ad7f1c136494ff4f4559577d2306bce065b631c49dd6837e1d73c865599cba",
     "environment-kit.blend": "56bd286b8c8a5b5ed6aca5b44cd91f07fae3e3d0665b9f82399d893589d81a5e",
     "parts-lounge.blend": "93f9076ecc3f7046470819015a7d193eb409353285dff7b32a7ab1a4da2d6964",
     "parts-signs.blend": "e94efaf213dc5172ccec0730690c3d84c6ea941be5b5f561ec33653848607c87",
     "parts-street.blend": "5ba96203f1aec75896ed9faad67b8eabcfd31009d4a298813c4d6187621be3a6",
-    "showcase-tim-neon.blend": "43ad555e29a9a82f04e141e3d842050bc8421a8689bcbf3ecfda735b99a45293"
+    "showcase-tim-neon.blend": "1c893d1ac8aefae926fd49d979500cfd2b8079cc837b472610afd96771ccdf70"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "2ec1dd9445f6c896525aec74090e2fbd5332bbac3ddf437bf4ae28d7fd763863",
+    "station-parts.glb": "0ea5ba8f86e6189952d70df0b9a5a566d9c53248dd5fd769b43f1fdd04c0f9b7",
     "room-kit.glb": "5aade43f2225adee4930394b8deeb6cdcc4e5696b6dc3b2f6d765fbf3b9bbb63",
     "lounge-parts.glb": "cfd950b105d373905bcdcb4af2dbb34b0a0bb04e463491898b47fe1e4308e3c8",
     "sign-parts.glb": "197c36f8427ba65158dcd12e38c66087d92e94370fdfafb2e2ecc0ea537f50b5",
     "street-parts.glb": "e9d67b104d37e790dde4864021b9444832deee528bf7eed0b2e975a4a3904a55",
-    "showcase-tim-neon.glb": "b4c50b6aab43fa8fb1a20757dfd6160709c76a8f11c951c989521c96a6f48981",
-    "showcase-tim-neon-base.jpg": "67477b307e16b256ab572adbe40cf4231d992190ab5eee22b2235f2648f1899c",
-    "showcase-tim-neon-spill.jpg": "a49198bf4a2012f9228ccd67df93e5ffd64a2693f5748376252c5e2b272f0246"
+    "showcase-tim-neon.glb": "325151ebc6710560732c11ee27d8ce0112a6d54752137de335f4a84b3bfe2877",
+    "showcase-tim-neon-base.jpg": "38c9cddb5d8a73a623583fef7f504f314f33d1553ea0880fef15ed59ea7a77ca",
+    "showcase-tim-neon-spill.jpg": "96cf670b8eafa6e694491d31812700be5e9d0155409e8128251822047af12b76"
   }
 }

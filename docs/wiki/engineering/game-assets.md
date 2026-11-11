@@ -99,7 +99,7 @@ Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu 
 
 ### Ghế
 
-Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là ghế gaming lưng cao (`pipeline/hero_chair.py`). `b` và `c` nằm trong `pipeline/hero_chairs.py`: `b` là ghế công thái lưng lưới có tựa đầu, đệm thắt lưng và tay vịn; `c` là ghế làm việc tối giản với một đệm lưng, không tay vịn. Cả ba dùng chung đế sao và trụ nâng của `build_base`, cùng một điểm ngồi `SEAT_ANCHOR`, và mặt đệm ngồi cao khoảng 0,41 m để hành động ngồi của nhân vật khớp với mọi mẫu. Mặt trước của lưng ghế phải lùi sau tâm ghế ít nhất 0,19 m, nếu không lưng nhân vật sẽ xuyên vào. Mỗi mẫu có hộp va chạm riêng trong `CHAIR_COLLISIONS`. Thêm mẫu mới thì xem nó trong trang Soi lỗi với nhân vật ngồi trước khi nướng bóng.
+Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là ghế gaming lưng cao (`pipeline/hero_chair.py`). `b` và `c` nằm trong `pipeline/hero_chairs.py`: `b` là ghế công thái lưng lưới có tựa đầu, đệm thắt lưng và tay vịn; `c` là ghế làm việc tối giản với một đệm lưng, không tay vịn. Cả ba dùng chung đế sao và trụ nâng của `build_base`, cùng một điểm ngồi `SEAT_ANCHOR`. Mặt đệm ngồi phải đi theo đáy đùi của nhân vật lúc ngồi: cao 0,40 m ở phía hông rồi dốc xuống khoảng 0,32 m ở mép trước, vì nhân vật chân ngắn nên đầu gối thấp hơn hông; đệm phẳng hoặc cao hơn thì đùi lún vào. Test `thighSink` đo độ lún đó trên mô hình thật của từng mẫu và chặn ở một phân. Mặt trước của lưng ghế phải lùi sau tâm ghế ít nhất 0,19 m, nếu không lưng nhân vật sẽ xuyên vào. Mỗi mẫu có hộp va chạm riêng trong `CHAIR_COLLISIONS`. Thêm mẫu mới thì xem nó trong trang Soi lỗi với nhân vật ngồi trước khi nướng bóng.
 
 ### Thùng máy
 

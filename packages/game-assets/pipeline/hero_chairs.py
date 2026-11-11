@@ -1,5 +1,7 @@
+from mathutils import Vector
+
 from hero_chair import build_base
-from hero_kit import HeroPart
+from hero_kit import HeroPart, rounded_rect
 
 SEAT_ANCHOR = (0, -0.24, 0)
 CHAIR_COLLISIONS = {
@@ -8,7 +10,8 @@ CHAIR_COLLISIONS = {
     'chair_c': ((0, 0.03, 0.45), (0.26, 0.31, 0.45)),
 }
 
-SEAT_CENTER = (0, -0.01, 0.385)
+SEAT_TOPS = [(-0.25, 0.318), (-0.225, 0.336), (-0.17, 0.357), (-0.1, 0.38), (-0.03, 0.4), (0.1, 0.4), (0.2, 0.4), (0.225, 0.39)]
+SEAT_FRONT = -0.25
 BACK_FOOT = 0.2
 BACK_LEAN = 0.13
 BACK_LOW = 0.5
@@ -16,6 +19,19 @@ BACK_LOW = 0.5
 
 def back_depth(z):
     return BACK_FOOT + BACK_LEAN * (z - BACK_LOW)
+
+
+def seat_pad(chair, half_width, row, thickness=0.052, corner=0.02):
+    rings = []
+    for index, (y, top) in enumerate(SEAT_TOPS):
+        narrow = 0.012 if index in (0, len(SEAT_TOPS) - 1) else 0.0
+        outline = rounded_rect(0, top - thickness / 2, half_width - narrow, thickness / 2 - narrow / 2, corner, 2)
+        rings.append([Vector((x, y, z)) for x, z in outline])
+    chair.loft(rings, lambda r, c: row, levels=0, smooth=True)
+
+
+def front_light(chair, width):
+    chair.rounded_box((0, SEAT_FRONT - 0.002, 0.292), (width, 0.008, 0.006), 'strip', radius=0.002, segments=1)
 
 
 def spine(chair, top, radius=0.02):
@@ -58,8 +74,8 @@ def armrests(chair):
 
 def build_chair_mesh(name='chair_b'):
     chair = HeroPart(name)
-    chair.rounded_box(SEAT_CENTER, (0.5, 0.48, 0.05), 'top', radius=0.022, segments=3)
-    chair.rounded_box((0, -0.235, 0.372), (0.4, 0.008, 0.006), 'strip', radius=0.002, segments=1)
+    seat_pad(chair, 0.25, 'top')
+    front_light(chair, 0.4)
     spine(chair, 0.62)
     mesh_back(chair)
     headrest(chair)
@@ -70,8 +86,8 @@ def build_chair_mesh(name='chair_b'):
 
 def build_chair_task(name='chair_c'):
     chair = HeroPart(name)
-    chair.rounded_box(SEAT_CENTER, (0.46, 0.45, 0.056), 'top', radius=0.026, segments=3)
-    chair.rounded_box((0, -0.222, 0.37), (0.36, 0.008, 0.006), 'strip', radius=0.002, segments=1)
+    seat_pad(chair, 0.23, 'top', thickness=0.056)
+    front_light(chair, 0.36)
     spine(chair, 0.6, radius=0.018)
     chair.pillow((0, back_depth(0.7) + 0.01, 0.7), (0.42, 0.075, 0.34), 'top', puff=0.3, top_row='soft')
     chair.rounded_box((0, back_depth(0.7) + 0.052, 0.7), (0.2, 0.012, 0.12), 'metal', radius=0.005, segments=1)
