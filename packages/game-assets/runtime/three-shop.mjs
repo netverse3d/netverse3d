@@ -24,6 +24,12 @@ export function isPreviewLightmap(texture) {
   return Boolean(texture?.name?.endsWith('-preview'));
 }
 
+export function previewKitFiles(kits) {
+  return Object.entries(kits)
+    .filter(([, gltf]) => isPreviewLightmap(kitLightmap(gltf.scene)))
+    .map(([file]) => file);
+}
+
 export function kitLightmap(kitScene) {
   let found = null;
   kitScene.traverse((object) => {

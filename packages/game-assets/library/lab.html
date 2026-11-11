@@ -294,7 +294,7 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
-      import { isPreviewLightmap, kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
@@ -386,9 +386,7 @@
         {},
         ...Object.values(kits).map((gltf) => kitAnchors(gltf.parser.json)),
       );
-      const previewKits = Object.entries(kits)
-        .filter(([, gltf]) => isPreviewLightmap(kitLightmap(gltf.scene)))
-        .map(([file]) => file);
+      const previewKits = previewKitFiles(kits);
       if (previewKits.length > 0) {
         const aoButton = document.querySelector('[data-toggle="ao"]');
         aoButton.disabled = true;

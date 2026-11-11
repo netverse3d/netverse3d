@@ -4,7 +4,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { COLORWAYS, LED_MODES, keyboardOptions } from '../../runtime/keyboard-styles.mjs';
 import { paletteRows } from '../../runtime/shop-look.mjs';
-import { isPreviewLightmap, kitLightmap, shopMaterials } from '../../runtime/three-shop.mjs';
+import { kitLightmap, previewKitFiles, shopMaterials } from '../../runtime/three-shop.mjs';
 import { pageHref, sectionTabs } from './catalog.mjs';
 import {
   budgetUse,
@@ -372,9 +372,7 @@ async function main() {
     remember();
   });
   const occlusionButton = byId('occlusion');
-  const previewKits = Object.entries(kits)
-    .filter(([, gltf]) => isPreviewLightmap(kitLightmap(gltf.scene)))
-    .map(([file]) => file);
+  const previewKits = previewKitFiles(kits);
   if (previewKits.length > 0) {
     occlusionButton.disabled = true;
     occlusionButton.setAttribute('aria-pressed', 'false');

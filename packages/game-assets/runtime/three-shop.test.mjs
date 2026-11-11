@@ -5,6 +5,7 @@ import {
   buildShop,
   isPreviewLightmap,
   kitLightmap,
+  previewKitFiles,
   paletteTexture,
   recolorShowcase,
   rowColor,
@@ -193,4 +194,19 @@ test('lightmap xem thử nhận ra qua hậu tố tên ảnh, lightmap thật v�
   assert.equal(isPreviewLightmap(preview), true);
   assert.equal(isPreviewLightmap(baked), false);
   assert.equal(isPreviewLightmap(null), false);
+});
+
+test('liệt kê các bộ đã tải đang mang lightmap xem thử', () => {
+  const previewScene = kitScene();
+  const texture = new THREE.Texture();
+  texture.name = 'lounge-parts-lightmap-preview';
+  previewScene.traverse((object) => {
+    if (object.isMesh && object.material.name === 'surface') object.material.aoMap = texture;
+  });
+  const kits = {
+    'station-parts.glb': { scene: kitScene() },
+    'lounge-parts.glb': { scene: previewScene },
+  };
+  assert.deepEqual(previewKitFiles(kits), ['lounge-parts.glb']);
+  assert.deepEqual(previewKitFiles({}), []);
 });
