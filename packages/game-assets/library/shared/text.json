@@ -27,5 +27,44 @@
     "expressions": "biểu cảm",
     "shops": "tiệm mẫu",
     "scenes": "cảnh giới thiệu"
+  },
+  "mainPage": "Danh mục",
+  "parts": {
+    "kits": {
+      "station-parts.glb": "Bàn máy",
+      "lounge-parts.glb": "Góc console"
+    },
+    "slots": {
+      "desk": "Bàn",
+      "monitor": "Màn hình",
+      "keyboard": "Bàn phím",
+      "mouse": "Chuột",
+      "mat": "Lót chuột",
+      "headset": "Tai nghe",
+      "mic": "Micro",
+      "speaker": "Loa",
+      "chair": "Ghế",
+      "case": "Thùng máy",
+      "sofa": "Sofa",
+      "table": "Bàn trà",
+      "console": "Máy console",
+      "gamepad": "Tay cầm",
+      "tv": "TV"
+    },
+    "all": "Tất cả",
+    "count": "món",
+    "of": "trên",
+    "variants": "biến thể",
+    "triangles": "tam giác",
+    "budget": "mức trần",
+    "frame": "khung",
+    "inspect": "Soi món này",
+    "usedBy": "Đang dùng ở",
+    "unused": "Chưa tiệm mẫu nào dùng",
+    "levels": {
+      "ok": "Trong mức trần tam giác",
+      "near": "Sát mức trần tam giác",
+      "over": "Vượt mức trần tam giác"
+    }
   }
 }

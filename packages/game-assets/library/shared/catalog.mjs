@@ -3,12 +3,12 @@ export const STAGE_PAGE = 'view.html';
 
 const OVERVIEW_ID = 'overview';
 const EXPRESSION_PREFIX = 'ex_';
-const STATION_KIT = 'station-parts.glb';
-const ROOM_KIT = 'room-kit.glb';
+export const ROOM_KIT = 'room-kit.glb';
 const FRAMED_MARK = 'framed';
+const STAGE_PARAMS = ['section', 'page'];
 const FIGURES = {
   characters: (summary) => ({ value: summary.actions, unit: 'actions' }),
-  parts: (summary) => ({ value: summary.stationVariants, unit: 'variants' }),
+  parts: (summary) => ({ value: summary.partVariants, unit: 'variants' }),
   rooms: (summary) => ({ value: summary.roomVariants, unit: 'modules' }),
   shops: (summary) => ({ value: summary.shops, unit: 'shops' }),
 };
@@ -34,7 +34,9 @@ export function catalogSummary(config, recipeIds) {
   return {
     slots: kits.reduce((total, kit) => total + Object.keys(kit.slots ?? {}).length, 0),
     variants: kits.reduce((total, kit) => total + variantsOf(kit), 0),
-    stationVariants: variantsOf(kitNamed(STATION_KIT)),
+    partVariants: kits
+      .filter((kit) => kit.file !== ROOM_KIT)
+      .reduce((total, kit) => total + variantsOf(kit), 0),
     roomVariants: variantsOf(kitNamed(ROOM_KIT)),
     actions: clips.length - expressions,
     expressions,
@@ -73,14 +75,14 @@ export function sectionCards(sections, summary) {
       href: sectionHref(section),
       state: section.state,
       more: (section.pages ?? [])
-        .slice(1)
-        .map((page, index) => ({ title: page.title, href: pageHref(section, index + 1) })),
+        .map((page, index) => ({ title: page.title, href: pageHref(section, index) }))
+        .slice(section.state === 'legacy' ? 1 : 0),
       figure: FIGURES[section.id]?.(summary) ?? null,
     }));
 }
 
 export function stageTarget(sections, search) {
-  const framed = sections.filter((section) => section.state === 'legacy');
+  const framed = sections.filter((section) => (section.pages ?? []).length > 0);
   const params = new URLSearchParams(search);
   const section = framed.find((item) => item.id === params.get('section')) ?? framed[0];
   const asked = Number(params.get('page') ?? 0);
@@ -88,10 +90,34 @@ export function stageTarget(sections, search) {
   return { section: section.id, page };
 }
 
-export function framedSource(src, page) {
+export function sectionTabs(section, current, mainTitle) {
+  const main = section.href
+    ? [{ title: mainTitle, href: section.href, page: null, current: current === 'main' }]
+    : [];
+  return [
+    ...main,
+    ...(section.pages ?? []).map((page, index) => ({
+      title: page.title,
+      href: pageHref(section, index),
+      page: index,
+      current: current === index,
+    })),
+  ];
+}
+
+export function carriedQuery(search) {
+  const params = new URLSearchParams(search);
+  for (const name of STAGE_PARAMS) params.delete(name);
+  return params.toString();
+}
+
+export function framedSource(src, page, carried = '') {
   const { file, query, hash } = splitSource(src);
   const mark = `${FRAMED_MARK}=${page}`;
-  return `${file}?${query ? `${query}&` : ''}${mark}${hash}`;
+  if (carried === '') return `${file}?${query ? `${query}&` : ''}${mark}${hash}`;
+  const params = new URLSearchParams(query);
+  for (const [name, value] of new URLSearchParams(carried)) params.set(name, value);
+  return `${file}?${params.toString()}&${mark}${hash}`;
 }
 
 export function whereIs(sections, file, hash, currentId) {
