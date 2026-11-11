@@ -602,6 +602,11 @@ h3 {
   color: var(--ink);
 }
 
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .tools-count {
   margin: 0 0 var(--space-2) auto;
   color: var(--muted);

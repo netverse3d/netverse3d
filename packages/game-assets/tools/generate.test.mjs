@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { buildShowcasePlan } from '../pipeline/showcase_plan.mjs';
+import { blenderEnvironment, generateOptions } from './generate.mjs';
 import { isLfsPointer, loadConfig } from './lib.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -18,6 +19,16 @@ test('tệp gốc sinh từ script trỏ tới script có trong repo', () => {
       `${entry.source}: ${entry.generator} missing`,
     );
   }
+});
+
+test('cờ --preview tách khỏi tên bộ và bật biến môi trường bỏ nướng cho Blender', () => {
+  assert.deepEqual(generateOptions(['parts-lounge', '--preview']), {
+    wanted: new Set(['parts-lounge']),
+    preview: true,
+  });
+  assert.deepEqual(generateOptions([]), { wanted: new Set(), preview: false });
+  assert.deepEqual(blenderEnvironment(true), { ASSET_PREVIEW: '1' });
+  assert.deepEqual(blenderEnvironment(false), {});
 });
 
 test('script sinh không chứa đường dẫn tuyệt đối tới máy người dùng', () => {
