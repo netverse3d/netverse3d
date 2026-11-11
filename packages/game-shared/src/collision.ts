@@ -1,4 +1,4 @@
-import type { FloorBox } from './movement.ts';
+import type { FloorBox, FloorPoint } from './movement.ts';
 
 export interface KitAnchor {
   readonly position: readonly number[];
@@ -35,32 +35,44 @@ function halfSize(values: readonly number[] | undefined, index: number, owner: s
   return value;
 }
 
+export function anchorOnFloor(placement: Placement, anchor: KitAnchor, owner: string): FloorPoint {
+  if (!Number.isFinite(placement.yaw)) {
+    throw new TypeError(`${placement.part} has a broken measurement`);
+  }
+  const localX = measure(anchor?.position, 0, owner);
+  const localZ = measure(anchor?.position, 2, owner);
+  const cos = Math.cos(placement.yaw);
+  const sin = Math.sin(placement.yaw);
+  return {
+    x: measure(placement.position, 0, placement.part) + localX * cos + localZ * sin,
+    z: measure(placement.position, 2, placement.part) + localZ * cos - localX * sin,
+  };
+}
+
 export function collisionBoxes(placements: readonly Placement[], anchors: KitAnchors): FloorBox[] {
   const boxes: FloorBox[] = [];
-  for (const { part, position, yaw } of placements) {
+  for (const placement of placements) {
+    const { part, yaw } = placement;
     const colliders = Object.entries(anchors[part] ?? {}).filter(([name]) =>
       name.startsWith(COLLISION_ANCHOR_PREFIX),
     );
     if (!Number.isFinite(yaw)) throw new TypeError(`${part} has a broken measurement`);
-    const originX = measure(position, 0, part);
-    const originZ = measure(position, 2, part);
+    measure(placement.position, 0, part);
+    measure(placement.position, 2, part);
     const cos = Math.cos(yaw);
     const sin = Math.sin(yaw);
     for (const [name, anchor] of colliders) {
       const owner = `${part} ${name}`;
-      const localX = measure(anchor?.position, 0, owner);
-      const localZ = measure(anchor?.position, 2, owner);
+      const centre = anchorOnFloor(placement, anchor, owner);
       const halfWidth = halfSize(anchor?.scale, 0, owner);
       const halfDepth = halfSize(anchor?.scale, 2, owner);
-      const centreX = originX + localX * cos + localZ * sin;
-      const centreZ = originZ + localZ * cos - localX * sin;
       const reachX = Math.abs(cos) * halfWidth + Math.abs(sin) * halfDepth;
       const reachZ = Math.abs(sin) * halfWidth + Math.abs(cos) * halfDepth;
       boxes.push({
-        minX: roundEdge(centreX - reachX),
-        maxX: roundEdge(centreX + reachX),
-        minZ: roundEdge(centreZ - reachZ),
-        maxZ: roundEdge(centreZ + reachZ),
+        minX: roundEdge(centre.x - reachX),
+        maxX: roundEdge(centre.x + reachX),
+        minZ: roundEdge(centre.z - reachZ),
+        maxZ: roundEdge(centre.z + reachZ),
       });
     }
   }

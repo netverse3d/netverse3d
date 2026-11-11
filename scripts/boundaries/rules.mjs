@@ -21,34 +21,51 @@ function noWebLayers(names, reason) {
 export const RULES = [
   webLayer('src/scene', [
     NO_REACT,
-    noWebLayers(['src/ui', 'app'], 'the scene reads the state store, never the interface'),
+    noWebLayers(['src/ui', 'app', 'dev'], 'the scene reads the state store, never the interface'),
   ]),
   webLayer('src/game', [
     NO_REACT,
     NO_THREE,
-    noWebLayers(['src/ui', 'src/scene', 'app'], 'game logic stays testable without a renderer'),
+    noWebLayers(
+      ['src/ui', 'src/scene', 'app', 'dev'],
+      'game logic stays testable without a renderer',
+    ),
   ]),
   webLayer('src/net', [
     NO_REACT,
     NO_THREE,
-    noWebLayers(['src/ui', 'src/scene', 'app'], 'the connection knows nothing about rendering'),
+    noWebLayers(
+      ['src/ui', 'src/scene', 'app', 'dev'],
+      'the connection knows nothing about rendering',
+    ),
   ]),
   webLayer('src/state', [
     NO_REACT,
     NO_THREE,
     noWebLayers(
-      ['src/ui', 'src/scene', 'src/game', 'src/net', 'app'],
+      ['src/ui', 'src/scene', 'src/game', 'src/net', 'app', 'dev'],
       'every layer depends on the state store, so it depends on none of them',
     ),
   ]),
   webLayer('src/ui', [
     NO_THREE,
     noWebLayers(
-      ['src/scene', 'src/game', 'src/net'],
+      ['src/scene', 'src/game', 'src/net', 'dev'],
       'the interface reaches the game only through the state store',
     ),
   ]),
+  webLayer('src', [
+    noWebLayers(['dev'], 'the fake room is a development stand-in, never part of the game code'),
+  ]),
   webLayer('app', [NO_THREE]),
+  webLayer('dev', [
+    NO_REACT,
+    NO_THREE,
+    noWebLayers(
+      ['src/ui', 'src/scene', 'src/game', 'src/net', 'src/state', 'app'],
+      'the fake room stands in for a server, so it shares only the game-shared rules',
+    ),
+  ]),
   {
     layer: 'packages/game-shared',
     forbidden: [

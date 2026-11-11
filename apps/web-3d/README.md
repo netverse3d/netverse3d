@@ -35,7 +35,9 @@ Tham số trên URL: `?shop=<id>` chọn tiệm mẫu, `?quality=low|medium|high
 - Camera mặc định nhìn chéo từ góc phòng, trên cao, bằng ống kính hẹp. Lăn chuột phóng liền mạch từ toàn cảnh xuống sát sau vai nhân vật; càng gần ống kính càng mở rộng.
 - Camera ra ngoài phòng thì tường và trần nằm giữa camera và lòng phòng tự cắt đi. Bàn, ghế, thùng máy chắn đường nhìn thì camera tự dừng trước món đó.
 - Bóng trên bề mặt lấy từ lightmap xám nung sẵn trong từng bộ mô hình, nhân với bảng màu của tiệm.
-- Đứng chạm vào bất kỳ cạnh nào của một cụm máy trống thì hiện gợi ý ngồi máy: trên máy tính là chữ kèm phím E, trên thiết bị có màn hình chạm có thêm một nút. Chạm hai cụm cùng lúc thì gợi ý máy có ghế gần hơn. Phím E và nút cùng gửi yêu cầu ngồi; cho nhân vật ngồi xuống là việc kế tiếp.
+- Đứng chạm vào bất kỳ cạnh nào của một cụm máy trống thì hiện gợi ý ngồi máy: trên máy tính là chữ kèm phím E, trên thiết bị có màn hình chạm có thêm một nút. Chạm hai cụm cùng lúc thì gợi ý máy có ghế gần hơn.
+- Nhấn E hoặc bấm nút thì xin máy với phòng. Được cấp thì nhân vật ngồi vào ghế, quay mặt về màn hình, không đi lại được; nhấn E lần nữa để đứng dậy về đúng chỗ đã đứng. Bị từ chối thì gợi ý ghi lý do.
+- Việc ngồi máy cần một phòng. Hiện chỉ có room server giả: `pnpm dev` tự bật nó, còn bản build chỉ có nó khi đặt `NEXT_PUBLIC_ROOM=fake` lúc build. Bản build thường không chứa mã phòng giả và không hiện gợi ý ngồi máy.
 - Cần ảo chưa có hình vẽ trên màn hình.
 
 ## Cấu trúc
@@ -44,10 +46,12 @@ Tham số trên URL: `?shop=<id>` chọn tiệm mẫu, `?quality=low|medium|high
 app/                  layout, trang và component giữ canvas, nơi duy nhất nối giao diện với cảnh
 src/state/            kho Redux Toolkit: slice và store, chỉ import @reduxjs/toolkit
 src/scene/            dựng cảnh three.js từ công thức, nhân vật, camera, mức chất lượng; lớp duy nhất dùng three
-src/game/             đọc phím, chuột, chạm thành ý định di chuyển; vòng đi bộ theo nhịp cố định; biên của tiệm; máy trong tầm với
+src/game/             đọc phím, chuột, chạm thành ý định di chuyển; vòng đi bộ theo nhịp cố định; biên của tiệm; máy trong tầm với và chỗ ngồi
+src/net/              phiên làm việc với phòng: vào phòng, xin máy, rời máy, và tóm tắt chuyện ngồi máy cho giao diện
 src/types/            khai kiểu cho mã chạy JavaScript của game-assets
 src/ui/               giao diện React phủ trên canvas, đọc kho bằng useSelector và gửi lệnh bằng dispatch
 src/ui/text/vi.ts     mọi câu người chơi thấy, component gọi theo khoá
+dev/                  room server giả chạy trong trình duyệt theo giao thức nháp; chỉ được nạp khi bật cờ `NEXT_PUBLIC_ROOM=fake`
 scripts/              chép tài sản vào public, máy chủ xem bản xuất tĩnh
 test/                 thử trang bằng Chrome headless trên bản xuất tĩnh
 ```

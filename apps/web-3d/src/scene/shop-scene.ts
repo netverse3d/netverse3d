@@ -22,7 +22,7 @@ import {
   type ShopMaterials,
 } from '@netverse/game-assets/runtime/three-shop.mjs';
 import { collisionBoxes } from '@netverse/game-shared/collision';
-import type { FloorBox } from '@netverse/game-shared/movement';
+import type { FloorBox, PlayerState } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
 import { nearestSeat, shopSeats, type Seat } from '../game/seats.ts';
 import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
@@ -59,6 +59,9 @@ export interface ShopScene {
   setQuality(level: QualityLevel): void;
   rendererName(): string;
   simulateContextLoss(): boolean;
+  seats(): readonly Seat[];
+  setSeating(seated: string | null, taken: readonly string[]): void;
+  use(): void;
   dispose(): void;
 }
 
@@ -71,7 +74,8 @@ export interface ShopSceneOptions {
   onState?: (state: SceneState) => void;
   onError?: (message: string) => void;
   onNearbySeat?: (seatId: string | null) => void;
-  onSeatRequest?: (seatId: string) => void;
+  onSeatRequest?: (seatId: string, from: PlayerState) => void;
+  onLeaveRequest?: () => void;
 }
 
 interface LightPreset {
@@ -85,6 +89,7 @@ interface LightPreset {
 
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 } as const;
 const CONTEXT_RESTORE_DELAY = 400;
+const SIT_CLIP = 'sit_down';
 const STATS_INTERVAL = 0.5;
 const ENVIRONMENT_BLUR = 0.04;
 const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
@@ -202,6 +207,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   const onError = options.onError ?? (() => {});
   const onNearbySeat = options.onNearbySeat ?? (() => {});
   const onSeatRequest = options.onSeatRequest ?? (() => {});
+  const onLeaveRequest = options.onLeaveRequest ?? (() => {});
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -245,7 +251,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   let furniture: FloorBox[] = [];
   let seats: Seat[] = [];
   let nearbySeat: string | null = null;
-  const nobodySeated: ReadonlySet<string> = new Set();
+  let takenSeats: ReadonlySet<string> = new Set();
+  let seatedAt: string | null = null;
+  let standing: PlayerState = { x: 0, z: 0, yaw: 0 };
   let frames = 0;
   let elapsed = 0;
 
@@ -300,13 +308,16 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     orbit = zoomOrbit(turnOrbit(orbit, turn.right, turn.down), controls.takeZoom());
     const frame = walk.advance(delta, controls.intent(), orbit.yaw);
     player.moveTo(frame.player);
-    player.playClip(frame.clip);
-    const inReach = nearestSeat(frame.player, seats, nobodySeated)?.seatId ?? null;
+    if (frame.clip) player.playClip(frame.clip);
+    if (!walk.held()) standing = frame.player;
+    const inReach = walk.held()
+      ? null
+      : (nearestSeat(frame.player, seats, takenSeats)?.seatId ?? null);
     if (inReach !== nearbySeat) {
       nearbySeat = inReach;
       onNearbySeat(inReach);
     }
-    if (controls.takeUse() && nearbySeat !== null) onSeatRequest(nearbySeat);
+    if (controls.takeUse()) use();
     const pose = cameraPose(frame.player, orbit);
     const eye = clearEye(pose, furniture);
     const lens = fieldOfView(eyeDistance(eye, pose.target));
@@ -319,6 +330,21 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     cutaways(eye, openFloor).forEach(([x, y, z, constant], index) => {
       cutPlanes[index]?.set(new THREE.Vector3(x, y, z), constant);
     });
+  }
+
+  function use(): void {
+    if (seatedAt !== null) onLeaveRequest();
+    else if (nearbySeat !== null) onSeatRequest(nearbySeat, standing);
+  }
+
+  function applySeating(): void {
+    const seat = seats.find((candidate) => candidate.seatId === seatedAt);
+    if (seat && player) {
+      if (!walk.held()) player.playClip(SIT_CLIP);
+      walk.hold(seat.sit);
+    } else {
+      walk.release();
+    }
   }
 
   function clearContent(): void {
@@ -363,6 +389,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     walk.place(spawn, obstacles);
     furniture = stationBoxes;
     seats = stationSeats;
+    applySeating();
     openFloor = shopOpenFloor(recipe.layout.cells);
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
     relight(recipe);
@@ -425,6 +452,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     resize();
     controls.takeTurn();
     controls.takeZoom();
+    controls.takeUse();
     rebuild(true);
     renderer.setAnimationLoop(tick);
   };
@@ -477,6 +505,15 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
         info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
       );
     },
+    seats() {
+      return seats;
+    },
+    setSeating(seated, taken) {
+      seatedAt = seated;
+      takenSeats = new Set(taken);
+      applySeating();
+    },
+    use,
     simulateContextLoss() {
       const extension = renderer.getContext().getExtension('WEBGL_lose_context');
       if (!extension) return false;
