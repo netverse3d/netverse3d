@@ -537,7 +537,7 @@ def preview_lightmap(image_name):
     return lightmap_image(image_name + PREVIEW_SUFFIX, 16)
 
 
-def bake_isolated(scene, collection, built, surface, image_name, distance):
+def bake_isolated(scene, collection, built, surface, image_name, distance, ground_for=None):
     parts = list(built.values())
     prepare_lightmap_uv(parts, minimum=SMALL_PART_TILE, area_power=SMALL_PART_AREA_POWER)
     if preview_requested():
@@ -549,6 +549,7 @@ def bake_isolated(scene, collection, built, surface, image_name, distance):
     for ob in parts:
         for other in parts:
             other.hide_render = other is not ob
+        ground.hide_render = ground_for is not None and not ground_for(ob.name)
         bake_occlusion(scene, [ob], image, distance=distance)
     for ob in parts:
         ob.hide_render = False
