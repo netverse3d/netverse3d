@@ -419,7 +419,7 @@ def weight_normals_by_face_area(ob):
 
 LIGHTMAP_UV = 'lightmap'
 LIGHTMAP_SIZE = 2048
-SMALL_PART_TILE = 0.11
+SMALL_PART_TILE = 0.14
 SMALL_PART_AREA_POWER = 0.65
 PALETTE_UV = 'palette'
 GLTF_OUTPUT_GROUP = 'glTF Material Output'
@@ -514,6 +514,17 @@ def bake_occlusion(scene, objects, image, samples=256, distance=0.6, margin=3):
         tree.nodes.remove(node)
 
 
+def soften_lightmap(image):
+    import numpy
+    width, height = image.size
+    pixels = numpy.empty(width * height * 4, dtype=numpy.float32)
+    image.pixels.foreach_get(pixels)
+    grid = pixels.reshape(height, width, 4)
+    for axis in (0, 1):
+        grid = (numpy.roll(grid, 1, axis=axis) + 2 * grid + numpy.roll(grid, -1, axis=axis)) / 4
+    image.pixels.foreach_set(grid.reshape(-1))
+
+
 def bake_isolated(scene, collection, built, surface, image_name, distance):
     parts = list(built.values())
     prepare_lightmap_uv(parts, minimum=SMALL_PART_TILE, area_power=SMALL_PART_AREA_POWER)
@@ -525,6 +536,7 @@ def bake_isolated(scene, collection, built, surface, image_name, distance):
         bake_occlusion(scene, [ob], image, distance=distance)
     for ob in parts:
         ob.hide_render = False
+    soften_lightmap(image)
     remove_context([ground])
     finish_lightmap_uv(parts)
     attach_occlusion(surface, image)
