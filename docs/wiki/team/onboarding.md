@@ -39,8 +39,9 @@ Muốn xem các thiết kế 3D đã có, chạy `pnpm assets:library` hoặc m�
 
 ## 4. Nhận việc đầu tiên
 
-1. Mở Project của nhóm, chọn một issue đã sẵn sàng và tự gán.
-2. Làm theo [luồng làm việc](./workflow.md).
+1. Đọc [hướng dẫn đóng góp](https://github.com/netverse3d/netverse3d/blob/staging/CONTRIBUTING.md) để biết một issue và một PR cần những gì.
+2. Mở Project của nhóm, chọn một issue trong `Backlog`, tự gán, điền Start date và Target date rồi chuyển sang `Ready`.
+3. Làm theo [luồng làm việc](./workflow.md).
 
 ## Dùng công cụ AI
 

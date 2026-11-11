@@ -1,17 +1,22 @@
 name: Lệch nghiệp vụ hoặc câu hỏi cần chốt
 description: Việc đang làm trái với REQ hoặc ADR, hoặc chưa có REQ nào phủ
+type: Task
 labels: [needs-decision]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Sau khi tạo, điền thanh bên phải: Labels `area:*`, Milestone, Priority, Effort, và Assignees là người cần quyết định. Xem CONTRIBUTING.md.
   - type: input
     id: related
     attributes:
       label: REQ hoặc ADR liên quan
       placeholder: REQ-000, ADR-0000
   - type: textarea
-    id: situation
+    id: context
     attributes:
       label: Tình huống
-      description: Đang làm gì, lệch ở đâu.
+      description: Đang làm gì, lệch ở đâu, issue nào đang bị chặn.
     validations:
       required: true
   - type: textarea
@@ -21,6 +26,13 @@ body:
       placeholder: |
         1. ... (đề xuất), vì ...
         2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Xong khi nào
+      description: Quyết định được ghi vào đâu, ví dụ sổ yêu cầu hoặc một ADR mới.
     validations:
       required: true
   - type: input

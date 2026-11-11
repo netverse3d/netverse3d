@@ -5,7 +5,10 @@ import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
 import {
   findUnknownMilestones,
+  issueFieldInputs,
   planBacklog,
+  planBodyUpdates,
+  planFieldUpdates,
   planMilestoneMoves,
   selectMissingIssues,
 } from './backlog.mjs';
@@ -39,7 +42,7 @@ test('mỗi yêu cầu còn hiệu lực có một issue cha, bỏ qua yêu cầ
     ['REQ-001: Đăng nhập'],
   );
   assert.equal(issues[0].type, 'Feature');
-  assert.equal(issues[0].priority, 'P1');
+  assert.equal(issues[0].priority, 'High');
   assert.equal(issues[0].milestone, 'M1 · Một');
 });
 
@@ -212,4 +215,148 @@ test('tiêu đề milestone thật luôn bắt đầu bằng mã của nó', () 
   for (const milestone of realMilestones) {
     assert.ok(milestone.title.startsWith(`${milestone.id} · `), milestone.title);
   }
+});
+
+const describedRequirement = {
+  ...requirements[0],
+  description: 'Người dùng tạo tài khoản và đăng nhập.',
+};
+
+function taskIssue(item) {
+  const seed = { tasks: [{ requirement: 'REQ-001', items: [item] }] };
+  const { issues } = planBacklog([describedRequirement], seed, milestones);
+  return issues.find((issue) => issue.title === item.title);
+}
+
+test('issue con mang mô tả của yêu cầu, việc cần làm và mục xong khi nào', () => {
+  const issue = taskIssue({
+    title: 'Làm form',
+    size: 'M',
+    work: ['Dựng form đăng nhập'],
+    done: ['Đăng nhập sai báo lỗi'],
+  });
+  assert.ok(issue.body.startsWith('Yêu cầu: REQ-001\n'));
+  assert.ok(
+    issue.body.includes(
+      '## Bối cảnh\n\nThuộc: Đăng nhập\n\nNgười dùng tạo tài khoản và đăng nhập.',
+    ),
+  );
+  assert.ok(issue.body.includes('## Việc cần làm\n\n- [ ] Dựng form đăng nhập'));
+  assert.ok(issue.body.includes('## Xong khi nào\n\n- [ ] Đăng nhập sai báo lỗi'));
+});
+
+test('issue con chưa có chi tiết nhắc người nhận bổ sung trước khi sẵn sàng', () => {
+  const issue = taskIssue({ title: 'Làm form', size: 'M' });
+  assert.ok(issue.body.includes('## Việc cần làm\n\nNgười nhận bổ sung'));
+  assert.ok(issue.body.includes('## Xong khi nào\n\nNgười nhận bổ sung'));
+});
+
+test('issue cha nêu mô tả yêu cầu và xong khi mọi issue con đã đóng', () => {
+  const { issues } = planBacklog([describedRequirement], { tasks: [] }, milestones);
+  assert.ok(issues[0].body.startsWith('Yêu cầu: REQ-001\n'));
+  assert.ok(issues[0].body.includes('## Bối cảnh\n\nNgười dùng tạo tài khoản và đăng nhập.'));
+  assert.ok(issues[0].body.includes('## Xong khi nào\n\n- [ ] Mọi issue con đã đóng'));
+});
+
+test('mức ưu tiên của yêu cầu đổi thành Priority và cỡ việc đổi thành Effort', () => {
+  const should = { ...describedRequirement, priority: 'should' };
+  const seed = {
+    tasks: [
+      {
+        requirement: 'REQ-001',
+        items: [
+          { title: 'Nhỏ', size: 'S' },
+          { title: 'Vừa', size: 'M' },
+          { title: 'Lớn', size: 'L' },
+        ],
+      },
+    ],
+  };
+  const { issues } = planBacklog([should], seed, milestones);
+  assert.deepEqual(
+    issues.map((issue) => [issue.title, issue.priority, issue.effort]),
+    [
+      ['REQ-001: Đăng nhập', 'Medium', undefined],
+      ['Nhỏ', 'Medium', 'Low'],
+      ['Vừa', 'Medium', 'Medium'],
+      ['Lớn', 'Medium', 'High'],
+    ],
+  );
+});
+
+function existingIssue(number, title, body, state = 'open') {
+  return { number, title, body, state };
+}
+
+test('chỉ viết lại thân issue còn ở dạng sinh tự động cũ', () => {
+  const seed = {
+    tasks: [
+      {
+        requirement: 'REQ-001',
+        items: [
+          { title: 'Thân cũ', size: 'S' },
+          { title: 'Đã viết tay', size: 'S' },
+          { title: 'Đã đóng', size: 'S' },
+          { title: 'Đã mới', size: 'S' },
+        ],
+      },
+    ],
+  };
+  const { issues } = planBacklog([describedRequirement], seed, milestones);
+  const current = issues.find((issue) => issue.title === 'Đã mới').body;
+  const updates = planBodyUpdates(issues, [
+    existingIssue(1, 'Thân cũ', 'Yêu cầu: REQ-001\n\nThuộc: Đăng nhập'),
+    existingIssue(2, 'Đã viết tay', 'Yêu cầu: REQ-001\n\nThuộc: Đăng nhập\n\n- Ghi chú riêng'),
+    existingIssue(3, 'Đã đóng', 'Yêu cầu: REQ-001\n\nThuộc: Đăng nhập', 'closed'),
+    existingIssue(4, 'Đã mới', current),
+    existingIssue(
+      5,
+      'REQ-001: Đăng nhập',
+      'Yêu cầu: REQ-001\n\nMô tả cũ\n\nTrạng thái yêu cầu: accepted\nNguồn: mentor-brief',
+    ),
+  ]);
+  assert.deepEqual(
+    updates.map((update) => update.number),
+    [1, 5],
+  );
+  assert.ok(updates[0].body.includes('## Xong khi nào'));
+});
+
+test('issue mở sinh từ sổ yêu cầu nhận Priority và Effort, issue tự tạo không bị đụng', () => {
+  const seed = { tasks: [{ requirement: 'REQ-001', items: [{ title: 'Làm form', size: 'L' }] }] };
+  const { issues } = planBacklog([describedRequirement], seed, milestones);
+  const updates = planFieldUpdates(issues, [
+    existingIssue(1, 'Làm form', 'Yêu cầu: REQ-001\n\nThuộc: Đăng nhập'),
+    existingIssue(2, 'Việc tự tạo', 'Yêu cầu: REQ-001\n\nThuộc: Đăng nhập'),
+    existingIssue(3, 'REQ-001: Đăng nhập', 'Yêu cầu: REQ-001\n\nMô tả', 'closed'),
+  ]);
+  assert.deepEqual(updates, [{ number: 1, priority: 'High', effort: 'High' }]);
+});
+
+const issueFields = [
+  {
+    id: 'F1',
+    name: 'Priority',
+    options: [
+      { id: 'O1', name: 'High' },
+      { id: 'O2', name: 'Low' },
+    ],
+  },
+  { id: 'F2', name: 'Effort', options: [{ id: 'O3', name: 'Medium' }] },
+  { id: 'F3', name: 'Start date' },
+];
+
+test('giá trị Priority và Effort đổi thành đúng mã lựa chọn của field trên issue', () => {
+  assert.deepEqual(issueFieldInputs(issueFields, { priority: 'High', effort: 'Medium' }), [
+    { fieldId: 'F1', singleSelectOptionId: 'O1' },
+    { fieldId: 'F2', singleSelectOptionId: 'O3' },
+  ]);
+  assert.deepEqual(issueFieldInputs(issueFields, { priority: 'Low' }), [
+    { fieldId: 'F1', singleSelectOptionId: 'O2' },
+  ]);
+});
+
+test('giá trị không có trong field bị từ chối thay vì bỏ qua', () => {
+  assert.throws(() => issueFieldInputs(issueFields, { priority: 'P1' }), /Priority.*P1/);
+  assert.throws(() => issueFieldInputs([], { effort: 'Low' }), /Effort/);
 });
