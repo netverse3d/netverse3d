@@ -5,7 +5,7 @@ import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { COLORWAYS, LED_MODES, keyboardOptions } from '../../runtime/keyboard-styles.mjs';
 import { paletteRows } from '../../runtime/shop-look.mjs';
 import { kitLightmap, previewKitFiles, shopMaterials } from '../../runtime/three-shop.mjs';
-import { pageHref } from './catalog.mjs';
+import { catalogSection, pageHref, sectionKits } from './catalog.mjs';
 import {
   budgetUse,
   filterParts,
@@ -17,8 +17,8 @@ import {
 import { element, loadShell, mountPageHead, readJson } from './shell.mjs';
 import { studioLights } from './studio.mjs';
 
-const SECTION_ID = 'parts';
 const INSPECT_FILE = 'lab.html';
+const KEYBOARD_SLOT = 'keyboard';
 const PACKAGE_ROOT = new URL('../../', import.meta.url);
 const UP = new THREE.Vector3(0, 1, 0);
 const VIEW_BACKGROUND = new THREE.Color('#1a1533');
@@ -93,7 +93,8 @@ function budgetRow(triangles, maxTriangles, words) {
 
 async function main() {
   const shell = await loadShell();
-  const section = mountPageHead(shell, SECTION_ID);
+  const section = catalogSection(shell.sections, window.location.search);
+  mountPageHead(shell, section.id);
   const words = shell.text.parts;
 
   const canvas = byId('gl');
@@ -122,7 +123,7 @@ async function main() {
       ]),
     ),
   );
-  const groups = partGroups(config);
+  const groups = partGroups(config, sectionKits(section));
   const loader = new GLTFLoader();
   const kits = Object.fromEntries(
     await Promise.all(
@@ -263,6 +264,7 @@ async function main() {
 
   function remember() {
     const params = new URLSearchParams();
+    params.set('section', section.id);
     params.set('recipe', state.recipeId);
     if (state.kit) params.set('kit', state.kit);
     if (state.query.trim()) params.set('q', state.query.trim());
@@ -272,6 +274,10 @@ async function main() {
 
   const recipeSelect = byId('recipe');
   const colorwaySelect = byId('colorway');
+  const hasKeyboards = groups.some((group) =>
+    group.slots.some((slot) => slot.slot === KEYBOARD_SLOT),
+  );
+  for (const id of ['colorway', 'led']) byId(id).closest('.field').hidden = !hasKeyboards;
   const ledSelect = byId('led');
   fillSelect(
     recipeSelect,

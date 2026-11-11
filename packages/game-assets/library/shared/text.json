@@ -17,7 +17,6 @@
   "units": {
     "actions": "hành động",
     "variants": "biến thể",
-    "modules": "module",
     "shops": "tiệm"
   },
   "stats": {
@@ -34,7 +33,8 @@
       "station-parts.glb": "Bàn máy",
       "lounge-parts.glb": "Góc console",
       "sign-parts.glb": "Biển hiệu",
-      "street-parts.glb": "Phố"
+      "street-parts.glb": "Phố",
+      "room-kit.glb": "Module phòng"
     },
     "slots": {
       "desk": "Bàn",
@@ -64,7 +64,15 @@
       "board": "Biển chữ A",
       "shopfront": "Tầng trệt",
       "storey": "Tầng lầu",
-      "roof": "Mái"
+      "roof": "Mái",
+      "floor": "Sàn",
+      "wall": "Tường",
+      "corner": "Góc tường",
+      "door": "Cửa",
+      "window": "Cửa sổ",
+      "ceiling": "Trần",
+      "light": "Đèn trần",
+      "marker": "Vạch sàn"
     },
     "all": "Tất cả",
     "count": "món",
@@ -147,5 +155,13 @@
     "above": "trên",
     "below": "dưới",
     "unit": "mm"
+  },
+  "index": {
+    "title": "Chỉ mục bộ mô hình",
+    "kit": "Bộ mô hình",
+    "slots": "Số ô",
+    "variants": "Biến thể",
+    "section": "Nằm ở mục",
+    "missing": "Chưa thuộc mục nào"
   }
 }

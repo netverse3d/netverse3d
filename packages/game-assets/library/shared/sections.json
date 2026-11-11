@@ -11,25 +11,62 @@
     "title": "Nhân vật",
     "summary": "Thân, tóc và phụ kiện của người chơi, cùng các hành động và biểu cảm trên bộ xương chung.",
     "state": "legacy",
-    "pages": [{ "title": "Hành động và biểu cảm", "src": "studio.html" }]
+    "pages": [
+      {
+        "title": "Hành động và biểu cảm",
+        "src": "studio.html"
+      }
+    ]
   },
   {
     "id": "parts",
     "title": "Món đồ",
     "summary": "Mọi món của bàn máy và góc console, đủ các biến thể: đổi bộ màu tiệm, bộ màu phím và LED, lọc theo bộ, xem số tam giác so với mức trần.",
-    "href": "parts.html",
+    "href": "catalog.html?section=parts",
     "state": "rebuilt",
+    "kits": ["station-parts.glb", "lounge-parts.glb"],
     "pages": [
-      { "title": "Soi từng món", "src": "lab.html" },
-      { "title": "Danh mục cũ", "src": "gallery.html" }
+      {
+        "title": "Soi từng món",
+        "src": "lab.html"
+      },
+      {
+        "title": "Danh mục cũ",
+        "src": "gallery.html"
+      }
     ]
   },
   {
     "id": "rooms",
     "title": "Phòng",
-    "summary": "Các module sàn, tường, góc, cửa, cửa sổ và trần ghép trên lưới 2 m, kèm phần thử mối nối.",
-    "state": "legacy",
-    "pages": [{ "title": "Module và mối nối", "src": "lab.html?part=wall_a" }]
+    "summary": "Các module sàn, tường, góc, cửa, cửa sổ, trần và đèn ghép trên lưới 2 m, cùng bộ biển hiệu của tiệm; có phần thử mối nối.",
+    "href": "catalog.html?section=rooms",
+    "state": "rebuilt",
+    "kits": ["room-kit.glb", "sign-parts.glb"],
+    "pages": [
+      {
+        "title": "Module và mối nối",
+        "src": "lab.html?part=wall_a"
+      }
+    ]
+  },
+  {
+    "id": "street",
+    "title": "Phố",
+    "summary": "Mặt đường, vỉa hè, cột điện, đèn, đồ vỉa hè và mặt tiền nhà ống để lắp khối phố quanh tiệm, kèm một con hẻm mẫu lắp từ dữ liệu.",
+    "href": "catalog.html?section=street",
+    "state": "rebuilt",
+    "kits": ["street-parts.glb"],
+    "pages": [
+      {
+        "title": "Hẻm mẫu",
+        "src": "street.html"
+      },
+      {
+        "title": "Soi từng món",
+        "src": "lab.html?part=road_a"
+      }
+    ]
   },
   {
     "id": "shops",
@@ -37,9 +74,14 @@
     "summary": "Ba tiệm dựng từ công thức: đổi bộ màu, biển hiệu, ánh sáng và món theo từng ô.",
     "state": "legacy",
     "pages": [
-      { "title": "Phòng thử tiệm", "src": "shop.html" },
-      { "title": "Tiệm giới thiệu", "src": "showcase.html" },
-      { "title": "Hẻm mẫu", "src": "street.html" }
+      {
+        "title": "Phòng thử tiệm",
+        "src": "shop.html"
+      },
+      {
+        "title": "Tiệm giới thiệu",
+        "src": "showcase.html"
+      }
     ]
   },
   {
@@ -55,9 +97,18 @@
     "summary": "Bản phác giai đoạn đầu dựng bằng mã: phố Sài Gòn, bộ sưu tập hướng nhân vật, xưởng và tiệm. Không phải tài sản chính thức.",
     "state": "legacy",
     "pages": [
-      { "title": "Phố Sài Gòn", "src": "studio.html#pho" },
-      { "title": "Bộ sưu tập", "src": "studio.html#muc-1" },
-      { "title": "Xưởng và tiệm", "src": "studio.html#stand" }
+      {
+        "title": "Phố Sài Gòn",
+        "src": "studio.html#pho"
+      },
+      {
+        "title": "Bộ sưu tập",
+        "src": "studio.html#muc-1"
+      },
+      {
+        "title": "Xưởng và tiệm",
+        "src": "studio.html#stand"
+      }
     ]
   }
 ]

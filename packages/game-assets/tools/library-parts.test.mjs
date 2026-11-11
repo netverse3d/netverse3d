@@ -41,7 +41,7 @@ const RECIPES = {
 };
 
 test('danh mục món đồ gom theo bộ rồi theo ô, không lấy bộ module phòng', () => {
-  const groups = partGroups(CONFIG);
+  const groups = partGroups(CONFIG, ['station-parts.glb', 'lounge-parts.glb']);
   assert.deepEqual(
     groups.map((group) => group.kit),
     ['station-parts.glb', 'lounge-parts.glb'],
@@ -63,12 +63,12 @@ test('danh mục món đồ gom theo bộ rồi theo ô, không lấy bộ modul
 });
 
 test('cấu hình chưa có bộ nào thì danh mục rỗng, không sập', () => {
-  assert.deepEqual(partGroups({}), []);
+  assert.deepEqual(partGroups({}, ['station-parts.glb']), []);
   assert.equal(partCount([]), 0);
 });
 
 test('lọc theo bộ chỉ giữ bộ đó; không chọn bộ thì giữ tất cả', () => {
-  const groups = partGroups(CONFIG);
+  const groups = partGroups(CONFIG, ['station-parts.glb', 'lounge-parts.glb']);
   assert.deepEqual(
     filterParts(groups, { kit: 'lounge-parts.glb', query: '' }).map((group) => group.kit),
     ['lounge-parts.glb'],
@@ -77,7 +77,7 @@ test('lọc theo bộ chỉ giữ bộ đó; không chọn bộ thì giữ tất
 });
 
 test('lọc theo chữ tìm trong tên món và tên ô, không phân biệt hoa thường và khoảng trắng thừa', () => {
-  const groups = partGroups(CONFIG);
+  const groups = partGroups(CONFIG, ['station-parts.glb', 'lounge-parts.glb']);
   const labels = { desk: 'Bàn', chair: 'Ghế', sofa: 'Sofa' };
   const names = (found) =>
     found.flatMap((group) => group.slots.flatMap((slot) => slot.parts.map((part) => part.name)));
@@ -93,7 +93,7 @@ test('lọc theo chữ tìm trong tên món và tên ô, không phân biệt hoa
 });
 
 test('lọc xong thì ô nào hết món và bộ nào hết ô sẽ không còn tiêu đề trống', () => {
-  const groups = partGroups(CONFIG);
+  const groups = partGroups(CONFIG, ['station-parts.glb', 'lounge-parts.glb']);
   const found = filterParts(groups, { kit: null, query: 'sofa' }, { sofa: 'Sofa' });
   assert.equal(found.length, 1);
   assert.equal(found[0].slots.length, 1);
@@ -128,7 +128,7 @@ test('đổi bộ màu phím hoặc LED tạo công thức mới, không sửa c
 
 test('danh mục dựng từ cấu hình thật có đủ ba mẫu bàn và bộ góc console', () => {
   const config = JSON.parse(readFileSync(join(ROOT, 'assets.config.json'), 'utf8'));
-  const groups = partGroups(config);
+  const groups = partGroups(config, ['station-parts.glb', 'lounge-parts.glb']);
   const names = groups.flatMap((group) =>
     group.slots.flatMap((slot) => slot.parts.map((part) => part.name)),
   );

@@ -8,8 +8,6 @@ const FRAMED_MARK = 'framed';
 const STAGE_PARAMS = ['section', 'page'];
 const FIGURES = {
   characters: (summary) => ({ value: summary.actions, unit: 'actions' }),
-  parts: (summary) => ({ value: summary.partVariants, unit: 'variants' }),
-  rooms: (summary) => ({ value: summary.roomVariants, unit: 'modules' }),
   shops: (summary) => ({ value: summary.shops, unit: 'shops' }),
 };
 
@@ -30,19 +28,45 @@ export function catalogSummary(config, recipeIds) {
   const kits = config.kits ?? [];
   const clips = config.clips ?? [];
   const expressions = clips.filter((clip) => clip.startsWith(EXPRESSION_PREFIX)).length;
-  const kitNamed = (file) => kits.find((kit) => kit.file === file);
   return {
     slots: kits.reduce((total, kit) => total + Object.keys(kit.slots ?? {}).length, 0),
     variants: kits.reduce((total, kit) => total + variantsOf(kit), 0),
-    partVariants: kits
-      .filter((kit) => kit.file !== ROOM_KIT)
-      .reduce((total, kit) => total + variantsOf(kit), 0),
-    roomVariants: variantsOf(kitNamed(ROOM_KIT)),
     actions: clips.length - expressions,
     expressions,
     shops: recipeIds.length,
     scenes: (config.scenes ?? []).length,
   };
+}
+
+export function sectionKits(section) {
+  return section.kits ?? [];
+}
+
+export function catalogSection(sections, search) {
+  const catalogues = sections.filter((section) => sectionKits(section).length > 0);
+  const asked = new URLSearchParams(search).get('section');
+  return catalogues.find((section) => section.id === asked) ?? catalogues[0];
+}
+
+function sectionVariants(config, section) {
+  const files = sectionKits(section);
+  return (config.kits ?? [])
+    .filter((kit) => files.includes(kit.file))
+    .reduce((total, kit) => total + variantsOf(kit), 0);
+}
+
+export function kitIndex(config, sections) {
+  return (config.kits ?? []).map((kit) => {
+    const section = sections.find((item) => sectionKits(item).includes(kit.file)) ?? null;
+    return {
+      file: kit.file,
+      slots: Object.keys(kit.slots ?? {}).length,
+      variants: variantsOf(kit),
+      section: section?.id ?? null,
+      title: section?.title ?? null,
+      href: section ? sectionHref(section) : null,
+    };
+  });
 }
 
 export function pageHref(section, page) {
@@ -65,7 +89,7 @@ export function navItems(sections, currentId) {
   }));
 }
 
-export function sectionCards(sections, summary) {
+export function sectionCards(sections, summary, config = {}) {
   return sections
     .filter((section) => section.id !== OVERVIEW_ID)
     .map((section) => ({
@@ -77,8 +101,14 @@ export function sectionCards(sections, summary) {
       more: (section.pages ?? [])
         .map((page, index) => ({ title: page.title, href: pageHref(section, index) }))
         .slice(section.state === 'legacy' ? 1 : 0),
-      figure: FIGURES[section.id]?.(summary) ?? null,
+      figure: sectionFigure(section, summary, config),
     }));
+}
+
+function sectionFigure(section, summary, config) {
+  if (sectionKits(section).length === 0) return FIGURES[section.id]?.(summary) ?? null;
+  const value = sectionVariants(config, section);
+  return value > 0 ? { value, unit: 'variants' } : null;
 }
 
 export function stageTarget(sections, search) {

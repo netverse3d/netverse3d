@@ -61,7 +61,7 @@ test('mỗi mục của thư viện có tên riêng, tiêu đề, mô tả và m
 test('thư viện chia mục theo loại tài sản, đúng thứ tự đã chốt, Lưu trữ đứng cuối', () => {
   assert.deepEqual(
     SECTIONS.map((section) => section.id),
-    ['overview', 'characters', 'parts', 'rooms', 'shops', 'checks', 'archive'],
+    ['overview', 'characters', 'parts', 'rooms', 'street', 'shops', 'checks', 'archive'],
   );
 });
 
@@ -114,7 +114,7 @@ test('thanh mục đánh dấu đúng một mục đang xem và không cho bấm
     items.filter((item) => item.current).map((item) => item.id),
     ['parts'],
   );
-  assert.equal(items.find((item) => item.id === 'parts')?.href, 'parts.html');
+  assert.equal(items.find((item) => item.id === 'parts')?.href, 'catalog.html?section=parts');
   assert.equal(items.find((item) => item.id === 'shops')?.href, `${STAGE_PAGE}?section=shops`);
   const upcoming = navItems(
     [{ id: 'later', title: 'Sau', summary: 'Chưa có trang.', state: 'planned' }],
@@ -165,8 +165,6 @@ test('số liệu tổng quan đếm từ cấu hình tài sản: món, biến t
   assert.deepEqual(catalogSummary(CONFIG, ['tim-neon', 'bien-sau']), {
     slots: 5,
     variants: 7,
-    partVariants: 5,
-    roomVariants: 2,
     actions: 3,
     expressions: 2,
     shops: 2,
@@ -178,8 +176,6 @@ test('cấu hình thiếu phần nào thì phần đó đếm là không, không
   assert.deepEqual(catalogSummary({}, []), {
     slots: 0,
     variants: 0,
-    partVariants: 0,
-    roomVariants: 0,
     actions: 0,
     expressions: 0,
     shops: 0,
@@ -189,7 +185,7 @@ test('cấu hình thiếu phần nào thì phần đó đếm là không, không
 
 test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ đều mở trong khung', () => {
   const summary = catalogSummary(CONFIG, ['tim-neon', 'bien-sau']);
-  const cards = sectionCards(SECTIONS, summary);
+  const cards = sectionCards(SECTIONS, summary, CONFIG);
   assert.equal(
     cards.some((card) => card.id === 'overview'),
     false,
@@ -197,7 +193,8 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
   const figure = (id) => cards.find((card) => card.id === id)?.figure;
   assert.deepEqual(figure('characters'), { value: 3, unit: 'actions' });
   assert.deepEqual(figure('parts'), { value: 5, unit: 'variants' });
-  assert.deepEqual(figure('rooms'), { value: 2, unit: 'modules' });
+  assert.deepEqual(figure('rooms'), { value: 2, unit: 'variants' });
+  assert.equal(figure('street'), null);
   assert.deepEqual(figure('shops'), { value: 2, unit: 'shops' });
   assert.equal(figure('checks'), null);
   assert.equal(figure('archive'), null);
@@ -209,15 +206,15 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
   const shops = cards.find((card) => card.id === 'shops');
   assert.deepEqual(
     shops?.more.map((link) => link.href),
-    [`${STAGE_PAGE}?section=shops&page=1`, `${STAGE_PAGE}?section=shops&page=2`],
+    [`${STAGE_PAGE}?section=shops&page=1`],
   );
 });
 
 test('mục đã dựng lại mở trang mới của nó, các trang cũ còn lại thành nút phụ mở trong khung', () => {
   const parts = SECTIONS.find((section) => section.id === 'parts');
   assert.equal(parts.state, 'rebuilt');
-  assert.equal(sectionHref(parts), 'parts.html');
-  const card = sectionCards(SECTIONS, catalogSummary(CONFIG, [])).find(
+  assert.equal(sectionHref(parts), 'catalog.html?section=parts');
+  const card = sectionCards(SECTIONS, catalogSummary(CONFIG, []), CONFIG).find(
     (item) => item.id === 'parts',
   );
   assert.deepEqual(
@@ -230,7 +227,12 @@ test('mục đã dựng lại mở trang mới của nó, các trang cũ còn l�
 test('dãy thẻ của mục đã dựng lại có trang mới đứng đầu rồi tới các trang cũ, đánh dấu đúng trang đang xem', () => {
   const parts = SECTIONS.find((section) => section.id === 'parts');
   const onMain = sectionTabs(parts, 'main', 'Danh mục');
-  assert.deepEqual(onMain[0], { title: 'Danh mục', href: 'parts.html', page: null, current: true });
+  assert.deepEqual(onMain[0], {
+    title: 'Danh mục',
+    href: 'catalog.html?section=parts',
+    page: null,
+    current: true,
+  });
   assert.equal(onMain.length, parts.pages.length + 1);
   assert.equal(onMain.filter((tab) => tab.current).length, 1);
   const onLab = sectionTabs(parts, 0, 'Danh mục');
@@ -250,7 +252,6 @@ test('dãy thẻ của mục còn trang cũ chỉ gồm các trang cũ', () => {
     [
       [0, false],
       [1, true],
-      [2, false],
     ],
   );
 });
