@@ -5,6 +5,7 @@ import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hero_kit import anchor, bake_isolated, finish_hero
+from hero_facade import build_roof, build_shopfront, build_storey_a, build_storey_b
 from hero_street import build_bin, build_lamp, build_planter, build_pole, build_road_a, build_road_b, build_road_c, build_board, build_sidewalk, build_wires
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
@@ -14,6 +15,10 @@ COLLISIONS = {
     'bin_a': ((0, 0, 0.4), (0.25, 0.25, 0.4)),
     'planter_a': ((0, 0, 0.5), (0.4, 0.4, 0.5)),
     'board_a': ((0, 0, 0.5), (0.32, 0.32, 0.5)),
+    'shopfront_a': ((0, 0, 1.7), (2.0, 0.15, 1.7)),
+    'storey_a': ((0, 0, 1.7), (2.0, 0.15, 1.7)),
+    'storey_b': ((0, 0, 1.7), (2.0, 0.15, 1.7)),
+    'roof_a': ((0, 0, 0.35), (2.0, 0.15, 0.35)),
 }
 
 
@@ -27,7 +32,7 @@ def main():
     for material in materials:
         material.use_nodes = True
     built = {}
-    for builder in (build_road_a, build_road_b, build_road_c, build_sidewalk, build_pole, build_wires, build_lamp, build_bin, build_planter, build_board):
+    for builder in (build_road_a, build_road_b, build_road_c, build_sidewalk, build_pole, build_wires, build_lamp, build_bin, build_planter, build_board, build_shopfront, build_storey_a, build_storey_b, build_roof):
         part = builder()
         built[part.name] = finish_hero(part, collection, materials)
     for name, (location, scale) in COLLISIONS.items():
