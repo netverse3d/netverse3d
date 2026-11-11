@@ -5,7 +5,7 @@ from hero_street import FLOAT
 
 WIDTH = 4.0
 HALF = WIDTH / 2
-STOREY = 3.4
+STOREY = 3.8
 WALL_DEPTH = 0.3
 FACE = -WALL_DEPTH / 2
 PILASTER = 0.3

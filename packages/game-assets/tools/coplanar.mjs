@@ -269,8 +269,9 @@ export function roomAssemblies(parts) {
   return assemblies;
 }
 
-const STOREY = 3.4;
+const STOREY = 3.8;
 const LOT = 4;
+const level = (floor) => Math.round(STOREY * floor * 1000) / 1000;
 
 export function facadeAssemblies(parts) {
   const variants = (slot) => parts.filter((name) => name.startsWith(`${slot}_`));
@@ -284,9 +285,9 @@ export function facadeAssemblies(parts) {
             name: `${shopfront} under ${lower} under ${upper} under ${roof}`,
             places: [
               [shopfront, [0, 0, 0], 0],
-              [lower, [0, STOREY, 0], 0],
-              [upper, [0, STOREY * 2, 0], 0],
-              [roof, [0, STOREY * 3, 0], 0],
+              [lower, [0, level(1), 0], 0],
+              [upper, [0, level(2), 0], 0],
+              [roof, [0, level(3), 0], 0],
             ],
           });
         }
