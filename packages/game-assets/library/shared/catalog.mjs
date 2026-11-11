@@ -1,9 +1,11 @@
 export const SECTION_STATES = ['rebuilt', 'legacy', 'planned'];
+export const STAGE_PAGE = 'view.html';
 
 const OVERVIEW_ID = 'overview';
 const EXPRESSION_PREFIX = 'ex_';
 const STATION_KIT = 'station-parts.glb';
 const ROOM_KIT = 'room-kit.glb';
+const FRAMED_MARK = 'framed';
 const FIGURES = {
   characters: (summary) => ({ value: summary.actions, unit: 'actions' }),
   parts: (summary) => ({ value: summary.stationVariants, unit: 'variants' }),
@@ -16,6 +18,12 @@ function variantsOf(kit) {
     (total, slot) => total + (slot.variants?.length ?? 0),
     0,
   );
+}
+
+function splitSource(src) {
+  const [beforeHash, hash = ''] = src.split('#');
+  const [file, query = ''] = beforeHash.split('?');
+  return { file, query, hash: hash ? `#${hash}` : '' };
 }
 
 export function catalogSummary(config, recipeIds) {
@@ -35,11 +43,21 @@ export function catalogSummary(config, recipeIds) {
   };
 }
 
+export function pageHref(section, page) {
+  const base = `${STAGE_PAGE}?section=${section.id}`;
+  return page > 0 ? `${base}&page=${page}` : base;
+}
+
+export function sectionHref(section) {
+  if (section.state === 'planned') return null;
+  return section.state === 'legacy' ? pageHref(section, 0) : section.href;
+}
+
 export function navItems(sections, currentId) {
   return sections.map((section) => ({
     id: section.id,
     title: section.title,
-    href: section.state === 'planned' ? null : section.href,
+    href: sectionHref(section),
     state: section.state,
     current: section.id === currentId,
   }));
@@ -52,9 +70,41 @@ export function sectionCards(sections, summary) {
       id: section.id,
       title: section.title,
       summary: section.summary,
-      href: section.state === 'planned' ? null : section.href,
+      href: sectionHref(section),
       state: section.state,
-      more: section.more ?? [],
+      more: (section.pages ?? [])
+        .slice(1)
+        .map((page, index) => ({ title: page.title, href: pageHref(section, index + 1) })),
       figure: FIGURES[section.id]?.(summary) ?? null,
     }));
+}
+
+export function stageTarget(sections, search) {
+  const framed = sections.filter((section) => section.state === 'legacy');
+  const params = new URLSearchParams(search);
+  const section = framed.find((item) => item.id === params.get('section')) ?? framed[0];
+  const asked = Number(params.get('page') ?? 0);
+  const page = Number.isInteger(asked) && asked >= 0 && asked < section.pages.length ? asked : 0;
+  return { section: section.id, page };
+}
+
+export function framedSource(src, page) {
+  const { file, query, hash } = splitSource(src);
+  const mark = `${FRAMED_MARK}=${page}`;
+  return `${file}?${query ? `${query}&` : ''}${mark}${hash}`;
+}
+
+export function whereIs(sections, file, hash, currentId) {
+  const matches = sections.flatMap((section) =>
+    (section.pages ?? [])
+      .map((page, index) => ({ section: section.id, page: index, ...splitSource(page.src) }))
+      .filter((page) => page.file === file),
+  );
+  if (matches.length === 0) return null;
+  const pick =
+    matches.find((match) => match.section === currentId && match.hash === hash) ??
+    matches.find((match) => match.section === currentId) ??
+    matches.find((match) => match.hash === hash) ??
+    matches[0];
+  return { section: pick.section, page: pick.page };
 }
