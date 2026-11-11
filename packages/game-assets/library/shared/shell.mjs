@@ -1,4 +1,4 @@
-import { navItems } from './catalog.mjs';
+import { navItems, sectionTabs } from './catalog.mjs';
 
 const SHARED = new URL('./', import.meta.url);
 
@@ -59,4 +59,27 @@ export function mountNav(target, { sections, text }, currentId) {
     ),
     element('p', { class: 'gallery-foot' }, text.foot),
   );
+}
+
+export function mountPageHead(shell, sectionId) {
+  const { sections, text } = shell;
+  const section = sections.find((item) => item.id === sectionId);
+  const byId = (id) => document.getElementById(id);
+  mountNav(byId('nav'), shell, sectionId);
+  byId('page-title').textContent = section.title;
+  byId('page-badge').replaceChildren(stateBadge(section.state, text));
+  byId('page-summary').textContent = section.summary;
+  const tabs = sectionTabs(section, 'main', text.mainPage);
+  byId('page-tabs').replaceChildren(
+    ...tabs.map((tab) =>
+      element(
+        'a',
+        { class: 'stage-tab', href: tab.href, 'aria-current': tab.current ? 'page' : null },
+        tab.title,
+      ),
+    ),
+  );
+  byId('page-tabs').hidden = tabs.length < 2;
+  document.title = `${section.title} · ${text.brand}`;
+  return section;
 }

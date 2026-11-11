@@ -10,6 +10,8 @@ Thư viện mở ra ở trang Tổng quan, chia mục theo loại tài sản: Nh
 
 Mục Món đồ là mục đầu tiên đã dựng lại: `library/parts.html` vẽ mọi món của bộ bàn máy và bộ góc console từ `assets.config.json`, cho đổi bộ màu tiệm, bộ màu phím và LED, lọc theo bộ, tìm theo tên, và so số tam giác của từng món với mức trần của ô. Mục đã dựng lại khai trang mới ở `href`; các trang cũ còn cần của nó vẫn nằm trong `pages` và hiện thành dãy thẻ cạnh trang mới. Tham số riêng của trang cũ đi kèm địa chỉ khung, ví dụ `view.html?section=parts&part=mic_b&spin=0` mở đúng món đó trong trang soi.
 
+Mục Soi lỗi (`library/checks.html`) dựng một bàn máy lắp đủ món bằng đúng `stationPlan` và `buildShop` mà game dùng, rồi đặt nhân vật ngồi tại vị trí ghế cộng điểm neo `seat_anchor`, cùng phép tính với `shopSeats` của game. Trang cho đổi bộ màu tiệm, mẫu của từng ô và hành động ngồi, có sáu góc nhìn bám vào bàn máy, bật tắt được nhân vật, hộp va chạm, điểm neo và khung xương. Bảng Số đo đọc khoảng hở theo từng khung hình: cổ tay tới mặt phím hoặc mặt bàn, mũi chân tới sàn, xếp ba mức lún, chạm, hở; tay đặt ngoài bàn thì ghi là không đặt trên bàn. Trạng thái nằm trên địa chỉ, ví dụ `checks.html?recipe=bien-sau&speaker=b&clip=sit_idle&view=feet&play=0`, nên gửi được đúng cảnh đang soi. Phần tính toán nằm ở `library/shared/checks-data.mjs` và có test riêng.
+
 Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của nó dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab phố Sài Gòn, bộ sưu tập, xưởng và tiệm là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức, và được xếp vào mục Lưu trữ. Thư viện chỉ để xem; game thật viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc

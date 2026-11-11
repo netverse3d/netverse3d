@@ -45,8 +45,9 @@
   {
     "id": "checks",
     "title": "Soi lỗi",
-    "summary": "Nhân vật ngồi tại bàn máy thật, hộp va chạm và điểm neo, để bắt lỗi lún, xuyên và lệch.",
-    "state": "planned"
+    "summary": "Một bàn máy lắp đủ món theo đúng cách game lắp, có nhân vật ngồi: đổi mẫu từng ô và tư thế, soi gần tay, chân, hộp va chạm và điểm neo để bắt lỗi lún, xuyên và lệch.",
+    "href": "checks.html",
+    "state": "rebuilt"
   },
   {
     "id": "archive",
