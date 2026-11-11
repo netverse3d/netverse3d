@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
 import {
@@ -51,10 +52,12 @@ test('tóm tắt trả lời: lỗi, lỗi nằm trong kết quả, ảnh chụp
 
 test('đường dẫn tương đối tính từ nơi người dùng gõ lệnh, không phải thư mục gói', () => {
   const previous = process.env.INIT_CWD;
-  process.env.INIT_CWD = 'C:/work/here';
+  const here = resolve(tmpdir(), 'here');
+  const elsewhere = resolve(tmpdir(), 'elsewhere', 'sketch.py');
+  process.env.INIT_CWD = here;
   try {
-    assert.equal(callerPath('sketch.py'), resolve('C:/work/here', 'sketch.py'));
-    assert.equal(callerPath('C:/elsewhere/sketch.py'), resolve('C:/elsewhere/sketch.py'));
+    assert.equal(callerPath('sketch.py'), resolve(here, 'sketch.py'));
+    assert.equal(callerPath(elsewhere), elsewhere);
   } finally {
     if (previous === undefined) delete process.env.INIT_CWD;
     else process.env.INIT_CWD = previous;
