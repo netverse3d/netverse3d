@@ -182,7 +182,7 @@ def build_base(chair):
     hub = [[Vector((r * math.cos(2 * math.pi * i / 16), r * math.sin(2 * math.pi * i / 16), z)) for i in range(16)] for r, z in ((0.04, 0.112), (0.065, 0.118), (0.065, 0.172), (0.044, 0.182))]
     chair.loft(hub, lambda a, b: 'body', levels=0, smooth=True)
     for i in range(5):
-        angle = 2 * math.pi * i / 5 + math.pi / 2
+        angle = 2 * math.pi * i / 5 - math.pi / 2
         direction = Vector((math.cos(angle), math.sin(angle), 0))
         base_arm(chair, direction)
         chair.rounded_box(tuple(direction * (ARM_TIP - 0.015) + Vector((0, 0, 0.066))), (0.028, 0.034, 0.044), 'body', radius=0.005, segments=1)

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import * as THREE from 'three';
-import { FACE_H, FACE_W, createActorLook } from './actor-look.mjs';
+import { FACE_H, FACE_W, createActorLook, wearsBackpack } from './actor-look.mjs';
 
 function fakeCanvas(log) {
   const context = new Proxy(
@@ -96,4 +96,13 @@ test('mặc đồ lần hai không tạo vật liệu mới', () => {
   look.dress(root);
   assert.equal(root.children[0].material, face);
   assert.equal(root.children[1].material, skin);
+});
+
+test('nhân vật bỏ ba lô ở mọi hành động ngồi và đeo lại lúc đứng, đi, chạy', () => {
+  for (const clip of ['sit_down', 'typing', 'sit_idle', 'stand_up']) {
+    assert.equal(wearsBackpack(clip), false, clip);
+  }
+  for (const clip of ['idle', 'walk', 'run', 'wave', 'khong-co']) {
+    assert.equal(wearsBackpack(clip), true, clip);
+  }
 });

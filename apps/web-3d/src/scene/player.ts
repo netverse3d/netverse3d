@@ -1,7 +1,12 @@
 import type { AnimationAction, Object3D, SkinnedMesh } from 'three';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { createActorLook, type ActorLook } from '@netverse/game-assets/runtime/actor-look.mjs';
+import {
+  BACKPACK_NODE,
+  createActorLook,
+  wearsBackpack,
+  type ActorLook,
+} from '@netverse/game-assets/runtime/actor-look.mjs';
 import type { PlayerState } from '@netverse/game-shared/movement';
 import { blendClipWeights } from './clip-blend.ts';
 
@@ -36,6 +41,7 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
     const prop = root.getObjectByName(name);
     if (prop) prop.visible = false;
   }
+  const backpack = root.getObjectByName(BACKPACK_NODE);
   root.position.set(spawn.x, 0, spawn.z);
   root.rotation.y = spawn.yaw;
   const mixer = new THREE.AnimationMixer(root);
@@ -81,6 +87,7 @@ export function createPlayer(THREE: Three, gltf: GLTF, spawn: Spawn): Player {
         playing !== undefined &&
         (playing.paused || playing.time >= playing.getClip().duration - CLIP_END_SLACK);
       if (next && ended) clip = next;
+      if (backpack) backpack.visible = wearsBackpack(clip);
       blend(delta);
       mixer.update(delta);
     },

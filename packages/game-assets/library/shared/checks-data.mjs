@@ -9,6 +9,7 @@ const SUNK_BELOW = -0.001;
 const DEFAULT_REACH = 0.04;
 const HAND_REACH = 0.12;
 const OFF_DESK_BELOW = -0.06;
+const FOOT_ZONE = { side: 0.115, halfWidth: 0.055, back: -0.05, front: 0.17, top: 0.11 };
 
 export function stationChoices(config) {
   const kit = (config.kits ?? []).find((item) => item.file === STATION_KIT);
@@ -61,6 +62,15 @@ export function handReading(point, keyboard, deskHeight) {
   if (point.y - deskHeight < OFF_DESK_BELOW)
     return { surface: 'desk', millimetres: null, level: 'away' };
   return { surface: 'desk', ...clearance(point.y, deskHeight, HAND_REACH) };
+}
+
+export function footZoneHits(triangles, hip) {
+  const inZone = ([x, y, z]) =>
+    y <= FOOT_ZONE.top &&
+    Math.abs(Math.abs(x - hip.position[0]) - FOOT_ZONE.side) <= FOOT_ZONE.halfWidth &&
+    z - hip.position[2] >= FOOT_ZONE.back &&
+    z - hip.position[2] <= FOOT_ZONE.front;
+  return triangles.filter((triangle) => triangle.some(inZone)).length;
 }
 
 export function seatedClips(clips) {

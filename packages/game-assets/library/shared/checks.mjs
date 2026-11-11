@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { createActorLook } from '../../runtime/actor-look.mjs';
+import { BACKPACK_NODE, createActorLook, wearsBackpack } from '../../runtime/actor-look.mjs';
 import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { kitAnchors, paletteRows, stationPlan } from '../../runtime/shop-look.mjs';
 import { buildShop, kitLightmap, shopMaterials } from '../../runtime/three-shop.mjs';
@@ -220,6 +220,8 @@ async function main() {
       else action.stop();
     }
     mixer.timeScale = state.playing ? 1 : 0;
+    const backpack = figure.getObjectByName(BACKPACK_NODE);
+    if (backpack) backpack.visible = wearsBackpack(state.clip);
   }
 
   function lookFrom(name) {

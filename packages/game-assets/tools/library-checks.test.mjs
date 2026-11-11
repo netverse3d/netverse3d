@@ -7,6 +7,7 @@ import {
   CLEARANCE_LEVELS,
   clearance,
   collisionOutlines,
+  footZoneHits,
   handReading,
   seatedClips,
   seatPoint,
@@ -14,7 +15,8 @@ import {
   withVariant,
 } from '../library/shared/checks-data.mjs';
 import { kitAnchors, stationPlan } from '../runtime/shop-look.mjs';
-import { isLfsPointer, loadConfig, readGlb } from './lib.mjs';
+import { partTriangles } from './coplanar.mjs';
+import { isLfsPointer, loadConfig, readGlb, readGlbBinary } from './lib.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-6, `${actual}`);
@@ -161,4 +163,45 @@ test('bộ máy thật: nhân vật ngồi đúng chỗ game đặt, ngay trư�
   assert.ok(boxes.some((box) => box.part.startsWith('desk_')));
   assert.ok(boxes.some((box) => box.part.startsWith('chair_')));
   assert.ok(boxes.some((box) => box.part.startsWith('case_')));
+});
+
+test('vùng đặt chân nằm trước điểm ngồi, hai bên trục ghế, sát sàn', () => {
+  const hip = { position: [0, 0, 0.24] };
+  const inside = [
+    [0.115, 0.05, 0.3],
+    [0.3, 0.05, 0.3],
+    [0.3, 0.05, 0.5],
+  ];
+  const between = [
+    [0, 0.05, 0.3],
+    [0.02, 0.05, 0.35],
+    [-0.02, 0.05, 0.35],
+  ];
+  const above = [
+    [0.115, 0.3, 0.3],
+    [0.12, 0.3, 0.32],
+    [0.1, 0.3, 0.32],
+  ];
+  const behind = [
+    [0.115, 0.05, 0.05],
+    [0.12, 0.05, 0.06],
+    [0.1, 0.05, 0.06],
+  ];
+  assert.equal(footZoneHits([inside, between, above, behind], hip), 1);
+  assert.equal(footZoneHits([inside.map(([x, y, z]) => [-x, y, z])], hip), 1);
+  assert.equal(footZoneHits([], hip), 0);
+});
+
+test('bộ máy thật: không phần nào của ghế nằm trong vùng đặt hai bàn chân', (context) => {
+  const buffer = readFileSync(join(ROOT, 'exported', 'station-parts.glb'));
+  if (isLfsPointer(buffer)) return context.skip('station-parts.glb chưa tải nội dung LFS');
+  const gltf = readGlb(buffer);
+  const anchors = kitAnchors(gltf);
+  const chairs = loadConfig(ROOT).kits.find((kit) => kit.file === 'station-parts.glb').slots.chair;
+  for (const variant of chairs.variants) {
+    const part = `chair_${variant}`;
+    const triangles = partTriangles(gltf, readGlbBinary(buffer), part);
+    assert.ok(triangles.length > 0, part);
+    assert.equal(footZoneHits(triangles, anchors[part].seat_anchor), 0, part);
+  }
 });

@@ -145,6 +145,8 @@ declare module '@netverse/game-assets/runtime/actor-look.mjs' {
     showFace(root: Object3D, kind: string, blink?: boolean): boolean;
   }
 
+  export const BACKPACK_NODE: string;
+  export function wearsBackpack(clip: string): boolean;
   export function createActorLook(
     THREE: typeof import('three'),
     options?: { createCanvas?: () => HTMLCanvasElement; toonGradient?: Texture | null },
