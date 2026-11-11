@@ -295,7 +295,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     preset.points.forEach((color, index) => {
       const light = new THREE.PointLight(color, 18, 12, 1.6);
       const side = index ? 1 : -1;
-      light.position.set(side * (width - 0.5), 2.6, -side * (depth - 0.5));
+      light.position.set(side * (width - 0.5), 3.1, -side * (depth - 0.5));
       lights.add(light);
     });
     bloom.strength = preset.bloom;

@@ -218,7 +218,7 @@
         "wall": {
           "variants": ["a"],
           "maxTriangles": 500,
-          "size": [2.01, 3.1, 2.01],
+          "size": [2.01, 3.7, 2.01],
           "grid": {
             "size": 2,
             "axes": [0]
@@ -228,7 +228,7 @@
         "corner": {
           "variants": ["a"],
           "maxTriangles": 1000,
-          "size": [2.01, 3.1, 2.01],
+          "size": [2.01, 3.7, 2.01],
           "grid": {
             "size": 2,
             "axes": [0, 2]
@@ -238,7 +238,7 @@
         "door": {
           "variants": ["a"],
           "maxTriangles": 900,
-          "size": [2.01, 3.1, 2.01],
+          "size": [2.01, 3.7, 2.01],
           "grid": {
             "size": 2,
             "axes": [0]
@@ -248,7 +248,7 @@
         "window": {
           "variants": ["a"],
           "maxTriangles": 800,
-          "size": [2.01, 3.1, 2.01],
+          "size": [2.01, 3.7, 2.01],
           "grid": {
             "size": 2,
             "axes": [0]
