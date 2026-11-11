@@ -319,3 +319,11 @@ requirements:
     milestone: M2
     area: game-assets
     sources: [team-decision]
+  - id: REQ-041
+    title: Góc console trong tiệm
+    description: Tiệm có thể có một góc giải trí riêng với sofa, bàn trà, máy console, tay cầm và TV lớn để người chơi ngồi chơi chung. Bộ mô hình dùng chung cơ chế ô đồ và đổi màu theo công thức tiệm; vị trí của góc này trong bố cục tiệm chốt sau.
+    status: draft
+    priority: should
+    milestone: M2
+    area: game-assets
+    sources: [team-decision]

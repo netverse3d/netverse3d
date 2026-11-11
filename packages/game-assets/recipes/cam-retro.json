@@ -21,7 +21,7 @@
     "monitor": "a",
     "keyboard": "c",
     "mouse": "c",
-    "mat": "a",
+    "mat": "c",
     "headset": "c",
     "mic": "b",
     "speaker": "a",
@@ -34,7 +34,12 @@
     "window": "a",
     "ceiling": "a",
     "light": "a",
-    "marker": "a"
+    "marker": "a",
+    "sofa": "a",
+    "table": "a",
+    "console": "a",
+    "gamepad": "a",
+    "tv": "a"
   },
   "layout": {
     "cells": [3, 3],

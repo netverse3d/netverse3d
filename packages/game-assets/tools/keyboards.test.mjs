@@ -7,7 +7,7 @@ import { atlasOf, keyboardCatalog, keyboardLayouts, layoutProblems } from './key
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-test('năm bố cục ANSI có đúng số phím và không phím nào chồng hay lọt ra ngoài bàn', () => {
+test('sáu bố cục có đúng số phím và không phím nào chồng hay lọt ra ngoài bàn', () => {
   const counts = Object.fromEntries(
     keyboardLayouts().map((layout) => [layout.id, layout.keys.length]),
   );
@@ -17,6 +17,7 @@ test('năm bố cục ANSI có đúng số phím và không phím nào chồng h
     'ansi-75': 82,
     'ansi-65': 68,
     'ansi-100': 104,
+    'mac-compact': 78,
   });
   for (const layout of keyboardLayouts()) assert.deepEqual(layoutProblems(layout), []);
 });

@@ -65,6 +65,13 @@ const CODES = {
   '←': 'ArrowLeft',
   '→': 'ArrowRight',
   Num: 'NumLock',
+  esc: 'Escape',
+  delete: 'Backspace',
+  return: 'Enter',
+  caps: 'CapsLock',
+  tab: 'Tab',
+  '⌃': 'ControlLeft',
+  '⏏': 'Eject',
 };
 
 function codeOf(label) {
@@ -82,7 +89,16 @@ function keyRow(y, items, x = 0) {
       continue;
     }
     const [label, w = 1, code, h = 1] = Array.isArray(item) ? item : [item];
-    const key = { code: code ?? codeOf(label), label, shift: SHIFTED[label] ?? null, x, y, w, h };
+    const place = (value) => Math.round(value * 1e4) / 1e4;
+    const key = {
+      code: code ?? codeOf(label),
+      label,
+      shift: SHIFTED[label] ?? null,
+      x: place(x),
+      y,
+      w: place(w),
+      h,
+    };
     key.zone = zoneOf(key);
     keys.push(key);
     x += w;
@@ -283,8 +299,48 @@ function ansi100() {
   };
 }
 
+function macCompact() {
+  const unit = 15 / 14;
+  return {
+    id: 'mac-compact',
+    variant: 'f',
+    name: 'Mac compact',
+    width: 15,
+    depth: 5.5,
+    keys: [
+      ...keyRow(
+        0,
+        ['esc', ...F_KEYS, '⏏'].map((label) => [label, unit, undefined, 0.5]),
+      ),
+      ...keyRow(0.5, [...NUMBERS, ['delete', 2]]),
+      ...keyRow(1.5, [['tab', 1.5], ...TOP, ['\\', 1.5]]),
+      ...keyRow(2.5, [['caps', 1.75], ...HOME, ['return', 2.25]]),
+      ...keyRow(3.5, [['shift', 2.25, 'ShiftLeft'], ...BOTTOM, ['shift', 2.75, 'ShiftRight']]),
+      ...keyRow(4.5, [
+        'fn',
+        '⌃',
+        ['⌥', 1, 'AltLeft'],
+        ['⌘', 1.25, 'MetaLeft'],
+        ['Space', 5.5],
+        ['⌘', 1.25, 'MetaRight'],
+        ['⌥', 1, 'AltRight'],
+      ]),
+      ...keyRow(4.5, [['↑', 1, 'ArrowUp', 0.5]], 13),
+      ...keyRow(
+        5,
+        [
+          ['←', 1, 'ArrowLeft', 0.5],
+          ['↓', 1, 'ArrowDown', 0.5],
+          ['→', 1, 'ArrowRight', 0.5],
+        ],
+        12,
+      ),
+    ],
+  };
+}
+
 export function keyboardLayouts() {
-  return [ansi60(), ansiTkl(), ansi75(), ansi65(), ansi100()];
+  return [ansi60(), ansiTkl(), ansi75(), ansi65(), ansi100(), macCompact()];
 }
 
 export function layoutProblems(layout) {

@@ -398,6 +398,7 @@ def finish_hero(part, collection, materials):
 
 
 LIGHTMAP_UV = 'lightmap'
+LIGHTMAP_SIZE = 2048
 PALETTE_UV = 'palette'
 GLTF_OUTPUT_GROUP = 'glTF Material Output'
 
@@ -490,6 +491,22 @@ def bake_occlusion(scene, objects, image, samples=32, distance=0.6, margin=8):
     bpy.ops.object.bake(type='AO', margin=margin, use_clear=False)
     for tree, node in targets:
         tree.nodes.remove(node)
+
+
+def bake_isolated(scene, collection, built, surface, image_name, distance):
+    parts = list(built.values())
+    prepare_lightmap_uv(parts)
+    ground = ground_plane(collection)
+    image = lightmap_image(image_name, LIGHTMAP_SIZE)
+    for ob in parts:
+        for other in parts:
+            other.hide_render = other is not ob
+        bake_occlusion(scene, [ob], image, distance=distance)
+    for ob in parts:
+        ob.hide_render = False
+    remove_context([ground])
+    finish_lightmap_uv(parts)
+    attach_occlusion(surface, image)
 
 
 def inert_material():

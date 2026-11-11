@@ -186,7 +186,11 @@
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
       const swing = new THREE.Vector3();
-      const KIT_NAMES = { 'station-parts.glb': 'Bàn máy', 'room-kit.glb': 'Phòng' };
+      const KIT_NAMES = {
+        'station-parts.glb': 'Bàn máy',
+        'room-kit.glb': 'Phòng',
+        'lounge-parts.glb': 'Góc console',
+      };
       const SLOT_NAMES = {
         desk: 'Bàn',
         monitor: 'Màn hình',
@@ -206,6 +210,11 @@
         ceiling: 'Trần',
         light: 'Đèn trần',
         marker: 'Vạch sàn',
+        sofa: 'Sofa',
+        table: 'Bàn trà',
+        console: 'Máy console',
+        gamepad: 'Tay cầm',
+        tv: 'TV',
       };
       const query = new URLSearchParams(location.search);
 

@@ -183,15 +183,3 @@ def build_speaker(name='speaker_a'):
             (0.001, 0.008, 'trim'),
         ], segments=20, smooth=False)
     return speaker
-
-
-def build_mat(name='mat_a'):
-    mat = HeroPart(name)
-    mat.slab(0, 0, 0.425, 0.175, 0.024, [
-        (0.0, 0.0, 'body'),
-        (0.0035, 0.002, 'soft'),
-    ])
-    border = [(x, y, 0.0045) for x, y in rounded_rect(0, 0, 0.415, 0.165, 0.02, 3)]
-    mat.tube(border, 0.007, 'strip', sides=4, closed=True)
-    mat.image_quad([(0.325, -0.14, 0.0055), (0.395, -0.14, 0.0055), (0.395, -0.08, 0.0055), (0.325, -0.08, 0.0055)], 'decal')
-    return mat

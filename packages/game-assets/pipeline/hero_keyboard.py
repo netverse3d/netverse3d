@@ -10,11 +10,11 @@ with open(CATALOG_PATH, encoding='utf-8') as handle:
     CATALOG = json.load(handle)
 UNIT = CATALOG['unit']
 SIDE_COLUMN = CATALOG['atlas']['sideColumn']
-KEY_GAP = 0.0011
 LED_SIZE = 0.003
 PROFILES = {
-    'oem': {'height': 0.0085, 'top_inset': 0.0019, 'shoulder_inset': 0.0007, 'shoulder_drop': 0.0012, 'rise': 0.0006},
-    'low': {'height': 0.0036, 'top_inset': 0.0009, 'shoulder_inset': 0.0004, 'shoulder_drop': 0.0006, 'rise': 0.0},
+    'oem': {'height': 0.0085, 'top_inset': 0.0019, 'shoulder_inset': 0.0007, 'shoulder_drop': 0.0012, 'rise': 0.0006, 'gap': 0.0011},
+    'low': {'height': 0.0036, 'top_inset': 0.0009, 'shoulder_inset': 0.0004, 'shoulder_drop': 0.0006, 'rise': 0.0, 'gap': 0.0011},
+    'chiclet': {'height': 0.0028, 'top_inset': 0.0006, 'shoulder_inset': 0.0003, 'shoulder_drop': 0.0005, 'rise': 0.0, 'gap': 0.0017},
 }
 STYLES = {
     'a': {'margin': 0.007, 'height': 0.012, 'case': 'body', 'plate': 'soft', 'underglow': True, 'leds': 0, 'profile': 'oem'},
@@ -22,6 +22,7 @@ STYLES = {
     'c': {'margin': 0.006, 'height': 0.015, 'case': 'metal', 'plate': 'metal', 'underglow': False, 'leds': 2, 'profile': 'oem'},
     'd': {'margin': 0.005, 'height': 0.008, 'case': 'metal', 'plate': 'metal', 'underglow': False, 'leds': 1, 'profile': 'low'},
     'e': {'margin': 0.009, 'height': 0.013, 'case': 'body', 'plate': 'soft', 'underglow': False, 'leds': 3, 'profile': 'oem'},
+    'f': {'margin': 0.004, 'height': 0.0055, 'case': 'metal', 'plate': 'metal', 'underglow': False, 'leds': 0, 'profile': 'chiclet'},
 }
 
 
@@ -64,10 +65,11 @@ def side_rect(layout, strip, key, low, high):
 def keycap(part, layout, strip, key, plate_top, profile):
     half_width = layout['width'] * UNIT / 2
     half_depth = layout['depth'] * UNIT / 2
-    left = half_width - key['x'] * UNIT - KEY_GAP
-    right = half_width - (key['x'] + key['w']) * UNIT + KEY_GAP
-    far = -half_depth + key['y'] * UNIT + KEY_GAP
-    near = -half_depth + (key['y'] + key['h']) * UNIT - KEY_GAP
+    gap = profile['gap']
+    left = half_width - key['x'] * UNIT - gap
+    right = half_width - (key['x'] + key['w']) * UNIT + gap
+    far = -half_depth + key['y'] * UNIT + gap
+    near = -half_depth + (key['y'] + key['h']) * UNIT - gap
     top = plate_top + profile['height'] + (layout['depth'] - key['y'] - key['h']) * profile['rise']
     shoulder = top - profile['shoulder_drop']
 
@@ -101,11 +103,12 @@ def build_keyboard(variant, name):
     half_width = layout['width'] * UNIT / 2 + style['margin']
     half_depth = layout['depth'] * UNIT / 2 + style['margin']
     height = style['height']
-    foot = [(0.0, 0.004, 'strip'), (0.0035, 0.0, 'strip')] if style['underglow'] else [(0.0, 0.003, style['case']), (0.003, 0.0, style['case'])]
-    part.slab(0, 0, half_width, half_depth, 0.006, foot + [
-        (height - 0.003, 0.0, style['case']),
-        (height, 0.0025, style['case']),
-        (height + 0.0003, 0.006, style['plate']),
+    lip = min(0.003, height * 0.3)
+    foot = [(0.0, 0.004, 'strip'), (0.0035, 0.0, 'strip')] if style['underglow'] else [(0.0, lip, style['case']), (lip, 0.0, style['case'])]
+    part.slab(0, 0, half_width, half_depth, min(0.006, style['margin']), foot + [
+        (height - lip, 0.0, style['case']),
+        (height, min(0.0025, style['margin'] * 0.5), style['case']),
+        (height + 0.0003, min(0.006, style['margin'] * 1.2), style['plate']),
     ])
     for key in layout['keys']:
         keycap(part, layout, strip, key, height, profile)
@@ -134,3 +137,7 @@ def build_keyboard_d(name='keyboard_d'):
 
 def build_keyboard_e(name='keyboard_e'):
     return build_keyboard('e', name)
+
+
+def build_keyboard_f(name='keyboard_f'):
+    return build_keyboard('f', name)

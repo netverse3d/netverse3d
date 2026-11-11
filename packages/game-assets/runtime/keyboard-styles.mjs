@@ -50,6 +50,15 @@ export const COLORWAYS = {
   },
 };
 
+COLORWAYS.mac = {
+  name: 'Mac trắng',
+  alpha: '#f5f5f7',
+  mod: '#f5f5f7',
+  accent: '#f5f5f7',
+  legend: '#1d1d1f',
+  pudding: false,
+};
+
 export const LED_MODES = {
   rainbow: 'Cầu vồng theo phím',
   single: 'Một màu theo dải sáng',

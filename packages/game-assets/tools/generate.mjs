@@ -21,6 +21,7 @@ export function generatorTargets(config) {
     name: scene.id,
     source: scene.source,
     recipe: scene.recipe,
+    kits: scene.kits,
     generator: scene.generator,
   }));
   return [...kits, ...scenes];
@@ -35,7 +36,12 @@ function argumentsFor(target) {
   if (target.kind === 'kit') return [output];
   const plan = join(root, 'pipeline', 'showcase-plan.json');
   writeFileSync(plan, JSON.stringify(buildShowcasePlan(root, target.recipe), null, 2));
-  return [plan, ...config.kits.map((kit) => join(root, 'source', kit.source)), output];
+  const kitSources = (target.kits ?? []).map((file) => {
+    const kit = config.kits.find((entry) => entry.file === file);
+    if (!kit) throw new Error(`${target.source}: scene uses unknown kit ${file}`);
+    return join(root, 'source', kit.source);
+  });
+  return [plan, ...kitSources, output];
 }
 
 let failed = false;

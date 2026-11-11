@@ -37,7 +37,12 @@
     "window": "a",
     "ceiling": "a",
     "light": "a",
-    "marker": "a"
+    "marker": "a",
+    "sofa": "a",
+    "table": "a",
+    "console": "a",
+    "gamepad": "a",
+    "tv": "a"
   },
   "layout": {
     "cells": [4, 3],
