@@ -24,6 +24,7 @@ function makeRoot(glb = REAL_MODEL) {
     mkdirSync(join(root, folder), { recursive: true });
   }
   writeFileSync(join(root, 'assets.config.json'), JSON.stringify(CONFIG));
+  writeFileSync(join(root, 'keyboards.json'), '{}');
   writeFileSync(join(root, 'library/index.html'), '<title>x</title>');
   writeFileSync(join(root, 'runtime/shop-look.mjs'), 'export const x = 1;');
   writeFileSync(join(root, 'runtime/shop-look.test.mjs'), 'test');
@@ -133,6 +134,7 @@ test('sao chép trang và mô hình, không kèm tệp gốc', () => {
   assert.equal(existsSync(join(target, 'runtime/shop-look.test.mjs')), false);
   assert.equal(existsSync(join(target, 'recipes/tim-neon.json')), true);
   assert.equal(existsSync(join(target, 'assets.config.json')), true);
+  assert.equal(existsSync(join(target, 'keyboards.json')), true);
 });
 
 test('từ chối xuất bản khi mô hình mới là con trỏ LFS', () => {

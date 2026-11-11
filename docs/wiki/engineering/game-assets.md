@@ -64,7 +64,7 @@ Neo đã khai trong `anchors` của ô mà thiếu trong tệp thì lệnh xuấ
 
 ### Bộ màu
 
-Vật liệu chỉ có bốn tên: `surface`, `glow`, `display`, `decal`. Hai vật liệu đầu không mang màu. Mỗi mặt chọn màu bằng toạ độ UV trỏ vào một hàng của ảnh bộ màu 12 hàng, do game tạo lúc chạy từ bộ màu của tiệm:
+Vật liệu có năm tên: `surface`, `glow`, `display`, `decal`, `legend`. Hai vật liệu đầu không mang màu. Mỗi mặt chọn màu bằng toạ độ UV trỏ vào một hàng của ảnh bộ màu 12 hàng, do game tạo lúc chạy từ bộ màu của tiệm:
 
 | Hàng | Vật liệu  | Tên hàng                                                           |
 | ---- | --------- | ------------------------------------------------------------------ |
@@ -72,6 +72,12 @@ Vật liệu chỉ có bốn tên: `surface`, `glow`, `display`, `decal`. Hai v�
 | 8–11 | `glow`    | `strip`, `keycap`, `screen`, `accent`                              |
 
 V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo dải màu của hàng, nên một hàng có thể là một màu hoặc một dải chuyển màu; bàn phím nhiều màu chỉ cần đặt U khác nhau cho từng phím. `display` và `decal` là vật liệu ảnh cho màn hình và logo, dùng UV tự do trong 0..1. Vật liệu tên khác, UV lệch hàng hoặc ra ngoài 0..1 đều bị lệnh xuất từ chối.
+
+### Bàn phím
+
+Ba biến thể bàn phím đều là bố cục ANSI Mỹ chuẩn, sinh từ dữ liệu chứ không vẽ tay: `tools/keyboards.mjs` mô tả từng hàng phím (nhãn, bề rộng theo đơn vị 19,05 mm, mã `KeyboardEvent.code`, ký tự khi giữ Shift) và ghi ra `keyboards.json`; test giữ tệp JSON khớp với bộ sinh, kiểm số phím (60% có 61, TKL có 87, 75% có 82), không phím nào chồng nhau hay lọt ra ngoài bàn, và mỗi hàng khối chính rộng đúng 15 đơn vị. `pipeline/hero_keyboard.py` đọc tệp đó để dựng vỏ và từng keycap (loft ba vòng vát, 18 tam giác một phím), nên thêm một bố cục mới là thêm vào `keyboards.mjs`, chạy lại `node tools/keyboards.mjs` và thêm chữ cái vào `variants`.
+
+Chữ trên phím không nằm trong mô hình: mặt trên keycap dùng hàng ảnh `legend`, UV trỏ vào một atlas là ảnh nhìn từ trên xuống của từng bàn phím, các bàn xếp chồng thành dải (`atlas` trong `keyboards.json`). Lúc chạy, `runtime/keyboard-legends.mjs` vẽ atlas bằng Canvas2D theo công thức đang chọn: nền phím lấy dải màu hàng `keycap` theo vị trí ngang, chữ chọn sáng hay tối theo độ chói của nền, phím có Shift ghi hai dòng; đổi công thức là vẽ lại. Vật liệu `legend` của `shopMaterials` nhận ảnh đó qua tuỳ chọn `legends` và vẫn nhân lightmap. Mã `code` của từng phím là chỗ nối cho luồng gõ phím về sau, vì một `KeyboardEvent` thật tra được thẳng phím nào trên bàn.
 
 ### Module phòng
 

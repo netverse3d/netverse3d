@@ -246,5 +246,5 @@ test('bộ máy thật có đủ socket cho mọi ô trong công thức mẫu', 
   const recipe = JSON.parse(readFileSync(join(ROOT, 'recipes', 'tim-neon.json'), 'utf8'));
   const plan = shopPlan(recipe, kitAnchors(gltf));
   assert.equal(plan.length, recipe.layout.stations.length * 11);
-  assert.equal(drawCalls(gltf, plan), 24);
+  assert.equal(drawCalls(gltf, plan), 25);
 });

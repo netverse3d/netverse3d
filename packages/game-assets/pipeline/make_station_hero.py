@@ -8,7 +8,8 @@ from hero_chair import build_hero_chair
 from hero_mic_boom import build_mic_boom
 from hero_kit import anchor, attach_occlusion, bake_occlusion, context_copy, finish_hero, finish_lightmap_uv, ground_plane, lightmap_image, prepare_lightmap_uv, remove_context
 from hero_desks import build_desk_a, build_desk_b, build_desk_c
-from hero_station import build_case, build_headset, build_keyboard, build_mat, build_mic, build_monitor, build_mouse, build_speaker
+from hero_keyboard import build_keyboard_a, build_keyboard_b, build_keyboard_c
+from hero_station import build_case, build_headset, build_mat, build_mic, build_monitor, build_mouse, build_speaker
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
 LIGHTMAP_SIZE = 2048
@@ -57,10 +58,10 @@ def main():
     scene.unit_settings.system = 'METRIC'
     scene.unit_settings.scale_length = 1.0
     collection = scene.collection
-    materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal')]
+    materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal', 'legend')]
     for material in materials:
         material.use_nodes = True
-    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_case, build_keyboard, build_mouse, build_headset, build_mic, build_mic_boom, build_speaker, build_mat]
+    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_case, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_mouse, build_headset, build_mic, build_mic_boom, build_speaker, build_mat]
     built = {}
     for builder in builders:
         part = builder()
