@@ -1,7 +1,7 @@
 import { YAW, snap } from './shop-look.mjs';
 
 export const STREET_CELL = 4;
-export const STOREY_HEIGHT = 3.4;
+export const STOREY_HEIGHT = 3.8;
 export const LOT_CELLS = 2;
 export const SIDEWALK_TOP = 0.15;
 const SIDEWALK_DEPTH = 1;

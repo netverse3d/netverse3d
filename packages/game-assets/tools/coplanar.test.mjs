@@ -186,7 +186,7 @@ test('mặt tiền nhà ống được ghép thành nhà ba tầng với mỗi m
   );
   assert.deepEqual(
     assemblies[0].places.map(([, offset]) => offset[1]),
-    [0, 3.4, 6.8, 10.2],
+    [0, 3.8, 7.6, 11.4],
   );
   assert.deepEqual(facadeAssemblies(['wall_a']), []);
 });
