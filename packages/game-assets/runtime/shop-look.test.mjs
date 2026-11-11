@@ -297,21 +297,21 @@ test('đèn trần nằm trên mối nối giữa hai ô trần kề nhau theo c
   const lights = lightsOf(plan);
   assert.equal(lights.length, 9);
   assert.deepEqual(lights.slice(0, 3), [
-    [-2, 2.9, -2, 0],
-    [0, 2.9, -2, 0],
-    [2, 2.9, -2, 0],
+    [-2, 3.47, -2, 0],
+    [0, 3.47, -2, 0],
+    [2, 3.47, -2, 0],
   ]);
   assert.ok(plan.filter((p) => p.slot === 'light').every((p) => p.part === 'light_a'));
 });
 
 test('phòng một ô rộng treo đèn dọc theo chiều dài phòng', () => {
   assert.deepEqual(lightsOf(roomPlan(roomRecipe([1, 3], { wall: 'south', at: 0 }))), [
-    [0, 2.9, -1, Math.PI / 2],
-    [0, 2.9, 1, Math.PI / 2],
+    [0, 3.47, -1, Math.PI / 2],
+    [0, 3.47, 1, Math.PI / 2],
   ]);
   assert.deepEqual(lightsOf(roomPlan(roomRecipe([3, 1], { wall: 'south', at: 0 }))), [
-    [-1, 2.9, 0, 0],
-    [1, 2.9, 0, 0],
+    [-1, 3.47, 0, 0],
+    [1, 3.47, 0, 0],
   ]);
 });
 
@@ -343,5 +343,46 @@ test('bộ máy khai ba mẫu thùng, mỗi mẫu có hộp va chạm vừa vớ
     assert.ok(halfWidth * 2 <= width && halfDepth * 2 <= depth, `case_${variant} footprint`);
     assert.ok(Math.abs(box.position[1] - halfHeight) < 1e-4, `case_${variant} stands on the floor`);
     assert.ok(halfHeight * 2 <= height, `case_${variant} height`);
+  }
+});
+
+const ROOM_HEIGHT = 3.6;
+const COVE_FLOOR = 3.3;
+
+function verticalSpan(gltf, part) {
+  const node = gltf.nodes.find((candidate) => candidate.name === part);
+  const spans = gltf.meshes[node.mesh].primitives.map(
+    (primitive) => gltf.accessors[primitive.attributes.POSITION],
+  );
+  return [
+    Math.min(...spans.map((accessor) => accessor.min[1])),
+    Math.max(...spans.map((accessor) => accessor.max[1])),
+  ];
+}
+
+test('tường, góc, cửa và cửa sổ của bộ phòng cao 3,6 m; dải hắt sáng của trần không thấp hơn 3,3 m', (context) => {
+  const buffer = readFileSync(join(ROOT, 'exported', 'room-kit.glb'));
+  if (isLfsPointer(buffer)) return context.skip('room-kit.glb chưa tải nội dung LFS');
+  const gltf = readGlb(buffer);
+  for (const part of ['wall_a', 'corner_a', 'door_a', 'window_a']) {
+    const [, top] = verticalSpan(gltf, part);
+    assert.ok(Math.abs(top - ROOM_HEIGHT) < 0.005, `${part} cao ${top.toFixed(3)} m`);
+  }
+  const [coveBottom, slabTop] = verticalSpan(gltf, 'ceiling_a');
+  assert.ok(coveBottom >= COVE_FLOOR, `đáy dải hắt sáng ở ${coveBottom.toFixed(3)} m`);
+  assert.ok(slabTop > ROOM_HEIGHT);
+});
+
+test('đèn trần treo dưới tấm trần và trên dải hắt sáng', () => {
+  const plan = roomPlan(roomRecipe([3, 3], { wall: 'south', at: 1 }));
+  for (const [, height] of lightsOf(plan)) {
+    assert.ok(height > COVE_FLOOR && height < ROOM_HEIGHT, `đèn ở ${height} m`);
+  }
+});
+
+test('ô tường của bộ phòng được khai cao tới 3,7 m trong danh mục', () => {
+  const room = CONFIG.kits.find((kit) => kit.file === 'room-kit.glb');
+  for (const slot of ['wall', 'corner', 'door', 'window']) {
+    assert.equal(room.slots[slot].size[1], 3.7, slot);
   }
 });

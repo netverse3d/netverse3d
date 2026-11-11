@@ -1,6 +1,6 @@
 export const PALETTE_WIDTH = 128;
 const CELL_SIZE = 2;
-const LIGHT_HEIGHT = 2.9;
+const LIGHT_HEIGHT = 3.47;
 const STATION_SLOTS = ['monitor', 'keyboard', 'mouse', 'mat', 'headset', 'mic', 'chair', 'case'];
 const SIDE_SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
 const CENTER_SPEAKER_SOCKETS = ['socket_speaker_center'];
