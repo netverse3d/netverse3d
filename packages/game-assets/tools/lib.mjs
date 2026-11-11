@@ -462,6 +462,25 @@ function listUnstamped(declared, recorded) {
     .map((file) => `${file} is not in the export stamp: run the export`);
 }
 
+export function previewImages(gltf) {
+  return (gltf.images ?? [])
+    .map((image) => image.name ?? '')
+    .filter((name) => name.endsWith('-preview'));
+}
+
+function listPreviews(root, config) {
+  return outputFiles(config)
+    .filter((file) => file.endsWith('.glb') && existsSync(join(root, 'exported', file)))
+    .filter((file) => {
+      const buffer = readFileSync(join(root, 'exported', file));
+      return !isLfsPointer(buffer) && previewImages(readGlb(buffer)).length > 0;
+    })
+    .map(
+      (file) =>
+        `${file} was exported from a preview without baked lighting: regenerate without --preview and export again`,
+    );
+}
+
 export function stampPath(root) {
   return join(root, 'exported', STAMP_FILE);
 }
@@ -478,6 +497,7 @@ export function checkStamp(root, config) {
   const stamp = JSON.parse(readFileSync(stampPath(root), 'utf8'));
   return [
     ...listUndeclared(root, config),
+    ...listPreviews(root, config),
     ...(stamp.config === configHash(root) ? [] : [`${CONFIG_FILE} changed since the last export`]),
     ...listUnstamped(sourceFiles(config), stamp.sources),
     ...listUnstamped(outputFiles(config), stamp.exported),

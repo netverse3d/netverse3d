@@ -6,8 +6,17 @@ import { runBlender } from './blender.mjs';
 import { loadConfig } from './lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const config = loadConfig(root);
-const wanted = new Set(process.argv.slice(2));
+
+export function generateOptions(argv) {
+  return {
+    wanted: new Set(argv.filter((argument) => argument !== '--preview')),
+    preview: argv.includes('--preview'),
+  };
+}
+
+export function blenderEnvironment(preview) {
+  return preview ? { ASSET_PREVIEW: '1' } : {};
+}
 
 export function generatorTargets(config) {
   const kits = config.kits.map((kit) => ({
@@ -27,11 +36,11 @@ export function generatorTargets(config) {
   return [...kits, ...scenes];
 }
 
-function selected(target) {
+function selected(target, wanted) {
   return wanted.size === 0 || wanted.has(target.name) || wanted.has(target.source);
 }
 
-function argumentsFor(target) {
+function argumentsFor(target, config) {
   const output = join(root, 'source', target.source);
   if (target.kind === 'kit') return [output];
   const plan = join(root, 'pipeline', 'showcase-plan.json');
@@ -44,24 +53,34 @@ function argumentsFor(target) {
   return [plan, ...kitSources, output];
 }
 
-let failed = false;
-for (const target of generatorTargets(config).filter(selected)) {
-  if (!target.generator) {
-    console.log(`${target.source}: hand-made in Blender, nothing to generate`);
-    continue;
+function main() {
+  const config = loadConfig(root);
+  const { wanted, preview } = generateOptions(process.argv.slice(2));
+  let failed = false;
+  for (const target of generatorTargets(config).filter((target) => selected(target, wanted))) {
+    if (!target.generator) {
+      console.log(`${target.source}: hand-made in Blender, nothing to generate`);
+      continue;
+    }
+    const script = join(root, target.generator);
+    if (!existsSync(script)) {
+      console.error(`${target.source}: generator ${target.generator} is missing`);
+      failed = true;
+      continue;
+    }
+    console.log(`${target.source}: running ${target.generator}`);
+    const status = runBlender(script, argumentsFor(target, config), blenderEnvironment(preview));
+    if (status !== 0) {
+      console.error(`${target.source}: generator exited with ${status}`);
+      failed = true;
+    }
   }
-  const script = join(root, target.generator);
-  if (!existsSync(script)) {
-    console.error(`${target.source}: generator ${target.generator} is missing`);
-    failed = true;
-    continue;
-  }
-  console.log(`${target.source}: running ${target.generator}`);
-  const status = runBlender(script, argumentsFor(target));
-  if (status !== 0) {
-    console.error(`${target.source}: generator exited with ${status}`);
-    failed = true;
-  }
+  if (failed) process.exit(1);
+  console.log(
+    preview
+      ? 'Generated a preview without baked lighting: export it to look in the lab, then regenerate without --preview before committing.'
+      : 'Generated. Run the export to refresh the GLB files.',
+  );
 }
-if (failed) process.exit(1);
-console.log('Generated. Run the export to refresh the GLB files.');
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

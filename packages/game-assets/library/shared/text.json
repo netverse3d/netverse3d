@@ -65,6 +65,8 @@
       "ok": "Trong mức trần tam giác",
       "near": "Sát mức trần tam giác",
       "over": "Vượt mức trần tam giác"
-    }
+    },
+    "previewOcclusion": "Bóng khe chưa nướng (xem thử)",
+    "previewTitle": "Bản xem thử, chưa nướng AO: "
   }
 }

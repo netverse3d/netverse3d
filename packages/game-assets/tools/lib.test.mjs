@@ -9,6 +9,7 @@ import {
   checkAssets,
   checkModel,
   checkStamp,
+  previewImages,
   contentId,
   finishExport,
   isLfsPointer,
@@ -595,4 +596,12 @@ test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
   writeFileSync(join(root, 'source/base.blend'), 'edited');
   assert.deepEqual(finishExport(root), []);
   assert.deepEqual(checkStamp(root, config), []);
+});
+
+test('tệp xuất mang ảnh bóng xem thử bị nhận ra để bộ kiểm chặn commit', () => {
+  const baked = { images: [{ name: 'lounge-parts-lightmap' }, { name: 'decal' }] };
+  const preview = { images: [{ name: 'lounge-parts-lightmap-preview' }] };
+  assert.deepEqual(previewImages(baked), []);
+  assert.deepEqual(previewImages(preview), ['lounge-parts-lightmap-preview']);
+  assert.deepEqual(previewImages({}), []);
 });

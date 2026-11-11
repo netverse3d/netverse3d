@@ -294,7 +294,7 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
-      import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import { isPreviewLightmap, kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
@@ -386,6 +386,16 @@
         {},
         ...Object.values(kits).map((gltf) => kitAnchors(gltf.parser.json)),
       );
+      const previewKits = Object.entries(kits)
+        .filter(([, gltf]) => isPreviewLightmap(kitLightmap(gltf.scene)))
+        .map(([file]) => file);
+      if (previewKits.length > 0) {
+        const aoButton = document.querySelector('[data-toggle="ao"]');
+        aoButton.disabled = true;
+        aoButton.setAttribute('aria-pressed', 'false');
+        aoButton.textContent = 'AO chưa nướng (xem thử)';
+        aoButton.title = `Bản xem thử, chưa nướng AO: ${previewKits.join(', ')}`;
+      }
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color('#141418');
