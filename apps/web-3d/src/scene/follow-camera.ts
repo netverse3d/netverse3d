@@ -26,6 +26,7 @@ export const NEAR_FIELD_OF_VIEW = 58;
 export const OVERVIEW_DISTANCE = 10;
 export const CORNER_VIEW_TURN = Math.PI / 4;
 export const CEILING_CUT_HEIGHT = 2.6;
+export const WALL_CUT_PLANES = 4;
 export const FURNITURE_HEIGHT = 1.4;
 export const CAMERA_CLEARANCE = 0.12;
 export const MIN_CAMERA_REACH = 0.9;

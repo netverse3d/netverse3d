@@ -15,6 +15,7 @@ import {
   type PaletteConfig,
   type ShopRecipe,
 } from '@netverse/game-assets/runtime/shop-look.mjs';
+import { buildSign } from '@netverse/game-assets/runtime/shop-sign.mjs';
 import {
   buildShop,
   kitLightmap,
@@ -32,6 +33,7 @@ import {
   FAR_FIELD_OF_VIEW,
   CORNER_VIEW_TURN,
   DEFAULT_ORBIT,
+  WALL_CUT_PLANES,
   cameraPose,
   clearEye,
   cutaways,
@@ -384,6 +386,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const spawn = resume ? walk.position() : spawnFor(recipe);
     content.add(buildShop(THREE, assets.room.scene, room, materialsOf(assets.room)));
     content.add(buildShop(THREE, assets.station.scene, stations, materialsOf(assets.station)));
+    const sign = buildSign(THREE, recipe, document.createElement('canvas'));
+    sign.material.clippingPlanes = cutPlanes.slice(0, WALL_CUT_PLANES);
+    content.add(sign);
     player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
     walk.place(spawn, obstacles);
