@@ -44,7 +44,7 @@ test('chặn PR đổi mã sản phẩm mà không có REQ hoặc ADR', () => {
 
 test('chặn PR đổi mã sản phẩm mà không gắn issue', () => {
   const { errors } = review('REQ-001');
-  assert.match(errors.join(), /issue reference/);
+  assert.match(errors.join(), /must close an issue/);
 });
 
 test('chặn PR nhắc REQ không tồn tại', () => {
@@ -75,16 +75,23 @@ test('nhận PR có REQ đã chốt và issue', () => {
 });
 
 test('nhận PR có ADR đã chốt và issue', () => {
-  assert.deepEqual(review('Refs #12, ADR-0001').errors, []);
+  assert.deepEqual(review('Closes #12, ADR-0001').errors, []);
 });
 
 test('miễn REQ cho PR chỉ đổi tài liệu hoặc công cụ', () => {
-  const { errors } = review('', ['docs/wiki/index.md', 'scripts/format.mjs', '.github/x.yml']);
+  const { errors } = review('Closes #12', [
+    'docs/wiki/index.md',
+    'scripts/format.mjs',
+    '.github/x.yml',
+  ]);
   assert.deepEqual(errors, []);
 });
 
 test('miễn REQ cho README và component.yaml trong thư mục sản phẩm', () => {
-  const { errors } = review('', ['services/identity/README.md', 'apps/admin/component.yaml']);
+  const { errors } = review('Closes #12', [
+    'services/identity/README.md',
+    'apps/admin/component.yaml',
+  ]);
   assert.deepEqual(errors, []);
 });
 
@@ -227,4 +234,31 @@ test('đọc trạng thái ADR từ tệp và báo tệp thiếu trạng thái',
   const loaded = loadDecisions(root);
   assert.equal(loaded[0].status, 'accepted');
   assert.match(validateDecisions(loaded).join(), /ADR-0002/);
+});
+
+test('chặn PR chỉ đổi tài liệu hoặc công cụ mà không đóng issue nào', () => {
+  const { errors } = review('Cập nhật wiki', ['docs/wiki/index.md']);
+  assert.match(errors.join(), /must close an issue/);
+});
+
+test('nhắc tới issue bằng Refs không thay được cho Closes', () => {
+  const { errors } = review('REQ-001, Refs #12');
+  assert.match(errors.join(), /must close an issue/);
+});
+
+test('nhận các từ khoá đóng issue của GitHub', () => {
+  for (const keyword of ['Closes', 'closes', 'Fixes', 'Resolves']) {
+    assert.deepEqual(review(`REQ-001, ${keyword} #12`).errors, []);
+  }
+});
+
+test('PR phát hành và Dependabot không cần đóng issue', () => {
+  const { errors } = evaluatePullRequest({
+    body: '',
+    files: ['docs/wiki/index.md'],
+    requirements,
+    decisions,
+    exempt: true,
+  });
+  assert.deepEqual(errors, []);
 });

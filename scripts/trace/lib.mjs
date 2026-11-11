@@ -9,7 +9,7 @@ export const DECISION_STATUSES = ['proposed', 'accepted', 'superseded'];
 const DEPENDENCY_BOT = 'dependabot[bot]';
 const REQUIREMENT_ID = /^REQ-\d{3}$/;
 const REFERENCE = /\b(?:REQ-\d{3}|ADR-\d{4})\b/g;
-const ISSUE_REFERENCE = /(?:^|\s)(?:closes|fixes|resolves|refs)\s+#\d+/i;
+const CLOSING_REFERENCE = /(?:^|\s)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#\d+/i;
 const PRODUCT_PATH = /^(?:apps|services|workers|packages|infra)\//;
 const NON_PRODUCT_FILE = /(?:^|\/)(?:README\.md|component\.yaml)$/;
 
@@ -149,9 +149,9 @@ export function evaluatePullRequest({
         `product files changed without a REQ or ADR reference: ${productFiles.slice(0, 5).join(', ')}`,
       );
     }
-    if (!ISSUE_REFERENCE.test(body ?? '')) {
-      errors.push('product files changed without an issue reference such as "Closes #12"');
-    }
+  }
+  if (!exempt && !CLOSING_REFERENCE.test(body ?? '')) {
+    errors.push('a pull request into staging must close an issue, for example "Closes #12"');
   }
   return { errors, warnings, references, productFiles };
 }
