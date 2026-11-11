@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { collisionBoxes } from './collision.ts';
+import { anchorOnFloor, collisionBoxes } from './collision.ts';
 import type { KitAnchors, Placement } from './collision.ts';
 import { PLAYER_RADIUS, stepPlayer } from './movement.ts';
 import type { FloorBox, PlayerState } from './movement.ts';
@@ -207,4 +207,34 @@ test('món đặt có số đo hỏng bị báo lỗi kể cả khi món đó kh
 test('cạnh hộp bằng không được ghi là số không dương', () => {
   const [box] = collisionBoxes([placed('wall_a', 1, -1, WEST)], ANCHORS);
   assert.ok(Object.is(box?.minX, 0), 'minX is negative zero');
+});
+
+test('điểm neo của một món đặt được đưa về toạ độ sàn theo vị trí và hướng của món', () => {
+  const anchor = { position: [0.2, 0.5, -0.24], scale: [1, 1, 1] };
+  const still = anchorOnFloor(placed('chair_a', 3, -1), anchor, 'chair_a seat_anchor');
+  assert.ok(Math.abs(still.x - 3.2) < 1e-9 && Math.abs(still.z + 1.24) < 1e-9);
+  const turned = anchorOnFloor(placed('chair_a', 3, -1, EAST), anchor, 'chair_a seat_anchor');
+  assert.ok(Math.abs(turned.x - (3 - 0.24)) < 1e-9, `x ${turned.x}`);
+  assert.ok(Math.abs(turned.z - (-1 - 0.2)) < 1e-9, `z ${turned.z}`);
+});
+
+test('điểm neo hoặc món đặt có số đo hỏng thì báo lỗi kèm tên', () => {
+  const anchor = { position: [0, 0, 0], scale: [1, 1, 1] };
+  assert.throws(
+    () => anchorOnFloor(placed('chair_a', Number.NaN, 0), anchor, 'chair_a seat_anchor'),
+    /chair_a/,
+  );
+  assert.throws(
+    () => anchorOnFloor(placed('chair_a', 0, 0, Infinity), anchor, 'chair_a seat_anchor'),
+    /chair_a/,
+  );
+  assert.throws(
+    () =>
+      anchorOnFloor(
+        placed('chair_a', 0, 0),
+        { position: [0, 0], scale: [1, 1, 1] },
+        'chair_a seat_anchor',
+      ),
+    /chair_a seat_anchor/,
+  );
 });

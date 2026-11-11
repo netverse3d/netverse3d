@@ -16,6 +16,10 @@
   user-select: none;
 }
 
+.denied {
+  color: var(--warn);
+}
+
 .hint {
   display: flex;
   align-items: center;

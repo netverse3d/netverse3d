@@ -108,3 +108,50 @@ test('hỏi chỗ đứng thì ra vị trí của nhịp mới nhất, để d�
   const step = WALK_SPEED * TICK_SECONDS;
   assert.ok(Math.abs(walk.position().z - step * 3) < 1e-9, `at ${walk.position().z}`);
 });
+
+const CHAIR = { x: 3, z: -2, yaw: 1.5 };
+
+test('khi đang ngồi thì đầu vào di chuyển không đổi vị trí, và không còn clip đi lại', () => {
+  const walk = createWalk(START, []);
+  walk.hold(CHAIR);
+  assert.equal(walk.held(), true);
+  let frame = walk.advance(0, STILL, 0);
+  for (let index = 0; index < 120; index += 1) frame = walk.advance(1 / 60, SPRINT, 0.7);
+  assert.deepEqual(frame.player, CHAIR);
+  assert.equal(frame.clip, null);
+});
+
+test('đứng dậy thì trở về đúng chỗ đã đứng trước lúc ngồi và đi lại được ngay', () => {
+  const walk = createWalk(START, []);
+  walk.advance(TICK_SECONDS * 5, AHEAD, 0);
+  const stood = walk.position();
+  walk.hold(CHAIR);
+  walk.advance(0.5, AHEAD, 0);
+  walk.release();
+  assert.equal(walk.held(), false);
+  const first = walk.advance(0, STILL, 0);
+  assert.deepEqual(first.player, stood);
+  const after = walk.advance(TICK_SECONDS, AHEAD, 0);
+  assert.ok(after.player.z > stood.z - 1e-9);
+  assert.equal(after.clip, 'walk');
+});
+
+test('đổi sang ghế khác lúc đang ngồi vẫn nhớ chỗ đứng ban đầu', () => {
+  const walk = createWalk(START, []);
+  walk.hold(CHAIR);
+  walk.hold({ x: 9, z: 9, yaw: 0 });
+  walk.release();
+  assert.deepEqual(walk.advance(0, STILL, 0).player, START);
+});
+
+test('đứng dậy lúc không ngồi thì không có gì đổi, và dựng lại cảnh thì hết ngồi', () => {
+  const walk = createWalk(START, []);
+  walk.advance(TICK_SECONDS * 3, AHEAD, 0);
+  const before = walk.position();
+  walk.release();
+  assert.deepEqual(walk.position(), before);
+  walk.hold(CHAIR);
+  walk.place(START, []);
+  assert.equal(walk.held(), false);
+  assert.deepEqual(walk.advance(0, STILL, 0).player, START);
+});

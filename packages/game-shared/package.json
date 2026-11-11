@@ -24,6 +24,10 @@
     "./room-client": {
       "types": "./dist/room-client.d.ts",
       "default": "./dist/room-client.js"
+    },
+    "./seating": {
+      "types": "./dist/seating.d.ts",
+      "default": "./dist/seating.js"
     }
   },
   "scripts": {

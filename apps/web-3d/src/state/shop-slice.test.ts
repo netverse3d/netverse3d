@@ -8,7 +8,8 @@ import {
   qualityRequested,
   recipeRequested,
   sceneChanged,
-  seatRequested,
+  seatingChanged,
+  useRequested,
   statsReported,
 } from './shop-slice.ts';
 import { createAppStore } from './store.ts';
@@ -62,19 +63,39 @@ test('máy trong tầm với được ghi vào kho và gỡ đi khi người ch�
   assert.equal(store.getState().shop.nearbySeat, null);
 });
 
-test('lệnh xin ngồi máy không đổi kho, lớp game nhận qua listener', () => {
+test('lệnh dùng máy từ giao diện không đổi kho, lớp ứng dụng nhận qua listener', () => {
   const { store, listener } = createAppStore();
-  const asked: string[] = [];
+  let asked = 0;
   const stop = listener.startListening({
-    actionCreator: seatRequested,
-    effect: (action) => {
-      asked.push(action.payload);
+    actionCreator: useRequested,
+    effect: () => {
+      asked += 1;
     },
   });
-  store.dispatch(nearbySeatChanged('seat-2'));
   const before = store.getState().shop;
-  store.dispatch(seatRequested('seat-2'));
+  store.dispatch(useRequested());
   assert.equal(store.getState().shop, before);
-  assert.deepEqual(asked, ['seat-2']);
+  assert.equal(asked, 1);
   stop();
+});
+
+test('chưa có phòng thì chuyện ngồi máy ở trạng thái tắt; phòng báo gì thì kho giữ đúng thế', () => {
+  const { store } = createAppStore();
+  assert.deepEqual(store.getState().shop.seating, {
+    available: false,
+    seated: null,
+    taken: [],
+    denied: null,
+    error: null,
+  });
+  const seated = {
+    available: true,
+    seated: 'seat-2',
+    taken: ['seat-1'],
+    denied: null,
+    error: null,
+  };
+  store.dispatch(seatingChanged(seated));
+  assert.deepEqual(store.getState().shop.seating, seated);
+  assert.deepEqual(JSON.parse(JSON.stringify(store.getState().shop)), store.getState().shop);
 });
