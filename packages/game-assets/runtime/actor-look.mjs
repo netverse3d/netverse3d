@@ -1,4 +1,11 @@
 export const FACE_W = 640;
+export const BACKPACK_NODE = 'backpack';
+const SEATED_CLIPS = new Set(['sit_down', 'typing', 'sit_idle', 'stand_up']);
+
+export function wearsBackpack(clip) {
+  return !SEATED_CLIPS.has(clip);
+}
+
 export const FACE_H = 520;
 const EMBLEM_W = 256;
 const EMBLEM_H = 200;

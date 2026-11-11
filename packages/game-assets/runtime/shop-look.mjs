@@ -93,7 +93,7 @@ export function stationPlan(variants, anchors) {
   ];
 }
 
-function rotateY([x, y, z], yaw) {
+export function rotateY([x, y, z], yaw) {
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
   return [x * cos + z * sin, y, z * cos - x * sin];

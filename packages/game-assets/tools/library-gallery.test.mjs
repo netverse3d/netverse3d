@@ -116,7 +116,11 @@ test('thanh mục đánh dấu đúng một mục đang xem và không cho bấm
   );
   assert.equal(items.find((item) => item.id === 'parts')?.href, 'parts.html');
   assert.equal(items.find((item) => item.id === 'shops')?.href, `${STAGE_PAGE}?section=shops`);
-  assert.equal(items.find((item) => item.state === 'planned')?.href, null);
+  const upcoming = navItems(
+    [{ id: 'later', title: 'Sau', summary: 'Chưa có trang.', state: 'planned' }],
+    'parts',
+  );
+  assert.equal(upcoming[0].href, null);
   assert.equal(navItems(SECTIONS, 'unknown').filter((item) => item.current).length, 0);
 });
 

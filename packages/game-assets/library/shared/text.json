@@ -83,5 +83,69 @@
     },
     "previewOcclusion": "Bóng khe chưa nướng (xem thử)",
     "previewTitle": "Bản xem thử, chưa nướng AO: "
+  },
+  "checks": {
+    "slots": {
+      "desk": "Bàn",
+      "monitor": "Màn hình",
+      "keyboard": "Bàn phím",
+      "mouse": "Chuột",
+      "mat": "Lót chuột",
+      "headset": "Tai nghe",
+      "mic": "Micro",
+      "speaker": "Loa",
+      "chair": "Ghế",
+      "case": "Thùng máy",
+      "sofa": "Sofa",
+      "table": "Bàn trà",
+      "console": "Máy console",
+      "gamepad": "Tay cầm",
+      "tv": "TV",
+      "road": "Mặt hẻm",
+      "sidewalk": "Vỉa hè",
+      "pole": "Cột điện",
+      "wires": "Dây điện",
+      "lamp": "Đèn đường",
+      "bin": "Thùng rác",
+      "planter": "Chậu cây",
+      "board": "Biển chữ A",
+      "shopfront": "Tầng trệt",
+      "storey": "Tầng lầu",
+      "roof": "Mái"
+    },
+    "clips": {
+      "typing": "Ngồi gõ phím",
+      "sit_idle": "Ngồi yên",
+      "sit_down": "Ngồi xuống",
+      "stand_up": "Đứng dậy"
+    },
+    "views": {
+      "iso": "Chéo",
+      "side": "Bên",
+      "front": "Trước",
+      "top": "Trên",
+      "hands": "Tay",
+      "feet": "Chân"
+    },
+    "points": {
+      "handL": "Cổ tay trái",
+      "handR": "Cổ tay phải",
+      "toeL": "Mũi chân trái",
+      "toeR": "Mũi chân phải"
+    },
+    "surfaces": {
+      "keyboard": "mặt phím",
+      "desk": "mặt bàn",
+      "floor": "sàn"
+    },
+    "levels": {
+      "sunk": "lún",
+      "touching": "chạm",
+      "floating": "hở",
+      "away": "không đặt trên bàn"
+    },
+    "above": "trên",
+    "below": "dưới",
+    "unit": "mm"
   }
 }

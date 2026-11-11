@@ -5,7 +5,7 @@ import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { COLORWAYS, LED_MODES, keyboardOptions } from '../../runtime/keyboard-styles.mjs';
 import { paletteRows } from '../../runtime/shop-look.mjs';
 import { kitLightmap, previewKitFiles, shopMaterials } from '../../runtime/three-shop.mjs';
-import { pageHref, sectionTabs } from './catalog.mjs';
+import { pageHref } from './catalog.mjs';
 import {
   budgetUse,
   filterParts,
@@ -14,7 +14,8 @@ import {
   shopsUsing,
   withKeyboard,
 } from './parts-data.mjs';
-import { element, loadShell, mountNav, readJson, stateBadge } from './shell.mjs';
+import { element, loadShell, mountPageHead, readJson } from './shell.mjs';
+import { studioLights } from './studio.mjs';
 
 const SECTION_ID = 'parts';
 const INSPECT_FILE = 'lab.html';
@@ -36,18 +37,6 @@ function triangleCount(object) {
   return Math.round(total);
 }
 
-function studioLights(scene, environment) {
-  const key = new THREE.DirectionalLight('#fff4e6', 1.2);
-  key.position.set(3, 5, 4);
-  const fill = new THREE.DirectionalLight('#dbe6ff', 0.8);
-  fill.position.set(-4, 2.5, 2);
-  const rim = new THREE.DirectionalLight('#ffffff', 0.9);
-  rim.position.set(-1, 3.5, -5);
-  scene.add(key, fill, rim, new THREE.HemisphereLight('#ffffff', '#2a2a33', 0.7));
-  scene.environment = environment;
-  scene.environmentIntensity = 0.8;
-}
-
 function partStage(source, environment) {
   const group = new THREE.Group();
   const model = source.clone(true);
@@ -58,7 +47,7 @@ function partStage(source, environment) {
   });
   group.add(model);
   const scene = new THREE.Scene();
-  studioLights(scene, environment);
+  studioLights(THREE, scene, environment);
   scene.add(group);
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
@@ -77,24 +66,6 @@ function partStage(source, environment) {
 function fillSelect(select, options, value) {
   select.replaceChildren(...options.map(([id, label]) => element('option', { value: id }, label)));
   select.value = value;
-}
-
-function drawHead(shell, section) {
-  const { text } = shell;
-  mountNav(byId('nav'), shell, SECTION_ID);
-  byId('page-title').textContent = section.title;
-  byId('page-badge').replaceChildren(stateBadge(section.state, text));
-  byId('page-summary').textContent = section.summary;
-  byId('page-tabs').replaceChildren(
-    ...sectionTabs(section, 'main', text.mainPage).map((tab) =>
-      element(
-        'a',
-        { class: 'stage-tab', href: tab.href, 'aria-current': tab.current ? 'page' : null },
-        tab.title,
-      ),
-    ),
-  );
-  document.title = `${section.title} · ${text.brand}`;
 }
 
 function inspectHref(section, name) {
@@ -122,9 +93,8 @@ function budgetRow(triangles, maxTriangles, words) {
 
 async function main() {
   const shell = await loadShell();
-  const section = shell.sections.find((item) => item.id === SECTION_ID);
+  const section = mountPageHead(shell, SECTION_ID);
   const words = shell.text.parts;
-  drawHead(shell, section);
 
   const canvas = byId('gl');
   let renderer;
