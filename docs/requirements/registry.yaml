@@ -327,3 +327,11 @@ requirements:
     milestone: M2
     area: game-assets
     sources: [team-decision]
+  - id: REQ-042
+    title: Thành phố mở nhiều khu
+    description: Thế giới ngoài tiệm là một thành phố mở gồm nhiều khu nối nhau, người chơi đi bộ từ hẻm ra đường lớn. Đường có nhiều cấp, từ hẻm 4 m tới đại lộ nhiều làn, có ngã ba, ngã tư, vạch qua đường và đèn tín hiệu; xe chạy theo làn và theo đèn. Thành phố có lô đất, toà nhà phức hợp, công viên, sông và cầu. Công trình nổi tiếng chỉ gợi hình, mang tên riêng của Netverse, theo ADR-0014. Mọi thứ hiện trong thành phố là thành phần đã đăng ký trong thư viện 3D và dùng chung một chuẩn ánh sáng, đổ bóng, theo ADR-0019. Thành phố dựng theo từng đợt, đợt đầu là một khu mẫu có một trục đường lớn và một ngã tư có đèn.
+    status: accepted
+    priority: should
+    milestone: M4
+    area: web-3d
+    sources: [team-decision]

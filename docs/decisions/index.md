@@ -22,3 +22,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0016](./ADR-0016-shop-identity-as-data.md) | Bản sắc tiệm là dữ liệu, mô hình không mang màu cố định | Đã chốt |
 | [ADR-0017](./ADR-0017-web-client-layers.md) | Client game chia lớp, cảnh 3D và giao diện chỉ gặp nhau ở kho trạng thái | Đã chốt |
 | [ADR-0018](./ADR-0018-script-generated-asset-sources.md) | Mô hình bàn máy và phòng có bản gốc là script trong repo | Đã chốt |
+| [ADR-0019](./ADR-0019-registered-parts-and-one-render-standard.md) | Thế giới chỉ lắp từ thành phần đã đăng ký và dùng chung một chuẩn dựng hình | Đã chốt |
