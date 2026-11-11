@@ -1,0 +1,99 @@
+{
+  "id": "hem-mau",
+  "name": "Hẻm mẫu",
+  "cells": [4, 3],
+  "roads": [
+    {
+      "cell": [0, 2],
+      "kind": "tee",
+      "facing": "south"
+    },
+    {
+      "cell": [1, 2],
+      "kind": "straight"
+    },
+    {
+      "cell": [2, 2],
+      "kind": "straight"
+    },
+    {
+      "cell": [3, 2],
+      "kind": "corner",
+      "facing": "south"
+    }
+  ],
+  "sidewalks": [
+    {
+      "cell": [0, 2],
+      "side": "north"
+    },
+    {
+      "cell": [1, 2],
+      "side": "north"
+    },
+    {
+      "cell": [2, 2],
+      "side": "north"
+    },
+    {
+      "cell": [3, 2],
+      "side": "north"
+    }
+  ],
+  "lots": [
+    {
+      "id": "lo-1",
+      "cell": [0, 0],
+      "facing": "south",
+      "shop": "tim-neon",
+      "storeys": ["a", "b"],
+      "roof": "a",
+      "props": [
+        {
+          "slot": "board",
+          "at": [-1.2, 0.5]
+        },
+        {
+          "slot": "planter",
+          "at": [2.4, 0.55]
+        }
+      ]
+    },
+    {
+      "id": "lo-2",
+      "cell": [2, 0],
+      "facing": "south",
+      "storeys": ["b"],
+      "roof": "a",
+      "props": [
+        {
+          "slot": "bin",
+          "at": [1.6, 0.5]
+        }
+      ]
+    }
+  ],
+  "props": [
+    {
+      "slot": "pole",
+      "at": [2, 10.6]
+    },
+    {
+      "slot": "pole",
+      "at": [6, 10.6]
+    },
+    {
+      "slot": "pole",
+      "at": [10, 10.6]
+    },
+    {
+      "slot": "lamp",
+      "at": [14, 10.6],
+      "facing": "south"
+    }
+  ],
+  "variants": {
+    "sidewalk": "a",
+    "shopfront": "a"
+  }
+}
