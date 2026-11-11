@@ -295,12 +295,12 @@
         },
         "console": {
           "variants": ["a"],
-          "maxTriangles": 800,
+          "maxTriangles": 1800,
           "size": [0.42, 0.12, 0.3]
         },
         "gamepad": {
           "variants": ["a"],
-          "maxTriangles": 1500,
+          "maxTriangles": 2200,
           "size": [0.18, 0.08, 0.12]
         },
         "tv": {
