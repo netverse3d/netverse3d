@@ -164,3 +164,16 @@ export function planFieldUpdates(planned, existing) {
     ...(issue.effort ? { effort: issue.effort } : {}),
   }));
 }
+
+const ISSUE_FIELD_NAMES = { priority: 'Priority', effort: 'Effort' };
+
+export function issueFieldInputs(fields, values) {
+  return Object.entries(ISSUE_FIELD_NAMES)
+    .filter(([key]) => values[key])
+    .map(([key, name]) => {
+      const field = fields.find((item) => item.name === name);
+      const option = field?.options?.find((item) => item.name === values[key]);
+      if (!option) throw new Error(`Issue field ${name} has no option ${values[key]}`);
+      return { fieldId: field.id, singleSelectOptionId: option.id };
+    });
+}

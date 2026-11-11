@@ -5,6 +5,7 @@ import { parse } from 'yaml';
 import { loadRegistry } from '../trace/lib.mjs';
 import {
   findUnknownMilestones,
+  issueFieldInputs,
   planBacklog,
   planBodyUpdates,
   planFieldUpdates,
@@ -330,4 +331,32 @@ test('issue mở sinh từ sổ yêu cầu nhận Priority và Effort, issue t�
     existingIssue(3, 'REQ-001: Đăng nhập', 'Yêu cầu: REQ-001\n\nMô tả', 'closed'),
   ]);
   assert.deepEqual(updates, [{ number: 1, priority: 'High', effort: 'High' }]);
+});
+
+const issueFields = [
+  {
+    id: 'F1',
+    name: 'Priority',
+    options: [
+      { id: 'O1', name: 'High' },
+      { id: 'O2', name: 'Low' },
+    ],
+  },
+  { id: 'F2', name: 'Effort', options: [{ id: 'O3', name: 'Medium' }] },
+  { id: 'F3', name: 'Start date' },
+];
+
+test('giá trị Priority và Effort đổi thành đúng mã lựa chọn của field trên issue', () => {
+  assert.deepEqual(issueFieldInputs(issueFields, { priority: 'High', effort: 'Medium' }), [
+    { fieldId: 'F1', singleSelectOptionId: 'O1' },
+    { fieldId: 'F2', singleSelectOptionId: 'O3' },
+  ]);
+  assert.deepEqual(issueFieldInputs(issueFields, { priority: 'Low' }), [
+    { fieldId: 'F1', singleSelectOptionId: 'O2' },
+  ]);
+});
+
+test('giá trị không có trong field bị từ chối thay vì bỏ qua', () => {
+  assert.throws(() => issueFieldInputs(issueFields, { priority: 'P1' }), /Priority.*P1/);
+  assert.throws(() => issueFieldInputs([], { effort: 'Low' }), /Effort/);
 });
