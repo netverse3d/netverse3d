@@ -301,3 +301,25 @@ test('đèn trần không chắn lối đi', () => {
   const plan = roomPlan(roomRecipe([3, 3], { wall: 'south', at: 1 }));
   assert.ok(lightsOf(plan).every(([, height]) => height > 2.5));
 });
+
+test('bộ máy khai ba mẫu thùng, mỗi mẫu có hộp va chạm vừa với khung ô và ba tiệm mẫu dùng ba mẫu khác nhau', (context) => {
+  const config = loadConfig(ROOT);
+  const slot = config.kits.find((kit) => kit.file === 'station-parts.glb').slots.case;
+  assert.deepEqual(slot.variants, ['a', 'b', 'c']);
+  const chosen = JSON.parse(readFileSync(join(ROOT, 'recipes', 'index.json'), 'utf8')).map(
+    (id) => JSON.parse(readFileSync(join(ROOT, 'recipes', `${id}.json`), 'utf8')).variants.case,
+  );
+  assert.deepEqual([...chosen].sort(), ['a', 'b', 'c']);
+  const buffer = readFileSync(join(ROOT, 'exported', 'station-parts.glb'));
+  if (isLfsPointer(buffer)) return context.skip('station-parts.glb chưa tải nội dung LFS');
+  const anchors = kitAnchors(readGlb(buffer));
+  const [width, height, depth] = slot.size;
+  for (const variant of slot.variants) {
+    const box = anchors[`case_${variant}`]?.collision_main;
+    assert.ok(box, `case_${variant} has no collision box`);
+    const [halfWidth, halfHeight, halfDepth] = box.scale;
+    assert.ok(halfWidth * 2 <= width && halfDepth * 2 <= depth, `case_${variant} footprint`);
+    assert.ok(Math.abs(box.position[1] - halfHeight) < 1e-4, `case_${variant} stands on the floor`);
+    assert.ok(halfHeight * 2 <= height, `case_${variant} height`);
+  }
+});

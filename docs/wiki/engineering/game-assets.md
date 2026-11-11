@@ -89,6 +89,10 @@ Chuột (`pipeline/hero_mouse.py`) là một khối subdivision liền: mười 
 
 Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu là loft tiết diện chữ nhật bo góc dọc cung tròn, đệm vành là dải thứ hai bên trong, củ tai là revolve hai mươi cạnh với đệm bo tròn và lưng củ có vòng điểm nhấn, càng kim loại nối vành với trục củ. Ba mẫu: `a` gaming có mic cần và đế phát sáng, `b` studio củ to lưng kim loại, `c` on-ear nhỏ vành mỏng.
 
+### Thùng máy
+
+Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là tháp kính hông có ba quạt trước (`build_case` trong `pipeline/hero_station.py`). `b` và `c` nằm trong `pipeline/hero_cases.py`: `b` là máy mini vuông bo góc đặt trên kệ thấp hai tầng, tầng dưới có hộp lưu trữ, vì ô thùng máy nằm dưới sàn cạnh bàn nên máy mini cần kệ để còn nhìn thấy; `c` là tháp kín kiểu cũ với hai khay 5,25 inch, khay đĩa mềm, nút nguồn và khe thoáng. Phần phát sáng của cả ba dùng các hàng `strip`, `accent`, `screen` nên ăn theo bộ màu của tiệm. Mỗi mẫu có hộp va chạm riêng khai trong `CASE_COLLISIONS`; thêm mẫu mới thì thêm một dòng ở đó. Chi tiết gắn lên mặt vỏ phải nhô ít nhất 2 mm, và hai khối chồng lên nhau không được chung mặt đáy hay mặt bên, nếu không bộ kiểm đồng phẳng sẽ báo.
+
 ### Pad chuột
 
 Ba pad: `a` có viền sáng và logo, `b` trơn cỡ lớn, `c` trơn cỡ nhỏ đặt lệch về phía chuột (gốc món vẫn ở socket chung, lưới dời sang phải 25 cm) cho kiểu bàn tối giản. Bàn phím và chuột vẫn đặt ở độ cao mặt pad nên với pad nhỏ, bàn phím nổi 4 mm trên mặt bàn; chấp nhận cho tới khi socket theo biến thể.
