@@ -75,7 +75,7 @@ test('vỉa hè bám cạnh ô phía lô, quay bó vỉa ra đường, và lô q
   assert.equal(north.yaw, Math.PI);
 });
 
-test('mỗi lô dựng hai cột mặt tiền 4 m: trệt, các lầu theo thứ tự rồi mái, cao mỗi tầng 3,4 m', () => {
+test('mỗi lô dựng hai cột mặt tiền 4 m: trệt, các lầu theo thứ tự rồi mái, cao mỗi tầng 3,8 m', () => {
   const stack = facadePlacements(BLOCK);
   assert.equal(stack.length, 8);
   const column = stack
@@ -83,9 +83,9 @@ test('mỗi lô dựng hai cột mặt tiền 4 m: trệt, các lầu theo thứ
     .map((item) => [item.part, item.position[1]]);
   assert.deepEqual(column, [
     ['shopfront_a', 0],
-    ['storey_a', STOREY_HEIGHT],
-    ['storey_b', STOREY_HEIGHT * 2],
-    ['roof_a', STOREY_HEIGHT * 3],
+    ['storey_a', 3.8],
+    ['storey_b', 7.6],
+    ['roof_a', 11.4],
   ]);
   assert.ok(stack.every((item) => item.lot === 'lo' && item.position[2] === 4 && item.yaw === 0));
 });
