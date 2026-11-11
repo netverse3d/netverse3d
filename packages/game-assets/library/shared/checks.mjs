@@ -18,7 +18,7 @@ import {
   withVariant,
 } from './checks-data.mjs';
 import { element, loadShell, mountPageHead, readJson } from './shell.mjs';
-import { studioLights } from './studio.mjs';
+import { aimCamera, fitRenderer, studioLights } from './studio.mjs';
 
 const SECTION_ID = 'checks';
 const PACKAGE_ROOT = new URL('../../', import.meta.url);
@@ -279,13 +279,6 @@ async function main() {
     }
   }
 
-  function lookFrom(name) {
-    const view = VIEWS[name];
-    camera.position.set(...view.eye);
-    controls.target.set(...view.target);
-    controls.update();
-  }
-
   const point = new THREE.Vector3();
   const rowsOfFindings = new Map();
   function measure() {
@@ -415,7 +408,7 @@ async function main() {
         );
         chip.addEventListener('click', () => {
           state.view = name;
-          lookFrom(name);
+          aimCamera(camera, controls, VIEWS[name]);
           drawViews();
           remember();
         });
@@ -434,18 +427,13 @@ async function main() {
   }
 
   const view = byId('view');
-  function resize() {
-    const { clientWidth, clientHeight } = view;
-    renderer.setSize(clientWidth, clientHeight, false);
-    camera.aspect = clientWidth / Math.max(clientHeight, 1);
-    camera.updateProjectionMatrix();
-  }
+  const resize = () => fitRenderer(renderer, camera, view);
   new ResizeObserver(resize).observe(view);
 
   rebuild();
   playClip();
   drawViews();
-  lookFrom(state.view);
+  aimCamera(camera, controls, VIEWS[state.view]);
   resize();
   byId('status').hidden = true;
   byId('bench').hidden = false;

@@ -297,7 +297,13 @@ test('mục có nhiều trang đã dựng lại hiện các trang đó thành d�
 });
 
 test('trang đã dựng lại dùng lớp vỏ chung: có thanh mục, đầu trang và bảng kiểu chung, không tự mang bảng kiểu riêng', () => {
-  for (const file of ['shop.html', 'showcase.html', 'catalog.html', 'checks.html']) {
+  for (const file of [
+    'shop.html',
+    'showcase.html',
+    'catalog.html',
+    'checks.html',
+    'characters.html',
+  ]) {
     const html = readFileSync(join(LIBRARY, file), 'utf8');
     assert.ok(html.includes('shared/gallery.css'), `${file} misses the shared stylesheet`);
     assert.ok(
@@ -306,4 +312,11 @@ test('trang đã dựng lại dùng lớp vỏ chung: có thanh mục, đầu tr
     );
     assert.equal(html.includes('<style>'), false, `${file} carries its own stylesheet`);
   }
+});
+
+test('chỉ còn mục Lưu trữ dùng trang cũ; mọi mục khác đã dựng lại theo lớp vỏ chung', () => {
+  assert.deepEqual(
+    SECTIONS.filter((section) => section.state !== 'rebuilt').map((section) => section.id),
+    ['archive'],
+  );
 });
