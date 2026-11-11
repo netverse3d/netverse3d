@@ -1,4 +1,5 @@
 import math
+import os
 
 import bmesh
 import bpy
@@ -525,9 +526,24 @@ def soften_lightmap(image):
     image.pixels.foreach_set(grid.reshape(-1))
 
 
+PREVIEW_SUFFIX = '-preview'
+
+
+def preview_requested():
+    return os.environ.get('ASSET_PREVIEW') == '1'
+
+
+def preview_lightmap(image_name):
+    return lightmap_image(image_name + PREVIEW_SUFFIX, 16)
+
+
 def bake_isolated(scene, collection, built, surface, image_name, distance):
     parts = list(built.values())
     prepare_lightmap_uv(parts, minimum=SMALL_PART_TILE, area_power=SMALL_PART_AREA_POWER)
+    if preview_requested():
+        finish_lightmap_uv(parts)
+        attach_occlusion(surface, preview_lightmap(image_name))
+        return
     ground = ground_plane(collection)
     image = lightmap_image(image_name, LIGHTMAP_SIZE)
     for ob in parts:
