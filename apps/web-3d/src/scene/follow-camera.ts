@@ -26,6 +26,7 @@ export const NEAR_FIELD_OF_VIEW = 58;
 export const OVERVIEW_DISTANCE = 10;
 export const CORNER_VIEW_TURN = Math.PI / 4;
 export const CEILING_CUT_HEIGHT = 3.2;
+export const WALL_CUT_PLANES = 4;
 export const FURNITURE_HEIGHT = 1.4;
 export const CAMERA_CLEARANCE = 0.12;
 export const MIN_CAMERA_REACH = 0.9;
@@ -77,6 +78,18 @@ export function cutaways(eye: Point3, room: FloorBox): CutPlane[] {
     [0, 0, 1, z < room.minZ ? -room.minZ : CUT_OFF],
     [0, -1, 0, y > CEILING_CUT_HEIGHT ? CEILING_CUT_HEIGHT : CUT_OFF],
   ];
+}
+
+export type WallSide = 'north' | 'south' | 'east' | 'west';
+
+export function wallIsCut(eye: Point3, room: FloorBox, wall: WallSide): boolean {
+  const [x, , z] = eye;
+  return {
+    east: x > room.maxX,
+    west: x < room.minX,
+    south: z > room.maxZ,
+    north: z < room.minZ,
+  }[wall];
 }
 
 function entryInto(box: FloorBox, from: Point3, to: Point3): number | null {

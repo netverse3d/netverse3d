@@ -15,7 +15,9 @@ import {
   MIN_CAMERA_REACH,
   cameraPose,
   clearEye,
+  WALL_CUT_PLANES,
   cutaways,
+  wallIsCut,
   eyeDistance,
   fieldOfView,
   turnOrbit,
@@ -288,4 +290,22 @@ test('đang ngồi mà có món khác chắn đường nhìn thì camera vẫn d
   const pose = cameraPose({ x: 0, z: 0 }, { yaw: 0, pitch: 0.1, distance: 6 });
   const eye = clearEye(pose, [chair, DESK]);
   assert.ok(eye[2] > DESK.maxZ && eye[2] < -1.5, `eye z ${eye[2]}`);
+});
+
+test('các mặt cắt tường đứng trước mặt cắt trần, nên vật treo cao như biển hiệu chỉ bị cắt theo tường', () => {
+  const planes = cutaways([0, 10, 8], ROOM);
+  const sign: Point3 = [0, 3.4, -1.8];
+  assert.equal(kept(planes, sign), false);
+  assert.equal(kept(planes.slice(0, WALL_CUT_PLANES), sign), true);
+  assert.equal(kept(planes.slice(0, WALL_CUT_PLANES), [0, 3.4, 2.1]), false);
+});
+
+test('bức tường chỉ bị coi là cắt khi camera đứng ngoài phòng ở đúng phía tường đó', () => {
+  assert.equal(wallIsCut([0, 10, 8], ROOM, 'south'), true);
+  assert.equal(wallIsCut([0, 10, 8], ROOM, 'north'), false);
+  assert.equal(wallIsCut([0, 10, 8], ROOM, 'east'), false);
+  assert.equal(wallIsCut([-9, 3, 0], ROOM, 'west'), true);
+  assert.equal(wallIsCut([9, 3, -9], ROOM, 'east'), true);
+  assert.equal(wallIsCut([9, 3, -9], ROOM, 'north'), true);
+  assert.equal(wallIsCut([0, 1.5, 0], ROOM, 'south'), false);
 });
