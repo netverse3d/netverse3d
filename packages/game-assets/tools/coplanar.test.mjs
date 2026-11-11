@@ -174,9 +174,14 @@ test('mặt tiền nhà ống được ghép thành nhà ba tầng với mỗi m
   assert.deepEqual(
     assemblies.map((item) => item.name),
     [
-      'shopfront_a under storey_a under roof_a',
-      'shopfront_a under storey_b under roof_a',
+      'shopfront_a under storey_a under storey_a under roof_a',
+      'shopfront_a under storey_a under storey_b under roof_a',
+      'shopfront_a under storey_b under storey_a under roof_a',
+      'shopfront_a under storey_b under storey_b under roof_a',
       'shopfront_a beside shopfront_a',
+      'storey_a beside storey_a',
+      'storey_b beside storey_b',
+      'roof_a beside roof_a',
     ],
   );
   assert.deepEqual(
