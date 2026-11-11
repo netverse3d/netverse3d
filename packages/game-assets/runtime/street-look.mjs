@@ -36,7 +36,12 @@ function placement(slot, variant, [x, z], yaw, y = 0, extra = {}) {
 
 export function roadPlacements(block) {
   return (block.roads ?? []).map((road) =>
-    placement('road', ROAD_VARIANT[road.kind], cellCentre(road.cell, block.cells), YAW[road.facing ?? 'south']),
+    placement(
+      'road',
+      ROAD_VARIANT[road.kind],
+      cellCentre(road.cell, block.cells),
+      YAW[road.facing ?? 'south'],
+    ),
   );
 }
 
@@ -45,7 +50,12 @@ export function sidewalkPlacements(block) {
     const [cx, cz] = cellCentre(walk.cell, block.cells);
     const [ox, oz] = OUTWARD[walk.side];
     const inset = STREET_CELL / 2 - SIDEWALK_DEPTH / 2;
-    return placement('sidewalk', variantOf(block, 'sidewalk'), [cx + ox * inset, cz + oz * inset], YAW[OPPOSITE[walk.side]]);
+    return placement(
+      'sidewalk',
+      variantOf(block, 'sidewalk'),
+      [cx + ox * inset, cz + oz * inset],
+      YAW[OPPOSITE[walk.side]],
+    );
   });
 }
 
@@ -76,9 +86,16 @@ export function facadePlacements(block) {
         ...storeys.map((variant, index) =>
           placement('storey', variant, at, yaw, STOREY_HEIGHT * (index + 1), { lot: lot.id }),
         ),
-        placement('roof', variantOf(block, 'roof', lot.roof), at, yaw, STOREY_HEIGHT * (storeys.length + 1), {
-          lot: lot.id,
-        }),
+        placement(
+          'roof',
+          variantOf(block, 'roof', lot.roof),
+          at,
+          yaw,
+          STOREY_HEIGHT * (storeys.length + 1),
+          {
+            lot: lot.id,
+          },
+        ),
       ];
     });
   });
@@ -97,14 +114,23 @@ function propPlacement(block, prop, origin, yawBase) {
 
 export function propPlacements(block) {
   const [width, depth] = block.cells;
-  const originBlock = [(-(width - 1) / 2) * STREET_CELL - STREET_CELL / 2, (-(depth - 1) / 2) * STREET_CELL - STREET_CELL / 2];
+  const originBlock = [
+    (-(width - 1) / 2) * STREET_CELL - STREET_CELL / 2,
+    (-(depth - 1) / 2) * STREET_CELL - STREET_CELL / 2,
+  ];
   const own = (block.props ?? []).map((prop) => propPlacement(block, prop, originBlock, 0));
   const lotProps = (block.lots ?? []).flatMap((lot) => {
     const { centre, along, outward, yaw } = lotFrontage(lot, block);
     return (lot.props ?? []).map((prop) =>
       propPlacement(
         block,
-        { ...prop, at: [along[0] * prop.at[0] + outward[0] * prop.at[1], along[1] * prop.at[0] + outward[1] * prop.at[1]] },
+        {
+          ...prop,
+          at: [
+            along[0] * prop.at[0] + outward[0] * prop.at[1],
+            along[1] * prop.at[0] + outward[1] * prop.at[1],
+          ],
+        },
         centre,
         yaw,
       ),
@@ -114,7 +140,9 @@ export function propPlacements(block) {
 }
 
 export function wirePlacements(poles, block) {
-  const sorted = [...poles].sort((a, b) => a.position[2] - b.position[2] || a.position[0] - b.position[0]);
+  const sorted = [...poles].sort(
+    (a, b) => a.position[2] - b.position[2] || a.position[0] - b.position[0],
+  );
   const wires = [];
   const near = (a, b) => Math.abs(a - b) < 0.001;
   for (let i = 0; i < sorted.length; i += 1) {
@@ -169,19 +197,25 @@ export function blockIssues(block, kit) {
   const taken = new Map();
   for (const lot of block.lots ?? []) {
     const [x, z] = lot.cell;
-    if (x + LOT_CELLS > width || z + LOT_CELLS > depth) issues.push(`lot ${lot.id} leaves the block`);
+    if (x + LOT_CELLS > width || z + LOT_CELLS > depth)
+      issues.push(`lot ${lot.id} leaves the block`);
     for (const cell of lotCells(lot)) {
       if (roads.has(cell)) issues.push(`lot ${lot.id} covers road cell ${cell}`);
       if (taken.has(cell)) issues.push(`lot ${lot.id} overlaps lot ${taken.get(cell)} at ${cell}`);
       taken.set(cell, lot.id);
     }
   }
-  return [...issues, ...missingParts(streetPlan(block), kit).map((part) => `${part} is not in the street kit`)];
+  return [
+    ...issues,
+    ...missingParts(streetPlan(block), kit).map((part) => `${part} is not in the street kit`),
+  ];
 }
 
 export function missingParts(plan, kit) {
   const known = new Set(
-    Object.entries(kit.slots ?? {}).flatMap(([slot, spec]) => spec.variants.map((variant) => `${slot}_${variant}`)),
+    Object.entries(kit.slots ?? {}).flatMap(([slot, spec]) =>
+      spec.variants.map((variant) => `${slot}_${variant}`),
+    ),
   );
   return [...new Set(plan.map((item) => item.part))].filter((part) => !known.has(part));
 }
