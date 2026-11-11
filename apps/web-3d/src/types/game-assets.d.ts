@@ -125,6 +125,8 @@ declare module '@netverse/game-assets/runtime/seat-motion.mjs' {
     readonly done: boolean;
   }
   export const SEAT_PULL: number;
+  export const STAND_GAP: number;
+  export const SEAT_OUT: number;
   export function seatMotion(
     action: 'sit' | 'stand',
     elapsed: number,

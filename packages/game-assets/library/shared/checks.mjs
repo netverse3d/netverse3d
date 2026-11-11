@@ -243,7 +243,7 @@ async function main() {
       else action.stop();
     }
     const backpack = figure.getObjectByName(BACKPACK_NODE);
-    if (backpack) backpack.visible = wearsBackpack(name);
+    if (backpack) backpack.visible = wearsBackpack(state.clip);
   }
 
   function playClip() {

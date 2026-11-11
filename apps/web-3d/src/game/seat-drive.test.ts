@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { SEAT_PULL, seatMotionLength } from '@netverse/game-assets/runtime/seat-motion.mjs';
+import {
+  SEAT_OUT,
+  SEAT_PULL,
+  STAND_GAP,
+  seatMotionLength,
+} from '@netverse/game-assets/runtime/seat-motion.mjs';
 
 import { createSeatDrive } from './seat-drive.ts';
 import type { SeatSpot } from './seat-drive.ts';
@@ -32,15 +37,15 @@ test('bắt đầu ngồi: ghế trượt ra, người chơi bị giữ lại v�
   assert.deepEqual(first.hold, BESIDE);
   assert.equal(first.clip, 'walk');
   const mid = drive.step(0.2, BESIDE);
-  assert.ok(mid.chair > 0 && mid.chair < SEAT_PULL);
+  assert.ok(mid.chair > 0 && mid.chair < SEAT_OUT);
   assert.ok(mid.hold !== null && mid.hold.x < BESIDE.x && mid.hold.x > SEAT.sit.x);
 });
 
 test('ghế ra hết thì người chơi đứng ở chỗ đã lùi, quay mặt về bàn, và ngồi xuống', () => {
   const drive = createSeatDrive(CLIPS);
   drive.sit(SEAT, BESIDE);
-  const frame = drive.step(0.45 + 0.5, BESIDE);
-  near(frame.chair, SEAT_PULL);
+  const frame = drive.step(0.45 + 0.6, BESIDE);
+  near(frame.chair, SEAT_PULL + STAND_GAP / 2);
   assert.equal(frame.clip, 'sit_down');
   near(frame.hold?.x ?? NaN, 2);
   near(frame.hold?.z ?? NaN, 3 - SEAT_PULL);
@@ -68,7 +73,7 @@ test('rời máy: trượt ra cùng ghế, đứng dậy ở chỗ đã lùi, r�
   near(rising.hold?.z ?? NaN, 3 - SEAT_PULL);
   const stepping = drive.step(seatMotionLength('stand', CLIPS) - 0.85 + 0.15, BESIDE);
   assert.equal(stepping.clip, 'walk');
-  near(stepping.chair, SEAT_PULL);
+  near(stepping.chair, SEAT_OUT);
   assert.ok(stepping.hold !== null && stepping.hold.x > 2 && stepping.hold.x < BESIDE.x);
 });
 
@@ -78,7 +83,7 @@ test('đứng dậy xong thì người chơi được thả ở chỗ đứng c�
   const free = drive.step(seatMotionLength('stand', CLIPS) + 1, BESIDE);
   assert.equal(free.hold, null);
   assert.equal(free.seat, SEAT);
-  near(free.chair, SEAT_PULL);
+  near(free.chair, SEAT_OUT);
   assert.equal(drive.seated(), false);
 });
 
@@ -87,10 +92,10 @@ test('người chơi đi khỏi thì ghế trượt về chỗ cũ rồi thôi k
   drive.stand();
   drive.step(seatMotionLength('stand', CLIPS) + 1, BESIDE);
   const stillNear = drive.step(0.5, { x: 2.3, z: 2.9, yaw: 0 });
-  near(stillNear.chair, SEAT_PULL);
+  near(stillNear.chair, SEAT_OUT);
   const far = { x: 5, z: 5, yaw: 0 };
   const returning = drive.step(0.2, far);
-  assert.ok(returning.chair > 0 && returning.chair < SEAT_PULL);
+  assert.ok(returning.chair > 0 && returning.chair < SEAT_OUT);
   const home = drive.step(1, far);
   assert.deepEqual(home, { seat: SEAT, chair: 0, hold: null, clip: null });
   assert.deepEqual(drive.step(0.1, far), { seat: null, chair: 0, hold: null, clip: null });

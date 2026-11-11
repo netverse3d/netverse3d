@@ -1,4 +1,6 @@
 export const SEAT_PULL = 0.24;
+export const STAND_GAP = 0.12;
+export const SEAT_OUT = SEAT_PULL + STAND_GAP;
 
 const PULL_OUT_SECONDS = 0.45;
 const SLIDE_SECONDS = 0.55;
@@ -18,15 +20,22 @@ export function seatMotionLength(action, clips) {
 function sitting(elapsed, clips) {
   if (elapsed < PULL_OUT_SECONDS) {
     return {
-      chair: SEAT_PULL * ease(elapsed / PULL_OUT_SECONDS),
+      chair: SEAT_OUT * ease(elapsed / PULL_OUT_SECONDS),
       actor: null,
       clip: null,
       done: false,
     };
   }
   const seated = PULL_OUT_SECONDS + clips.sit_down;
-  if (elapsed < seated)
-    return { chair: SEAT_PULL, actor: SEAT_PULL, clip: 'sit_down', done: false };
+  if (elapsed < seated) {
+    const closing = ease((elapsed - PULL_OUT_SECONDS) / clips.sit_down);
+    return {
+      chair: SEAT_PULL + STAND_GAP * (1 - closing),
+      actor: SEAT_PULL,
+      clip: 'sit_down',
+      done: false,
+    };
+  }
   if (elapsed < seated + SLIDE_SECONDS) {
     const offset = SEAT_PULL * (1 - ease((elapsed - seated) / SLIDE_SECONDS));
     return { chair: offset, actor: offset, clip: 'sit_idle', done: false };
@@ -40,9 +49,15 @@ function standing(elapsed, clips) {
     return { chair: offset, actor: offset, clip: 'sit_idle', done: false };
   }
   if (elapsed < SLIDE_SECONDS + clips.stand_up) {
-    return { chair: SEAT_PULL, actor: SEAT_PULL, clip: 'stand_up', done: false };
+    const opening = ease((elapsed - SLIDE_SECONDS) / clips.stand_up);
+    return {
+      chair: SEAT_PULL + STAND_GAP * opening,
+      actor: SEAT_PULL,
+      clip: 'stand_up',
+      done: false,
+    };
   }
-  return { chair: SEAT_PULL, actor: SEAT_PULL, clip: 'idle', done: true };
+  return { chair: SEAT_OUT, actor: SEAT_PULL, clip: 'idle', done: true };
 }
 
 export function seatMotion(action, elapsed, clips) {

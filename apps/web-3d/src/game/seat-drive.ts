@@ -1,4 +1,5 @@
 import {
+  SEAT_OUT,
   SEAT_PULL,
   chairComesHome,
   seatMotion,
@@ -103,7 +104,7 @@ export function createSeatDrive<T extends SeatSpot>(clips: SeatClipLengths): Sea
           return { seat: spot, chair: 0, hold: spot.sit, clip: TYPING_CLIP };
         }
         if (motion.actor === null) {
-          const way = motion.chair / SEAT_PULL;
+          const way = motion.chair / SEAT_OUT;
           return {
             seat: spot,
             chair: motion.chair,
@@ -140,17 +141,17 @@ export function createSeatDrive<T extends SeatSpot>(clips: SeatClipLengths): Sea
         if (elapsed < STEP_SECONDS) {
           return {
             seat: spot,
-            chair: SEAT_PULL,
+            chair: SEAT_OUT,
             hold: between(pulled(spot.sit, SEAT_PULL), stood, ease(elapsed / STEP_SECONDS)),
             clip: WALK_CLIP,
           };
         }
         phase = 'away';
-        return { seat: spot, chair: SEAT_PULL, hold: null, clip: null };
+        return { seat: spot, chair: SEAT_OUT, hold: null, clip: null };
       }
       if (phase === 'away') {
         if (!chairComesHome(spot.sit, player)) {
-          return { seat: spot, chair: SEAT_PULL, hold: null, clip: null };
+          return { seat: spot, chair: SEAT_OUT, hold: null, clip: null };
         }
         phase = 'homing';
         elapsed = elapsed - before;
@@ -158,7 +159,7 @@ export function createSeatDrive<T extends SeatSpot>(clips: SeatClipLengths): Sea
       if (elapsed < HOME_SECONDS) {
         return {
           seat: spot,
-          chair: SEAT_PULL * (1 - ease(elapsed / HOME_SECONDS)),
+          chair: SEAT_OUT * (1 - ease(elapsed / HOME_SECONDS)),
           hold: null,
           clip: null,
         };

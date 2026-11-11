@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  SEAT_OUT,
   SEAT_PULL,
+  STAND_GAP,
   chairComesHome,
   seatMotion,
   seatMotionLength,
@@ -15,14 +17,18 @@ test('lúc ngồi: ghế trượt ra trước, nhân vật chưa nhúc nhích v�
   const start = seatMotion('sit', 0, CLIPS);
   assert.deepEqual(start, { chair: 0, actor: null, clip: null, done: false });
   const mid = seatMotion('sit', 0.2, CLIPS);
-  assert.ok(mid.chair > 0 && mid.chair < SEAT_PULL);
+  assert.ok(mid.chair > 0 && mid.chair < SEAT_OUT);
   assert.equal(mid.actor, null);
 });
 
 test('lúc ngồi: ghế ra hết thì nhân vật vào chỗ đã lùi và chạy hành động ngồi xuống', () => {
+  const standingUp = seatMotion('sit', 0.45, CLIPS);
+  near(standingUp.chair, SEAT_OUT);
+  near(standingUp.actor, SEAT_PULL);
   const sitting = seatMotion('sit', 0.45 + 0.6, CLIPS);
-  near(sitting.chair, SEAT_PULL);
+  near(sitting.chair, SEAT_PULL + STAND_GAP / 2);
   near(sitting.actor, SEAT_PULL);
+  assert.ok(seatMotion('sit', 0.45 + 1.199, CLIPS).chair - SEAT_PULL < 0.001);
   assert.equal(sitting.clip, 'sit_down');
   assert.equal(sitting.done, false);
 });
@@ -41,11 +47,11 @@ test('lúc rời máy: ghế và nhân vật cùng trượt ra, rồi mới đ�
   const start = seatMotion('stand', 0, CLIPS);
   assert.deepEqual(start, { chair: 0, actor: 0, clip: 'sit_idle', done: false });
   const out = seatMotion('stand', 0.55 + 0.5, CLIPS);
-  near(out.chair, SEAT_PULL);
+  near(out.chair, SEAT_PULL + STAND_GAP / 2);
   near(out.actor, SEAT_PULL);
   assert.equal(out.clip, 'stand_up');
   const end = seatMotion('stand', seatMotionLength('stand', CLIPS), CLIPS);
-  assert.deepEqual(end, { chair: SEAT_PULL, actor: SEAT_PULL, clip: 'idle', done: true });
+  assert.deepEqual(end, { chair: SEAT_OUT, actor: SEAT_PULL, clip: 'idle', done: true });
 });
 
 test('độ dài trình tự tính theo độ dài thật của hành động', () => {
@@ -58,10 +64,10 @@ test('ghế trượt êm: không giật ở đầu và cuối, không vượt qu
   let previous = 0;
   for (let step = 0; step <= 45; step += 1) {
     const { chair } = seatMotion('sit', step / 100, CLIPS);
-    assert.ok(chair >= previous - 1e-9 && chair <= SEAT_PULL + 1e-9);
+    assert.ok(chair >= previous - 1e-9 && chair <= SEAT_OUT + 1e-9);
     previous = chair;
   }
-  assert.ok(seatMotion('sit', 0.01, CLIPS).chair < SEAT_PULL * 0.01);
+  assert.ok(seatMotion('sit', 0.01, CLIPS).chair < SEAT_OUT * 0.01);
 });
 
 test('lùi ra là đi ngược hướng mặt ghế, ghế quay hướng nào thì lùi theo hướng đó', () => {
