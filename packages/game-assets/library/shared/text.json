@@ -58,7 +58,10 @@
       "lamp": "Đèn đường",
       "bin": "Thùng rác",
       "planter": "Chậu cây",
-      "board": "Biển chữ A"
+      "board": "Biển chữ A",
+      "shopfront": "Tầng trệt",
+      "storey": "Tầng lầu",
+      "roof": "Mái"
     },
     "all": "Tất cả",
     "count": "món",

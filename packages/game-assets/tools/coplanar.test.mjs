@@ -9,6 +9,7 @@ import {
   overlapArea,
   partTriangles,
   placeTriangles,
+  facadeAssemblies,
   roomAssemblies,
 } from './coplanar.mjs';
 import { isLfsPointer, loadConfig, readGlb, readGlbBinary } from './lib.mjs';
@@ -166,6 +167,23 @@ test('bộ phòng sinh ra đủ cụm ghép cho mỗi biến thể tường', ()
     'window_a between wall_a',
   ]);
   assert.deepEqual(roomAssemblies(['chair_a']), []);
+});
+
+test('mặt tiền nhà ống được ghép thành nhà ba tầng với mỗi mẫu lầu và hai căn kề nhau', () => {
+  const assemblies = facadeAssemblies(['shopfront_a', 'storey_a', 'storey_b', 'roof_a', 'road_a']);
+  assert.deepEqual(
+    assemblies.map((item) => item.name),
+    [
+      'shopfront_a under storey_a under roof_a',
+      'shopfront_a under storey_b under roof_a',
+      'shopfront_a beside shopfront_a',
+    ],
+  );
+  assert.deepEqual(
+    assemblies[0].places.map(([, offset]) => offset[1]),
+    [0, 3.4, 6.8, 10.2],
+  );
+  assert.deepEqual(facadeAssemblies(['wall_a']), []);
 });
 
 test('bộ phòng thật không có mặt trùng phẳng chồng nhau, kể cả ở các cụm ghép', (context) => {

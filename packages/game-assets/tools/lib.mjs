@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { checkCoplanar, roomAssemblies } from './coplanar.mjs';
+import { checkCoplanar, facadeAssemblies, roomAssemblies } from './coplanar.mjs';
 import { PREVIEW_SUFFIX } from '../runtime/three-shop.mjs';
 
 const GLB_MAGIC = 0x46546c67;
@@ -351,7 +351,11 @@ export function checkModel(file, gltf, expected, bin) {
   else if (expected.kit) fail('kits need a palette in the config');
   if (expected.kit) {
     const parts = Object.keys(expected.meshes);
-    for (const message of checkCoplanar(gltf, bin, parts, roomAssemblies(parts))) fail(message);
+    for (const message of checkCoplanar(gltf, bin, parts, [
+      ...roomAssemblies(parts),
+      ...facadeAssemblies(parts),
+    ]))
+      fail(message);
   }
   if (expected.lightmap) checkLightmap(gltf, fail);
   return errors;
