@@ -43,6 +43,8 @@ Có hai loại tệp gốc (ADR-0018). Nhân vật, clip, tóc, phụ kiện và
 
 `pnpm assets:generate` chạy mọi generator theo thứ tự trong config; thêm tên tệp gốc để chạy một cái, ví dụ `pnpm assets:generate environment-kit`. Lệnh ghi `.blend` vào `source/`, sau đó vẫn phải `pnpm assets:export`. Script trong `pipeline/` không được chứa đường dẫn tuyệt đối tới máy ai (có test chặn), không mang ảnh hay mô hình tham chiếu của bên khác vào repo, và theo cùng luật không chú thích như mã khác. `pipeline/render_part.py` render một món từ tệp `.blend` ra bốn góc để nghiệm thu ngoài trình duyệt.
 
+Đang tìm dáng một món thì phác trước trong Blender đang mở qua MCP rồi mới viết thành script: xem [runbook phác hình](../../runbooks/blender-mcp-sketch.md), lệnh `pnpm assets:sketch <tệp.py> [ảnh.png]`.
+
 ## Bộ ô đồ và bộ màu
 
 Để mỗi tiệm có bản sắc riêng (REQ-040), bàn máy và phòng không còn là một khối. Chúng ghép từ các món rời khai trong `kits` của `assets.config.json`, và mọi món đổi màu qua một bộ màu chung thay vì mang màu riêng.
