@@ -22,11 +22,11 @@ def gutter(part, axis, offset, start=-GUTTER_END, end=GUTTER_END):
     def at(along, across, z):
         return (along, across, z) if axis == 'x' else (across, along, z)
 
-    part.poly([at(start, offset - GUTTER_HALF, FLOAT), at(end, offset - GUTTER_HALF, FLOAT), at(end, offset + GUTTER_HALF, FLOAT), at(start, offset + GUTTER_HALF, FLOAT)], 'body')
+    part.oriented_poly([at(start, offset - GUTTER_HALF, FLOAT), at(end, offset - GUTTER_HALF, FLOAT), at(end, offset + GUTTER_HALF, FLOAT), at(start, offset + GUTTER_HALF, FLOAT)], (0, 0, 1), 'body')
     for step in range(-18, 19, 3):
         along = step / 10
         if start + 0.06 <= along <= end - 0.06:
-            part.poly([at(along - 0.05, offset - 0.1, FLOAT * 2), at(along + 0.05, offset - 0.1, FLOAT * 2), at(along + 0.05, offset + 0.1, FLOAT * 2), at(along - 0.05, offset + 0.1, FLOAT * 2)], 'metal')
+            part.oriented_poly([at(along - 0.05, offset - 0.1, FLOAT * 2), at(along + 0.05, offset - 0.1, FLOAT * 2), at(along + 0.05, offset + 0.1, FLOAT * 2), at(along - 0.05, offset + 0.1, FLOAT * 2)], (0, 0, 1), 'metal')
 
 
 def manhole(part, x, y):
