@@ -15,6 +15,7 @@
     "screen": ["#ffd9a0", "#ff9f1c"],
     "accent": ["#ff6f3c"]
   },
+  "keyboard": { "colorway": "retro", "led": "white" },
   "variants": {
     "desk": "c",
     "monitor": "a",

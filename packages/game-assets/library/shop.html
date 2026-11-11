@@ -322,7 +322,7 @@
         paletteTexture,
         shopMaterials,
       } from '../runtime/three-shop.mjs';
-      import { legendTexture } from '../runtime/keyboard-legends.mjs';
+      import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
       const LIGHTING = {
@@ -445,11 +445,11 @@
       };
       const materials = shopMaterials(THREE, state.recipe, rows, {
         lightmap: kitLightmap(stationKit.scene),
-        legends: legendTexture(THREE, keyboards, state.recipe),
+        legends: legendTextures(THREE, keyboards, state.recipe),
       });
       const roomMaterials = shopMaterials(THREE, state.recipe, rows, {
         lightmap: kitLightmap(roomKit.scene),
-        legends: materials.legend.map,
+        legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
       });
       const materialSets = [materials, roomMaterials];
       const GLOW_DEFAULT = materials.glow.color.r;
@@ -470,14 +470,20 @@
       function repaint() {
         const palette = paletteTexture(THREE, paletteImage(rows, state.recipe.palette));
         const emissive = paletteTexture(THREE, paletteImage(rows, state.recipe.emissive ?? {}));
-        const legends = legendTexture(THREE, keyboards, state.recipe);
+        const legends = legendTextures(THREE, keyboards, state.recipe);
         for (const set of materialSets) {
-          for (const texture of [set.surface.map, set.surface.emissiveMap, set.legend.map])
+          for (const texture of [
+            set.surface.map,
+            set.surface.emissiveMap,
+            set.legend.map,
+            set.legend.emissiveMap,
+          ])
             texture.dispose();
           set.surface.map = palette;
           set.surface.emissiveMap = emissive;
           set.glow.map = palette;
-          set.legend.map = legends;
+          set.legend.map = legends.map;
+          set.legend.emissiveMap = legends.emissive;
           set.surface.needsUpdate = true;
           set.glow.needsUpdate = true;
           set.legend.needsUpdate = true;
