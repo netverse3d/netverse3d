@@ -311,6 +311,71 @@
           "anchors": ["collision_main"]
         }
       }
+    },
+    {
+      "file": "street-parts.glb",
+      "source": "parts-street.blend",
+      "generator": "pipeline/make_street_kit.py",
+      "lightmap": true,
+      "slots": {
+        "road": {
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 600,
+          "size": [4.01, 0.23, 4.01],
+          "grid": {
+            "size": 4,
+            "axes": [0, 2]
+          }
+        },
+        "sidewalk": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [4.01, 0.16, 1.01],
+          "grid": {
+            "size": 4,
+            "axes": [0]
+          }
+        },
+        "pole": {
+          "variants": ["a"],
+          "maxTriangles": 900,
+          "size": [0.8, 7.1, 1.4],
+          "anchors": ["collision_main"]
+        },
+        "wires": {
+          "variants": ["a"],
+          "maxTriangles": 500,
+          "size": [4.02, 2.3, 1.1],
+          "grid": {
+            "size": 4,
+            "axes": [0]
+          }
+        },
+        "lamp": {
+          "variants": ["a"],
+          "maxTriangles": 700,
+          "size": [0.4, 4.7, 1.6],
+          "anchors": ["collision_main"]
+        },
+        "bin": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [0.5, 0.81, 0.55],
+          "anchors": ["collision_main"]
+        },
+        "planter": {
+          "variants": ["a"],
+          "maxTriangles": 900,
+          "size": [0.9, 1.4, 0.9],
+          "anchors": ["collision_main"]
+        },
+        "board": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [0.7, 1.05, 0.7],
+          "anchors": ["collision_main"]
+        }
+      }
     }
   ],
   "scenes": [

@@ -39,7 +39,15 @@
     "table": "a",
     "console": "a",
     "gamepad": "a",
-    "tv": "a"
+    "tv": "a",
+    "road": "c",
+    "sidewalk": "a",
+    "pole": "a",
+    "wires": "a",
+    "lamp": "a",
+    "bin": "a",
+    "planter": "a",
+    "board": "a"
   },
   "layout": {
     "cells": [3, 3],
