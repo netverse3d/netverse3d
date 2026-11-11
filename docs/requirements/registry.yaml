@@ -305,8 +305,8 @@ requirements:
     sources: [mentor-followup, team-decision]
   - id: REQ-039
     title: Thế giới mang bối cảnh Sài Gòn cyber
-    description: Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này.
-    status: draft
+    description: Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này. Phố lắp từ module trên lưới ô đường 4 m, lô tiệm 8 × 8 m nhìn ra hẻm rộng 4 m. Có xe máy và ô tô đậu trước tiệm và chạy theo làn; người qua lại là bot robot trên vỉa hè. Đường chân trời gợi hình TP.HCM, không chép và không dùng tên công trình. Pháo hoa vào các dịp lễ Tết.
+    status: accepted
     priority: should
     milestone: M2
     area: web-3d
