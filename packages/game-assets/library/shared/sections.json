@@ -1,0 +1,60 @@
+[
+  {
+    "id": "overview",
+    "title": "Tổng quan",
+    "summary": "Thư viện có gì và mỗi mục nằm ở đâu.",
+    "href": "index.html",
+    "state": "rebuilt"
+  },
+  {
+    "id": "characters",
+    "title": "Nhân vật",
+    "summary": "Thân, tóc và phụ kiện của người chơi, cùng các hành động và biểu cảm trên bộ xương chung.",
+    "state": "legacy",
+    "pages": [{ "title": "Hành động và biểu cảm", "src": "studio.html" }]
+  },
+  {
+    "id": "parts",
+    "title": "Món đồ",
+    "summary": "Bàn, ghế, màn hình, bàn phím, chuột, tai nghe, micro, loa và thùng máy, mỗi món đủ các biến thể.",
+    "state": "legacy",
+    "pages": [
+      { "title": "Danh mục món", "src": "gallery.html" },
+      { "title": "Soi từng món", "src": "lab.html" }
+    ]
+  },
+  {
+    "id": "rooms",
+    "title": "Phòng",
+    "summary": "Các module sàn, tường, góc, cửa, cửa sổ và trần ghép trên lưới 2 m, kèm phần thử mối nối.",
+    "state": "legacy",
+    "pages": [{ "title": "Module và mối nối", "src": "lab.html?part=wall_a" }]
+  },
+  {
+    "id": "shops",
+    "title": "Tiệm mẫu",
+    "summary": "Ba tiệm dựng từ công thức: đổi bộ màu, biển hiệu, ánh sáng và món theo từng ô.",
+    "state": "legacy",
+    "pages": [
+      { "title": "Phòng thử tiệm", "src": "shop.html" },
+      { "title": "Tiệm giới thiệu", "src": "showcase.html" }
+    ]
+  },
+  {
+    "id": "checks",
+    "title": "Soi lỗi",
+    "summary": "Nhân vật ngồi tại bàn máy thật, hộp va chạm và điểm neo, để bắt lỗi lún, xuyên và lệch.",
+    "state": "planned"
+  },
+  {
+    "id": "archive",
+    "title": "Lưu trữ",
+    "summary": "Bản phác giai đoạn đầu dựng bằng mã: phố Sài Gòn, bộ sưu tập hướng nhân vật, xưởng và tiệm. Không phải tài sản chính thức.",
+    "state": "legacy",
+    "pages": [
+      { "title": "Phố Sài Gòn", "src": "studio.html#pho" },
+      { "title": "Bộ sưu tập", "src": "studio.html#muc-1" },
+      { "title": "Xưởng và tiệm", "src": "studio.html#stand" }
+    ]
+  }
+]

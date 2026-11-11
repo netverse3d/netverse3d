@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thư viện 3D Netverse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="shared/gallery.css" />
+  </head>
+  <body class="gallery">
+    <aside class="gallery-nav" id="nav"></aside>
+    <main class="gallery-stage">
+      <header class="stage-head">
+        <div class="stage-name">
+          <h1 id="stage-title"></h1>
+          <span id="stage-badge"></span>
+        </div>
+        <p class="stage-summary" id="stage-summary"></p>
+        <div class="stage-bar">
+          <nav class="stage-tabs" id="stage-tabs" aria-label="Các trang trong mục"></nav>
+          <a class="stage-alone" id="stage-alone" target="_blank" rel="noopener"
+            >Mở riêng trang này</a
+          >
+        </div>
+      </header>
+      <p class="notice" id="problem" hidden>
+        Không đọc được dữ liệu của thư viện. Hãy mở trang qua lệnh <code>pnpm assets:library</code>.
+      </p>
+      <iframe class="stage-frame" id="stage-frame"></iframe>
+    </main>
+    <script type="module" src="shared/stage.mjs"></script>
+  </body>
+</html>
