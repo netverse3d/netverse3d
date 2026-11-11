@@ -45,6 +45,8 @@ Có hai loại tệp gốc (ADR-0018). Nhân vật, clip, tóc, phụ kiện và
 
 Thêm cờ `--preview` để bỏ bước nướng AO khi đang tìm dáng một món: `pnpm assets:generate parts-lounge --preview` chỉ dựng hình khối trong vài giây, ảnh bóng là ảnh trắng mang hậu tố `-preview`. Xuất xong vẫn xem được trong lab và trang Món đồ, nút AO bị khoá và ghi là bản xem thử. Bộ kiểm trong repo từ chối tệp xuất mang ảnh xem thử, nên trước khi commit phải sinh lại không có cờ rồi xuất lại. Cờ chỉ tác dụng với các bộ nướng từng món (`station-parts`, `lounge-parts`); tiệm giới thiệu vẫn nướng như cũ.
 
+Đang tìm dáng một món thì phác trước trong Blender đang mở qua MCP rồi mới viết thành script: xem [runbook phác hình](../../runbooks/blender-mcp-sketch.md), lệnh `pnpm assets:sketch <tệp.py> [ảnh.png]`.
+
 ## Bộ ô đồ và bộ màu
 
 Để mỗi tiệm có bản sắc riêng (REQ-040), bàn máy và phòng không còn là một khối. Chúng ghép từ các món rời khai trong `kits` của `assets.config.json`, và mọi món đổi màu qua một bộ màu chung thay vì mang màu riêng.
