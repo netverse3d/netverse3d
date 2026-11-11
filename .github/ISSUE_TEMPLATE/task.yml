@@ -1,7 +1,11 @@
 name: Công việc
-description: Một việc làm được trong vài ngày
+description: Một việc làm được trong vài ngày, kết thúc bằng một PR
 type: Task
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Sau khi tạo, điền thanh bên phải: Labels `area:*`, Milestone, Priority, Effort. Khi nhận việc, điền thêm Assignees, Start date, Target date. Xem CONTRIBUTING.md.
   - type: input
     id: requirement
     attributes:
@@ -11,15 +15,31 @@ body:
     validations:
       required: true
   - type: textarea
+    id: context
+    attributes:
+      label: Bối cảnh
+      description: Hiện đang thế nào và vì sao cần làm. Dẫn tệp hoặc issue liên quan nếu có.
+    validations:
+      required: true
+  - type: textarea
     id: work
     attributes:
       label: Việc cần làm
+      description: Phạm vi, mỗi dòng một điều kiểm được.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
     validations:
       required: true
   - type: textarea
     id: done
     attributes:
       label: Xong khi nào
-      description: Cách kiểm là đã xong.
+      description: Cách kiểm là đã xong, người khác tự kiểm được.
     validations:
       required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Ngoài phạm vi
+      description: Điều dễ bị hiểu là thuộc việc này nhưng không làm ở đây.

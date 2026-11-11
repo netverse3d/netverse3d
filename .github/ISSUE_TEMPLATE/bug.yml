@@ -2,6 +2,10 @@ name: Lỗi
 description: Hành vi sai so với yêu cầu
 type: Bug
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Sau khi tạo, điền thanh bên phải: Labels `area:*`, Milestone, Priority, Effort. Khi nhận việc, điền thêm Assignees, Start date, Target date. Xem CONTRIBUTING.md.
   - type: input
     id: requirement
     attributes:
@@ -24,15 +28,23 @@ body:
       label: Phiên bản
       placeholder: stg-v0.1.0
   - type: textarea
-    id: steps
+    id: context
     attributes:
-      label: Các bước tái hiện
+      label: Bối cảnh và các bước tái hiện
+      description: Đang làm gì thì gặp lỗi, làm lại theo từng bước thế nào.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Mong đợi và thực tế
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Xong khi nào
+      description: Hành vi đúng sau khi sửa và cách kiểm lại.
     validations:
       required: true
   - type: textarea

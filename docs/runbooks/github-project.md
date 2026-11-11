@@ -4,12 +4,13 @@ Cấu hình repo, Project và bộ issue đều nằm trong mã. Các script ch�
 
 ## Lệnh
 
-| Lệnh                                         | Việc                                                                                                          |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `node scripts/github/setup-repo.mjs`         | Áp cấu hình repo, nhãn, ruleset, Environment, Pages rồi đọc lại để đối chiếu                                  |
-| `node scripts/github/setup-repo.mjs --check` | Chỉ đối chiếu, báo khác biệt                                                                                  |
-| `node scripts/github/setup-project.mjs`      | Tạo Project, field; tạo hoặc đổi tên Milestone theo mã `Mx`                                                   |
-| `node scripts/github/seed-issues.mjs`        | Dời issue sang đúng Milestone, rồi tạo issue còn thiếu từ sổ yêu cầu và `docs/requirements/backlog-seed.yaml` |
+| Lệnh                                            | Việc                                                                                                                                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node scripts/github/setup-repo.mjs`            | Áp cấu hình repo, nhãn, ruleset, Environment, Pages rồi đọc lại để đối chiếu                                                                                                          |
+| `node scripts/github/setup-repo.mjs --check`    | Chỉ đối chiếu, báo khác biệt                                                                                                                                                          |
+| `node scripts/github/setup-project.mjs`         | Tạo Project, field; tạo hoặc đổi tên Milestone theo mã `Mx`                                                                                                                           |
+| `node scripts/github/seed-issues.mjs --dry-run` | In ra issue sẽ được viết lại thân, đặt field, dời Milestone hoặc tạo mới; không ghi gì                                                                                                |
+| `node scripts/github/seed-issues.mjs`           | Viết lại thân issue còn ở dạng sinh tự động cũ, đặt Priority và Effort, dời issue sang đúng Milestone, rồi tạo issue còn thiếu từ sổ yêu cầu và `docs/requirements/backlog-seed.yaml` |
 
 Cần quyền `gh auth refresh -s project`.
 
@@ -20,7 +21,7 @@ Sổ yêu cầu là nguồn duy nhất cho Milestone của issue do script sinh 
 1. Sửa `docs/requirements/milestones.yaml` và `registry.yaml` qua PR. Tiêu đề Milestone luôn bắt đầu bằng `Mx · `.
 2. Sau khi merge, chạy `setup-project.mjs` trước để đổi tên Milestone, rồi mới chạy `seed-issues.mjs`.
 3. `seed-issues.mjs` dời mọi issue đang mở do sổ yêu cầu sinh ra mà nằm sai Milestone. Dời bằng tay trên GitHub sẽ bị đảo lại ở lần chạy sau. Issue không có Milestone, issue đã đóng và issue tự tạo không bị đụng tới.
-4. Script chỉ đồng bộ Milestone. Các thay đổi sau phải sửa tay trên GitHub:
+4. Script đồng bộ Milestone, Priority và Effort. Thân issue chỉ được viết lại khi còn nguyên dạng script sinh ra trước đây; thân đã có người sửa tay thì không bị đụng. Các thay đổi sau phải sửa tay trên GitHub:
    - Đổi `area` của REQ: sửa nhãn `area:*` của issue REQ và các việc con.
    - Chuyển một việc sang REQ khác: sửa dòng `Yêu cầu: REQ-xxx` ở đầu body và chuyển issue cha.
    - Đổi tiêu đề một việc: đổi trên GitHub và trong `backlog-seed.yaml` cùng lúc, nếu không script sẽ tạo issue trùng.
@@ -65,3 +66,5 @@ Tạo trong giao diện Project nếu API không hỗ trợ:
 | Theo người     | Table   | Nhóm theo Assignees, lọc `-status:Done`   |
 | Lộ trình       | Roadmap | Nhóm theo Milestone                       |
 | Cần chốt       | Table   | Lọc `label:needs-decision,waiting-mentor` |
+
+Priority, Effort, Start date và Target date là field của issue do tổ chức định nghĩa. Mỗi việc trong `backlog-seed.yaml` có thể khai thêm `work` và `done` là danh sách gạch đầu dòng cho mục "Việc cần làm" và "Xong khi nào".

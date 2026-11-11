@@ -2,6 +2,10 @@ name: Tính năng
 description: Một khả năng mới cho người dùng, thường là issue cha có các issue con
 type: Feature
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Sau khi tạo, điền thanh bên phải: Labels `area:*`, Milestone, Priority, Effort. Khi nhận việc, điền thêm Assignees, Start date, Target date. Xem CONTRIBUTING.md.
   - type: input
     id: requirement
     attributes:
@@ -11,16 +15,23 @@ body:
     validations:
       required: true
   - type: textarea
+    id: context
+    attributes:
+      label: Bối cảnh
+      description: Người dùng đang thiếu gì hoặc gặp khó gì.
+    validations:
+      required: true
+  - type: textarea
     id: outcome
     attributes:
       label: Kết quả người dùng nhận được
     validations:
       required: true
   - type: textarea
-    id: acceptance
+    id: done
     attributes:
-      label: Tiêu chí nghiệm thu
-      description: Mỗi dòng là một điều kiểm được.
+      label: Xong khi nào
+      description: Tiêu chí nghiệm thu, mỗi dòng là một điều kiểm được.
       placeholder: |
         - [ ] Chủ tiệm chọn được khu đất còn trống
         - [ ] Khu đất đã có người thuê không chọn được
@@ -30,4 +41,4 @@ body:
     id: notes
     attributes:
       label: Ghi chú
-      description: Phụ thuộc, câu hỏi còn mở.
+      description: Phụ thuộc, câu hỏi còn mở, phần ngoài phạm vi.
