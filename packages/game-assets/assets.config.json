@@ -192,8 +192,8 @@
           "anchors": ["seat_anchor", "collision_main"]
         },
         "case": {
-          "variants": ["a"],
-          "maxTriangles": 1300,
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 2400,
           "size": [0.32, 0.6, 0.5],
           "anchors": ["collision_main"]
         }

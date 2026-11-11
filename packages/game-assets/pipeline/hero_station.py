@@ -170,7 +170,7 @@ def fan(part, center, radius):
         (radius * 0.2, 0.002, 'top'),
         (0.001, 0.005, 'top'),
     ]
-    part.revolve(center, 'y', profile, segments=11, smooth=False)
+    part.revolve(center, 'y', profile, segments=20, smooth=False)
 
 
 def build_case(name='case_a'):
@@ -182,7 +182,7 @@ def build_case(name='case_a'):
         (0.545, 0.0, 'top'),
         (0.578, 0.0, 'top'),
         (0.586, 0.014, 'top'),
-    ], corner=1)
+    ], corner=3)
     case.poly([(0.082, 0.232, 0.06), (0.082, 0.232, 0.52), (-0.082, 0.232, 0.52), (-0.082, 0.232, 0.06)][::-1], 'soft')
     for z in (0.135, 0.29, 0.445):
         fan(case, (0, 0.2325, z), 0.076)
@@ -199,7 +199,7 @@ def build_case(name='case_a'):
             (r * 0.68, 0.002, 'screen'),
             (r * 0.42, 0.002, 'soft'),
             (0.001, 0.005, 'top'),
-        ], segments=9, smooth=False)
+        ], segments=18, smooth=False)
     case.rounded_box((px, 0.0, 0.125), (0.006, 0.335, 0.09), 'top', radius=0.002, segments=1)
     case.tube([(px + 0.0035, -0.16, 0.172), (px + 0.0035, 0.16, 0.172)], 0.0034, 'strip', sides=3)
     case.rounded_box((px, 0.012, 0.262), (0.01, 0.275, 0.082), 'metal', radius=0.003, segments=1)
