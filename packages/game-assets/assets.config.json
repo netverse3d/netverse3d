@@ -156,7 +156,7 @@
           "size": [1, 0.7, 0.35]
         },
         "keyboard": {
-          "variants": ["a", "b", "c", "d", "e"],
+          "variants": ["a", "b", "c", "d", "e", "f"],
           "maxTriangles": 2400,
           "size": [0.46, 0.06, 0.2]
         },
@@ -166,7 +166,7 @@
           "size": [0.1, 0.06, 0.14]
         },
         "mat": {
-          "variants": ["a"],
+          "variants": ["a", "b", "c"],
           "maxTriangles": 300,
           "size": [0.9, 0.02, 0.4]
         },
@@ -274,6 +274,42 @@
           "size": [1, 0.08, 1]
         }
       }
+    },
+    {
+      "file": "lounge-parts.glb",
+      "source": "parts-lounge.blend",
+      "generator": "pipeline/make_lounge_kit.py",
+      "lightmap": true,
+      "slots": {
+        "sofa": {
+          "variants": ["a"],
+          "maxTriangles": 4000,
+          "size": [2, 1, 1],
+          "anchors": ["collision_main"]
+        },
+        "table": {
+          "variants": ["a"],
+          "maxTriangles": 600,
+          "size": [1.2, 0.5, 0.7],
+          "anchors": ["socket_console", "socket_gamepad", "collision_main"]
+        },
+        "console": {
+          "variants": ["a"],
+          "maxTriangles": 800,
+          "size": [0.42, 0.12, 0.3]
+        },
+        "gamepad": {
+          "variants": ["a"],
+          "maxTriangles": 1500,
+          "size": [0.18, 0.08, 0.12]
+        },
+        "tv": {
+          "variants": ["a"],
+          "maxTriangles": 500,
+          "size": [1.5, 1, 0.3],
+          "anchors": ["collision_main"]
+        }
+      }
     }
   ],
   "scenes": [
@@ -290,7 +326,8 @@
       "files": {
         "base": "showcase-tim-neon-base.jpg",
         "spill": "showcase-tim-neon-spill.jpg"
-      }
+      },
+      "kits": ["station-parts.glb", "room-kit.glb"]
     }
   ]
 }

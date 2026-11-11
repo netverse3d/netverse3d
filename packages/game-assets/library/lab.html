@@ -182,6 +182,8 @@
         <div class="list" id="stationList"></div>
         <h2>Phòng</h2>
         <div class="list" id="roomList"></div>
+        <h2>Góc console</h2>
+        <div class="list" id="loungeList"></div>
         <h2>Ghép thử mối nối</h2>
         <div class="list" id="setList"></div>
       </nav>
@@ -327,6 +329,13 @@
           ['ceiling_a', [0, 0, 0], 0],
           ['ceiling_a', [2, 0, 0], 0],
           ['light_a', [1, 2.9, 0], 0],
+        ],
+        'Góc console': [
+          ['sofa_a', [0, 0, 0], 0],
+          ['table_a', [0, 0, 0.8], 0],
+          ['console_a', [0.22, 0.42, 0.8], 0],
+          ['gamepad_a', [-0.22, 0.42, 0.72], 0],
+          ['tv_a', [0, 0, 1.7], 0],
         ],
       };
 
@@ -646,6 +655,7 @@
       function renderLists() {
         const station = $('stationList');
         const room = $('roomList');
+        const lounge = $('loungeList');
         for (const [name, info] of Object.entries(slotOf)) {
           const button = document.createElement('button');
           button.textContent = name;
@@ -654,7 +664,8 @@
             state.selection = { kind: 'part', name };
             show();
           });
-          (info.kit === 'station-parts.glb' ? station : room).append(button);
+          const list = { 'station-parts.glb': station, 'room-kit.glb': room }[info.kit] ?? lounge;
+          list.append(button);
         }
         const sets = $('setList');
         for (const name of Object.keys(SETS)) {

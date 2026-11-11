@@ -7,14 +7,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hero_chair import build_hero_chair
 from hero_mic_boom import build_mic_boom
 from hero_mouse import build_mouse_a, build_mouse_b, build_mouse_c
-from hero_kit import anchor, attach_occlusion, bake_occlusion, context_copy, finish_hero, finish_lightmap_uv, ground_plane, lightmap_image, prepare_lightmap_uv, remove_context
+from hero_kit import anchor, bake_isolated, finish_hero
 from hero_desks import build_desk_a, build_desk_b, build_desk_c
 from hero_headset import build_headset_a, build_headset_b, build_headset_c
-from hero_keyboard import build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e
-from hero_station import build_case, build_mat, build_mic, build_monitor, build_speaker
+from hero_keyboard import build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f
+from hero_mats import build_mat_a, build_mat_b, build_mat_c
+from hero_station import build_case, build_mic, build_monitor, build_speaker
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
-LIGHTMAP_SIZE = 2048
 DESK_TOP = 0.704
 MAT_TOP = DESK_TOP + 0.004
 SOCKETS = {
@@ -37,22 +37,6 @@ def socket_of(part):
     return 'socket_speaker_left' if slot == 'speaker' else 'socket_' + slot
 
 
-def bake_station(scene, collection, built, surface):
-    parts = list(built.values())
-    prepare_lightmap_uv(parts)
-    ground = ground_plane(collection)
-    image = lightmap_image('station-parts-lightmap', LIGHTMAP_SIZE)
-    for ob in parts:
-        for other in parts:
-            other.hide_render = other is not ob
-        bake_occlusion(scene, [ob], image, distance=0.3)
-    for ob in parts:
-        ob.hide_render = False
-    remove_context([ground])
-    finish_lightmap_uv(parts)
-    attach_occlusion(surface, image)
-
-
 def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.scene.new(type='EMPTY') if not bpy.data.scenes else None
@@ -63,7 +47,7 @@ def main():
     materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal', 'legend')]
     for material in materials:
         material.use_nodes = True
-    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_case, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_mat]
+    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_case, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_mat_a, build_mat_b, build_mat_c]
     built = {}
     for builder in builders:
         part = builder()
@@ -75,7 +59,7 @@ def main():
     anchor(built['chair_a'], 'seat_anchor', collection, (0, -0.24, 0))
     anchor(built['chair_a'], 'collision_main', collection, (0, 0.03, 0.665), (0.32, 0.33, 0.665))
     anchor(built['case_a'], 'collision_main', collection, (0, 0, 0.29), (0.13, 0.235, 0.29))
-    bake_station(scene, collection, built, materials[0])
+    bake_isolated(scene, collection, built, materials[0], 'station-parts-lightmap', 0.3)
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
             print('PART', ob.name, sum(len(p.vertices) - 2 for p in ob.data.polygons))
