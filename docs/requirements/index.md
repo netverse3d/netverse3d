@@ -28,6 +28,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
 | REQ-040 | Mỗi tiệm có bản sắc riêng | Đã chốt | Bắt buộc | `game-assets` |
+| REQ-041 | Góc console trong tiệm | Nháp | Nên có | `game-assets` |
 
 ## M3 · Xèng và Payment
 
@@ -326,5 +327,11 @@ Nguồn: `team-decision`
 ### REQ-040: Mỗi tiệm có bản sắc riêng
 
 Một con phố có nhiều tiệm và mỗi tiệm trông khác nhau. Hình dáng và màu của đồ đạc, gồm cả gradient nhiều màu như bàn phím, cùng bố cục, biển hiệu và kiểu đèn được lưu thành công thức của tiệm. Các tiệm dùng chung một bộ mô hình.
+
+Nguồn: `team-decision`
+
+### REQ-041: Góc console trong tiệm
+
+Tiệm có thể có một góc giải trí riêng với sofa, bàn trà, máy console, tay cầm và TV lớn để người chơi ngồi chơi chung. Bộ mô hình dùng chung cơ chế ô đồ và đổi màu theo công thức tiệm; vị trí của góc này trong bố cục tiệm chốt sau.
 
 Nguồn: `team-decision`
