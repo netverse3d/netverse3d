@@ -350,6 +350,9 @@ class HeroPart:
         self._tag([self.bm.faces.new(verts)], row)
 
 
+HARD_EDGE_DEGREES = 62
+
+
 def finish_hero(part, collection, materials):
     bm = part.bm
     uv_layer = bm.loops.layers.uv.get('palette') or bm.loops.layers.uv.new('palette')
@@ -390,15 +393,34 @@ def finish_hero(part, collection, materials):
     mesh = bpy.data.meshes.new(part.name)
     bm.to_mesh(mesh)
     bm.free()
+    mesh.set_sharp_from_angle(angle=math.radians(HARD_EDGE_DEGREES))
     for material in materials:
         mesh.materials.append(material)
     ob = bpy.data.objects.new(part.name, mesh)
     collection.objects.link(ob)
+    weight_normals_by_face_area(ob)
     return ob
+
+
+def weight_normals_by_face_area(ob):
+    modifier = ob.modifiers.new('weighted_normal', 'WEIGHTED_NORMAL')
+    modifier.mode = 'FACE_AREA'
+    modifier.weight = 50
+    modifier.keep_sharp = True
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    depsgraph.update()
+    weighted = bpy.data.meshes.new_from_object(ob.evaluated_get(depsgraph), depsgraph=depsgraph)
+    ob.modifiers.remove(modifier)
+    plain = ob.data
+    weighted.name = plain.name
+    ob.data = weighted
+    bpy.data.meshes.remove(plain)
 
 
 LIGHTMAP_UV = 'lightmap'
 LIGHTMAP_SIZE = 2048
+SMALL_PART_TILE = 0.11
+SMALL_PART_AREA_POWER = 0.65
 PALETTE_UV = 'palette'
 GLTF_OUTPUT_GROUP = 'glTF Material Output'
 
@@ -421,9 +443,10 @@ def unwrap_object(ob, margin):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def pack_tiles(areas, fill=0.86, minimum=0.08, gap=0.006):
-    total = sum(areas.values())
-    sides = {name: max(minimum, math.sqrt(area / total * fill)) for name, area in areas.items()}
+def pack_tiles(areas, fill=0.86, minimum=0.08, gap=0.006, area_power=1.0):
+    weights = {name: area ** area_power for name, area in areas.items()}
+    total = sum(weights.values())
+    sides = {name: max(minimum, math.sqrt(weight / total * fill)) for name, weight in weights.items()}
     order = sorted(sides, key=lambda name: -sides[name])
     scale = 1.0
     while True:
@@ -440,14 +463,12 @@ def pack_tiles(areas, fill=0.86, minimum=0.08, gap=0.006):
         scale *= 0.96
 
 
-def prepare_lightmap_uv(objects, margin=0.01):
-    areas = {}
-    for ob in objects:
-        unwrap_object(ob, margin)
-        areas[ob.name] = sum(polygon.area for polygon in ob.data.polygons)
-    tiles = pack_tiles(areas)
+def prepare_lightmap_uv(objects, size=LIGHTMAP_SIZE, gutter_pixels=4, minimum=0.08, area_power=1.0):
+    areas = {ob.name: sum(polygon.area for polygon in ob.data.polygons) for ob in objects}
+    tiles = pack_tiles(areas, minimum=minimum, area_power=area_power)
     for ob in objects:
         x0, y0, side = tiles[ob.name]
+        unwrap_object(ob, gutter_pixels / (side * size))
         layer = ob.data.uv_layers[LIGHTMAP_UV]
         for item in layer.data:
             item.uv = (x0 + item.uv[0] * side, y0 + item.uv[1] * side)
@@ -469,7 +490,7 @@ def lightmap_image(name, size):
     return image
 
 
-def bake_occlusion(scene, objects, image, samples=32, distance=0.6, margin=8):
+def bake_occlusion(scene, objects, image, samples=256, distance=0.6, margin=3):
     scene.render.engine = 'CYCLES'
     scene.cycles.device = 'CPU'
     scene.cycles.samples = samples
@@ -495,7 +516,7 @@ def bake_occlusion(scene, objects, image, samples=32, distance=0.6, margin=8):
 
 def bake_isolated(scene, collection, built, surface, image_name, distance):
     parts = list(built.values())
-    prepare_lightmap_uv(parts)
+    prepare_lightmap_uv(parts, minimum=SMALL_PART_TILE, area_power=SMALL_PART_AREA_POWER)
     ground = ground_plane(collection)
     image = lightmap_image(image_name, LIGHTMAP_SIZE)
     for ob in parts:
