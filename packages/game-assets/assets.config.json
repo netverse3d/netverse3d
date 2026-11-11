@@ -383,7 +383,7 @@
         },
         "planter": {
           "variants": ["a"],
-          "maxTriangles": 900,
+          "maxTriangles": 1500,
           "size": [0.9, 1.4, 0.9],
           "anchors": ["collision_main"]
         },

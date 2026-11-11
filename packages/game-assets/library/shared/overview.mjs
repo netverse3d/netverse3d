@@ -1,4 +1,4 @@
-import { SECTION_STATES, catalogSummary, sectionCards } from './catalog.mjs';
+import { SECTION_STATES, catalogSummary, kitIndex, sectionCards } from './catalog.mjs';
 import { element, loadShell, mountNav, readJson, stateBadge } from './shell.mjs';
 
 const STAT_ORDER = ['variants', 'slots', 'actions', 'expressions', 'shops', 'scenes'];
@@ -56,8 +56,35 @@ async function main() {
       ...STAT_ORDER.map((key) => statItem(summary[key], shell.text.stats[key])),
     );
     cards.replaceChildren(
-      ...sectionCards(shell.sections, summary).map((card) => cardOf(card, shell.text)),
+      ...sectionCards(shell.sections, summary, config).map((card) => cardOf(card, shell.text)),
     );
+    const words = shell.text.index;
+    document
+      .getElementById('index-head')
+      .replaceChildren(
+        ...[words.kit, words.slots, words.variants, words.section].map((label) =>
+          element('th', { scope: 'col' }, label),
+        ),
+      );
+    document
+      .getElementById('index-rows')
+      .replaceChildren(
+        ...kitIndex(config, shell.sections).map((row) =>
+          element('tr', {}, [
+            element('th', { scope: 'row' }, [
+              shell.text.parts.kits[row.file] ?? row.file,
+              element('small', {}, row.file),
+            ]),
+            element('td', {}, row.slots.toLocaleString('vi-VN')),
+            element('td', {}, row.variants.toLocaleString('vi-VN')),
+            element(
+              'td',
+              {},
+              row.href ? element('a', { href: row.href }, row.title) : words.missing,
+            ),
+          ]),
+        ),
+      );
     legend.replaceChildren(
       ...SECTION_STATES.map((state) =>
         element('li', {}, [stateBadge(state, shell.text), shell.text.stateNotes[state]]),

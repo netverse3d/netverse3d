@@ -8,9 +8,10 @@ function normalised(text) {
   return text.trim().toLocaleLowerCase('vi');
 }
 
-export function partGroups(config) {
-  return (config.kits ?? [])
-    .filter((kit) => kit.file !== ROOM_KIT)
+export function partGroups(config, kitFiles) {
+  return kitFiles
+    .map((file) => (config.kits ?? []).find((kit) => kit.file === file))
+    .filter(Boolean)
     .map((kit) => ({
       kit: kit.file,
       slots: Object.entries(kit.slots ?? {}).map(([slot, spec]) => ({

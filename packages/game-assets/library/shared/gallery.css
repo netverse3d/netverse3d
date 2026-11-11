@@ -924,3 +924,49 @@ h3 {
     overflow: visible;
   }
 }
+
+.field[hidden] {
+  display: none;
+}
+
+.index-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.index-table th,
+.index-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.index-table thead th {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.index-table tbody th {
+  font-weight: 500;
+}
+
+.index-table small {
+  display: block;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.index-table td:nth-child(2),
+.index-table td:nth-child(3) {
+  font-family: var(--font-mono);
+}
+
+.index-table a {
+  color: var(--cyan);
+}

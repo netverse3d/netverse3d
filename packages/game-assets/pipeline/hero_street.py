@@ -113,11 +113,58 @@ def build_bin():
     return bin_part
 
 
+POT_HEIGHT = 0.46
+FRONDS = [
+    (0, 0.62, 0.62, 0.105),
+    (40, 0.5, 0.74, 0.095),
+    (78, 0.64, 0.56, 0.1),
+    (118, 0.46, 0.8, 0.09),
+    (158, 0.6, 0.6, 0.105),
+    (200, 0.5, 0.72, 0.095),
+    (238, 0.63, 0.58, 0.1),
+    (280, 0.47, 0.78, 0.09),
+    (320, 0.58, 0.66, 0.1),
+    (20, 0.2, 0.86, 0.075),
+    (150, 0.22, 0.84, 0.075),
+    (265, 0.18, 0.88, 0.07),
+]
+FROND_STEPS = 6
+FROND_SPREAD = 0.6
+
+
+def frond(planter, turn, reach, rise, width):
+    angle = math.radians(turn)
+    out = Vector((math.cos(angle), math.sin(angle), 0))
+    side = Vector((-out.y, out.x, 0))
+    up = Vector((0, 0, 1))
+    root = Vector((0, 0, POT_HEIGHT - 0.04)) + out * 0.05
+    rings = []
+    for step in range(FROND_STEPS + 1):
+        t = step / FROND_STEPS
+        centre = root + out * (FROND_SPREAD * reach * t) + up * (rise * (1 - (1 - t) ** 2) - 0.34 * reach * t ** 3)
+        half = max(0.006, width * math.sin(math.pi * (0.08 + 0.92 * t)) ** 0.75 * (1 - 0.55 * t))
+        thick = 0.012 * (1 - 0.6 * t)
+        rings.append([centre + side * half, centre + up * thick, centre - side * half, centre - up * thick])
+    planter.loft(rings, lambda r, c: 'trim', levels=0, smooth=True)
+
+
 def build_planter():
     planter = HeroPart('planter_a')
-    planter.slab(0, 0, 0.4, 0.4, 0.03, [(0.0, 0.04, 'metal'), (0.47, 0.0, 'metal'), (0.5, 0.0, 'metal'), (0.5, 0.03, 'soft'), (0.46, 0.05, 'soft')], corner=2)
-    for cx, cy, cz, size in ((0.0, 0.0, 0.84, 0.62), (0.2, -0.14, 1.02, 0.44), (-0.18, 0.16, 0.98, 0.4), (0.05, 0.2, 1.2, 0.3)):
-        planter.pillow((cx, cy, cz), (size, size, size * 0.9), 'top', puff=0.35, levels=1, grid=2)
+    planter.revolve((0, 0, 0), 'z', [
+        (0.2, 0.0, 'soft'),
+        (0.245, 0.012, 'metal'),
+        (0.26, 0.05, 'metal'),
+        (0.262, 0.07, 'strip'),
+        (0.266, 0.086, 'metal'),
+        (0.33, POT_HEIGHT - 0.03, 'metal'),
+        (0.345, POT_HEIGHT - 0.012, 'metal'),
+        (0.345, POT_HEIGHT, 'metal'),
+        (0.31, POT_HEIGHT, 'soft'),
+        (0.3, POT_HEIGHT - 0.045, 'soft'),
+        (0.001, POT_HEIGHT - 0.03, 'soft'),
+    ], segments=24)
+    for turn, reach, rise, width in FRONDS:
+        frond(planter, turn, reach, rise, width)
     return planter
 
 
