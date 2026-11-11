@@ -1,4 +1,4 @@
-export const SEAT_PULL = 0.38;
+export const SEAT_PULL = 0.24;
 
 const PULL_OUT_SECONDS = 0.45;
 const SLIDE_SECONDS = 0.55;
