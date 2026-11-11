@@ -335,3 +335,11 @@ requirements:
     milestone: M4
     area: web-3d
     sources: [team-decision]
+  - id: REQ-043
+    title: Thời tiết ngẫu nhiên trong thành phố
+    description: Thành phố luôn là ban đêm theo ADR-0014, nhưng thời tiết đổi ngẫu nhiên theo thời gian giữa các trạng thái như tạnh, mưa nhẹ, mưa lớn và sương dày. Trạng thái chuyển dần, không đổi đột ngột. Người chơi ở cùng một khu thấy cùng một thời tiết. Mưa đi cùng mặt đường ướt và hạt mưa bắt sáng theo chuẩn dựng hình ở ADR-0019. Mức chất lượng thấp tắt được hiệu ứng mà không đổi trạng thái thời tiết.
+    status: accepted
+    priority: should
+    milestone: M4
+    area: web-3d
+    sources: [team-decision]
