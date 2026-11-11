@@ -15,10 +15,7 @@
     "screen": ["#ffd9a0", "#ff9f1c"],
     "accent": ["#ff6f3c"]
   },
-  "keyboard": {
-    "colorway": "retro",
-    "led": "white"
-  },
+  "keyboard": { "colorway": "retro", "led": "white" },
   "variants": {
     "desk": "c",
     "monitor": "c",
@@ -55,37 +52,14 @@
   "layout": {
     "cells": [3, 3],
     "stations": [
-      {
-        "cell": [0, 0],
-        "facing": "north"
-      },
-      {
-        "cell": [1, 0],
-        "facing": "north"
-      },
-      {
-        "cell": [0, 1],
-        "facing": "south"
-      },
-      {
-        "cell": [1, 1],
-        "facing": "south"
-      }
+      { "cell": [0, 0], "facing": "north" },
+      { "cell": [1, 0], "facing": "north" },
+      { "cell": [0, 1], "facing": "south" },
+      { "cell": [1, 1], "facing": "south" }
     ],
-    "door": {
-      "wall": "south",
-      "at": 1
-    },
-    "windows": [
-      {
-        "wall": "west",
-        "at": 1
-      }
-    ]
+    "door": { "wall": "south", "at": 1 },
+    "windows": [{ "wall": "west", "at": 1 }]
   },
-  "sign": {
-    "text": "CAM RETRO",
-    "style": "painted"
-  },
+  "sign": { "text": "CAM RETRO", "style": "painted" },
   "lighting": "warm"
 }

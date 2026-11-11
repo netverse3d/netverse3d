@@ -566,7 +566,7 @@ test('module khớp lưới thì đạt', () => {
   assert.deepEqual(finishExport(makeKitRoot(makeKitModel(), { grid })), []);
 });
 
-test('ô đường 4 m đúng tâm khớp lưới phố, ô 3 m thì bị báo', () => {
+test('ô đường 4 m đúng tâm khớp lưới phố, ô 3 m hay ô lệch tâm thì bị báo', () => {
   const fourMetres = [
     { count: 3 },
     { count: 3, min: [-2, 0, -2], max: [2, 0.2, 2] },
@@ -581,6 +581,13 @@ test('ô đường 4 m đúng tâm khớp lưới phố, ô 3 m thì bị báo',
   assert.deepEqual(finishExport(makeKitRoot(makeKitModel({ accessors: fourMetres }), street)), []);
   const errors = finishExport(makeKitRoot(makeKitModel({ accessors: threeMetres }), street));
   assert.match(errors.join('\n'), /chair_a spans 3\.000 m on axis 0, not a multiple of 4/);
+  const shifted = [
+    { count: 3 },
+    { count: 3, min: [-1.5, 0, -2], max: [2.5, 0.2, 2] },
+    { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+  ];
+  const offCentre = finishExport(makeKitRoot(makeKitModel({ accessors: shifted }), street));
+  assert.match(offCentre.join('\n'), /chair_a is off the cell centre on axis 0/);
 });
 
 test('báo module lệch lưới', () => {
