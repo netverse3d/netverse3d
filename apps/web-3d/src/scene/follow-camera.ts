@@ -80,6 +80,18 @@ export function cutaways(eye: Point3, room: FloorBox): CutPlane[] {
   ];
 }
 
+export type WallSide = 'north' | 'south' | 'east' | 'west';
+
+export function wallIsCut(eye: Point3, room: FloorBox, wall: WallSide): boolean {
+  const [x, , z] = eye;
+  return {
+    east: x > room.maxX,
+    west: x < room.minX,
+    south: z > room.maxZ,
+    north: z < room.minZ,
+  }[wall];
+}
+
 function entryInto(box: FloorBox, from: Point3, to: Point3): number | null {
   let enter = 0;
   let leave = 1;

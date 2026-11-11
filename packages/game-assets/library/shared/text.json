@@ -32,7 +32,8 @@
   "parts": {
     "kits": {
       "station-parts.glb": "Bàn máy",
-      "lounge-parts.glb": "Góc console"
+      "lounge-parts.glb": "Góc console",
+      "sign-parts.glb": "Biển hiệu"
     },
     "slots": {
       "desk": "Bàn",
@@ -49,7 +50,9 @@
       "table": "Bàn trà",
       "console": "Máy console",
       "gamepad": "Tay cầm",
-      "tv": "TV"
+      "tv": "TV",
+      "sign": "Biển hiệu",
+      "blade": "Biển vẫy"
     },
     "all": "Tất cả",
     "count": "món",

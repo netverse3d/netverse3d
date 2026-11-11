@@ -15,7 +15,11 @@ import {
   type PaletteConfig,
   type ShopRecipe,
 } from '@netverse/game-assets/runtime/shop-look.mjs';
-import { buildSign } from '@netverse/game-assets/runtime/shop-sign.mjs';
+import {
+  buildSigns,
+  disposeSigns,
+  type SignGroup,
+} from '@netverse/game-assets/runtime/shop-sign.mjs';
 import {
   buildShop,
   kitLightmap,
@@ -40,6 +44,8 @@ import {
   eyeDistance,
   fieldOfView,
   turnOrbit,
+  wallIsCut,
+  type WallSide,
   zoomOrbit,
 } from './follow-camera.ts';
 import { QUALITY_PRESETS, pixelRatioFor } from './quality.ts';
@@ -51,6 +57,7 @@ export interface ShopAssets {
   recipes: Record<string, ShopRecipe>;
   station: GLTF;
   room: GLTF;
+  signs: GLTF;
   player: GLTF;
   anchors: KitAnchors;
   rows: string[];
@@ -146,9 +153,10 @@ export async function loadShopAssets(base: string): Promise<ShopAssets> {
   );
   const loader = new GLTFLoader();
   const model = (file: string) => loader.loadAsync(`${base}/exported/${file}`);
-  const [station, room, player] = await Promise.all([
+  const [station, room, signs, player] = await Promise.all([
     model('station-parts.glb'),
     model('room-kit.glb'),
+    model('sign-parts.glb'),
     model('player.glb'),
   ]);
   return {
@@ -157,6 +165,7 @@ export async function loadShopAssets(base: string): Promise<ShopAssets> {
     recipes,
     station,
     room,
+    signs,
     player,
     anchors: { ...kitAnchors(station.parser.json), ...kitAnchors(room.parser.json) },
     rows: paletteRows(config.palette),
@@ -252,6 +261,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   let openFloor: FloorBox = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
   let furniture: FloorBox[] = [];
   let seats: Seat[] = [];
+  let signs: SignGroup | null = null;
+  let doorWall: WallSide = 'south';
   let nearbySeat: string | null = null;
   let takenSeats: ReadonlySet<string> = new Set();
   let seatedAt: string | null = null;
@@ -332,6 +343,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     cutaways(eye, openFloor).forEach(([x, y, z, constant], index) => {
       cutPlanes[index]?.set(new THREE.Vector3(x, y, z), constant);
     });
+    if (signs) signs.visible = !wallIsCut(eye, openFloor, doorWall);
   }
 
   function use(): void {
@@ -351,6 +363,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
 
   function clearContent(): void {
     disposeGroup(content);
+    if (signs) disposeSigns(signs);
+    signs = null;
     player?.dispose();
     player = null;
     materialSets.forEach(disposeMaterials);
@@ -386,9 +400,19 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const spawn = resume ? walk.position() : spawnFor(recipe);
     content.add(buildShop(THREE, assets.room.scene, room, materialsOf(assets.room)));
     content.add(buildShop(THREE, assets.station.scene, stations, materialsOf(assets.station)));
-    const sign = buildSign(THREE, recipe, document.createElement('canvas'));
-    sign.material.clippingPlanes = cutPlanes.slice(0, WALL_CUT_PLANES);
-    content.add(sign);
+    const signMaterials = materialsOf(assets.signs);
+    signs = buildSigns(
+      THREE,
+      assets.signs.scene,
+      recipe,
+      signMaterials,
+      document.createElement('canvas'),
+    );
+    const wallCuts = cutPlanes.slice(0, WALL_CUT_PLANES);
+    for (const material of [...Object.values(signMaterials), signs.userData.text]) {
+      material.clippingPlanes = wallCuts;
+    }
+    content.add(signs);
     player = createPlayer(THREE, assets.player, spawn);
     content.add(player.root);
     walk.place(spawn, obstacles);
@@ -396,6 +420,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     seats = stationSeats;
     applySeating();
     openFloor = shopOpenFloor(recipe.layout.cells);
+    doorWall = recipe.layout.door.wall;
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
     relight(recipe);
     play(0);

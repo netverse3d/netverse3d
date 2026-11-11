@@ -315,7 +315,7 @@
         roomPlan,
         shopPlan,
       } from '../runtime/shop-look.mjs';
-      import { buildSign, repaintSign } from '../runtime/shop-sign.mjs';
+      import { buildSigns, disposeSigns, repaintSigns } from '../runtime/shop-sign.mjs';
       import {
         buildShop,
         kitLightmap,
@@ -401,8 +401,8 @@
         ),
       );
       const loader = new GLTFLoader();
-      const [stationKit, roomKit] = await Promise.all(
-        ['station-parts.glb', 'room-kit.glb'].map((file) =>
+      const [stationKit, roomKit, signKit] = await Promise.all(
+        ['station-parts.glb', 'room-kit.glb', 'sign-parts.glb'].map((file) =>
           loader.loadAsync(`../exported/${file}`),
         ),
       );
@@ -451,9 +451,13 @@
         lightmap: kitLightmap(roomKit.scene),
         legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
       });
-      const materialSets = [materials, roomMaterials];
+      const signMaterials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(signKit.scene),
+        legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
+      });
+      const materialSets = [materials, roomMaterials, signMaterials];
       const GLOW_DEFAULT = materials.glow.color.r;
-      let signMesh = null;
+      let signGroup = null;
 
       function disposeGroup(group) {
         group.traverse((object) => {
@@ -535,12 +539,18 @@
       }
 
       function paintSign() {
-        if (signMesh) repaintSign(signMesh, state.recipe);
+        if (signGroup) repaintSigns(signGroup, state.recipe);
       }
 
       function placeSign() {
-        signMesh = buildSign(THREE, state.recipe, document.createElement('canvas'));
-        shopGroup.add(signMesh);
+        signGroup = buildSigns(
+          THREE,
+          signKit.scene,
+          state.recipe,
+          signMaterials,
+          document.createElement('canvas'),
+        );
+        shopGroup.add(signGroup);
       }
 
       function helperLayer(plan) {
@@ -591,7 +601,8 @@
       let currentPlan = [];
       function rebuild() {
         disposeGroup(shopGroup);
-        signMesh = null;
+        if (signGroup) disposeSigns(signGroup);
+        signGroup = null;
         const room = roomPlan(state.recipe).filter(
           (placement) => state.ceiling || !['ceiling', 'light'].includes(placement.slot),
         );
