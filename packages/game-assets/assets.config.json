@@ -151,7 +151,7 @@
           ]
         },
         "monitor": {
-          "variants": ["a"],
+          "variants": ["a", "b", "c"],
           "maxTriangles": 1500,
           "size": [1, 0.7, 0.35]
         },

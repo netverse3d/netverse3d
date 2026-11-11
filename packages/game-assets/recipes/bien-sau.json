@@ -18,7 +18,7 @@
   "keyboard": { "colorway": "graphite", "led": "single" },
   "variants": {
     "desk": "b",
-    "monitor": "a",
+    "monitor": "b",
     "keyboard": "b",
     "mouse": "b",
     "mat": "b",

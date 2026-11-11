@@ -12,7 +12,7 @@ from hero_desks import build_desk_a, build_desk_b, build_desk_c
 from hero_headset import build_headset_a, build_headset_b, build_headset_c
 from hero_keyboard import build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f
 from hero_mats import build_mat_a, build_mat_b, build_mat_c
-from hero_station import build_case, build_mic, build_monitor, build_speaker
+from hero_station import build_case, build_mic, build_monitor, build_monitor_curved, build_monitor_retro, build_speaker
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
 DESK_TOP = 0.704
@@ -47,7 +47,7 @@ def main():
     materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal', 'legend')]
     for material in materials:
         material.use_nodes = True
-    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_case, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_mat_a, build_mat_b, build_mat_c]
+    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_monitor_curved, build_monitor_retro, build_case, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_mat_a, build_mat_b, build_mat_c]
     built = {}
     for builder in builders:
         part = builder()

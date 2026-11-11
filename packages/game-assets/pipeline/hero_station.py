@@ -75,6 +75,91 @@ def build_monitor(name='monitor_a'):
     return monitor
 
 
+CURVE_RADIUS = 1.1
+
+
+def curve_depth(x):
+    return CURVE_RADIUS - math.sqrt(CURVE_RADIUS * CURVE_RADIUS - x * x)
+
+
+def curve_stations(half_width, columns):
+    return [-half_width + 2 * half_width * i / columns for i in range(columns + 1)]
+
+
+def build_monitor_curved(name='monitor_b'):
+    monitor = HeroPart(name)
+    half_width, low, high, half_depth, columns = 0.45, 0.28, 0.665, 0.011, 14
+    corner = 0.014
+    inner = curve_stations(half_width - corner, columns)
+    rings = []
+    for x, trim in [(-half_width, corner)] + [(x, 0.0) for x in inner] + [(half_width, corner)]:
+        y = curve_depth(x)
+        rings.append([
+            Vector((x, y + half_depth, high - trim)),
+            Vector((x, y - half_depth, high - trim)),
+            Vector((x, y - half_depth, low + trim)),
+            Vector((x, y + half_depth, low + trim)),
+        ])
+    monitor.loft(rings, lambda r, c: 'body' if c == 1 else 'top', levels=0)
+    screen = curve_stations(0.437, columns)
+    face = half_depth + 0.002
+    for i in range(columns):
+        left, right = screen[columns - i], screen[columns - i - 1]
+        monitor.image_rect([
+            (left, curve_depth(left) + face, low + 0.026),
+            (right, curve_depth(right) + face, low + 0.026),
+            (right, curve_depth(right) + face, high - 0.012),
+            (left, curve_depth(left) + face, high - 0.012),
+        ], 'display', (i / columns, 0.0, (i + 1) / columns, 1.0))
+    monitor.tube([(x, curve_depth(x) + face, low + 0.013) for x in curve_stations(0.07, 4)], 0.0022, 'accent', sides=3)
+    monitor.tube([(x, curve_depth(x) - half_depth - 0.004, 0.47) for x in curve_stations(0.34, 10)], 0.005, 'strip', sides=4)
+    monitor.rounded_box((0, -0.045, 0.47), (0.2, 0.05, 0.15), 'body', radius=0.014, segments=1)
+    monitor.spoke((0, -0.06, 0.44), (0, -0.05, 0.03), 0.034, 0.044, 0.016, 0.02, 'metal', levels=0)
+    hub = Vector((0, -0.05, 0))
+    monitor.revolve(hub, 'z', [(0.045, 0.0, 'metal'), (0.045, 0.02, 'metal'), (0.036, 0.028, 'metal'), (0.001, 0.028, 'metal')], segments=14)
+    for foot in ((0.25, 0.1), (-0.25, 0.1), (0.0, -0.15)):
+        tip = Vector((foot[0], foot[1], 0))
+        root = hub + (tip - hub).normalized() * 0.046
+        monitor.spoke((root.x, root.y, 0.013), (tip.x, tip.y, 0.008), 0.022, 0.014, 0.013, 0.008, 'metal', levels=0)
+    return monitor
+
+
+def build_monitor_retro(name='monitor_c'):
+    monitor = HeroPart(name)
+    centre, half_width, half_height = 0.325, 0.29, 0.245
+    monitor.slab_y(0, centre, half_width, half_height, 0.03, [
+        (-0.19, 0.12, 'body'),
+        (-0.145, 0.07, 'body'),
+        (-0.05, 0.012, 'body'),
+        (-0.012, 0.0, 'top'),
+        (0.014, 0.0, 'top'),
+        (0.02, 0.007, 'top'),
+    ])
+    glass_width, glass_low, glass_high = 0.232, centre - 0.148, centre + 0.2
+    monitor.image_quad([
+        (glass_width, 0.0225, glass_low),
+        (-glass_width, 0.0225, glass_low),
+        (-glass_width, 0.0225, glass_high),
+        (glass_width, 0.0225, glass_high),
+    ], 'display')
+    lip = [(x, 0.023, z) for x, z in rounded_rect(0, (glass_low + glass_high) / 2, glass_width + 0.006, (glass_high - glass_low) / 2 + 0.006, 0.012, 2)]
+    monitor.tube(lip, 0.005, 'soft', sides=4, closed=True)
+    for x in (0.2, 0.16, 0.12):
+        monitor.revolve((x, 0.02, centre - 0.196), 'y', [(0.011, 0.0, 'metal'), (0.011, 0.005, 'metal'), (0.001, 0.005, 'metal')], segments=8, smooth=False)
+    monitor.revolve((-0.2, 0.02, centre - 0.196), 'y', [(0.007, 0.0, 'accent'), (0.007, 0.003, 'accent'), (0.001, 0.003, 'accent')], segments=8, smooth=False)
+    for z in (centre + 0.05, centre + 0.015, centre - 0.02):
+        monitor.tube([(-0.1, -0.1915, z), (0.1, -0.1915, z)], 0.004, 'soft', sides=3)
+    monitor.revolve((0, -0.03, 0.0), 'z', [
+        (0.14, 0.0, 'body'),
+        (0.14, 0.012, 'body'),
+        (0.12, 0.024, 'top'),
+        (0.06, 0.03, 'top'),
+        (0.05, 0.085, 'body'),
+        (0.001, 0.085, 'body'),
+    ], segments=18)
+    return monitor
+
+
 def fan(part, center, radius):
     profile = [
         (radius, 0.0, 'body'),
