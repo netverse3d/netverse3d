@@ -4,6 +4,8 @@ Mỗi ảnh dưới đây là đích để đối chiếu khi làm một việc 
 
 ## Đọc ảnh thế nào
 
+**Ảnh chỉ mang tính định hướng. Làm ra y chang ảnh là không đạt.** Mỗi món phải có thiết kế riêng và chi tiết hơn hẳn mức khối trong ảnh.
+
 - Ảnh do nhóm tự dựng bằng khối đơn giản trong Blender và kết xuất ngoại tuyến. Không có ảnh nào lấy từ nguồn ngoài.
 - Ảnh là đích về ánh sáng, bố cục, tỉ lệ và không khí. Ảnh chưa phải đích về độ chi tiết: mô hình thật phải vượt mức khối trong ảnh theo các tiêu chí hình khối và vật liệu.
 - Game chạy thời gian thực nên không cần giống từng điểm ảnh. Việc đạt khi người xem đặt hai ảnh cạnh nhau và thấy cùng một không khí.
