@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/world/street-block.v1.schema.json",
+  "title": "Street block",
+  "description": "Một khối phố trên lưới ô đường 4 m: các ô mặt hẻm, dải vỉa hè, lô tiệm 2 × 2 ô với mặt tiền nhà ống xếp tầng, và đồ đường phố. Toạ độ ô đếm từ góc tây-bắc; mặt tiền của lô quay về phía facing.",
+  "x-status": "draft",
+  "type": "object",
+  "required": ["id", "name", "cells", "roads", "lots"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cells": {
+      "description": "Kích thước khối [rộng, sâu] tính bằng ô 4 m.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/road"
+      }
+    },
+    "sidewalks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sidewalk"
+      }
+    },
+    "lots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lot"
+      }
+    },
+    "props": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/prop"
+      }
+    },
+    "variants": {
+      "description": "Biến thể mặc định cho từng ô đồ phố; lô có thể ghi đè tầng và mái.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-z]$"
+      }
+    }
+  },
+  "$defs": {
+    "cell": {
+      "description": "Ô [x, z]: x đếm từ cạnh west (0) sang east, z đếm từ cạnh north (0) xuống south.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "facing": {
+      "description": "Hướng mặt phố của lô hay hướng dọc của ô đường; south là phía z lớn.",
+      "enum": ["north", "south", "east", "west"]
+    },
+    "metres": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "road": {
+      "type": "object",
+      "required": ["cell", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "cell": {
+          "$ref": "#/$defs/cell"
+        },
+        "kind": {
+          "description": "straight có rãnh hai mép, corner có rãnh hai mép kề, tee có rãnh một mép.",
+          "enum": ["straight", "corner", "tee"]
+        },
+        "facing": {
+          "$ref": "#/$defs/facing"
+        }
+      }
+    },
+    "sidewalk": {
+      "type": "object",
+      "required": ["cell", "side"],
+      "additionalProperties": false,
+      "properties": {
+        "cell": {
+          "$ref": "#/$defs/cell"
+        },
+        "side": {
+          "description": "Cạnh của ô mà dải vỉa hè 4 × 1 m bám vào.",
+          "$ref": "#/$defs/facing"
+        }
+      }
+    },
+    "lot": {
+      "type": "object",
+      "required": ["id", "cell", "facing"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "cell": {
+          "description": "Ô góc tây-bắc của lô 2 × 2 ô.",
+          "$ref": "#/$defs/cell"
+        },
+        "facing": {
+          "$ref": "#/$defs/facing"
+        },
+        "shop": {
+          "description": "Mã công thức tiệm đang thuê lô, nếu có.",
+          "type": "string"
+        },
+        "storeys": {
+          "description": "Biến thể tầng lầu từ thấp lên cao; rỗng là nhà một tầng.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]$"
+          }
+        },
+        "roof": {
+          "type": "string",
+          "pattern": "^[a-z]$"
+        },
+        "props": {
+          "description": "Đồ đặt trên vỉa hè trước lô, toạ độ mét tính từ tâm mép phố của lô.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prop"
+          }
+        }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "required": ["slot", "at"],
+      "additionalProperties": false,
+      "properties": {
+        "slot": {
+          "type": "string",
+          "pattern": "^[a-z]+$"
+        },
+        "variant": {
+          "type": "string",
+          "pattern": "^[a-z]$"
+        },
+        "at": {
+          "description": "Với props của khối: mét [x, z] từ góc tây-bắc. Với props của lô: [dọc mặt tiền theo chiều trái sang phải khi nhìn từ phố vào nhà, ra phố] tính từ tâm mép phố của lô.",
+          "$ref": "#/$defs/metres"
+        },
+        "facing": {
+          "$ref": "#/$defs/facing"
+        }
+      }
+    }
+  }
+}

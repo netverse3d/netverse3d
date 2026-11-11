@@ -15,7 +15,7 @@ EMIT = {'strip': (1.0, 0.0, 0.0), 'screen': (0.0, 1.0, 0.0), 'accent': (0.0, 0.0
 EMIT_STRENGTH = 12.0
 WORLD_STRENGTH = 0.6
 LAMP_ENERGY = 200.0
-LAMP_HEIGHT = 2.85
+LAMP_HEIGHT = 3.42
 CELL = 2.0
 MARGIN = 8
 

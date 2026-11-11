@@ -2,11 +2,12 @@ import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync 
 import { extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { hasGlbHeader, loadConfig, outputFiles } from './lib.mjs';
 
-const SERVED_FOLDERS = new Set(['library', 'exported', 'runtime', 'recipes']);
+const SERVED_FOLDERS = new Set(['library', 'exported', 'runtime', 'recipes', 'blocks']);
 const MODEL_FOLDERS = ['exported', 'library/models'];
 const PILOT_MODELS = ['library/models/bot-d1.glb', 'library/models/human-hoodie.glb'];
 const RUNTIME_FOLDER = 'runtime';
 const RECIPE_FOLDER = 'recipes';
+const BLOCK_FOLDER = 'blocks';
 const TEST_SUFFIX = '.test.mjs';
 const CONFIG_FILE = 'assets.config.json';
 const KEYBOARDS_FILE = 'keyboards.json';
@@ -75,6 +76,7 @@ export function copyLibrary(root, target) {
     filter: (source) => !source.endsWith(TEST_SUFFIX),
   });
   cpSync(join(root, RECIPE_FOLDER), join(target, RECIPE_FOLDER), { recursive: true });
+  cpSync(join(root, BLOCK_FOLDER), join(target, BLOCK_FOLDER), { recursive: true });
   for (const file of ROOT_FILES) copyFileSync(join(root, file), join(target, file));
   return [];
 }

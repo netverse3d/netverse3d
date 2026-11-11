@@ -20,7 +20,7 @@ const CONFIG = {
 
 function makeRoot(glb = REAL_MODEL) {
   const root = mkdtempSync(join(tmpdir(), 'asset-library-'));
-  for (const folder of ['library/models', 'exported', 'source', 'runtime', 'recipes']) {
+  for (const folder of ['library/models', 'exported', 'source', 'runtime', 'recipes', 'blocks']) {
     mkdirSync(join(root, folder), { recursive: true });
   }
   writeFileSync(join(root, 'assets.config.json'), JSON.stringify(CONFIG));
@@ -29,6 +29,7 @@ function makeRoot(glb = REAL_MODEL) {
   writeFileSync(join(root, 'runtime/shop-look.mjs'), 'export const x = 1;');
   writeFileSync(join(root, 'runtime/shop-look.test.mjs'), 'test');
   writeFileSync(join(root, 'recipes/tim-neon.json'), '{}');
+  writeFileSync(join(root, 'blocks/hem-mau.json'), '{}');
   writeFileSync(join(root, 'library/models/bot-d1.glb'), REAL_MODEL);
   writeFileSync(join(root, 'library/models/human-hoodie.glb'), REAL_MODEL);
   writeFileSync(join(root, 'exported/player.glb'), glb);
@@ -59,6 +60,7 @@ test('phục vụ mã chạy và công thức tiệm cho trang thư viện', () 
     resolveRequestPath(root, '/recipes/tim-neon.json'),
     join(root, 'recipes/tim-neon.json'),
   );
+  assert.equal(resolveRequestPath(root, '/blocks/hem-mau.json'), join(root, 'blocks/hem-mau.json'));
 });
 
 test('phục vụ hợp đồng assets.config.json nhưng không phục vụ tệp gốc khác', () => {
@@ -133,6 +135,7 @@ test('sao chép trang và mô hình, không kèm tệp gốc', () => {
   assert.equal(existsSync(join(target, 'runtime/shop-look.mjs')), true);
   assert.equal(existsSync(join(target, 'runtime/shop-look.test.mjs')), false);
   assert.equal(existsSync(join(target, 'recipes/tim-neon.json')), true);
+  assert.equal(existsSync(join(target, 'blocks/hem-mau.json')), true);
   assert.equal(existsSync(join(target, 'assets.config.json')), true);
   assert.equal(existsSync(join(target, 'keyboards.json')), true);
 });

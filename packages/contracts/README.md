@@ -2,12 +2,12 @@
 
 Hợp đồng dùng chung giữa các thành phần. Service chỉ nói chuyện với nhau qua những gì được khai ở đây.
 
-| Thư mục     | Nội dung                                                            |
-| ----------- | ------------------------------------------------------------------- |
-| `openapi/`  | API HTTP, OpenAPI 3.1                                               |
-| `events/`   | Sự kiện Kafka, JSON Schema. Mọi sự kiện dùng vỏ chung `envelope.v1` |
-| `realtime/` | Giao thức giữa client và game server, JSON Schema                   |
-| `world/`    | Dữ liệu thế giới game: công thức tiệm `shop-look`, JSON Schema      |
+| Thư mục     | Nội dung                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `openapi/`  | API HTTP, OpenAPI 3.1                                                                          |
+| `events/`   | Sự kiện Kafka, JSON Schema. Mọi sự kiện dùng vỏ chung `envelope.v1`                            |
+| `realtime/` | Giao thức giữa client và game server, JSON Schema                                              |
+| `world/`    | Dữ liệu thế giới game: công thức tiệm `shop-look`, khối phố `street-block` (nháp), JSON Schema |
 
 ## Đổi hợp đồng
 

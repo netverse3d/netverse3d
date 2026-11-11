@@ -83,7 +83,7 @@ test('camera ở trong phòng và dưới trần thì không cắt gì', () => {
     [-3.1, 1, 0],
     [0, 1, 2.1],
     [0, 1, -2.1],
-    [0, 2.9, 0],
+    [0, 3.4, 0],
   ] as const) {
     assert.equal(kept(planes, point), true, `${point}`);
   }
@@ -114,7 +114,7 @@ test('camera ra ngoài tường nào thì tường đó bị cắt, ba tường 
     for (const wall of walls) {
       assert.equal(kept(planes, wall), wall !== cut, `eye ${eye} wall ${wall}`);
     }
-    assert.equal(kept(planes, [0, 2.9, 0]), true, `ceiling from ${eye}`);
+    assert.equal(kept(planes, [0, 3.4, 0]), true, `ceiling from ${eye}`);
   }
 });
 
@@ -128,7 +128,7 @@ test('camera ở góc ngoài phòng thì cắt cả hai tường kề góc đó'
 
 test('camera cao hơn trần thì trần bị cắt, mọi thứ trong lòng phòng vẫn còn', () => {
   const planes = cutaways([0, 5, 0], ROOM);
-  assert.equal(kept(planes, [0, 2.9, 0]), false);
+  assert.equal(kept(planes, [0, 3.4, 0]), false);
   for (const point of [
     [0, 0, 0],
     [2.9, 1.2, 1.9],

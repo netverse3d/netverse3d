@@ -1,11 +1,11 @@
 export const PALETTE_WIDTH = 128;
 const CELL_SIZE = 2;
-const LIGHT_HEIGHT = 2.9;
+const LIGHT_HEIGHT = 3.47;
 const STATION_SLOTS = ['monitor', 'keyboard', 'mouse', 'mat', 'headset', 'mic', 'chair', 'case'];
 const SIDE_SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
 const CENTER_SPEAKER_SOCKETS = ['socket_speaker_center'];
 const CENTER_MOUNT = 'mount_center';
-const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
+export const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
 const CORNER_YAW = {
   'south+west': 0,
   'east+south': Math.PI / 2,
@@ -99,7 +99,7 @@ function rotateY([x, y, z], yaw) {
   return [x * cos + z * sin, y, z * cos - x * sin];
 }
 
-function snap(value) {
+export function snap(value) {
   return Math.round(value * PRECISION) / PRECISION + 0;
 }
 
