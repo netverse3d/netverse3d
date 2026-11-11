@@ -168,7 +168,7 @@
           "pattern": "^[a-z]$"
         },
         "at": {
-          "description": "Vị trí mét [x, z] trong khối (với props của khối) hoặc so với tâm mép phố của lô.",
+          "description": "Với props của khối: mét [x, z] từ góc tây-bắc. Với props của lô: [dọc mặt tiền theo chiều trái sang phải khi nhìn từ phố vào nhà, ra phố] tính từ tâm mép phố của lô.",
           "$ref": "#/$defs/metres"
         },
         "facing": {

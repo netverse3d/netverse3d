@@ -322,7 +322,11 @@
 
       function disposeGroup(group) {
         group.traverse((object) => {
-          if (object.isMesh) object.geometry.dispose();
+          if (object.isInstancedMesh) object.dispose();
+          else if (object.isMesh || object.isLine) {
+            object.geometry.dispose();
+            object.material.dispose();
+          }
         });
         group.clear();
       }
