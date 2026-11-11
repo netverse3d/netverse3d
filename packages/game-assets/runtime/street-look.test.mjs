@@ -7,7 +7,6 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import {
   SIDEWALK_TOP,
   STREET_CELL,
-  STOREY_HEIGHT,
   blockIssues,
   facadePlacements,
   lotFrontage,
