@@ -32,6 +32,12 @@ export default [
       globals: globals.node,
     },
   },
+  {
+    files: ['packages/game-assets/library/**/*.mjs'],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
   ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.{ts,tsx}'] })),
   {
     files: ['apps/web-3d/**/*.{ts,tsx}'],

@@ -13,6 +13,7 @@ const KEYBOARDS_FILE = 'keyboards.json';
 const ROOT_FILES = new Set([CONFIG_FILE, KEYBOARDS_FILE]);
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
   '.glb': 'model/gltf-binary',
   '.mjs': 'text/javascript',
   '.json': 'application/json',
