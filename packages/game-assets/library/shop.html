@@ -309,13 +309,13 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import {
-        doorwayCell,
         kitAnchors,
         paletteImage,
         paletteRows,
         roomPlan,
         shopPlan,
       } from '../runtime/shop-look.mjs';
+      import { buildSigns, disposeSigns, repaintSigns } from '../runtime/shop-sign.mjs';
       import {
         buildShop,
         kitLightmap,
@@ -401,8 +401,8 @@
         ),
       );
       const loader = new GLTFLoader();
-      const [stationKit, roomKit] = await Promise.all(
-        ['station-parts.glb', 'room-kit.glb'].map((file) =>
+      const [stationKit, roomKit, signKit] = await Promise.all(
+        ['station-parts.glb', 'room-kit.glb', 'sign-parts.glb'].map((file) =>
           loader.loadAsync(`../exported/${file}`),
         ),
       );
@@ -451,9 +451,13 @@
         lightmap: kitLightmap(roomKit.scene),
         legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
       });
-      const materialSets = [materials, roomMaterials];
+      const signMaterials = shopMaterials(THREE, state.recipe, rows, {
+        lightmap: kitLightmap(signKit.scene),
+        legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
+      });
+      const materialSets = [materials, roomMaterials, signMaterials];
       const GLOW_DEFAULT = materials.glow.color.r;
-      let signMesh = null;
+      let signGroup = null;
 
       function disposeGroup(group) {
         group.traverse((object) => {
@@ -534,54 +538,19 @@
         applyLight();
       }
 
-      function signTexture() {
-        const c = document.createElement('canvas');
-        c.width = 512;
-        c.height = 128;
-        const g = c.getContext('2d');
-        const style = state.recipe.sign.style ?? 'neon';
-        const color = state.recipe.palette.accent?.[0] ?? '#ffffff';
-        g.fillStyle = style === 'painted' ? '#1a1320' : 'rgba(0,0,0,0)';
-        g.fillRect(0, 0, 512, 128);
-        g.font = '700 64px "Be Vietnam Pro", sans-serif';
-        g.textAlign = 'center';
-        g.textBaseline = 'middle';
-        g.fillStyle = color;
-        g.shadowColor = color;
-        g.shadowBlur = style === 'painted' ? 0 : 26;
-        for (let i = 0; i < (style === 'led' ? 3 : 2); i += 1)
-          g.fillText(state.recipe.sign.text, 256, 68);
-        const texture = new THREE.CanvasTexture(c);
-        texture.colorSpace = THREE.SRGBColorSpace;
-        return texture;
-      }
-
       function paintSign() {
-        if (signMesh) {
-          signMesh.material.map.dispose();
-          signMesh.material.map = signTexture();
-          signMesh.material.needsUpdate = true;
-        }
+        if (signGroup) repaintSigns(signGroup, state.recipe);
       }
 
       function placeSign() {
-        const { cells, door } = state.recipe.layout;
-        const yaw = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 }[door.wall];
-        const [width, depth] = cells;
-        const cell = doorwayCell(door, cells);
-        const centre = new THREE.Vector3(
-          (cell[0] - (width - 1) / 2) * 2,
-          0,
-          (cell[1] - (depth - 1) / 2) * 2,
+        signGroup = buildSigns(
+          THREE,
+          signKit.scene,
+          state.recipe,
+          signMaterials,
+          document.createElement('canvas'),
         );
-        const offset = new THREE.Vector3(0, 2.62, 0.78).applyAxisAngle(UP, yaw);
-        signMesh = new THREE.Mesh(
-          new THREE.PlaneGeometry(1.6, 0.4),
-          new THREE.MeshBasicMaterial({ map: signTexture(), transparent: true, toneMapped: false }),
-        );
-        signMesh.position.copy(centre).add(offset);
-        signMesh.rotation.y = yaw + Math.PI;
-        shopGroup.add(signMesh);
+        shopGroup.add(signGroup);
       }
 
       function helperLayer(plan) {
@@ -632,7 +601,8 @@
       let currentPlan = [];
       function rebuild() {
         disposeGroup(shopGroup);
-        signMesh = null;
+        if (signGroup) disposeSigns(signGroup);
+        signGroup = null;
         const room = roomPlan(state.recipe).filter(
           (placement) => state.ceiling || !['ceiling', 'light'].includes(placement.slot),
         );

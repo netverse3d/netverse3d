@@ -105,6 +105,35 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
   ): Group;
 }
 
+declare module '@netverse/game-assets/runtime/shop-sign.mjs' {
+  import type { Group, MeshBasicMaterial, Object3D } from 'three';
+  import type { Placement, ShopRecipe } from '@netverse/game-assets/runtime/shop-look.mjs';
+  import type { ShopMaterials } from '@netverse/game-assets/runtime/three-shop.mjs';
+
+  export interface SignStyle {
+    text: string;
+    kind: 'neon' | 'led' | 'painted';
+    color: string;
+    core: string;
+  }
+
+  export type SignGroup = Group & { userData: { text: MeshBasicMaterial } };
+
+  export function contrastColor(recipe: ShopRecipe): string;
+  export function signStyle(recipe: ShopRecipe): SignStyle;
+  export function paintSign(canvas: HTMLCanvasElement, style: SignStyle): HTMLCanvasElement;
+  export function signPlan(recipe: ShopRecipe): Placement[];
+  export function buildSigns(
+    THREE: typeof import('three'),
+    kitScene: Object3D,
+    recipe: ShopRecipe,
+    materials: ShopMaterials,
+    canvas: HTMLCanvasElement,
+  ): SignGroup;
+  export function repaintSigns(group: SignGroup, recipe: ShopRecipe): void;
+  export function disposeSigns(group: SignGroup): void;
+}
+
 declare module '@netverse/game-assets/runtime/actor-look.mjs' {
   import type { Material, Object3D, Texture } from 'three';
 

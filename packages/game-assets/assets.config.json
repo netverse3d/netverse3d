@@ -313,6 +313,24 @@
       }
     },
     {
+      "file": "sign-parts.glb",
+      "source": "parts-signs.blend",
+      "generator": "pipeline/make_sign_kit.py",
+      "lightmap": true,
+      "slots": {
+        "sign": {
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 1600,
+          "size": [2, 0.75, 0.3]
+        },
+        "blade": {
+          "variants": ["a"],
+          "maxTriangles": 700,
+          "size": [0.2, 1.4, 0.7]
+        }
+      }
+    },
+    {
       "file": "street-parts.glb",
       "source": "parts-street.blend",
       "generator": "pipeline/make_street_kit.py",
