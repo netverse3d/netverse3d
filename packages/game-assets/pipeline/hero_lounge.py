@@ -46,19 +46,35 @@ def build_table(name='table_a'):
 
 def build_console(name='console_a'):
     console = HeroPart(name)
-    console.rounded_box((0, 0, 0.006), (0.39, 0.27, 0.012), 'top', radius=0.006, segments=1)
-    console.rounded_box((0, 0, 0.046), (0.36, 0.26, 0.064), 'body', radius=0.01, segments=2)
-    console.rounded_box((0, 0, 0.08), (0.37, 0.265, 0.004), 'strip', radius=0.002, segments=1)
-    console.rounded_box((0, 0, 0.09), (0.39, 0.27, 0.012), 'top', radius=0.006, segments=1)
+    console.pillow((0, 0, 0.007), (0.40, 0.28, 0.014), 'top', puff=0.18, levels=1, grid=3)
+    console.pillow((0, 0, 0.046), (0.36, 0.26, 0.064), 'body', puff=0.1, levels=1, grid=3)
+    console.pillow((0, 0, 0.08), (0.33, 0.232, 0.006), 'strip', puff=0.0, levels=1, grid=2)
+    console.pillow((0, 0, 0.091), (0.40, 0.28, 0.014), 'top', puff=0.18, levels=1, grid=3)
     console.rounded_box((0.14, 0.131, 0.03), (0.03, 0.006, 0.006), 'accent', radius=0.002, segments=1)
+    console.revolve((-0.09, 0.0, 0.092), 'z', [(0.045, 0.0, 'top'), (0.045, 0.008, 'top'), (0.03, 0.011, 'top'), (0.001, 0.011, 'top')], segments=20, smooth=True)
     return console
+
+
+GRIP_STATIONS = [(0.0, 0.0, 0.0, 1.0), (0.25, 0.012, -0.002, 0.96), (0.5, 0.026, -0.005, 0.88), (0.75, 0.042, -0.009, 0.74), (1.0, 0.057, -0.015, 0.5)]
+
+
+def grip(pad, side):
+    base = Vector((side * 0.05, 0.01, 0.022))
+    rings = []
+    for t, dy, dz, scale in GRIP_STATIONS:
+        centre = base + Vector((side * 0.014 * t, dy, dz))
+        rx, rz = 0.023 * scale, 0.019 * scale
+        rings.append([centre + Vector((rx * math.cos(2 * math.pi * i / 10), 0.0, -rz * math.sin(2 * math.pi * i / 10))) for i in range(10)])
+    pad.loft(rings, lambda r, c: 'body', levels=1, smooth=True)
 
 
 def build_gamepad(name='gamepad_a'):
     pad = HeroPart(name)
-    pad.pillow((0, -0.005, 0.022), (0.15, 0.07, 0.04), 'body', puff=0.3, levels=1, grid=3)
+    pad.pillow((0, -0.006, 0.022), (0.148, 0.066, 0.038), 'body', puff=0.28, levels=1, grid=3)
     for side in (-1, 1):
-        pad.pillow((side * 0.052, 0.035, 0.02), (0.046, 0.09, 0.042), 'body', puff=0.35, levels=1, grid=2)
+        grip(pad, side)
+        pad.rounded_box((side * 0.052, -0.036, 0.03), (0.034, 0.014, 0.012), 'body', radius=0.004, segments=2)
+        pad.rounded_box((side * 0.052, -0.036, 0.0405), (0.03, 0.012, 0.006), 'top', radius=0.002, segments=1)
         pad.revolve((side * 0.03, 0.012, 0.038), 'z', [(0.007, 0.0, 'metal'), (0.007, 0.009, 'metal'), (0.011, 0.012, 'soft'), (0.001, 0.012, 'soft')], segments=12, smooth=True)
     pad.rounded_box((0, -0.012, 0.043), (0.05, 0.03, 0.004), 'top', radius=0.002, segments=1)
     for dx, dy in ((0.0, -0.012), (0.0, 0.012), (-0.012, 0.0), (0.012, 0.0)):
@@ -66,7 +82,6 @@ def build_gamepad(name='gamepad_a'):
     pad.rounded_box((-0.058, -0.012, 0.0445), (0.026, 0.008, 0.004), 'body', radius=0.001, segments=1)
     pad.rounded_box((-0.058, -0.012, 0.0465), (0.008, 0.026, 0.004), 'body', radius=0.001, segments=1)
     return pad
-
 
 def build_tv(name='tv_a'):
     tv = HeroPart(name)
