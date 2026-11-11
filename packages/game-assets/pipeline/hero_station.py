@@ -140,7 +140,7 @@ def build_mic(name='mic_a'):
         (0.018, 0.026, 'metal'),
         (0.011, 0.04, 'metal'),
         (0.011, 0.08, 'metal'),
-    ], segments=18)
+    ], segments=32)
     grille = [
         (0.03, 0.0, 'body'),
         (0.043, 0.012, 'body'),
@@ -150,17 +150,19 @@ def build_mic(name='mic_a'):
         (0.041, 0.071, 'trim'),
         (0.0425, 0.11, 'trim'),
         (0.0425, 0.15, 'trim'),
-        (0.034, 0.176, 'trim'),
-        (0.016, 0.19, 'trim'),
+        (0.0405, 0.163, 'trim'),
+        (0.0345, 0.176, 'trim'),
+        (0.0255, 0.186, 'trim'),
+        (0.014, 0.1915, 'trim'),
         (0.001, 0.193, 'trim'),
     ]
-    mic.revolve((0, 0, 0.075), 'z', grille, segments=14)
-    arc = [Vector((0.056 * math.cos(math.radians(a)), 0, 0.122 + 0.056 * math.sin(math.radians(a)))) for a in range(180, 361, 30)]
-    mic.tube(arc, 0.0075, 'body', sides=6)
+    mic.revolve((0, 0, 0.075), 'z', grille, segments=28)
+    arc = [Vector((0.056 * math.cos(math.radians(a)), 0, 0.122 + 0.056 * math.sin(math.radians(a)))) for a in range(180, 361, 18)]
+    mic.tube(arc, 0.0075, 'body', sides=10)
     for side in (-1, 1):
         profile = [(0.001, -0.01, 'metal'), (0.016, -0.01, 'metal'), (0.016, 0.01, 'metal'), (0.001, 0.01, 'metal')]
-        mic.revolve((side * 0.05, 0, 0.122), 'x', profile, segments=10, smooth=False)
-    mic.revolve((0, 0.0442, 0.102), 'y', [(0.019, 0.0, 'body'), (0.019, 0.003, 'screen'), (0.013, 0.003, 'body'), (0.001, 0.002, 'body')], segments=14, smooth=False)
+        mic.revolve((side * 0.05, 0, 0.122), 'x', profile, segments=18, smooth=False)
+    mic.revolve((0, 0.0442, 0.102), 'y', [(0.019, 0.0, 'body'), (0.019, 0.003, 'screen'), (0.013, 0.003, 'body'), (0.001, 0.002, 'body')], segments=24, smooth=False)
     return mic
 
 
