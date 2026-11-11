@@ -269,6 +269,44 @@ export function roomAssemblies(parts) {
   return assemblies;
 }
 
+const STOREY = 3.4;
+const LOT = 4;
+
+export function facadeAssemblies(parts) {
+  const variants = (slot) => parts.filter((name) => name.startsWith(`${slot}_`));
+  const assemblies = [];
+  const storeys = variants('storey');
+  for (const shopfront of variants('shopfront')) {
+    for (const lower of storeys) {
+      for (const upper of storeys) {
+        for (const roof of variants('roof')) {
+          assemblies.push({
+            name: `${shopfront} under ${lower} under ${upper} under ${roof}`,
+            places: [
+              [shopfront, [0, 0, 0], 0],
+              [lower, [0, STOREY, 0], 0],
+              [upper, [0, STOREY * 2, 0], 0],
+              [roof, [0, STOREY * 3, 0], 0],
+            ],
+          });
+        }
+      }
+    }
+  }
+  for (const slot of ['shopfront', 'storey', 'roof']) {
+    for (const part of variants(slot)) {
+      assemblies.push({
+        name: `${part} beside ${part}`,
+        places: [
+          [part, [0, 0, 0], 0],
+          [part, [LOT, 0, 0], 0],
+        ],
+      });
+    }
+  }
+  return assemblies;
+}
+
 export function kitOverlaps(gltf, bin, parts, assemblies = []) {
   const cache = new Map();
   const trianglesOf = (name) => {
