@@ -619,9 +619,11 @@ test('bộ kiểm stamp từ chối tệp xuất mang ảnh xem thử, bỏ qua 
 });
 
 test('hậu tố ảnh xem thử trong script Blender khớp với hằng của mã JS', () => {
+  const kit = readFileSync(join(ROOT, 'pipeline/hero_kit.py'), 'utf8');
+  assert.ok(kit.includes(`PREVIEW_SUFFIX = '${PREVIEW_SUFFIX}'`));
   for (const file of ['pipeline/hero_kit.py', 'pipeline/make_room_kit.py']) {
     const text = readFileSync(join(ROOT, file), 'utf8');
-    assert.ok(text.includes(`'${PREVIEW_SUFFIX}'`), `${file} does not use ${PREVIEW_SUFFIX}`);
+    assert.ok(text.includes('preview_lightmap('), `${file} does not build its preview lightmap`);
   }
 });
 
