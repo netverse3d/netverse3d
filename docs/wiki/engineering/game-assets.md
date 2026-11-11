@@ -6,7 +6,9 @@ Nhân vật và đồ vật nằm ở `packages/game-assets`. Lý do chọn các
 
 [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) cho xem nhân vật với 24 hành động, 12 biểu cảm, bản có và không phụ kiện, con hẻm Sài Gòn, bộ sưu tập các hướng đã thử và tiệm mẫu. Xem tại máy bằng `pnpm assets:library`, rồi mở `http://localhost:4173/library/`. Máy cần có mạng vì trang tải three.js và phông chữ từ CDN.
 
-Tab Hành động dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab khác là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức. Thư viện chỉ để xem; game thật sẽ viết trong `apps/web-3d`.
+Thư viện mở ra ở trang Tổng quan, chia mục theo loại tài sản: Nhân vật, Món đồ, Phòng, Tiệm mẫu, Soi lỗi và Lưu trữ. Thanh mục, bộ màu, kiểu chữ, thẻ và nút dùng chung nằm ở `library/shared/`; danh sách mục khai trong `library/shared/sections.json`, chữ trên khung nằm ở `library/shared/text.json`. Mỗi mục mang một nhãn: đã dựng lại theo khung mới, còn mở trang cũ, hoặc sắp có.
+
+Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của nó dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab phố Sài Gòn, bộ sưu tập, xưởng và tiệm là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức, và được xếp vào mục Lưu trữ. Thư viện chỉ để xem; game thật viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc
 

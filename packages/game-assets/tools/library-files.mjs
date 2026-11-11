@@ -11,6 +11,7 @@ const TEST_SUFFIX = '.test.mjs';
 const CONFIG_FILE = 'assets.config.json';
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
   '.glb': 'model/gltf-binary',
   '.mjs': 'text/javascript',
   '.json': 'application/json',
@@ -55,7 +56,7 @@ function requiredModels(root) {
 export function findUnusableModels(root) {
   return requiredModels(root).filter((file) => {
     const path = join(root, file);
-    return !existsSync(path) || !hasGlbHeader(readFileSync(path));
+    return !existsSync(path) || (file.endsWith('.glb') && !hasGlbHeader(readFileSync(path)));
   });
 }
 

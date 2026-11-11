@@ -1,0 +1,31 @@
+{
+  "brand": "Thư viện 3D",
+  "brandNote": "Tài sản 3D của Netverse",
+  "navLabel": "Các mục của thư viện",
+  "foot": "Bản xem thử cho nhóm, chưa phải game.",
+  "states": {
+    "rebuilt": "Đã dựng lại",
+    "legacy": "Trang cũ",
+    "planned": "Sắp có"
+  },
+  "stateNotes": {
+    "rebuilt": "Mục đã chuyển sang khung mới của thư viện.",
+    "legacy": "Mục vẫn mở trang cũ, sẽ được dựng lại theo khung mới.",
+    "planned": "Mục chưa có trang."
+  },
+  "open": "Mở mục",
+  "units": {
+    "actions": "hành động",
+    "variants": "biến thể",
+    "modules": "module",
+    "shops": "tiệm"
+  },
+  "stats": {
+    "variants": "biến thể món đồ và module",
+    "slots": "ô đồ",
+    "actions": "hành động",
+    "expressions": "biểu cảm",
+    "shops": "tiệm mẫu",
+    "scenes": "cảnh giới thiệu"
+  }
+}
