@@ -68,6 +68,9 @@ function main() {
       failed = true;
       continue;
     }
+    if (preview && target.kind === 'scene') {
+      console.log(`${target.source}: --preview does not apply to scenes, baking as usual`);
+    }
     console.log(`${target.source}: running ${target.generator}`);
     const status = runBlender(script, argumentsFor(target, config), blenderEnvironment(preview));
     if (status !== 0) {

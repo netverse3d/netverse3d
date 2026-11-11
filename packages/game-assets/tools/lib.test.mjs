@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { PREVIEW_SUFFIX } from '../runtime/three-shop.mjs';
 import {
   buildStamp,
   checkAssets,
@@ -16,6 +18,8 @@ import {
   readGlb,
   stampPath,
 } from './lib.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function makeGlb(gltf, bin) {
   const json = Buffer.from(JSON.stringify(gltf).padEnd(4, ' '));
@@ -596,6 +600,29 @@ test('ghi dấu xuất mới khi mô hình đúng hợp đồng', () => {
   writeFileSync(join(root, 'source/base.blend'), 'edited');
   assert.deepEqual(finishExport(root), []);
   assert.deepEqual(checkStamp(root, config), []);
+});
+
+test('bộ kiểm stamp từ chối tệp xuất mang ảnh xem thử, bỏ qua con trỏ LFS', () => {
+  const { root, config } = makeRoot();
+  const previewMessage =
+    'player.glb was exported from a preview without baked lighting: regenerate without --preview and export again';
+  writeFileSync(
+    join(root, 'exported/player.glb'),
+    makeGlb(makeModel({ images: [{ name: 'player-lightmap-preview' }] })),
+  );
+  assert.ok(checkStamp(root, config).includes(previewMessage));
+  writeFileSync(
+    join(root, 'exported/player.glb'),
+    'version https://git-lfs.github.com/spec/v1\noid sha256:' + '0'.repeat(64) + '\nsize 10\n',
+  );
+  assert.equal(checkStamp(root, config).includes(previewMessage), false);
+});
+
+test('hậu tố ảnh xem thử trong script Blender khớp với hằng của mã JS', () => {
+  for (const file of ['pipeline/hero_kit.py', 'pipeline/make_room_kit.py']) {
+    const text = readFileSync(join(ROOT, file), 'utf8');
+    assert.ok(text.includes(`'${PREVIEW_SUFFIX}'`), `${file} does not use ${PREVIEW_SUFFIX}`);
+  }
 });
 
 test('tệp xuất mang ảnh bóng xem thử bị nhận ra để bộ kiểm chặn commit', () => {

@@ -20,8 +20,10 @@ export function occludeDirectLight(shader) {
   shader.fragmentShader = shader.fragmentShader.replace(AO_INCLUDE, AO_DIRECT);
 }
 
+export const PREVIEW_SUFFIX = '-preview';
+
 export function isPreviewLightmap(texture) {
-  return Boolean(texture?.name?.endsWith('-preview'));
+  return Boolean(texture?.name?.endsWith(PREVIEW_SUFFIX));
 }
 
 export function previewKitFiles(kits) {

@@ -7,7 +7,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from hero_kit import HeroPart, anchor, attach_occlusion, bake_occlusion, context_copy, finish_hero, finish_lightmap_uv, lightmap_image, prepare_lightmap_uv, remove_context, rounded_rect
+from hero_kit import HeroPart, anchor, attach_occlusion, bake_occlusion, context_copy, finish_hero, finish_lightmap_uv, lightmap_image, prepare_lightmap_uv, preview_requested, remove_context, rounded_rect
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
 CELL = 2.0
@@ -197,6 +197,10 @@ def build_marker():
 def bake_room(scene, collection, built, surface):
     parts = list(built.values())
     prepare_lightmap_uv(parts)
+    if preview_requested():
+        finish_lightmap_uv(parts)
+        attach_occlusion(surface, lightmap_image('room-kit-lightmap-preview', 16))
+        return
     image = lightmap_image('room-kit-lightmap', LIGHTMAP_SIZE)
     for name, ob in built.items():
         for other in parts:

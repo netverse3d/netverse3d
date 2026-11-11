@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { checkCoplanar, roomAssemblies } from './coplanar.mjs';
+import { PREVIEW_SUFFIX } from '../runtime/three-shop.mjs';
 
 const GLB_MAGIC = 0x46546c67;
 const JSON_CHUNK_TYPE = 0x4e4f534a;
@@ -465,7 +466,7 @@ function listUnstamped(declared, recorded) {
 export function previewImages(gltf) {
   return (gltf.images ?? [])
     .map((image) => image.name ?? '')
-    .filter((name) => name.endsWith('-preview'));
+    .filter((name) => name.endsWith(PREVIEW_SUFFIX));
 }
 
 function listPreviews(root, config) {
