@@ -32,7 +32,8 @@
   "parts": {
     "kits": {
       "station-parts.glb": "Bàn máy",
-      "lounge-parts.glb": "Góc console"
+      "lounge-parts.glb": "Góc console",
+      "street-parts.glb": "Phố"
     },
     "slots": {
       "desk": "Bàn",
@@ -49,7 +50,15 @@
       "table": "Bàn trà",
       "console": "Máy console",
       "gamepad": "Tay cầm",
-      "tv": "TV"
+      "tv": "TV",
+      "road": "Mặt hẻm",
+      "sidewalk": "Vỉa hè",
+      "pole": "Cột điện",
+      "wires": "Dây điện",
+      "lamp": "Đèn đường",
+      "bin": "Thùng rác",
+      "planter": "Chậu cây",
+      "board": "Biển chữ A"
     },
     "all": "Tất cả",
     "count": "món",

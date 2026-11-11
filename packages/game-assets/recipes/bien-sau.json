@@ -15,7 +15,10 @@
     "screen": ["#36c7ff", "#9af5ff"],
     "accent": ["#22e0c0"]
   },
-  "keyboard": { "colorway": "graphite", "led": "single" },
+  "keyboard": {
+    "colorway": "graphite",
+    "led": "single"
+  },
   "variants": {
     "desk": "b",
     "monitor": "b",
@@ -39,20 +42,54 @@
     "table": "a",
     "console": "a",
     "gamepad": "a",
-    "tv": "a"
+    "tv": "a",
+    "road": "b",
+    "sidewalk": "a",
+    "pole": "a",
+    "wires": "a",
+    "lamp": "a",
+    "bin": "a",
+    "planter": "a",
+    "board": "a"
   },
   "layout": {
     "cells": [3, 4],
     "stations": [
-      { "cell": [0, 0], "facing": "west" },
-      { "cell": [0, 1], "facing": "west" },
-      { "cell": [0, 2], "facing": "west" },
-      { "cell": [2, 0], "facing": "east" },
-      { "cell": [2, 1], "facing": "east" }
+      {
+        "cell": [0, 0],
+        "facing": "west"
+      },
+      {
+        "cell": [0, 1],
+        "facing": "west"
+      },
+      {
+        "cell": [0, 2],
+        "facing": "west"
+      },
+      {
+        "cell": [2, 0],
+        "facing": "east"
+      },
+      {
+        "cell": [2, 1],
+        "facing": "east"
+      }
     ],
-    "door": { "wall": "east", "at": 2 },
-    "windows": [{ "wall": "south", "at": 1 }]
+    "door": {
+      "wall": "east",
+      "at": 2
+    },
+    "windows": [
+      {
+        "wall": "south",
+        "at": 1
+      }
+    ]
   },
-  "sign": { "text": "BIỂN SÂU", "style": "led" },
+  "sign": {
+    "text": "BIỂN SÂU",
+    "style": "led"
+  },
   "lighting": "dim"
 }

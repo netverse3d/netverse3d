@@ -566,6 +566,23 @@ test('module khớp lưới thì đạt', () => {
   assert.deepEqual(finishExport(makeKitRoot(makeKitModel(), { grid })), []);
 });
 
+test('ô đường 4 m đúng tâm khớp lưới phố, ô 3 m thì bị báo', () => {
+  const fourMetres = [
+    { count: 3 },
+    { count: 3, min: [-2, 0, -2], max: [2, 0.2, 2] },
+    { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+  ];
+  const threeMetres = [
+    { count: 3 },
+    { count: 3, min: [-1.5, 0, -2], max: [1.5, 0.2, 2] },
+    { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+  ];
+  const street = { grid: { size: 4, axes: [0, 2] }, size: [4.01, 0.3, 4.01] };
+  assert.deepEqual(finishExport(makeKitRoot(makeKitModel({ accessors: fourMetres }), street)), []);
+  const errors = finishExport(makeKitRoot(makeKitModel({ accessors: threeMetres }), street));
+  assert.match(errors.join('\n'), /chair_a spans 3\.000 m on axis 0, not a multiple of 4/);
+});
+
 test('báo module lệch lưới', () => {
   const grid = { size: 2, axes: [0] };
   const errors = finishExport(makeKitRoot(makeKitModel(), { grid }));
