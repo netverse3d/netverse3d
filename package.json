@@ -23,6 +23,7 @@
     "assets:export": "pnpm --filter @netverse/game-assets run export",
     "assets:check": "pnpm --filter @netverse/game-assets run check",
     "assets:library": "pnpm --filter @netverse/game-assets run library",
+    "assets:sketch": "pnpm --filter @netverse/game-assets run sketch",
     "bootstrap": "node scripts/bootstrap.mjs",
     "infra:up": "node scripts/infra/compose.mjs up",
     "infra:down": "node scripts/infra/compose.mjs down",
