@@ -54,6 +54,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `core-api` |
 | REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `core-api` |
 | REQ-042 | Thành phố mở nhiều khu | Đã chốt | Nên có | `web-3d` |
+| REQ-043 | Thời tiết ngẫu nhiên trong thành phố | Đã chốt | Nên có | `web-3d` |
 
 ## M5 · Tích hợp game core
 
@@ -340,5 +341,11 @@ Nguồn: `team-decision`
 ### REQ-042: Thành phố mở nhiều khu
 
 Thế giới ngoài tiệm là một thành phố mở gồm nhiều khu nối nhau, người chơi đi bộ từ hẻm ra đường lớn. Đường có nhiều cấp, từ hẻm 4 m tới đại lộ nhiều làn, có ngã ba, ngã tư, vạch qua đường và đèn tín hiệu; xe chạy theo làn và theo đèn. Thành phố có lô đất, toà nhà phức hợp, công viên, sông và cầu. Công trình nổi tiếng chỉ gợi hình, mang tên riêng của Netverse, theo ADR-0014. Mọi thứ hiện trong thành phố là thành phần đã đăng ký trong thư viện 3D và dùng chung một chuẩn ánh sáng, đổ bóng, theo ADR-0019. Thành phố dựng theo từng đợt, đợt đầu là một khu mẫu có một trục đường lớn và một ngã tư có đèn.
+
+Nguồn: `team-decision`
+
+### REQ-043: Thời tiết ngẫu nhiên trong thành phố
+
+Thành phố luôn là ban đêm theo ADR-0014, nhưng thời tiết đổi ngẫu nhiên theo thời gian giữa các trạng thái như tạnh, mưa nhẹ, mưa lớn và sương dày. Trạng thái chuyển dần, không đổi đột ngột. Người chơi ở cùng một khu thấy cùng một thời tiết. Mưa đi cùng mặt đường ướt và hạt mưa bắt sáng theo chuẩn dựng hình ở ADR-0019. Mức chất lượng thấp tắt được hiệu ứng mà không đổi trạng thái thời tiết.
 
 Nguồn: `team-decision`
