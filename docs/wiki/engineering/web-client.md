@@ -77,6 +77,7 @@ apps/web-3d/
 - `ui` không import `scene`, `game`, `net`. Muốn biết gì thì đọc `state`, muốn làm gì thì gửi lệnh vào `state`.
 - `state` không import lớp nào khác trong ứng dụng.
 - `app` là nơi duy nhất được import cả `ui` lẫn `scene`.
+- Các lớp trong `src/` không import `dev/`, và `dev/` không import lớp nào của ứng dụng: room server giả đứng ở vị trí của server nên chỉ dùng chung luật trong `packages/game-shared`.
 - `packages/game-shared` không import Three.js, React hay mã trong `apps/`, `services/`.
 
 `pnpm boundaries:check` kiểm các luật này và chạy trong `pnpm verify`. Luật khai ở `scripts/boundaries/rules.mjs`.

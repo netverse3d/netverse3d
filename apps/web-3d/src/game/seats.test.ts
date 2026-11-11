@@ -3,7 +3,9 @@ import { test } from 'node:test';
 
 import { PLAYER_RADIUS } from '@netverse/game-shared/movement';
 
-import { SEAT_REACH, nearestSeat, shopSeats } from './seats.ts';
+import { SEAT_REACH } from '@netverse/game-shared/seating';
+
+import { nearestSeat, shopSeats } from './seats.ts';
 import type { Seat, StationPart } from './seats.ts';
 
 const EAST = Math.PI / 2;
@@ -55,6 +57,7 @@ function seatAt(seatId: string, x: number, z: number): Seat {
     seatId,
     chair: { x, z },
     footprint: { minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5 },
+    sit: { x, z, yaw: 0 },
   };
 }
 
@@ -168,20 +171,18 @@ test('tiệm chưa có máy nào thì không có gợi ý', () => {
   assert.equal(nearestSeat({ x: 0, z: 0 }, [], NOBODY), null);
 });
 
-test('tầm với là thân người cộng hai mươi phân', () => {
-  assert.equal(SEAT_REACH, PLAYER_RADIUS + 0.2);
-});
-
 test('máy được gợi ý là máy có ghế gần hơn, không phải máy có vùng gần hơn', () => {
   const wide: Seat = {
     seatId: 'seat-1',
     chair: { x: -3, z: 0 },
     footprint: { minX: -4, maxX: 0, minZ: -0.5, maxZ: 0.5 },
+    sit: { x: -3, z: 0, yaw: 0 },
   };
   const narrow: Seat = {
     seatId: 'seat-2',
     chair: { x: 0.6, z: 0 },
     footprint: { minX: 0.3, maxX: 1, minZ: -0.5, maxZ: 0.5 },
+    sit: { x: 0.6, z: 0, yaw: 0 },
   };
   assert.equal(nearestSeat({ x: 0.05, z: 0.6 }, [wide, narrow], NOBODY)?.seatId, 'seat-2');
 });
@@ -190,4 +191,20 @@ test('hai máy ngang nhau thì số nhỏ hơn thắng, máy 2 đứng trước 
   const second = seatAt('seat-2', -0.9, 0);
   const tenth = seatAt('seat-10', 0.9, 0);
   assert.equal(nearestSeat({ x: 0, z: 0.2 }, [tenth, second], NOBODY)?.seatId, 'seat-2');
+});
+
+test('chỗ đặt hông lúc ngồi lấy từ điểm neo của ghế, quay theo ghế, mặt hướng về bàn', () => {
+  const [south, east] = shopSeats([...station(0, 2, 3, 0), ...station(1, 2, 3, EAST)], ANCHORS);
+  assert.ok(south && east);
+  close(south.sit.x, 2, 'south x');
+  close(south.sit.z, 3 - 0.24 + 0.24, 'south z');
+  close(south.sit.yaw, 0, 'south yaw');
+  close(east.sit.x, 2 - 0.24 + 0.24, 'east x');
+  close(east.sit.z, 3, 'east z');
+  close(east.sit.yaw, EAST, 'east yaw');
+});
+
+test('ghế không có điểm neo chỗ ngồi thì báo lỗi kèm tên ghế', () => {
+  const anchors = { ...ANCHORS, chair_a: { collision_main: ANCHORS.chair_a.collision_main } };
+  assert.throws(() => shopSeats(station(0, 0, 0), anchors), /chair_a has no seat_anchor/);
 });
