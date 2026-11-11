@@ -1,4 +1,11 @@
-import { framedSource, pageHref, stageTarget, whereIs } from './catalog.mjs';
+import {
+  carriedQuery,
+  framedSource,
+  pageHref,
+  sectionTabs,
+  stageTarget,
+  whereIs,
+} from './catalog.mjs';
 import { element, loadShell, mountNav, stateBadge } from './shell.mjs';
 
 const OLD_FRAME_RULES = {
@@ -22,6 +29,7 @@ async function main() {
   const alone = document.getElementById('stage-alone');
   const frame = document.getElementById('stage-frame');
   let current = stageTarget(sections, window.location.search);
+  let carried = carriedQuery(window.location.search);
   let loaded = false;
 
   const sectionNow = () => sections.find((section) => section.id === current.section);
@@ -33,32 +41,31 @@ async function main() {
     title.textContent = section.title;
     summary.textContent = section.summary;
     badge.replaceChildren(stateBadge(section.state, text));
+    const items = sectionTabs(section, current.page, text.mainPage);
     tabs.replaceChildren(
-      ...section.pages.map((item, index) => {
+      ...items.map((item) => {
         const tab = element(
           'a',
-          {
-            class: 'stage-tab',
-            href: pageHref(section, index),
-            'aria-current': index === current.page ? 'page' : null,
-          },
+          { class: 'stage-tab', href: item.href, 'aria-current': item.current ? 'page' : null },
           item.title,
         );
-        tab.addEventListener('click', (event) => {
-          event.preventDefault();
-          show({ section: section.id, page: index });
-        });
+        if (item.page !== null) {
+          tab.addEventListener('click', (event) => {
+            event.preventDefault();
+            show({ section: section.id, page: item.page });
+          });
+        }
         return tab;
       }),
     );
-    tabs.hidden = section.pages.length < 2;
+    tabs.hidden = items.length < 2;
     alone.href = page.src;
     document.title = `${section.title} · ${page.title} · ${text.brand}`;
   }
 
   function load() {
     const page = sectionNow().pages[current.page];
-    const source = framedSource(page.src, current.page);
+    const source = framedSource(page.src, current.page, carried);
     frame.title = page.title;
     if (loaded) frame.contentWindow.location.replace(new URL(source, window.location.href));
     else frame.src = source;
@@ -67,6 +74,7 @@ async function main() {
 
   function show(target) {
     current = target;
+    carried = '';
     window.history.pushState(null, '', pageHref(sectionNow(), current.page));
     drawFrameChrome();
     load();
@@ -91,6 +99,7 @@ async function main() {
 
   window.addEventListener('popstate', () => {
     current = stageTarget(sections, window.location.search);
+    carried = carriedQuery(window.location.search);
     drawFrameChrome();
     load();
   });

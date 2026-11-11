@@ -634,7 +634,7 @@
         disposeGroup(shopGroup);
         signMesh = null;
         const room = roomPlan(state.recipe).filter(
-          (placement) => state.ceiling || placement.slot !== 'ceiling',
+          (placement) => state.ceiling || !['ceiling', 'light'].includes(placement.slot),
         );
         const stations = shopPlan(state.recipe, anchors);
         shopGroup.add(buildShop(THREE, roomKit.scene, room, roomMaterials));

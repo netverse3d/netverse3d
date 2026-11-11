@@ -6,12 +6,14 @@ import { fileURLToPath } from 'node:url';
 import {
   SECTION_STATES,
   STAGE_PAGE,
+  carriedQuery,
   catalogSummary,
   framedSource,
   navItems,
   pageHref,
   sectionCards,
   sectionHref,
+  sectionTabs,
   stageTarget,
   whereIs,
 } from '../library/shared/catalog.mjs';
@@ -20,6 +22,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LIBRARY = join(ROOT, 'library');
 const SECTIONS = JSON.parse(readFileSync(join(LIBRARY, 'shared/sections.json'), 'utf8'));
 const OLD_PAGES = ['studio.html', 'gallery.html', 'lab.html', 'shop.html', 'showcase.html'];
+const withPages = (section) => (section.pages ?? []).length > 0;
 
 const CONFIG = {
   clips: ['idle', 'walk', 'ex_smile', 'ex_sad', 'typing'],
@@ -29,6 +32,7 @@ const CONFIG = {
       slots: { desk: { variants: ['a', 'b', 'c'] }, chair: { variants: ['a'] } },
     },
     { file: 'room-kit.glb', slots: { wall: { variants: ['a'] }, floor: { variants: ['a'] } } },
+    { file: 'lounge-parts.glb', slots: { sofa: { variants: ['a'] } } },
   ],
   scenes: [{ id: 'showcase-tim-neon' }],
 };
@@ -56,7 +60,9 @@ test('thư viện chia mục theo loại tài sản, đúng thứ tự đã ch�
 
 test('mục còn trang cũ khai rõ từng trang con có tiêu đề, và trang đó phải tồn tại', () => {
   for (const section of SECTIONS.filter((item) => item.state === 'legacy')) {
-    assert.ok(section.pages.length > 0, section.id);
+    assert.ok(withPages(section), section.id);
+  }
+  for (const section of SECTIONS.filter(withPages)) {
     for (const page of section.pages) {
       assert.ok(page.title.length > 0, `${section.id} has an untitled page`);
       assert.ok(OLD_PAGES.includes(fileOf(page.src)), `${section.id}: ${page.src}`);
@@ -101,7 +107,8 @@ test('thanh mục đánh dấu đúng một mục đang xem và không cho bấm
     items.filter((item) => item.current).map((item) => item.id),
     ['parts'],
   );
-  assert.equal(items.find((item) => item.id === 'parts')?.href, `${STAGE_PAGE}?section=parts`);
+  assert.equal(items.find((item) => item.id === 'parts')?.href, 'parts.html');
+  assert.equal(items.find((item) => item.id === 'shops')?.href, `${STAGE_PAGE}?section=shops`);
   assert.equal(items.find((item) => item.state === 'planned')?.href, null);
   assert.equal(navItems(SECTIONS, 'unknown').filter((item) => item.current).length, 0);
 });
@@ -145,9 +152,9 @@ test('trang dùng chung cho hai mục thì giữ nguyên mục đang xem', () =>
 
 test('số liệu tổng quan đếm từ cấu hình tài sản: món, biến thể, hành động, biểu cảm, tiệm mẫu', () => {
   assert.deepEqual(catalogSummary(CONFIG, ['tim-neon', 'bien-sau']), {
-    slots: 4,
-    variants: 6,
-    stationVariants: 4,
+    slots: 5,
+    variants: 7,
+    partVariants: 5,
     roomVariants: 2,
     actions: 3,
     expressions: 2,
@@ -160,7 +167,7 @@ test('cấu hình thiếu phần nào thì phần đó đếm là không, không
   assert.deepEqual(catalogSummary({}, []), {
     slots: 0,
     variants: 0,
-    stationVariants: 0,
+    partVariants: 0,
     roomVariants: 0,
     actions: 0,
     expressions: 0,
@@ -178,7 +185,7 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
   );
   const figure = (id) => cards.find((card) => card.id === id)?.figure;
   assert.deepEqual(figure('characters'), { value: 3, unit: 'actions' });
-  assert.deepEqual(figure('parts'), { value: 4, unit: 'variants' });
+  assert.deepEqual(figure('parts'), { value: 5, unit: 'variants' });
   assert.deepEqual(figure('rooms'), { value: 2, unit: 'modules' });
   assert.deepEqual(figure('shops'), { value: 2, unit: 'shops' });
   assert.equal(figure('checks'), null);
@@ -193,6 +200,62 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
     shops?.more.map((link) => link.href),
     [`${STAGE_PAGE}?section=shops&page=1`],
   );
+});
+
+test('mục đã dựng lại mở trang mới của nó, các trang cũ còn lại thành nút phụ mở trong khung', () => {
+  const parts = SECTIONS.find((section) => section.id === 'parts');
+  assert.equal(parts.state, 'rebuilt');
+  assert.equal(sectionHref(parts), 'parts.html');
+  const card = sectionCards(SECTIONS, catalogSummary(CONFIG, [])).find(
+    (item) => item.id === 'parts',
+  );
+  assert.deepEqual(
+    card.more.map((link) => link.href),
+    parts.pages.map((page, index) => pageHref(parts, index)),
+  );
+  assert.deepEqual(stageTarget(SECTIONS, '?section=parts'), { section: 'parts', page: 0 });
+});
+
+test('dãy thẻ của mục đã dựng lại có trang mới đứng đầu rồi tới các trang cũ, đánh dấu đúng trang đang xem', () => {
+  const parts = SECTIONS.find((section) => section.id === 'parts');
+  const onMain = sectionTabs(parts, 'main', 'Danh mục');
+  assert.deepEqual(onMain[0], { title: 'Danh mục', href: 'parts.html', page: null, current: true });
+  assert.equal(onMain.length, parts.pages.length + 1);
+  assert.equal(onMain.filter((tab) => tab.current).length, 1);
+  const onLab = sectionTabs(parts, 0, 'Danh mục');
+  assert.deepEqual(onLab[1], {
+    title: parts.pages[0].title,
+    href: pageHref(parts, 0),
+    page: 0,
+    current: true,
+  });
+  assert.equal(onLab[0].current, false);
+});
+
+test('dãy thẻ của mục còn trang cũ chỉ gồm các trang cũ', () => {
+  const shops = SECTIONS.find((section) => section.id === 'shops');
+  assert.deepEqual(
+    sectionTabs(shops, 1, 'Danh mục').map((tab) => [tab.page, tab.current]),
+    [
+      [0, false],
+      [1, true],
+    ],
+  );
+});
+
+test('khung chuyển tiếp tham số riêng của trang cũ, như món cần soi, và bỏ tham số của chính khung', () => {
+  assert.equal(carriedQuery('?section=parts&part=desk_b&spin=0'), 'part=desk_b&spin=0');
+  assert.equal(carriedQuery('?section=parts&page=1'), '');
+  assert.equal(carriedQuery(''), '');
+  assert.equal(
+    framedSource('lab.html', 0, 'part=desk_b&spin=0'),
+    'lab.html?part=desk_b&spin=0&framed=0',
+  );
+  assert.equal(
+    framedSource('lab.html?part=wall_a', 0, 'part=desk_b'),
+    'lab.html?part=desk_b&framed=0',
+  );
+  assert.equal(framedSource('studio.html#pho', 2, ''), 'studio.html?framed=2#pho');
 });
 
 test('số liệu thật của repo khớp với cấu hình tài sản đang lưu', () => {

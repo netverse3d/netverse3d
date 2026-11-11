@@ -26,7 +26,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-032 | Màn hình máy cá nhân | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Đã chốt | Bắt buộc | `web-3d` |
-| REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Nháp | Nên có | `web-3d` |
+| REQ-039 | Thế giới mang bối cảnh Sài Gòn cyber | Đã chốt | Nên có | `web-3d` |
 | REQ-040 | Mỗi tiệm có bản sắc riêng | Đã chốt | Bắt buộc | `game-assets` |
 | REQ-041 | Góc console trong tiệm | Nháp | Nên có | `game-assets` |
 
@@ -320,7 +320,7 @@ Nguồn: `mentor-followup`, `team-decision`
 
 ### REQ-039: Thế giới mang bối cảnh Sài Gòn cyber
 
-Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này.
+Một con hẻm và tiệm mẫu theo bối cảnh TP.HCM phiên bản cyber về đêm và chuẩn mỹ thuật ở ADR-0014, làm khuôn cho các khu sau này. Phố lắp từ module trên lưới ô đường 4 m, lô tiệm 8 × 8 m nhìn ra hẻm rộng 4 m. Có xe máy và ô tô đậu trước tiệm và chạy theo làn; người qua lại là bot robot trên vỉa hè. Đường chân trời gợi hình TP.HCM, không chép và không dùng tên công trình. Pháo hoa vào các dịp lễ Tết.
 
 Nguồn: `team-decision`
 
