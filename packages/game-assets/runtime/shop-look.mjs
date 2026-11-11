@@ -2,7 +2,9 @@ export const PALETTE_WIDTH = 128;
 const CELL_SIZE = 2;
 const LIGHT_HEIGHT = 2.9;
 const STATION_SLOTS = ['monitor', 'keyboard', 'mouse', 'mat', 'headset', 'mic', 'chair', 'case'];
-const SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
+const SIDE_SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
+const CENTER_SPEAKER_SOCKETS = ['socket_speaker_center'];
+const CENTER_MOUNT = 'mount_center';
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
 const CORNER_YAW = {
   'south+west': 0,
@@ -82,10 +84,12 @@ export function stationPlan(variants, anchors) {
     part: `${slot}_${variants[slot]}`,
     position: socketOf(anchors, desk, socket),
   });
+  const centred = anchors[`speaker_${variants.speaker}`]?.[CENTER_MOUNT] !== undefined;
+  const speakerSockets = centred ? CENTER_SPEAKER_SOCKETS : SIDE_SPEAKER_SOCKETS;
   return [
     { slot: 'desk', part: desk, position: [0, 0, 0] },
     ...STATION_SLOTS.map((slot) => place(slot, `socket_${slot}`)),
-    ...SPEAKER_SOCKETS.map((socket) => place('speaker', socket)),
+    ...speakerSockets.map((socket) => place('speaker', socket)),
   ];
 }
 

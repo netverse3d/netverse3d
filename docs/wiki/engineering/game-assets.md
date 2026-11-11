@@ -97,6 +97,10 @@ Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu 
 
 Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là tháp kính hông có ba quạt trước (`build_case` trong `pipeline/hero_station.py`). `b` và `c` nằm trong `pipeline/hero_cases.py`: `b` là máy mini vuông bo góc đặt trên kệ thấp hai tầng, tầng dưới có hộp lưu trữ, vì ô thùng máy nằm dưới sàn cạnh bàn nên máy mini cần kệ để còn nhìn thấy; `c` là tháp hiện đại thân tối bo góc, mặt trước là hàng nan dọc trên nền lưới tối, nút nguồn và cổng nằm trên nóc, dải sáng chạy ở chân mặt trước và hai bên. Phần phát sáng của cả ba dùng các hàng `strip`, `accent`, `screen` nên ăn theo bộ màu của tiệm. Mỗi mẫu có hộp va chạm riêng khai trong `CASE_COLLISIONS`; thêm mẫu mới thì thêm một dòng ở đó. Chi tiết gắn lên mặt vỏ phải nhô ít nhất 2 mm, và hai khối chồng lên nhau không được chung mặt đáy hay mặt bên, nếu không bộ kiểm đồng phẳng sẽ báo.
 
+### Ô speaker
+
+Hai mẫu trong `pipeline/hero_speakers.py`. `a` là cặp đặt hai bên màn hình, thùng bo góc với hai củ tròn có vành sáng. `b` là một thanh dài 0,6 m nằm giữa bàn dưới màn hình, có dải sáng ở chân mặt trước và núm âm lượng trên nóc. Mẫu nào lắp ở đâu do chính mô hình khai: mẫu mang điểm neo `mount_center` thì `stationPlan` chỉ lắp một chiếc tại `socket_speaker_center` của bàn, mẫu không mang thì lắp hai chiếc tại `socket_speaker_left` và `socket_speaker_right`. Mã chạy không biết tên biến thể nào là thanh, nên thêm mẫu thanh mới chỉ cần gắn điểm neo đó. `socket_speaker_center` nằm trước chân của cả ba mẫu màn hình và sau bàn phím; thanh đứng trên hai đế cao 12 mm để vượt mép lót chuột.
+
 ### Pad chuột
 
 Ba pad: `a` có viền sáng và logo, `b` trơn cỡ lớn, `c` trơn cỡ nhỏ đặt lệch về phía chuột (gốc món vẫn ở socket chung, lưới dời sang phải 25 cm) cho kiểu bàn tối giản. Bàn phím và chuột vẫn đặt ở độ cao mặt pad nên với pad nhỏ, bàn phím nổi 4 mm trên mặt bàn; chấp nhận cho tới khi socket theo biến thể.

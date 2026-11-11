@@ -249,24 +249,3 @@ def build_mic(name='mic_a'):
         mic.revolve((side * 0.05, 0, 0.122), 'x', profile, segments=18, smooth=False)
     mic.revolve((0, 0.0442, 0.102), 'y', [(0.019, 0.0, 'body'), (0.019, 0.003, 'screen'), (0.013, 0.003, 'body'), (0.001, 0.002, 'body')], segments=24, smooth=False)
     return mic
-
-
-def build_speaker(name='speaker_a'):
-    speaker = HeroPart(name)
-    speaker.slab_y(0, 0.135, 0.076, 0.135, 0.02, [
-        (-0.09, 0.008, 'metal'),
-        (-0.08, 0.0, 'metal'),
-        (0.06, 0.0, 'metal'),
-        (0.072, 0.008, 'body'),
-        (0.0725, 0.01, 'body'),
-    ])
-    for z, radius, ring in ((0.197, 0.04, 'accent'), (0.083, 0.064, 'screen')):
-        speaker.revolve((0, 0.0725, z), 'y', [
-            (radius, 0.0, 'body'),
-            (radius, 0.005, ring),
-            (radius * 0.84, 0.005, 'soft'),
-            (radius * 0.4, -0.014, 'soft'),
-            (radius * 0.36, -0.006, 'trim'),
-            (0.001, 0.008, 'trim'),
-        ], segments=20, smooth=False)
-    return speaker
