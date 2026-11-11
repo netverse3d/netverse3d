@@ -11,7 +11,10 @@ from hero_kit import HeroPart, anchor, attach_occlusion, bake_occlusion, context
 
 OUTPUT = sys.argv[sys.argv.index('--') + 1]
 CELL = 2.0
-HEIGHT = 3.0
+HEIGHT = 3.6
+RISE = HEIGHT - 3.0
+COVE_LOW = HEIGHT - 0.24
+COVE_HIGH = HEIGHT - 0.12
 FACE_Y = -0.8
 LIGHTMAP_SIZE = 2048
 BESIDE_WALLS = [('floor_a', (0, 0, 0), 0.0), ('wall_a', (CELL, 0, 0), 0.0), ('wall_a', (-CELL, 0, 0), 0.0)]
@@ -26,7 +29,7 @@ BAKE_CONTEXT = {
 
 PANEL_HALF = 0.255
 PILASTER_HALF = 0.06
-PILASTER_Z = (0.4, 2.48)
+PILASTER_Z = (0.4, 2.48 + RISE)
 POST = 0.32
 CORNER_END = 1.0 - POST
 
@@ -36,8 +39,8 @@ def wall_dressing(part, x_range, plate_inset=(0.0, 0.0)):
     centre, width = (x0 + x1) / 2, x1 - x0
     p0, p1 = x0 + plate_inset[0], x1 - plate_inset[1]
     part.rounded_box((centre, FACE_Y + 0.04, 0.2), (width, 0.08, 0.4), 'trim', radius=0.012, segments=1)
-    part.rounded_box((centre, FACE_Y + 0.06, 2.8), (width, 0.12, 0.4), 'wall', radius=0.014, segments=1)
-    part.rounded_box((centre, FACE_Y + 0.05, 2.54), (width, 0.1, 0.12), 'strip', radius=0.004, segments=1)
+    part.rounded_box((centre, FACE_Y + 0.06, HEIGHT - 0.2), (width, 0.12, 0.4), 'wall', radius=0.014, segments=1)
+    part.rounded_box((centre, FACE_Y + 0.05, HEIGHT - 0.46), (width, 0.1, 0.12), 'strip', radius=0.004, segments=1)
     part.rounded_box(((p0 + p1) / 2, FACE_Y + 0.082, 0.43), (p1 - p0, 0.016, 0.05), 'screen', radius=0.004, segments=1)
 
 
@@ -59,7 +62,7 @@ def wall_arm(part, x_range=(-1.0, 1.0), pilasters=(-0.94, 0.94)):
     centre, width = (x0 + x1) / 2, x1 - x0
     part.rounded_box((centre, -0.9, HEIGHT / 2), (width, 0.2, HEIGHT), 'wall', radius=0.002, segments=1)
     for p0, p1 in panel_ranges(x_range):
-        part.slab_y((p0 + p1) / 2, 1.45, (p1 - p0) / 2, 0.98, 0.012, [
+        part.slab_y((p0 + p1) / 2, 1.45 + RISE / 2, (p1 - p0) / 2, 0.98 + RISE / 2, 0.012, [
             (FACE_Y - 0.002, 0.0, 'wall'),
             (FACE_Y + 0.03, 0.0, 'wall'),
             (FACE_Y + 0.042, 0.012, 'wall'),
@@ -118,9 +121,9 @@ def build_door():
     for x in (-0.88, 0.88):
         door.rounded_box((x, -0.9, HEIGHT / 2), (0.24, 0.2, HEIGHT), 'wall', radius=0.002, segments=1)
         door.rounded_box((x, FACE_Y + 0.06, 1.34), (0.24, 0.12, 2.12), 'wall', radius=0.014, segments=1)
-    door.rounded_box((0, -0.9, 2.65), (1.52, 0.2, 0.7), 'wall', radius=0.002, segments=1)
-    door.rounded_box((0, FACE_Y + 0.06, 2.72), (CELL, 0.12, 0.56), 'wall', radius=0.014, segments=1)
-    door.rounded_box((0, FACE_Y + 0.124, 2.76), (1.0, 0.012, 0.16), 'screen', radius=0.006, segments=1)
+    door.rounded_box((0, -0.9, (2.3 + HEIGHT) / 2), (1.52, 0.2, HEIGHT - 2.3), 'wall', radius=0.002, segments=1)
+    door.rounded_box((0, FACE_Y + 0.06, (2.44 + HEIGHT) / 2), (CELL, 0.12, HEIGHT - 2.44), 'wall', radius=0.014, segments=1)
+    door.rounded_box((0, FACE_Y + 0.124, HEIGHT - 0.24), (1.5, 0.012, 0.05), 'screen', radius=0.006, segments=1)
     door.rounded_box((0, FACE_Y + 0.124, 2.5), (1.5, 0.012, 0.04), 'strip', radius=0.004, segments=1)
     for x in (-0.765, 0.765):
         door.tube([(x, FACE_Y + 0.05, 0.03), (x, FACE_Y + 0.05, 2.42)], 0.016, 'strip', sides=4)
@@ -143,26 +146,26 @@ def build_window():
     for x in (-0.92, 0.92):
         window.rounded_box((x, -0.9, HEIGHT / 2), (0.16, 0.2, HEIGHT), 'wall', radius=0.002, segments=1)
     window.rounded_box((0, -0.9, 0.36), (1.68, 0.2, 0.72), 'wall', radius=0.002, segments=1)
-    window.rounded_box((0, -0.9, 2.675), (1.68, 0.2, 0.65), 'wall', radius=0.002, segments=1)
+    window.rounded_box((0, -0.9, 2.675 + RISE), (1.68, 0.2, 0.65), 'wall', radius=0.002, segments=1)
     wall_dressing(window, (-1.0, 1.0))
-    window.poly([(-0.84, -0.87, 0.72), (0.84, -0.87, 0.72), (0.84, -0.87, 2.35), (-0.84, -0.87, 2.35)][::-1], 'display')
+    window.poly([(-0.84, -0.87, 0.72), (0.84, -0.87, 0.72), (0.84, -0.87, 2.35 + RISE), (-0.84, -0.87, 2.35 + RISE)][::-1], 'display')
     for x in (-0.28, 0.28):
-        window.rounded_box((x, -0.85, 1.535), (0.07, 0.06, 1.63), 'top', radius=0.006, segments=1)
+        window.rounded_box((x, -0.85, 1.535 + RISE / 2), (0.07, 0.06, 1.63 + RISE), 'top', radius=0.006, segments=1)
     window.rounded_box((0, -0.74, 0.68), (1.96, 0.18, 0.12), 'wall', radius=0.016, segments=1)
     for x in (-0.86, 0.86):
-        window.rounded_box((x, -0.8, 1.535), (0.08, 0.14, 1.71), 'wall', radius=0.008, segments=1)
-    window.rounded_box((0, -0.8, 2.38), (1.64, 0.14, 0.08), 'wall', radius=0.008, segments=1)
+        window.rounded_box((x, -0.8, 1.535 + RISE / 2), (0.08, 0.14, 1.71 + RISE), 'wall', radius=0.008, segments=1)
+    window.rounded_box((0, -0.8, 2.38 + RISE), (1.64, 0.14, 0.08), 'wall', radius=0.008, segments=1)
     return window
 
 
 def build_ceiling():
     ceiling = HeroPart('ceiling_a')
     ceiling.rounded_box((0, 0, HEIGHT + 0.03), (CELL, CELL, 0.06), 'ceiling', radius=0.002, segments=1)
-    profile = [(0.74, 2.66, 'top'), (0.74, 2.80, 'top'), (0.52, 2.80, 'strip'), (0.52, 2.66, 'strip'), (0.70, 2.66, 'top')]
+    profile = [(0.72, COVE_LOW, 'top'), (0.72, COVE_HIGH, 'top'), (0.58, COVE_HIGH, 'strip'), (0.58, COVE_LOW, 'strip'), (0.7, COVE_LOW, 'top')]
     rings = [[Vector((x, y, z)) for x, y in rounded_rect(0, 0, half, half, 0.06, 2)] for half, z, _ in profile]
     ceiling.loft(rings + [rings[0]], lambda r, c: profile[r][2], levels=0, cap=False, smooth=False)
-    for x, y in ((-0.6, -0.6), (0.6, 0.6)):
-        ceiling.tube([(x, y, 2.8), (x, y, HEIGHT + 0.002)], 0.016, 'metal', sides=4)
+    for x, y in ((-0.65, -0.65), (0.65, 0.65)):
+        ceiling.tube([(x, y, COVE_HIGH), (x, y, HEIGHT + 0.002)], 0.016, 'metal', sides=4)
     return ceiling
 
 
@@ -228,13 +231,13 @@ def main():
     for builder in builders:
         part = builder()
         built[part.name] = finish_hero(part, collection, materials)
-    wall_box = ((0, -0.9, 1.5), (1.0, 0.1, 1.5))
+    wall_box = ((0, -0.9, HEIGHT / 2), (1.0, 0.1, HEIGHT / 2))
     anchor(built['wall_a'], 'collision_main', collection, *wall_box)
     anchor(built['window_a'], 'collision_main', collection, *wall_box)
     anchor(built['corner_a'], 'collision_a', collection, *wall_box)
-    anchor(built['corner_a'], 'collision_b', collection, (-0.9, 0, 1.5), (0.1, 1.0, 1.5))
-    anchor(built['door_a'], 'collision_left', collection, (-0.88, -0.9, 1.5), (0.12, 0.1, 1.5))
-    anchor(built['door_a'], 'collision_right', collection, (0.88, -0.9, 1.5), (0.12, 0.1, 1.5))
+    anchor(built['corner_a'], 'collision_b', collection, (-0.9, 0, HEIGHT / 2), (0.1, 1.0, HEIGHT / 2))
+    anchor(built['door_a'], 'collision_left', collection, (-0.88, -0.9, HEIGHT / 2), (0.12, 0.1, HEIGHT / 2))
+    anchor(built['door_a'], 'collision_right', collection, (0.88, -0.9, HEIGHT / 2), (0.12, 0.1, HEIGHT / 2))
     bake_room(scene, collection, built, materials[0])
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
