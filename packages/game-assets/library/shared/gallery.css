@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+  scrollbar-color: #3b3160 transparent;
   --bg: #0d0a18;
   --bg-raised: #141026;
   --panel: #1a1533;
@@ -364,6 +366,7 @@ h3 {
     gap: var(--space-2);
     overflow-x: auto;
     padding-bottom: var(--space-1);
+    scrollbar-width: thin;
   }
 
   .gallery-link {
@@ -425,6 +428,10 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+.stage-tabs[hidden] {
+  display: none;
 }
 
 .stage-tab {

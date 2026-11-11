@@ -22,6 +22,7 @@ async function main() {
   const alone = document.getElementById('stage-alone');
   const frame = document.getElementById('stage-frame');
   let current = stageTarget(sections, window.location.search);
+  let loaded = false;
 
   const sectionNow = () => sections.find((section) => section.id === current.section);
 
@@ -57,8 +58,11 @@ async function main() {
 
   function load() {
     const page = sectionNow().pages[current.page];
+    const source = framedSource(page.src, current.page);
     frame.title = page.title;
-    frame.src = framedSource(page.src, current.page);
+    if (loaded) frame.contentWindow.location.replace(new URL(source, window.location.href));
+    else frame.src = source;
+    loaded = true;
   }
 
   function show(target) {
