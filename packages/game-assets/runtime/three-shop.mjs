@@ -115,6 +115,8 @@ export function buildShop(THREE, kitScene, plan, materials) {
       });
       instanced.instanceMatrix.needsUpdate = true;
       instanced.frustumCulled = false;
+      instanced.userData.part = part;
+      instanced.userData.local = local.clone();
       group.add(instanced);
     });
   }
@@ -155,6 +157,18 @@ void main() {
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
+
+export function placeInstance(THREE, shop, part, index, position, yaw) {
+  const matrix = new THREE.Matrix4();
+  const rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  const unit = new THREE.Vector3(1, 1, 1);
+  for (const mesh of shop.children) {
+    if (mesh.userData.part !== part) continue;
+    matrix.compose(new THREE.Vector3(...position), rotation, unit).multiply(mesh.userData.local);
+    mesh.setMatrixAt(index, matrix);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+}
 
 export function rowColor(THREE, recipe, row) {
   const stops = recipe.palette[row] ?? ['#ffffff'];

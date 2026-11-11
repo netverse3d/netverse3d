@@ -52,9 +52,14 @@ function close(actual: number, expected: number, label: string): void {
   assert.ok(Math.abs(actual - expected) < 1e-6, `${label}: ${actual} is not ${expected}`);
 }
 
+function mountAt(x: number, z: number) {
+  return { part: 'chair_a', index: 0, position: [x, 0, z], yaw: 0 };
+}
+
 function seatAt(seatId: string, x: number, z: number): Seat {
   return {
     seatId,
+    mount: mountAt(x, z),
     chair: { x, z },
     footprint: { minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5 },
     sit: { x, z, yaw: 0 },
@@ -174,12 +179,14 @@ test('tiệm chưa có máy nào thì không có gợi ý', () => {
 test('máy được gợi ý là máy có ghế gần hơn, không phải máy có vùng gần hơn', () => {
   const wide: Seat = {
     seatId: 'seat-1',
+    mount: mountAt(-3, 0),
     chair: { x: -3, z: 0 },
     footprint: { minX: -4, maxX: 0, minZ: -0.5, maxZ: 0.5 },
     sit: { x: -3, z: 0, yaw: 0 },
   };
   const narrow: Seat = {
     seatId: 'seat-2',
+    mount: mountAt(0.6, 0),
     chair: { x: 0.6, z: 0 },
     footprint: { minX: 0.3, maxX: 1, minZ: -0.5, maxZ: 0.5 },
     sit: { x: 0.6, z: 0, yaw: 0 },
@@ -207,4 +214,24 @@ test('chỗ đặt hông lúc ngồi lấy từ điểm neo của ghế, quay th
 test('ghế không có điểm neo chỗ ngồi thì báo lỗi kèm tên ghế', () => {
   const anchors = { ...ANCHORS, chair_a: { collision_main: ANCHORS.chair_a.collision_main } };
   assert.throws(() => shopSeats(station(0, 0, 0), anchors), /chair_a has no seat_anchor/);
+});
+
+test('mỗi chỗ ngồi biết chiếc ghế của nó là instance thứ mấy trong tiệm để dời đúng chiếc đó', () => {
+  const seats = shopSeats(
+    [
+      part(0, 'desk', 'desk_a', 0, 0),
+      part(0, 'chair', 'chair_a', 0, -0.24),
+      part(1, 'desk', 'desk_a', 4, 0, EAST),
+      part(1, 'chair', 'chair_a', 3.76, 0, EAST),
+    ],
+    ANCHORS,
+  );
+  assert.deepEqual(
+    seats.map((seat) => [seat.mount.part, seat.mount.index, seat.mount.yaw]),
+    [
+      ['chair_a', 0, 0],
+      ['chair_a', 1, EAST],
+    ],
+  );
+  assert.deepEqual(seats[1]?.mount.position, [3.76, 0, 0]);
 });

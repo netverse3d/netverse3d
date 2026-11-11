@@ -386,3 +386,30 @@ test('ô tường của bộ phòng được khai cao tới 3,7 m trong danh m�
     assert.equal(room.slots[slot].size[1], 3.7, slot);
   }
 });
+
+test('bộ máy khai ba mẫu ghế, mỗi mẫu có điểm ngồi và hộp va chạm vừa khung ô, ba tiệm mẫu dùng ba mẫu khác nhau', (context) => {
+  const config = loadConfig(ROOT);
+  const slot = config.kits.find((kit) => kit.file === 'station-parts.glb').slots.chair;
+  assert.deepEqual(slot.variants, ['a', 'b', 'c']);
+  const chosen = JSON.parse(readFileSync(join(ROOT, 'recipes', 'index.json'), 'utf8')).map(
+    (id) => JSON.parse(readFileSync(join(ROOT, 'recipes', `${id}.json`), 'utf8')).variants.chair,
+  );
+  assert.deepEqual([...chosen].sort(), ['a', 'b', 'c']);
+  const buffer = readFileSync(join(ROOT, 'exported', 'station-parts.glb'));
+  if (isLfsPointer(buffer)) return context.skip('station-parts.glb chưa tải nội dung LFS');
+  const anchors = kitAnchors(readGlb(buffer));
+  const [width, height, depth] = slot.size;
+  const seats = slot.variants.map((variant) => anchors[`chair_${variant}`]?.seat_anchor?.position);
+  for (const variant of slot.variants) {
+    const part = `chair_${variant}`;
+    const box = anchors[part]?.collision_main;
+    assert.ok(anchors[part]?.seat_anchor, `${part} has no seat anchor`);
+    assert.ok(box, `${part} has no collision box`);
+    const [halfWidth, halfHeight, halfDepth] = box.scale;
+    assert.ok(halfWidth * 2 <= width && halfDepth * 2 <= depth, `${part} footprint`);
+    assert.ok(halfHeight * 2 <= height, `${part} height`);
+    assert.ok(Math.abs(box.position[1] - halfHeight) < 1e-4, `${part} stands on the floor`);
+  }
+  assert.deepEqual(seats[1], seats[0]);
+  assert.deepEqual(seats[2], seats[0]);
+});

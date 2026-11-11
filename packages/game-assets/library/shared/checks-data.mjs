@@ -73,6 +73,32 @@ export function footZoneHits(triangles, hip) {
   return triangles.filter((triangle) => triangle.some(inZone)).length;
 }
 
+const THIGH = {
+  side: 0.1,
+  halfWidth: 0.045,
+  hip: [-0.196, 0.405],
+  knee: [0.082, 0.308],
+  reach: 0.12,
+};
+
+export function thighSink(triangles, hip) {
+  const [hipDepth, hipBottom] = THIGH.hip;
+  const [kneeDepth, kneeBottom] = THIGH.knee;
+  let sink = 0;
+  for (const triangle of triangles) {
+    for (const [x, y, z] of triangle) {
+      const depth = z - hip.position[2];
+      if (depth < hipDepth || depth > kneeDepth) continue;
+      if (Math.abs(Math.abs(x - hip.position[0]) - THIGH.side) > THIGH.halfWidth) continue;
+      const along = (depth - hipDepth) / (kneeDepth - hipDepth);
+      const bottom = hipBottom + (kneeBottom - hipBottom) * along;
+      if (y > bottom + THIGH.reach) continue;
+      sink = Math.max(sink, y - bottom);
+    }
+  }
+  return sink;
+}
+
 export function seatedClips(clips) {
   return SEATED_CLIP_ORDER.filter((name) => clips.includes(name));
 }

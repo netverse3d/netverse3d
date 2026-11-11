@@ -5,6 +5,7 @@ import {
   buildShop,
   isPreviewLightmap,
   kitLightmap,
+  placeInstance,
   previewKitFiles,
   paletteTexture,
   recolorShowcase,
@@ -209,4 +210,26 @@ test('liệt kê các bộ đã tải đang mang lightmap xem thử', () => {
   };
   assert.deepEqual(previewKitFiles(kits), ['lounge-parts.glb']);
   assert.deepEqual(previewKitFiles({}), []);
+});
+
+test('dời một món của một máy thì chỉ instance đó đổi chỗ, các máy khác đứng yên', () => {
+  const materials = shopMaterials(THREE, RECIPE, ROWS);
+  const stations = [
+    [-1, 0, -1],
+    [1, 0, -1],
+  ];
+  const shop = buildShop(THREE, kitScene(), planFor(stations), materials);
+  placeInstance(THREE, shop, 'monitor_a', 1, [5, 0.7, 6], Math.PI / 2);
+  const screen = shop.children[2];
+  const matrix = new THREE.Matrix4();
+  const at = (index) => {
+    screen.getMatrixAt(index, matrix);
+    const position = new THREE.Vector3().setFromMatrixPosition(matrix);
+    return [position.x, position.y, position.z].map((v) => Math.round(v * 1000) / 1000);
+  };
+  assert.deepEqual(at(1), [5, 1, 6]);
+  assert.deepEqual(at(0), [-1, 1, -1]);
+  const desk = shop.children[0];
+  desk.getMatrixAt(1, matrix);
+  assert.equal(new THREE.Vector3().setFromMatrixPosition(matrix).x, 1);
 });

@@ -6,6 +6,7 @@ import bpy
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hero_cases import CASE_COLLISIONS, build_case_b, build_case_c
 from hero_chair import build_hero_chair
+from hero_chairs import CHAIR_COLLISIONS, SEAT_ANCHOR, build_chair_mesh, build_chair_task
 from hero_mic_boom import build_mic_boom
 from hero_mouse import build_mouse_a, build_mouse_b, build_mouse_c
 from hero_kit import anchor, bake_isolated, finish_hero
@@ -50,7 +51,7 @@ def main():
     materials = [bpy.data.materials.new(name) for name in ('surface', 'glow', 'display', 'decal', 'legend')]
     for material in materials:
         material.use_nodes = True
-    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_monitor, build_monitor_curved, build_monitor_retro, build_case, build_case_b, build_case_c, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_speaker_bar, build_mat_a, build_mat_b, build_mat_c]
+    builders = [build_desk_a, build_desk_b, build_desk_c, build_hero_chair, build_chair_mesh, build_chair_task, build_monitor, build_monitor_curved, build_monitor_retro, build_case, build_case_b, build_case_c, build_keyboard_a, build_keyboard_b, build_keyboard_c, build_keyboard_d, build_keyboard_e, build_keyboard_f, build_mouse_a, build_mouse_b, build_mouse_c, build_headset_a, build_headset_b, build_headset_c, build_mic, build_mic_boom, build_speaker, build_speaker_bar, build_mat_a, build_mat_b, build_mat_c]
     built = {}
     for builder in builders:
         part = builder()
@@ -59,8 +60,9 @@ def main():
         for name, location in SOCKETS.items():
             anchor(built[desk], name, collection, location)
         anchor(built[desk], 'collision_main', collection, (0, -0.46, 0.36), (0.76, 0.35, 0.36))
-    anchor(built['chair_a'], 'seat_anchor', collection, (0, -0.24, 0))
-    anchor(built['chair_a'], 'collision_main', collection, (0, 0.03, 0.665), (0.32, 0.33, 0.665))
+    for name, (center, half) in CHAIR_COLLISIONS.items():
+        anchor(built[name], 'seat_anchor', collection, SEAT_ANCHOR)
+        anchor(built[name], 'collision_main', collection, center, half)
     anchor(built['speaker_b'], CENTER_MOUNT, collection, (0, 0, 0))
     for name, (center, half) in CASE_COLLISIONS.items():
         anchor(built[name], 'collision_main', collection, center, half)

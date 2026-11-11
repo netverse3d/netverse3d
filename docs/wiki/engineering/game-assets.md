@@ -14,6 +14,10 @@ Mục Soi lỗi (`library/checks.html`) dựng một bàn máy lắp đủ món 
 
 Hai luật rút ra từ trang này. Đế sao của ghế phải có một chân chĩa thẳng về phía bàn, để nó lọt vào khe giữa hai bàn chân; vùng đặt chân tính từ điểm neo `seat_anchor` và có test đo trên mô hình ghế thật (`footZoneHits`). Nhân vật bỏ ba lô ở mọi hành động ngồi vì ba lô nhô ra sau hông hơn ba mươi phân và sẽ xuyên qua lưng ghế; luật nằm ở `wearsBackpack` trong `runtime/actor-look.mjs`, game và trang Soi lỗi cùng gọi.
 
+Ngồi và rời máy chạy theo một trình tự chung ở `runtime/seat-motion.mjs`, game và trang Soi lỗi cùng gọi. Lúc ngồi: ghế trượt ra khỏi bàn 0,24 m, nhân vật bước vào chỗ đã lùi và chạy `sit_down` ở đó để tay và đầu gối không kẹt vào mép bàn, rồi ghế cùng nhân vật trượt vào sát bàn và chuyển sang `typing`. Lúc nhân vật còn đứng, ghế lùi thêm 0,12 m so với chỗ nhân vật để ống chân không dính vào mép trước của đệm; khoảng đó khép lại trong lúc ngồi xuống và mở ra trong lúc đứng dậy. Lúc rời máy thì ngược lại: trượt ra, chạy `stand_up`, nhân vật bước về chỗ đứng trước lúc ngồi; ghế để ngoài cho tới lúc người chơi đi xa hơn 0,8 m rồi mới trượt về, để không đẩy xuyên qua họ. Trong game, `src/game/seat-drive.ts` giữ và thả người chơi theo trình tự này, còn `placeInstance` trong `runtime/three-shop.mjs` dời đúng chiếc ghế của máy đó. Trong trang Soi lỗi, chọn Ngồi xuống hoặc Đứng dậy sẽ lặp lại cả trình tự.
+
+Hành động `sit_idle` đặt hai tay lên bàn: các xương tay của nó lấy tư thế ở khung đầu của `typing`, còn thân và đầu giữ nhịp thở riêng. Đổi tư thế tay của `typing` thì sửa lại `sit_idle` cho khớp trong `source/clips.blend` rồi xuất lại nhân vật.
+
 Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của nó dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab phố Sài Gòn, bộ sưu tập, xưởng và tiệm là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức, và được xếp vào mục Lưu trữ. Thư viện chỉ để xem; game thật viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc
@@ -96,6 +100,10 @@ Màu và chữ của keycap không nằm trong mô hình. Cả mặt trên lẫn
 Chuột (`pipeline/hero_mouse.py`) là một khối subdivision liền: mười hai vòng tiết diện chữ D (đáy phẳng, mép đáy bo, vòm trên là cung siêu elip) xếp dọc thân, vòng đầu và đuôi thu nhỏ vừa phải để mũi tù như chuột thật chứ không nhọn như quả trứng. Nút, đệm hai bên, rãnh giữa và dải sáng đều là hàng màu trên các cột mặt của cùng khối đó, không có mảnh vỏ rời nào nổi phía trên, nên thân không thể chọc xuyên qua nút. Rãnh giữa hạ thấp thật hơn một milimét ở nửa trước; con lăn nằm trong rãnh và chỉ lộ khoảng ba milimét. Nút bên và con lăn ngón cái đặt bằng cùng hàm tiết diện rồi lùi vào trong vỏ, chỉ nhô khoảng một milimét. Ba mẫu: `a` gaming công thái học tay phải (nút hai tông màu, đệm hai bên, hai nút bên, đèn logo ở lưng), `b` thấp và trơn kiểu chuột cảm ứng, một khối liền không con lăn không dải sáng, `c` chuột làm việc vòm cao có chỗ tựa và con lăn ngón cái; đổi mẫu là đổi bảng số đo, không vẽ lại.
 
 Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu là loft tiết diện chữ nhật bo góc dọc cung tròn, đệm vành là dải thứ hai bên trong, củ tai là revolve hai mươi cạnh với đệm bo tròn và lưng củ có vòng điểm nhấn, càng kim loại nối vành với trục củ. Ba mẫu: `a` gaming có mic cần và đế phát sáng, `b` studio củ to lưng kim loại, `c` on-ear nhỏ vành mỏng.
+
+### Ghế
+
+Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là ghế gaming lưng cao (`pipeline/hero_chair.py`). `b` và `c` nằm trong `pipeline/hero_chairs.py`: `b` là ghế công thái lưng lưới có tựa đầu, đệm thắt lưng và tay vịn; `c` là ghế làm việc tối giản với một đệm lưng, không tay vịn. Cả ba dùng chung đế sao và trụ nâng của `build_base`, cùng một điểm ngồi `SEAT_ANCHOR`. Mặt đệm ngồi phải đi theo đáy đùi của nhân vật lúc ngồi: cao 0,40 m ở phía hông rồi dốc xuống khoảng 0,32 m ở mép trước, vì nhân vật chân ngắn nên đầu gối thấp hơn hông; đệm phẳng hoặc cao hơn thì đùi lún vào. Test `thighSink` đo độ lún đó trên mô hình thật của từng mẫu và chặn ở một phân. Mặt trước của lưng ghế phải lùi sau tâm ghế ít nhất 0,19 m, nếu không lưng nhân vật sẽ xuyên vào. Mỗi mẫu có hộp va chạm riêng trong `CHAIR_COLLISIONS`. Thêm mẫu mới thì xem nó trong trang Soi lỗi với nhân vật ngồi trước khi nướng bóng.
 
 ### Thùng máy
 

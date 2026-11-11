@@ -84,6 +84,14 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
   }
 
   export function paletteTexture(THREE: typeof import('three'), image: PaletteImage): Texture;
+  export function placeInstance(
+    THREE: typeof import('three'),
+    shop: Object3D,
+    part: string,
+    index: number,
+    position: readonly number[],
+    yaw: number,
+  ): void;
   export function shopMaterials(
     THREE: typeof import('three'),
     recipe: ShopRecipe,
@@ -103,6 +111,33 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
     plan: Placement[],
     materials: ShopMaterials,
   ): Group;
+}
+
+declare module '@netverse/game-assets/runtime/seat-motion.mjs' {
+  export interface SeatClipLengths {
+    readonly sit_down: number;
+    readonly stand_up: number;
+  }
+  export interface SeatMotion {
+    readonly chair: number;
+    readonly actor: number | null;
+    readonly clip: string | null;
+    readonly done: boolean;
+  }
+  export const SEAT_PULL: number;
+  export const STAND_GAP: number;
+  export const SEAT_OUT: number;
+  export function seatMotion(
+    action: 'sit' | 'stand',
+    elapsed: number,
+    clips: SeatClipLengths,
+  ): SeatMotion;
+  export function seatMotionLength(action: 'sit' | 'stand', clips: SeatClipLengths): number;
+  export function slideBack(yaw: number, distance: number): [number, number];
+  export function chairComesHome(
+    seat: { readonly x: number; readonly z: number },
+    player: { readonly x: number; readonly z: number },
+  ): boolean;
 }
 
 declare module '@netverse/game-assets/runtime/shop-sign.mjs' {
