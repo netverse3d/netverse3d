@@ -265,3 +265,20 @@ test('công thức chọn bộ màu keycap và chế độ LED có trong danh s�
   assert.match(errorsOf({ keyboard: { colorway: 'nope' } }), /unknown keyboard colorway nope/);
   assert.match(errorsOf({ keyboard: { led: 'disco' } }), /\/keyboard\/led must be equal to one of/);
 });
+
+function sampleRecipes() {
+  const folder = join(REAL_ROOT, 'recipes');
+  return readdirSync(folder)
+    .filter((file) => file !== 'index.json')
+    .map((file) => JSON.parse(readFileSync(join(folder, file))));
+}
+
+test('bộ máy khai ba mẫu màn hình: phẳng, cong, viền dày', () => {
+  const station = loadConfig(REAL_ROOT).kits.find((kit) => kit.file === 'station-parts.glb');
+  assert.deepEqual(station.slots.monitor.variants, ['a', 'b', 'c']);
+});
+
+test('ba tiệm mẫu không dùng chung một mẫu màn hình', () => {
+  const monitors = sampleRecipes().map((recipe) => recipe.variants.monitor);
+  assert.equal(new Set(monitors).size, 3, `các tiệm đang dùng: ${monitors}`);
+});
