@@ -21,14 +21,7 @@ import {
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LIBRARY = join(ROOT, 'library');
 const SECTIONS = JSON.parse(readFileSync(join(LIBRARY, 'shared/sections.json'), 'utf8'));
-const OLD_PAGES = [
-  'studio.html',
-  'gallery.html',
-  'lab.html',
-  'shop.html',
-  'showcase.html',
-  'street.html',
-];
+const OLD_PAGES = ['studio.html', 'gallery.html', 'lab.html', 'street.html'];
 const withPages = (section) => (section.pages ?? []).length > 0;
 
 const CONFIG = {
@@ -115,7 +108,8 @@ test('thanh mục đánh dấu đúng một mục đang xem và không cho bấm
     ['parts'],
   );
   assert.equal(items.find((item) => item.id === 'parts')?.href, 'catalog.html?section=parts');
-  assert.equal(items.find((item) => item.id === 'shops')?.href, `${STAGE_PAGE}?section=shops`);
+  assert.equal(items.find((item) => item.id === 'shops')?.href, 'shop.html');
+  assert.equal(items.find((item) => item.id === 'archive')?.href, `${STAGE_PAGE}?section=archive`);
   const upcoming = navItems(
     [{ id: 'later', title: 'Sau', summary: 'Chưa có trang.', state: 'planned' }],
     'parts',
@@ -125,10 +119,12 @@ test('thanh mục đánh dấu đúng một mục đang xem và không cho bấm
 });
 
 test('khung đọc địa chỉ để biết mở mục nào, trang con nào; địa chỉ lạ thì về mục đầu tiên có trang', () => {
-  assert.deepEqual(stageTarget(SECTIONS, '?section=shops&page=1'), { section: 'shops', page: 1 });
-  assert.deepEqual(stageTarget(SECTIONS, '?section=shops'), { section: 'shops', page: 0 });
-  assert.deepEqual(stageTarget(SECTIONS, '?section=shops&page=9'), { section: 'shops', page: 0 });
-  assert.deepEqual(stageTarget(SECTIONS, '?section=shops&page=-1'), { section: 'shops', page: 0 });
+  const archive = { section: 'archive', page: 0 };
+  assert.deepEqual(stageTarget(SECTIONS, '?section=archive&page=1'), { ...archive, page: 1 });
+  assert.deepEqual(stageTarget(SECTIONS, '?section=archive'), archive);
+  assert.deepEqual(stageTarget(SECTIONS, '?section=archive&page=9'), archive);
+  assert.deepEqual(stageTarget(SECTIONS, '?section=archive&page=-1'), archive);
+  assert.deepEqual(stageTarget(SECTIONS, '?section=shops'), { section: 'characters', page: 0 });
   assert.deepEqual(stageTarget(SECTIONS, '?section=checks'), { section: 'characters', page: 0 });
   assert.deepEqual(stageTarget(SECTIONS, '?section=overview'), { section: 'characters', page: 0 });
   assert.deepEqual(stageTarget(SECTIONS, '?section=khong-co'), { section: 'characters', page: 0 });
@@ -142,8 +138,9 @@ test('trang cũ nạp vào khung giữ nguyên tham số và dấu thăng của 
 });
 
 test('trang cũ tự chuyển hướng bên trong khung thì khung biết nó thuộc mục nào để đánh dấu lại', () => {
-  assert.deepEqual(whereIs(SECTIONS, 'shop.html', '', 'parts'), { section: 'shops', page: 0 });
-  assert.deepEqual(whereIs(SECTIONS, 'showcase.html', '', 'parts'), { section: 'shops', page: 1 });
+  assert.deepEqual(whereIs(SECTIONS, 'street.html', '', 'parts'), { section: 'street', page: 0 });
+  assert.equal(whereIs(SECTIONS, 'shop.html', '', 'parts'), null);
+  assert.equal(whereIs(SECTIONS, 'showcase.html', '', 'parts'), null);
   assert.deepEqual(whereIs(SECTIONS, 'studio.html', '#pho', 'parts'), {
     section: 'archive',
     page: 0,
@@ -206,7 +203,7 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
   const shops = cards.find((card) => card.id === 'shops');
   assert.deepEqual(
     shops?.more.map((link) => link.href),
-    [`${STAGE_PAGE}?section=shops&page=1`],
+    ['showcase.html'],
   );
 });
 
@@ -246,12 +243,13 @@ test('dãy thẻ của mục đã dựng lại có trang mới đứng đầu r�
 });
 
 test('dãy thẻ của mục còn trang cũ chỉ gồm các trang cũ', () => {
-  const shops = SECTIONS.find((section) => section.id === 'shops');
+  const archive = SECTIONS.find((section) => section.id === 'archive');
   assert.deepEqual(
-    sectionTabs(shops, 1, 'Danh mục').map((tab) => [tab.page, tab.current]),
+    sectionTabs(archive, 1, 'Danh mục').map((tab) => [tab.page, tab.current]),
     [
       [0, false],
       [1, true],
+      [2, false],
     ],
   );
 });
@@ -278,4 +276,34 @@ test('số liệu thật của repo khớp với cấu hình tài sản đang l�
   assert.equal(summary.shops, recipes.length);
   assert.equal(summary.actions + summary.expressions, config.clips.length);
   assert.ok(summary.variants >= summary.slots && summary.slots > 0);
+});
+
+test('mục có nhiều trang đã dựng lại hiện các trang đó thành dãy thẻ mở thẳng, không qua khung', () => {
+  const shops = SECTIONS.find((section) => section.id === 'shops');
+  assert.equal(shops.state, 'rebuilt');
+  assert.equal(sectionHref(shops), 'shop.html');
+  for (const view of shops.views) {
+    assert.ok(existsSync(join(LIBRARY, fileOf(view.href))), view.href);
+    assert.equal(OLD_PAGES.includes(fileOf(view.href)), false, view.href);
+  }
+  assert.deepEqual(sectionTabs(shops, 'main', 'Danh mục'), [
+    { title: 'Phòng thử tiệm', href: 'shop.html', page: null, current: true },
+    { title: 'Tiệm giới thiệu', href: 'showcase.html', page: null, current: false },
+  ]);
+  assert.deepEqual(
+    sectionTabs(shops, 'view:1', 'Danh mục').map((tab) => tab.current),
+    [false, true],
+  );
+});
+
+test('trang đã dựng lại dùng lớp vỏ chung: có thanh mục, đầu trang và bảng kiểu chung, không tự mang bảng kiểu riêng', () => {
+  for (const file of ['shop.html', 'showcase.html', 'catalog.html', 'checks.html']) {
+    const html = readFileSync(join(LIBRARY, file), 'utf8');
+    assert.ok(html.includes('shared/gallery.css'), `${file} misses the shared stylesheet`);
+    assert.ok(
+      html.includes('id="nav"') && html.includes('id="page-title"'),
+      `${file} misses the shell`,
+    );
+    assert.equal(html.includes('<style>'), false, `${file} carries its own stylesheet`);
+  }
 });
