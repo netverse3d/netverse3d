@@ -33,7 +33,8 @@
     "kits": {
       "station-parts.glb": "Bàn máy",
       "lounge-parts.glb": "Góc console",
-      "sign-parts.glb": "Biển hiệu"
+      "sign-parts.glb": "Biển hiệu",
+      "street-parts.glb": "Phố"
     },
     "slots": {
       "desk": "Bàn",
@@ -52,7 +53,15 @@
       "gamepad": "Tay cầm",
       "tv": "TV",
       "sign": "Biển hiệu",
-      "blade": "Biển vẫy"
+      "blade": "Biển vẫy",
+      "road": "Mặt hẻm",
+      "sidewalk": "Vỉa hè",
+      "pole": "Cột điện",
+      "wires": "Dây điện",
+      "lamp": "Đèn đường",
+      "bin": "Thùng rác",
+      "planter": "Chậu cây",
+      "board": "Biển chữ A"
     },
     "all": "Tất cả",
     "count": "món",
