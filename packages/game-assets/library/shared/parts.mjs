@@ -15,7 +15,7 @@ import {
   withKeyboard,
 } from './parts-data.mjs';
 import { element, loadShell, mountPageHead, readJson } from './shell.mjs';
-import { studioLights } from './studio.mjs';
+import { studioLights, triangleCount } from './studio.mjs';
 
 const INSPECT_FILE = 'lab.html';
 const KEYBOARD_SLOT = 'keyboard';
@@ -26,16 +26,6 @@ const PAGE_BACKGROUND = new THREE.Color('#0d0a18');
 const SPIN_SPEED = 0.35;
 const byId = (id) => document.getElementById(id);
 const count = (value) => value.toLocaleString('vi-VN');
-
-function triangleCount(object) {
-  let total = 0;
-  object.traverse((mesh) => {
-    if (!mesh.isMesh) return;
-    const geometry = mesh.geometry;
-    total += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
-  });
-  return Math.round(total);
-}
 
 function partStage(source, environment) {
   const group = new THREE.Group();

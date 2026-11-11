@@ -163,5 +163,69 @@
     "variants": "Biến thể",
     "section": "Nằm ở mục",
     "missing": "Chưa thuộc mục nào"
+  },
+  "characters": {
+    "actions": {
+      "idle": "Đứng yên",
+      "walk": "Đi bộ",
+      "run": "Chạy",
+      "jump": "Nhảy",
+      "sit_down": "Ngồi xuống",
+      "typing": "Ngồi gõ phím",
+      "sit_idle": "Ngồi yên",
+      "stand_up": "Đứng dậy",
+      "wave": "Vẫy tay",
+      "raise_hand": "Giơ tay",
+      "both_hands": "Giơ hai tay",
+      "point": "Chỉ tay",
+      "clap": "Vỗ tay",
+      "drink": "Uống nước",
+      "nod": "Gật đầu",
+      "shake": "Lắc đầu",
+      "bow": "Cúi chào",
+      "crouch": "Ngồi xổm nhặt đồ",
+      "stretch": "Vươn vai",
+      "look": "Nhìn quanh",
+      "talk": "Nói chuyện",
+      "cheer": "Ăn mừng",
+      "touch": "Chạm màn hình",
+      "carry": "Bê thùng"
+    },
+    "expressions": {
+      "smile": "Vui vẻ",
+      "excited": "Phấn khích",
+      "laugh": "Cười lớn",
+      "surprised": "Ngạc nhiên",
+      "confused": "Thắc mắc",
+      "focus": "Tập trung",
+      "sleepy": "Buồn ngủ",
+      "sad": "Buồn",
+      "furious": "Tức giận",
+      "nervous": "Lo lắng",
+      "shy": "Ngại ngùng",
+      "wink": "Nháy mắt"
+    },
+    "meshes": {
+      "body": "Thân",
+      "hair": "Tóc",
+      "glasses": "Kính",
+      "headset": "Tai nghe",
+      "backpack": "Ba lô",
+      "cup": "Ly nước",
+      "crate": "Thùng hàng"
+    },
+    "views": {
+      "front": "Trước",
+      "side": "Bên",
+      "back": "Sau",
+      "face": "Cận mặt"
+    },
+    "bones": "Bộ xương",
+    "light": "Bản nhẹ",
+    "playing": "Chạy hành động",
+    "triangles": "tam giác",
+    "boneCount": "xương",
+    "actionCount": "hành động",
+    "expressionCount": "biểu cảm"
   }
 }

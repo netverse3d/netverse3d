@@ -9,11 +9,18 @@
   {
     "id": "characters",
     "title": "Nhân vật",
-    "summary": "Thân, tóc và phụ kiện của người chơi, cùng các hành động và biểu cảm trên bộ xương chung.",
-    "state": "legacy",
+    "summary": "Nhân vật của người chơi: thân, tóc và phụ kiện trên một bộ xương chung, đủ hành động và biểu cảm, có bản nhẹ cho cảnh đông người và số tam giác của từng phần.",
+    "href": "characters.html",
+    "state": "rebuilt",
+    "views": [
+      {
+        "title": "Xem nhân vật",
+        "href": "characters.html"
+      }
+    ],
     "pages": [
       {
-        "title": "Hành động và biểu cảm",
+        "title": "Trang cũ nhiều cảnh",
         "src": "studio.html"
       }
     ]

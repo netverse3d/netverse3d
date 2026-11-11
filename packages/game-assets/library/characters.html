@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nhân vật · Thư viện 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="shared/gallery.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body class="gallery">
+    <aside class="gallery-nav" id="nav"></aside>
+    <main class="gallery-main gallery-wide gallery-bench">
+      <header class="page-head">
+        <div class="stage-name">
+          <h1 id="page-title">Nhân vật</h1>
+          <span id="page-badge"></span>
+        </div>
+        <p class="stage-summary" id="page-summary"></p>
+        <div class="stage-bar">
+          <nav class="stage-tabs" id="page-tabs" aria-label="Các trang trong mục" hidden></nav>
+        </div>
+      </header>
+
+      <p class="notice" id="problem" hidden>
+        Không đọc được dữ liệu của thư viện. Hãy mở trang qua lệnh <code>pnpm assets:library</code>.
+      </p>
+      <p class="notice" id="no-webgl" hidden>
+        Trình duyệt này chưa bật WebGL 2 nên không vẽ được mô hình.
+      </p>
+      <p class="status" id="status" role="status">Đang nạp nhân vật…</p>
+
+      <div class="bench" id="bench" hidden>
+        <div class="bench-view" id="view">
+          <canvas id="gl" aria-label="Nhân vật của người chơi"></canvas>
+          <div class="bench-views chips" id="views"></div>
+        </div>
+        <form class="bench-panel" onsubmit="return false;">
+          <section>
+            <h2>Hành động</h2>
+            <div class="chips" id="actions"></div>
+          </section>
+          <section>
+            <h2>Biểu cảm</h2>
+            <div class="chips" id="expressions"></div>
+          </section>
+          <section>
+            <h2>Hiển thị</h2>
+            <div class="chips" id="toggles"></div>
+          </section>
+          <section>
+            <h2>Số tam giác</h2>
+            <ul class="budget-list" id="budgets"></ul>
+            <p class="bench-note" id="totals"></p>
+          </section>
+        </form>
+      </div>
+    </main>
+    <script type="module" src="shared/characters.mjs"></script>
+  </body>
+</html>
