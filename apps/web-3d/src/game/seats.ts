@@ -11,8 +11,16 @@ export interface StationPart {
   readonly yaw: number;
 }
 
+export interface ChairMount {
+  readonly part: string;
+  readonly index: number;
+  readonly position: readonly number[];
+  readonly yaw: number;
+}
+
 export interface Seat {
   readonly seatId: string;
+  readonly mount: ChairMount;
   readonly chair: FloorPoint;
   readonly footprint: FloorBox;
   readonly sit: PlayerState;
@@ -49,7 +57,13 @@ export function shopSeats(stations: readonly StationPart[], anchors: KitAnchors)
       const hip = anchors[chair.part]?.[SIT_ANCHOR];
       if (!hip) throw new TypeError(`${chair.part} has no ${SIT_ANCHOR}`);
       const sit = { ...anchorOnFloor(chair, hip, `${chair.part} ${SIT_ANCHOR}`), yaw: chair.yaw };
-      return { seatId: seatIdOf(station), chair: { x, z }, footprint, sit };
+      const mount = {
+        part: chair.part,
+        index: stations.filter((placed) => placed.part === chair.part).indexOf(chair),
+        position: chair.position,
+        yaw: chair.yaw,
+      };
+      return { seatId: seatIdOf(station), mount, chair: { x, z }, footprint, sit };
     });
 }
 

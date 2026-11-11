@@ -29,7 +29,7 @@ export interface Player {
 
 const IDLE_CLIP = 'idle';
 const HAND_PROPS = ['crate', 'cup'];
-const FOLLOW_UPS: Readonly<Record<string, string>> = { sit_down: 'typing' };
+const FOLLOW_UPS: Readonly<Record<string, string>> = { sit_down: 'sit_idle', stand_up: 'idle' };
 const CLIP_END_SLACK = 1e-3;
 let sharedLook: ActorLook | null = null;
 

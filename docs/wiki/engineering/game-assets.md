@@ -14,6 +14,8 @@ Mục Soi lỗi (`library/checks.html`) dựng một bàn máy lắp đủ món 
 
 Hai luật rút ra từ trang này. Đế sao của ghế phải có một chân chĩa thẳng về phía bàn, để nó lọt vào khe giữa hai bàn chân; vùng đặt chân tính từ điểm neo `seat_anchor` và có test đo trên mô hình ghế thật (`footZoneHits`). Nhân vật bỏ ba lô ở mọi hành động ngồi vì ba lô nhô ra sau hông hơn ba mươi phân và sẽ xuyên qua lưng ghế; luật nằm ở `wearsBackpack` trong `runtime/actor-look.mjs`, game và trang Soi lỗi cùng gọi.
 
+Ngồi và rời máy chạy theo một trình tự chung ở `runtime/seat-motion.mjs`, game và trang Soi lỗi cùng gọi. Lúc ngồi: ghế trượt ra khỏi bàn 0,38 m, nhân vật bước vào chỗ đã lùi và chạy `sit_down` ở đó để tay và đầu gối không kẹt vào mép bàn, rồi ghế cùng nhân vật trượt vào sát bàn và chuyển sang `typing`. Lúc rời máy thì ngược lại: trượt ra, chạy `stand_up`, nhân vật bước về chỗ đứng trước lúc ngồi; ghế để ngoài cho tới lúc người chơi đi xa hơn 0,8 m rồi mới trượt về, để không đẩy xuyên qua họ. Trong game, `src/game/seat-drive.ts` giữ và thả người chơi theo trình tự này, còn `placeInstance` trong `runtime/three-shop.mjs` dời đúng chiếc ghế của máy đó. Trong trang Soi lỗi, chọn Ngồi xuống hoặc Đứng dậy sẽ lặp lại cả trình tự.
+
 Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của nó dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab phố Sài Gòn, bộ sưu tập, xưởng và tiệm là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức, và được xếp vào mục Lưu trữ. Thư viện chỉ để xem; game thật viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc
