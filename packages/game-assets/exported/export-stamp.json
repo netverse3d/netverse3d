@@ -6,20 +6,20 @@
     "hair-default.blend": "bf291876aa4be6fbce039d3705dea15abb870cac53edbdc075a7a16b68ca5475",
     "accessories.blend": "bae0c44ba195ec2b45de426ff2ecf824dabadef2e23db58e244a57733e961778",
     "props-station.blend": "d948d1b211f8a2881130f41b9ea208d612fd71196773355f9836e10d9b02e475",
-    "parts-station.blend": "b919d73d355247a4a00c435618aa57f639601ef6074fde887db50d9a45abeaff",
+    "parts-station.blend": "acd2d30dca53742f2743a9b28283ff92c7a8563c91f3084308d86721df2fe39b",
     "environment-kit.blend": "ba8966d173b9ec7d818fb5d33a6f122fd5d8ee006f8fb25db64748f95ed7f937",
     "parts-lounge.blend": "93f9076ecc3f7046470819015a7d193eb409353285dff7b32a7ab1a4da2d6964",
-    "showcase-tim-neon.blend": "6b9aded49fba7affdca05bf29b1b13b5809adb79828be45222d414bba0832c29"
+    "showcase-tim-neon.blend": "398db0cbdc88db239ca7f596e6fef51d6a983566eb3ff77f28eb3a1f38caee31"
   },
   "exported": {
     "player.glb": "c4786fd84226e818c3a59323cd871afa3b70deb700245a50a5b42ecf878c3c87",
     "player-lod.glb": "718d9cce203a93834cba5350b7845e42e68fd26f62dce57082376931446a619e",
     "station.glb": "20845d8d38d686f090812f868541c4bf68ef64a6adc8fcc10f81d2d71cf2bc31",
-    "station-parts.glb": "e5cc2e462e3aeb3c9d73420bbffef7ce87fd091f55976242775f57db116990f4",
+    "station-parts.glb": "650507cb2662b94aa24cf3a9f80442d0f21e419160394a91b810a828e351a0e6",
     "room-kit.glb": "e67eb1d6f811597d74f65da8470454d34a072feb8fd818635566503fa6fedc27",
     "lounge-parts.glb": "cfd950b105d373905bcdcb4af2dbb34b0a0bb04e463491898b47fe1e4308e3c8",
-    "showcase-tim-neon.glb": "15fed54d8bd1fe9e03cb4b5d292db64e02881cf58a34200e86e87aef04101e76",
-    "showcase-tim-neon-base.jpg": "1ab0d7bcd0e2847b4526629457b9fef08859c7d62a9390ae4a2887aa50c41306",
-    "showcase-tim-neon-spill.jpg": "3120e3b7c477978ce2c694e28f4e208547cc98f6fc199be0ef24fcf86142a931"
+    "showcase-tim-neon.glb": "94febc9a68d15ca10a5f009ba9e944953be7948c92e14c50f31682d49135791c",
+    "showcase-tim-neon-base.jpg": "110c32a99a6dd840fb678b94dc7f95bdc3a3025d3bd19fd6ffd38112d8645582",
+    "showcase-tim-neon-spill.jpg": "92b00575fdfaf3ad4f0a2892f918a63935faee1701f55ce4cba23a776927741f"
   }
 }

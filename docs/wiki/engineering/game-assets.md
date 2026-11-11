@@ -91,7 +91,7 @@ Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu 
 
 ### Thùng máy
 
-Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là tháp kính hông có ba quạt trước (`build_case` trong `pipeline/hero_station.py`). `b` và `c` nằm trong `pipeline/hero_cases.py`: `b` là máy mini vuông bo góc đặt trên kệ thấp hai tầng, tầng dưới có hộp lưu trữ, vì ô thùng máy nằm dưới sàn cạnh bàn nên máy mini cần kệ để còn nhìn thấy; `c` là tháp kín kiểu cũ với hai khay 5,25 inch, khay đĩa mềm, nút nguồn và khe thoáng. Phần phát sáng của cả ba dùng các hàng `strip`, `accent`, `screen` nên ăn theo bộ màu của tiệm. Mỗi mẫu có hộp va chạm riêng khai trong `CASE_COLLISIONS`; thêm mẫu mới thì thêm một dòng ở đó. Chi tiết gắn lên mặt vỏ phải nhô ít nhất 2 mm, và hai khối chồng lên nhau không được chung mặt đáy hay mặt bên, nếu không bộ kiểm đồng phẳng sẽ báo.
+Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là tháp kính hông có ba quạt trước (`build_case` trong `pipeline/hero_station.py`). `b` và `c` nằm trong `pipeline/hero_cases.py`: `b` là máy mini vuông bo góc đặt trên kệ thấp hai tầng, tầng dưới có hộp lưu trữ, vì ô thùng máy nằm dưới sàn cạnh bàn nên máy mini cần kệ để còn nhìn thấy; `c` là tháp hiện đại thân tối bo góc, mặt trước là hàng nan dọc trên nền lưới tối, nút nguồn và cổng nằm trên nóc, dải sáng chạy ở chân mặt trước và hai bên. Phần phát sáng của cả ba dùng các hàng `strip`, `accent`, `screen` nên ăn theo bộ màu của tiệm. Mỗi mẫu có hộp va chạm riêng khai trong `CASE_COLLISIONS`; thêm mẫu mới thì thêm một dòng ở đó. Chi tiết gắn lên mặt vỏ phải nhô ít nhất 2 mm, và hai khối chồng lên nhau không được chung mặt đáy hay mặt bên, nếu không bộ kiểm đồng phẳng sẽ báo.
 
 ### Pad chuột
 

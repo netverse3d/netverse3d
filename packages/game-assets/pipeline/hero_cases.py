@@ -3,7 +3,7 @@ from hero_kit import HeroPart
 CASE_COLLISIONS = {
     'case_a': ((0, 0, 0.29), (0.13, 0.235, 0.29)),
     'case_b': ((0, 0, 0.19), (0.155, 0.165, 0.19)),
-    'case_c': ((0, 0, 0.225), (0.105, 0.235, 0.225)),
+    'case_c': ((0, 0, 0.23), (0.11, 0.24, 0.23)),
 }
 
 RACK_HALF_WIDTH = 0.15
@@ -71,60 +71,58 @@ def build_case_b(name='case_b'):
     return case
 
 
-TOWER_HALF_WIDTH = 0.1
+TOWER_HALF_WIDTH = 0.105
 TOWER_HALF_DEPTH = 0.22
-TOWER_TOP = 0.446
-BEZEL_FRONT = TOWER_HALF_DEPTH + 0.012
+TOWER_BASE = 0.022
+TOWER_TOP = 0.45
+SLAT_COUNT = 11
+SLAT_PITCH = 0.016
 
 
 def tower_shell(case):
-    case.slab(0, 0, TOWER_HALF_WIDTH, TOWER_HALF_DEPTH, 0.01, [
-        (0.016, 0.004, 'metal'),
-        (0.02, 0.0, 'metal'),
-        (TOWER_TOP - 0.006, 0.0, 'metal'),
-        (TOWER_TOP, 0.006, 'metal'),
-    ], corner=2)
-    for y in (-0.17, 0.17):
-        case.rounded_box((0, y, 0.008), (0.17, 0.05, 0.016), 'soft', radius=0.004, segments=1)
-    case.rounded_box((0, TOWER_HALF_DEPTH + 0.005, 0.233), (0.196, 0.014, 0.416), 'top', radius=0.006, segments=2)
+    case.slab(0, 0, TOWER_HALF_WIDTH, TOWER_HALF_DEPTH, 0.016, [
+        (TOWER_BASE, 0.005, 'body'),
+        (TOWER_BASE + 0.005, 0.0, 'body'),
+        (TOWER_TOP - 0.006, 0.0, 'body'),
+        (TOWER_TOP, 0.006, 'body'),
+    ], corner=3)
+    for x in (-0.07, 0.07):
+        case.rounded_box((x, 0, TOWER_BASE / 2 + 0.002), (0.03, 0.4, TOWER_BASE), 'metal', radius=0.005, segments=1)
 
 
-def drive_bays(case):
-    face = BEZEL_FRONT + 0.002
-    for z in (0.398, 0.35):
-        case.rounded_box((0, face, z), (0.152, 0.006, 0.04), 'body', radius=0.002, segments=1)
-        case.rounded_box((0.058, face + 0.004, z - 0.011), (0.016, 0.004, 0.006), 'metal', radius=0.001, segments=1)
-    case.rounded_box((0, face, 0.296), (0.108, 0.006, 0.03), 'body', radius=0.002, segments=1)
-    case.rounded_box((0, face + 0.004, 0.3), (0.082, 0.004, 0.005), 'soft', radius=0.001, segments=1)
-    case.rounded_box((0.038, face + 0.004, 0.288), (0.014, 0.004, 0.006), 'metal', radius=0.001, segments=1)
+def slatted_front(case):
+    face = TOWER_HALF_DEPTH
+    middle = (TOWER_BASE + TOWER_TOP) / 2
+    case.rounded_box((0, face + 0.001, middle), (0.184, 0.006, 0.384), 'soft', radius=0.002, segments=1)
+    first = -SLAT_PITCH * (SLAT_COUNT - 1) / 2
+    for index in range(SLAT_COUNT):
+        case.rounded_box((first + index * SLAT_PITCH, face + 0.008, middle + 0.012), (0.009, 0.012, 0.34), 'top', radius=0.003, segments=1)
+    case.rounded_box((0, face + 0.007, TOWER_BASE + 0.03), (0.17, 0.008, 0.006), 'strip', radius=0.002, segments=1)
 
 
-def front_controls(case):
-    face = BEZEL_FRONT
-    case.revolve((0.056, face, 0.215), 'y', [
-        (0.015, 0.0, 'body'),
-        (0.015, 0.004, 'body'),
-        (0.0115, 0.004, 'metal'),
-        (0.0115, 0.007, 'metal'),
-        (0.001, 0.0075, 'metal'),
+def top_panel(case):
+    case.rounded_box((0, -0.03, TOWER_TOP + 0.001), (0.15, 0.27, 0.006), 'soft', radius=0.002, segments=1)
+    front = TOWER_HALF_DEPTH - 0.03
+    case.revolve((0.06, front, TOWER_TOP), 'z', [
+        (0.013, 0.0, 'accent'),
+        (0.013, 0.004, 'accent'),
+        (0.0095, 0.004, 'metal'),
+        (0.0095, 0.006, 'metal'),
+        (0.001, 0.0065, 'metal'),
     ], segments=20, smooth=False)
-    for x, row in ((-0.06, 'accent'), (-0.038, 'screen')):
-        case.rounded_box((x, face + 0.002, 0.215), (0.012, 0.006, 0.006), row, radius=0.002, segments=1)
-    for z in (0.066, 0.086, 0.106, 0.126, 0.146):
-        case.rounded_box((0, face + 0.002, z), (0.15, 0.006, 0.008), 'soft', radius=0.002, segments=1)
-    case.rounded_box((0, face + 0.002, 0.04), (0.16, 0.006, 0.006), 'strip', radius=0.002, segments=1)
+    for x in (-0.06, -0.035, -0.01):
+        case.rounded_box((x, front, TOWER_TOP + 0.001), (0.016, 0.008, 0.006), 'soft', radius=0.002, segments=1)
 
 
-def side_vents(case):
-    for x in (-TOWER_HALF_WIDTH - 0.002, TOWER_HALF_WIDTH + 0.002):
-        for z in (0.1, 0.122, 0.144, 0.166, 0.188, 0.21):
-            case.rounded_box((x, -0.06, z), (0.006, 0.16, 0.008), 'soft', radius=0.002, segments=1)
+def side_light(case):
+    for x in (-TOWER_HALF_WIDTH - 0.001, TOWER_HALF_WIDTH + 0.001):
+        case.rounded_box((x, 0, TOWER_BASE + 0.03), (0.006, 0.38, 0.005), 'strip', radius=0.002, segments=1)
 
 
 def build_case_c(name='case_c'):
     case = HeroPart(name)
     tower_shell(case)
-    drive_bays(case)
-    front_controls(case)
-    side_vents(case)
+    slatted_front(case)
+    top_panel(case)
+    side_light(case)
     return case
