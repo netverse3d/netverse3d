@@ -322,6 +322,7 @@
         paletteTexture,
         shopMaterials,
       } from '../runtime/three-shop.mjs';
+      import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
       const LIGHTING = {
@@ -387,9 +388,10 @@
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
-      const [config, ids] = await Promise.all([
+      const [config, ids, keyboards] = await Promise.all([
         fetch('../assets.config.json').then((r) => r.json()),
         fetch('../recipes/index.json').then((r) => r.json()),
+        fetch('../keyboards.json').then((r) => r.json()),
       ]);
       const rows = paletteRows(config.palette);
       const slots = Object.fromEntries(config.kits.flatMap((kit) => Object.entries(kit.slots)));
@@ -443,9 +445,11 @@
       };
       const materials = shopMaterials(THREE, state.recipe, rows, {
         lightmap: kitLightmap(stationKit.scene),
+        legends: legendTextures(THREE, keyboards, state.recipe),
       });
       const roomMaterials = shopMaterials(THREE, state.recipe, rows, {
         lightmap: kitLightmap(roomKit.scene),
+        legends: { map: materials.legend.map, emissive: materials.legend.emissiveMap },
       });
       const materialSets = [materials, roomMaterials];
       const GLOW_DEFAULT = materials.glow.color.r;
@@ -466,13 +470,23 @@
       function repaint() {
         const palette = paletteTexture(THREE, paletteImage(rows, state.recipe.palette));
         const emissive = paletteTexture(THREE, paletteImage(rows, state.recipe.emissive ?? {}));
+        const legends = legendTextures(THREE, keyboards, state.recipe);
         for (const set of materialSets) {
-          for (const texture of [set.surface.map, set.surface.emissiveMap]) texture.dispose();
+          for (const texture of [
+            set.surface.map,
+            set.surface.emissiveMap,
+            set.legend.map,
+            set.legend.emissiveMap,
+          ])
+            texture.dispose();
           set.surface.map = palette;
           set.surface.emissiveMap = emissive;
           set.glow.map = palette;
+          set.legend.map = legends.map;
+          set.legend.emissiveMap = legends.emissive;
           set.surface.needsUpdate = true;
           set.glow.needsUpdate = true;
+          set.legend.needsUpdate = true;
         }
         paintSign();
       }

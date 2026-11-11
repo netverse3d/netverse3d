@@ -6,11 +6,11 @@ from mathutils import Vector
 
 SURFACE_ROWS = ['body', 'metal', 'soft', 'top', 'floor', 'wall', 'ceiling', 'trim']
 GLOW_ROWS = ['strip', 'keycap', 'screen', 'accent']
-IMAGE_ROWS = ['display', 'decal']
+IMAGE_ROWS = ['display', 'decal', 'legend']
 ROWS = SURFACE_ROWS + GLOW_ROWS
 ALL_ROWS = ROWS + IMAGE_ROWS
 CUT_SLOT = len(ALL_ROWS)
-MATERIAL_ORDER = ['surface', 'glow', 'display', 'decal']
+MATERIAL_ORDER = ['surface', 'glow', 'display', 'decal', 'legend']
 
 
 def row_material(name):
@@ -78,6 +78,8 @@ class HeroPart:
         self.bm = bmesh.new()
         self.row_layer = self.bm.faces.layers.int.new('row')
         self.key_layer = self.bm.faces.layers.float.new('key_u')
+        self.fixed_layer = self.bm.faces.layers.int.new('uv_fixed')
+        self.uv_layer = self.bm.loops.layers.uv.new('palette')
 
     def _tag(self, faces, row, key_u=-1.0, smooth=False):
         for face in faces:
@@ -89,18 +91,13 @@ class HeroPart:
         face = self.bm.faces.new([self.bm.verts.new(p) for p in points])
         self._tag([face], row)
 
-    def key(self, x0, x1, y0, y1, z0, z1, u):
-        inset = min(x1 - x0, y1 - y0) * 0.14
-        low = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0)]
-        high = [(x0 + inset, y0 + inset, z1), (x1 - inset, y0 + inset, z1), (x1 - inset, y1 - inset, z1), (x0 + inset, y1 - inset, z1)]
-        bottom = [self.bm.verts.new(p) for p in low]
-        top = [self.bm.verts.new(p) for p in high]
-        self._tag([self.bm.faces.new(top)], 'keycap', u)
-        sides = []
-        for i in range(4):
-            j = (i + 1) % 4
-            sides.append(self.bm.faces.new([bottom[i], bottom[j], top[j], top[i]]))
-        self._tag(sides, 'body')
+    def image_rect(self, points, row, rect):
+        u0, v0, u1, v1 = rect
+        face = self.bm.faces.new([self.bm.verts.new(p) for p in points])
+        self._tag([face], row)
+        face[self.fixed_layer] = 1
+        for loop, uv in zip(face.loops, ((u0, v0), (u1, v0), (u1, v1), (u0, v1))):
+            loop[self.uv_layer].uv = uv
 
     def revolve(self, center, axis, profile, segments=14, smooth=True):
         center = Vector(center)
@@ -147,6 +144,7 @@ class HeroPart:
             face[self.row_layer] = face.material_index
             face[self.key_layer] = -1.0
             face.smooth = smooth
+        self.last_faces = created
 
     def make_cutter(self, cutter):
         mesh = bpy.data.meshes.new('cutter')
@@ -281,6 +279,13 @@ class HeroPart:
         if face.normal.dot(axis * side) < 0:
             bmesh.ops.reverse_faces(self.bm, faces=[face])
 
+    def oriented_poly(self, points, outward, row):
+        face = self.bm.faces.new([self.bm.verts.new(p) for p in points])
+        self._tag([face], row)
+        face.normal_update()
+        if face.normal.dot(Vector(outward)) < 0:
+            bmesh.ops.reverse_faces(self.bm, faces=[face])
+
     def pillow(self, center, size, row, puff=0.25, levels=2, top_row=None, grid=3):
         cx, cy, cz = center
         sx, sy, sz = size[0] / 2, size[1] / 2, size[2] / 2
@@ -347,7 +352,7 @@ class HeroPart:
 
 def finish_hero(part, collection, materials):
     bm = part.bm
-    uv_layer = bm.loops.layers.uv.new('palette')
+    uv_layer = bm.loops.layers.uv.get('palette') or bm.loops.layers.uv.new('palette')
     low = min(v.co.x for v in bm.verts)
     high = max(v.co.x for v in bm.verts)
     span = max(high - low, 1e-6)
@@ -359,6 +364,8 @@ def finish_hero(part, collection, materials):
         if name in IMAGE_ROWS:
             for face in faces:
                 face.material_index = MATERIAL_ORDER.index(name)
+                if face[part.fixed_layer]:
+                    continue
                 spans = [max(v.co[i] for v in face.verts) - min(v.co[i] for v in face.verts) for i in range(3)]
                 flat_axis = spans.index(min(spans))
                 u_axis, v_axis = [axis for axis in (0, 1, 2) if axis != flat_axis]
@@ -379,6 +386,7 @@ def finish_hero(part, collection, materials):
                 loop[uv_layer].uv = (0.02 + 0.96 * max(0.0, min(1.0, ratio)), v_coord)
     bm.faces.layers.int.remove(part.row_layer)
     bm.faces.layers.float.remove(part.key_layer)
+    bm.faces.layers.int.remove(part.fixed_layer)
     mesh = bpy.data.meshes.new(part.name)
     bm.to_mesh(mesh)
     bm.free()

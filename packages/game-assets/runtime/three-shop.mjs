@@ -34,7 +34,13 @@ export function shopMaterials(
   THREE,
   recipe,
   rows,
-  { roughness = 0.62, glowBoost = 1.2, lightmap = null, lightmapIntensity = 1 } = {},
+  {
+    roughness = 0.62,
+    glowBoost = 1.2,
+    lightmap = null,
+    lightmapIntensity = 1,
+    legends = null,
+  } = {},
 ) {
   const palette = paletteTexture(THREE, paletteImage(rows, recipe.palette));
   const emissive = paletteTexture(THREE, paletteImage(rows, recipe.emissive ?? {}));
@@ -51,7 +57,24 @@ export function shopMaterials(
   glow.color.setScalar(glowBoost);
   const display = new THREE.MeshBasicMaterial({ color: '#0a0a14', toneMapped: false });
   const decal = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
-  return { surface, glow, display, decal };
+  const legendMap = legends?.isTexture ? legends : (legends?.map ?? null);
+  const legendGlow = legends?.emissive ?? null;
+  const legend = new THREE.MeshStandardMaterial({
+    map: legendMap,
+    color: legendMap ? '#ffffff' : '#5a5668',
+    roughness: 0.7,
+    envMapIntensity: 0.6,
+    ...(legendGlow
+      ? {
+          emissiveMap: legendGlow,
+          emissive: new THREE.Color('#ffffff'),
+          emissiveIntensity: glowBoost,
+        }
+      : {}),
+    ...(lightmap ? { aoMap: lightmap, aoMapIntensity: lightmapIntensity } : {}),
+  });
+  if (lightmap) legend.onBeforeCompile = occludeDirectLight;
+  return { surface, glow, display, decal, legend };
 }
 
 export function buildShop(THREE, kitScene, plan, materials) {

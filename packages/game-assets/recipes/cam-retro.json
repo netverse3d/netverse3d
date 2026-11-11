@@ -15,13 +15,14 @@
     "screen": ["#ffd9a0", "#ff9f1c"],
     "accent": ["#ff6f3c"]
   },
+  "keyboard": { "colorway": "retro", "led": "white" },
   "variants": {
     "desk": "c",
     "monitor": "a",
-    "keyboard": "a",
-    "mouse": "a",
+    "keyboard": "c",
+    "mouse": "c",
     "mat": "a",
-    "headset": "a",
+    "headset": "c",
     "mic": "b",
     "speaker": "a",
     "chair": "a",

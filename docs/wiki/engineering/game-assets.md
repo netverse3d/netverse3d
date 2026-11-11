@@ -66,7 +66,7 @@ Neo đã khai trong `anchors` của ô mà thiếu trong tệp thì lệnh xuấ
 
 ### Bộ màu
 
-Vật liệu chỉ có bốn tên: `surface`, `glow`, `display`, `decal`. Hai vật liệu đầu không mang màu. Mỗi mặt chọn màu bằng toạ độ UV trỏ vào một hàng của ảnh bộ màu 12 hàng, do game tạo lúc chạy từ bộ màu của tiệm:
+Vật liệu có năm tên: `surface`, `glow`, `display`, `decal`, `legend`. Hai vật liệu đầu không mang màu. Mỗi mặt chọn màu bằng toạ độ UV trỏ vào một hàng của ảnh bộ màu 12 hàng, do game tạo lúc chạy từ bộ màu của tiệm:
 
 | Hàng | Vật liệu  | Tên hàng                                                           |
 | ---- | --------- | ------------------------------------------------------------------ |
@@ -74,6 +74,18 @@ Vật liệu chỉ có bốn tên: `surface`, `glow`, `display`, `decal`. Hai v�
 | 8–11 | `glow`    | `strip`, `keycap`, `screen`, `accent`                              |
 
 V của UV phải nằm đúng giữa hàng. U chạy từ 0 đến 1 dọc theo dải màu của hàng, nên một hàng có thể là một màu hoặc một dải chuyển màu; bàn phím nhiều màu chỉ cần đặt U khác nhau cho từng phím. `display` và `decal` là vật liệu ảnh cho màn hình và logo, dùng UV tự do trong 0..1. Vật liệu tên khác, UV lệch hàng hoặc ra ngoài 0..1 đều bị lệnh xuất từ chối.
+
+### Bàn phím
+
+Năm biến thể bàn phím đều là bố cục ANSI Mỹ chuẩn, sinh từ dữ liệu chứ không vẽ tay: `tools/keyboards.mjs` mô tả từng hàng phím (nhãn, bề rộng theo đơn vị 19,05 mm, mã `KeyboardEvent.code`, ký tự khi giữ Shift, vùng màu) và ghi ra `keyboards.json`; test giữ tệp JSON khớp với bộ sinh, kiểm số phím (60% có 61, TKL 87, 75% có 82, 65% có 68, full-size 104), không phím nào chồng nhau hay lọt ra ngoài bàn, và mỗi hàng khối chính rộng đúng 15 đơn vị. `pipeline/hero_keyboard.py` đọc tệp đó để dựng vỏ và từng keycap (ba vòng vát, 18 tam giác một phím; biến thể `d` dùng profile thấp kiểu chiclet), nên thêm một bố cục mới là thêm vào `keyboards.mjs`, chạy lại `node tools/keyboards.mjs` và thêm chữ cái vào `variants`.
+
+Màu và chữ của keycap không nằm trong mô hình. Cả mặt trên lẫn bốn thân keycap dùng hàng ảnh `legend`: mặt trên trỏ vào ô của phím trong atlas (ảnh nhìn từ trên của từng bàn, các bàn xếp chồng thành dải), thân phím trỏ vào một cột hẹp bên trái ô (`atlas.sideColumn`) luôn là màu nền. Lúc chạy, `runtime/keyboard-legends.mjs` vẽ hai atlas bằng Canvas2D theo công thức: ảnh màu và ảnh phát sáng. Công thức chọn trong trường `keyboard` (hợp đồng `shop-look.v1`, trường tuỳ chọn): `colorway` là bộ màu keycap chia ba vùng alpha, modifier và accent theo các bộ phím cơ thật (`neon` lấy dải màu hàng `keycap` của công thức và trong suốt kiểu pudding; `retro`, `graphite`, `arctic`, `rose`, `forest` là màu cố định, danh sách ở `runtime/keyboard-styles.mjs`), `led` là chế độ đèn (`rainbow` theo vị trí phím, `single` theo hàng `strip`, `white`, `off`). Ảnh phát sáng vẽ chữ bằng màu LED (chữ xuyên sáng), viền hở quanh chân phím và dải sáng lan lên thân với bộ pudding, nên bloom và đèn cảnh ăn đúng chỗ. Vật liệu `legend` của `shopMaterials` nhận hai ảnh qua tuỳ chọn `legends` và vẫn nhân lightmap. Mã `code` của từng phím là chỗ nối cho luồng gõ phím về sau.
+
+### Chuột và tai nghe
+
+Chuột (`pipeline/hero_mouse.py`) là một khối subdivision liền: mười hai vòng tiết diện chữ D (đáy phẳng, mép đáy bo, vòm trên là cung siêu elip) xếp dọc thân với vòng đầu và đuôi thu nhỏ để subsurf khép thành mũi tròn, nên không có nếp gãy ở chỗ vỏ gặp dải sáng như bản cũ; dải sáng là mấy cột mặt ở mép đáy của cùng khối. Nút trái phải là hai mảnh vỏ mỏng nổi 1,2 mm trên thân, bánh xe và nút bên đặt bằng cùng hàm tiết diện nên luôn nằm trên mặt vỏ. Ba mẫu lấy từ kiểu dáng thật: `a` công thái học tay phải (gờ ngón cái, đệm cao su hai bên, hai nút bên), `b` đối xứng tối giản không nút rời, `c` văn phòng vòm cao có bánh xe ngón cái và bánh xe kim loại; đổi mẫu là đổi bảng số đo, không vẽ lại.
+
+Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu là loft tiết diện chữ nhật bo góc dọc cung tròn, đệm vành là dải thứ hai bên trong, củ tai là revolve hai mươi cạnh với đệm bo tròn và lưng củ có vòng điểm nhấn, càng kim loại nối vành với trục củ. Ba mẫu: `a` gaming có mic cần và đế phát sáng, `b` studio củ to lưng kim loại, `c` on-ear nhỏ vành mỏng.
 
 ### Module phòng
 

@@ -18,6 +18,7 @@
   "emissive": {
     "trim": ["#40105f", "#1c0a40", "#2a1050", "#1c0a40", "#40105f"]
   },
+  "keyboard": { "colorway": "neon", "led": "rainbow" },
   "variants": {
     "desk": "a",
     "monitor": "a",

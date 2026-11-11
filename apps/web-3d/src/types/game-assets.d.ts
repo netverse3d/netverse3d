@@ -80,6 +80,7 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
     glow: MeshBasicMaterial;
     display: MeshBasicMaterial;
     decal: MeshBasicMaterial;
+    legend: MeshStandardMaterial;
   }
 
   export function paletteTexture(THREE: typeof import('three'), image: PaletteImage): Texture;
@@ -92,6 +93,7 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
       glowBoost?: number;
       lightmap?: Texture | null;
       lightmapIntensity?: number;
+      legends?: Texture | { map: Texture | null; emissive?: Texture | null } | null;
     },
   ): ShopMaterials;
   export function kitLightmap(kitScene: Object3D): Texture | null;
