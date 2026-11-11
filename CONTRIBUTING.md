@@ -36,7 +36,7 @@ Các thông tin này nằm ở thanh bên phải của issue trên GitHub.
 | **Target date** | Ngày dự kiến PR được merge                      | Trước khi chuyển sang `Ready`  |
 | **Status**      | Cột trong Project `Netverse 3D`                 | Cập nhật mỗi khi đổi giai đoạn |
 
-Priority và Effort là field của issue. Hai field `Priority` và `Size` cũ trong Project không còn dùng.
+Issue cha loại `Feature` không cần Effort; công sức nằm ở các issue con. Priority và Effort là field của issue. Hai field `Priority` và `Size` cũ trong Project không còn dùng.
 
 ### Loại issue
 
