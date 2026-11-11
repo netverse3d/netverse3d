@@ -4,8 +4,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { BACKPACK_NODE, createActorLook, wearsBackpack } from '../../runtime/actor-look.mjs';
 import { legendTextures } from '../../runtime/keyboard-legends.mjs';
+import { SEAT_PULL, seatMotion, seatMotionLength, slideBack } from '../../runtime/seat-motion.mjs';
 import { kitAnchors, paletteRows, stationPlan } from '../../runtime/shop-look.mjs';
-import { buildShop, kitLightmap, shopMaterials } from '../../runtime/three-shop.mjs';
+import { buildShop, kitLightmap, placeInstance, shopMaterials } from '../../runtime/three-shop.mjs';
 import {
   STATION_KIT,
   clearance,
@@ -26,6 +27,9 @@ const HAND_BONES = ['handL', 'handR'];
 const TOE_BONES = ['toeL', 'toeR'];
 const HAND_PROPS = ['crate', 'cup'];
 const FOOT_REACH = 0.09;
+const SLIDE_ACTIONS = { sit_down: 'sit', stand_up: 'stand' };
+const SLIDE_REST_SECONDS = 1;
+const STANDING_CLIP = 'idle';
 const KEYBOARD_MARGIN = 0.03;
 const VIEWS = {
   iso: { eye: [1.6, 1.6, -1.6], target: [0, 0.75, 0.25] },
@@ -143,6 +147,15 @@ async function main() {
   const actions = new Map(
     actor.animations.map((animation) => [animation.name, mixer.clipAction(animation)]),
   );
+  const clipLengths = Object.fromEntries(
+    Object.keys(SLIDE_ACTIONS).map((name) => [name, actions.get(name)?.getClip().duration ?? 0]),
+  );
+  for (const name of Object.keys(SLIDE_ACTIONS)) {
+    const once = actions.get(name);
+    if (!once) continue;
+    once.setLoop(THREE.LoopOnce, 1);
+    once.clampWhenFinished = true;
+  }
   const skeleton = new THREE.SkeletonHelper(figure);
   skeleton.visible = false;
   scene.add(skeleton);
@@ -153,6 +166,11 @@ async function main() {
   let station = null;
   let materials = null;
   let surfaces = null;
+  let seatSpot = null;
+  let chairMount = null;
+  let slideClock = 0;
+  let shownClip = null;
+  let chairOut = 0;
   const overlays = { boxes: new THREE.Group(), anchors: new THREE.Group() };
   scene.add(overlays.boxes, overlays.anchors);
 
@@ -197,6 +215,9 @@ async function main() {
     scene.add(station);
     const chair = plan.find((placed) => placed.slot === 'chair');
     const seat = seatPoint(chair, anchors[chair.part][SEAT_ANCHOR]);
+    seatSpot = seat;
+    chairMount = { part: chair.part, position: chair.position };
+    chairOut = 0;
     figure.position.set(seat.x, 0, seat.z);
     figure.rotation.y = seat.yaw;
     const keyboard = plan.find((placed) => placed.slot === 'keyboard');
@@ -214,14 +235,48 @@ async function main() {
     drawOverlays(plan, seat);
   }
 
-  function playClip() {
-    for (const [name, action] of actions) {
-      if (name === state.clip) action.reset().play();
+  function showClip(name) {
+    if (name === shownClip) return;
+    shownClip = name;
+    for (const [clip, action] of actions) {
+      if (clip === name) action.reset().play();
       else action.stop();
     }
-    mixer.timeScale = state.playing ? 1 : 0;
     const backpack = figure.getObjectByName(BACKPACK_NODE);
-    if (backpack) backpack.visible = wearsBackpack(state.clip);
+    if (backpack) backpack.visible = wearsBackpack(name);
+  }
+
+  function playClip() {
+    slideClock = 0;
+    shownClip = null;
+    mixer.timeScale = state.playing ? 1 : 0;
+  }
+
+  function pose(delta) {
+    const action = SLIDE_ACTIONS[state.clip];
+    let chair = 0;
+    let actor = 0;
+    if (action) {
+      const length = seatMotionLength(action, clipLengths) + SLIDE_REST_SECONDS;
+      const before = slideClock % length;
+      slideClock += state.playing ? delta : 0;
+      const now = slideClock % length;
+      if (now < before) shownClip = null;
+      const motion = seatMotion(action, now, clipLengths);
+      chair = motion.chair;
+      actor = motion.actor ?? SEAT_PULL;
+      showClip(motion.clip ?? STANDING_CLIP);
+    } else {
+      showClip(state.clip);
+    }
+    const [dx, dz] = slideBack(seatSpot.yaw, actor);
+    figure.position.set(seatSpot.x + dx, 0, seatSpot.z + dz);
+    if (chair !== chairOut) {
+      const [cx, cz] = slideBack(seatSpot.yaw, chair);
+      const [x, y, z] = chairMount.position;
+      placeInstance(THREE, station, chairMount.part, 0, [x + cx, y, z + cz], seatSpot.yaw);
+      chairOut = chair;
+    }
   }
 
   function lookFrom(name) {
@@ -398,7 +453,9 @@ async function main() {
 
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
-    mixer.update(clock.getDelta());
+    const delta = clock.getDelta();
+    pose(delta);
+    mixer.update(delta);
     figure.visible = state.show.actor;
     skeleton.visible = state.show.bones && state.show.actor;
     overlays.boxes.visible = state.show.boxes;

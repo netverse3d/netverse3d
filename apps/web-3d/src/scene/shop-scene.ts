@@ -20,15 +20,18 @@ import {
   disposeSigns,
   type SignGroup,
 } from '@netverse/game-assets/runtime/shop-sign.mjs';
+import { slideBack } from '@netverse/game-assets/runtime/seat-motion.mjs';
 import {
   buildShop,
   kitLightmap,
+  placeInstance,
   shopMaterials,
   type ShopMaterials,
 } from '@netverse/game-assets/runtime/three-shop.mjs';
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { FloorBox, PlayerState } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
+import { createSeatDrive, type SeatDrive } from '../game/seat-drive.ts';
 import { nearestSeat, shopSeats, type Seat } from '../game/seats.ts';
 import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
 import { createWalk } from '../game/walk.ts';
@@ -98,7 +101,7 @@ interface LightPreset {
 
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 } as const;
 const CONTEXT_RESTORE_DELAY = 400;
-const SIT_CLIP = 'sit_down';
+const SEAT_CLIPS = ['sit_down', 'stand_up'] as const;
 const STATS_INTERVAL = 0.5;
 const ENVIRONMENT_BLUR = 0.04;
 const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
@@ -266,6 +269,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   let nearbySeat: string | null = null;
   let takenSeats: ReadonlySet<string> = new Set();
   let seatedAt: string | null = null;
+  let stationGroup: THREE.Object3D | null = null;
+  let seatDrive: SeatDrive<Seat> | null = null;
+  let chairOut = 0;
   let standing: PlayerState = { x: 0, z: 0, yaw: 0 };
   let frames = 0;
   let elapsed = 0;
@@ -319,6 +325,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     if (!player) return;
     const turn = controls.takeTurn();
     orbit = zoomOrbit(turnOrbit(orbit, turn.right, turn.down), controls.takeZoom());
+    driveSeat(delta);
     const frame = walk.advance(delta, controls.intent(), orbit.yaw);
     player.moveTo(frame.player);
     if (frame.clip) player.playClip(frame.clip);
@@ -351,14 +358,27 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     else if (nearbySeat !== null) onSeatRequest(nearbySeat, standing);
   }
 
-  function applySeating(): void {
-    const seat = seats.find((candidate) => candidate.seatId === seatedAt);
-    if (seat && player) {
-      if (!walk.held()) player.playClip(SIT_CLIP);
-      walk.hold(seat.sit);
-    } else {
-      walk.release();
+  function driveSeat(delta: number): void {
+    if (!seatDrive || !player) return;
+    const frame = seatDrive.step(delta, walk.position());
+    if (frame.hold) walk.hold(frame.hold);
+    else walk.release();
+    if (frame.clip) player.playClip(frame.clip);
+    if (frame.seat && stationGroup && frame.chair !== chairOut) {
+      const { part, index, position, yaw } = frame.seat.mount;
+      const [dx, dz] = slideBack(yaw, frame.chair);
+      const [x = 0, y = 0, z = 0] = position;
+      placeInstance(THREE, stationGroup, part, index, [x + dx, y, z + dz], yaw);
+      chairOut = frame.chair;
     }
+  }
+
+  function applySeating(resumed = false): void {
+    if (!seatDrive) return;
+    const seat = seats.find((candidate) => candidate.seatId === seatedAt);
+    if (!seat) seatDrive.stand();
+    else if (resumed) seatDrive.seat(seat);
+    else if (!seatDrive.seated()) seatDrive.sit(seat, standing);
   }
 
   function clearContent(): void {
@@ -399,7 +419,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     ];
     const spawn = resume ? walk.position() : spawnFor(recipe);
     content.add(buildShop(THREE, assets.room.scene, room, materialsOf(assets.room)));
-    content.add(buildShop(THREE, assets.station.scene, stations, materialsOf(assets.station)));
+    stationGroup = buildShop(THREE, assets.station.scene, stations, materialsOf(assets.station));
+    content.add(stationGroup);
     const signMaterials = materialsOf(assets.signs);
     signs = buildSigns(
       THREE,
@@ -418,7 +439,14 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     walk.place(spawn, obstacles);
     furniture = stationBoxes;
     seats = stationSeats;
-    applySeating();
+    const lengthOf = (name: string) =>
+      assets.player.animations.find((animation) => animation.name === name)?.duration ?? 0;
+    seatDrive = createSeatDrive({
+      sit_down: lengthOf(SEAT_CLIPS[0]),
+      stand_up: lengthOf(SEAT_CLIPS[1]),
+    });
+    chairOut = 0;
+    applySeating(true);
     openFloor = shopOpenFloor(recipe.layout.cells);
     doorWall = recipe.layout.door.wall;
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
