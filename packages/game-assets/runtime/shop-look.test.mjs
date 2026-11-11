@@ -31,6 +31,7 @@ const SOCKETS = {
   socket_mic: [-0.62, 0.7, 0.38],
   socket_speaker_left: [0.5, 0.7, 0.62],
   socket_speaker_right: [-0.5, 0.7, 0.62],
+  socket_speaker_center: [0, 0.7, 0.5],
   socket_chair: [0, 0, -0.24],
   socket_case: [-0.46, 0, 0.36],
 };
@@ -58,6 +59,8 @@ function fakeKit(variant = 'a') {
       ...anchors,
       ...parts.map((slot, index) => ({ name: `${slot}_a`, mesh: index + 1 })),
       { name: 'keyboard_b', mesh: 10 },
+      { name: 'speaker_b', mesh: 7 },
+      { name: 'speaker_b__mount_center', translation: [0, 0, 0] },
     ],
     meshes: [
       { primitives: [{ material: 0 }, { material: 1 }] },
@@ -121,6 +124,25 @@ test('đổi biến thể phím thì phím mới đặt đúng socket', () => {
   const keyboard = plan.find((placement) => placement.slot === 'keyboard');
   assert.equal(keyboard.part, 'keyboard_b');
   assert.deepEqual(keyboard.position, SOCKETS.socket_keyboard);
+});
+
+test('loa thanh chỉ lắp một chiếc ở giữa dưới màn hình, không lắp ở hai bên', () => {
+  const plan = stationPlan({ ...VARIANTS, speaker: 'b' }, kitAnchors(fakeKit()));
+  const speakers = plan.filter((placement) => placement.slot === 'speaker');
+  assert.deepEqual(
+    speakers.map((placement) => [placement.part, placement.position]),
+    [['speaker_b', SOCKETS.socket_speaker_center]],
+  );
+  assert.equal(plan.length, 10);
+});
+
+test('bàn chưa có chỗ đặt loa thanh thì báo rõ thiếu socket nào', () => {
+  const kit = fakeKit();
+  kit.nodes = kit.nodes.filter((node) => node.name !== 'desk_a__socket_speaker_center');
+  assert.throws(
+    () => stationPlan({ ...VARIANTS, speaker: 'b' }, kitAnchors(kit)),
+    /desk_a has no socket_speaker_center/,
+  );
 });
 
 test('hai loa dùng chung một hình khối ở hai socket', () => {
