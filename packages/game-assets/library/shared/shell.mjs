@@ -61,7 +61,7 @@ export function mountNav(target, { sections, text }, currentId) {
   );
 }
 
-export function mountPageHead(shell, sectionId) {
+export function mountPageHead(shell, sectionId, view = 0) {
   const { sections, text } = shell;
   const section = sections.find((item) => item.id === sectionId);
   const byId = (id) => document.getElementById(id);
@@ -69,7 +69,7 @@ export function mountPageHead(shell, sectionId) {
   byId('page-title').textContent = section.title;
   byId('page-badge').replaceChildren(stateBadge(section.state, text));
   byId('page-summary').textContent = section.summary;
-  const tabs = sectionTabs(section, 'main', text.mainPage);
+  const tabs = sectionTabs(section, view === 0 ? 'main' : `view:${view}`, text.mainPage);
   byId('page-tabs').replaceChildren(
     ...tabs.map((tab) =>
       element(

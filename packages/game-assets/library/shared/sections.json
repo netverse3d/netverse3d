@@ -71,16 +71,17 @@
   {
     "id": "shops",
     "title": "Tiệm mẫu",
-    "summary": "Ba tiệm dựng từ công thức: đổi bộ màu, biển hiệu, ánh sáng và món theo từng ô.",
-    "state": "legacy",
-    "pages": [
+    "summary": "Ba tiệm dựng từ công thức: thử đổi bộ màu, biển hiệu, ánh sáng và mẫu của từng ô ngay trên tiệm, và xem tiệm giới thiệu với ánh sáng nướng sẵn.",
+    "href": "shop.html",
+    "state": "rebuilt",
+    "views": [
       {
         "title": "Phòng thử tiệm",
-        "src": "shop.html"
+        "href": "shop.html"
       },
       {
         "title": "Tiệm giới thiệu",
-        "src": "showcase.html"
+        "href": "showcase.html"
       }
     ]
   },

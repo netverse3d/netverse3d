@@ -970,3 +970,183 @@ h3 {
 .index-table a {
   color: var(--cyan);
 }
+
+.shop-view .bar {
+  position: absolute;
+  left: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.shop-view #recipeBar {
+  top: var(--space-3);
+}
+
+.shop-view #toggleBar {
+  bottom: var(--space-3);
+}
+
+.shop-view .bar button {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.shop-view .bar button:hover {
+  color: var(--ink);
+}
+
+.shop-view .bar button:focus-visible {
+  border-color: var(--violet);
+  outline: none;
+}
+
+.shop-view .bar button[aria-pressed='true'] {
+  background: var(--panel);
+  border-color: var(--violet);
+  color: var(--ink);
+}
+
+.shop-view #meter {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-3);
+  display: flex;
+  gap: var(--space-4);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.shop-view #meter b {
+  margin-left: var(--space-2);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.shop-view #noGL {
+  position: absolute;
+  inset: var(--space-5);
+  margin: 0;
+  color: var(--warn);
+  font-size: var(--text-sm);
+}
+
+.shop-view #noGL[hidden] {
+  display: none;
+}
+
+.shop-panel h2 small {
+  margin-left: var(--space-2);
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.shop-panel .row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.shop-panel .row output {
+  min-width: 40px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-align: right;
+}
+
+.shop-panel input[type='range'] {
+  width: 100%;
+  accent-color: var(--violet);
+}
+
+.shop-panel input[type='text'],
+.shop-panel select {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-1);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.shop-panel input[type='text']:focus-visible,
+.shop-panel select:focus-visible,
+.shop-panel button:focus-visible {
+  border-color: var(--violet);
+  outline: none;
+}
+
+.shop-panel .stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.shop-panel input[type='color'] {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-1);
+  cursor: pointer;
+}
+
+.shop-panel .tools {
+  position: static;
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.shop-panel button {
+  min-height: 28px;
+  padding: 0 var(--space-2);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-1);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.shop-panel pre {
+  max-height: 220px;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  overflow: auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.shop-panel .note {
+  margin: 0;
+  color: var(--faint);
+  font-size: var(--text-xs);
+}

@@ -9,136 +9,13 @@
       href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        --bg: #0b0a12;
-        --panel: #15131f;
-        --line: #2a2738;
-        --ink: #f0eef7;
-        --muted: #9b93b8;
-        --cyan: #5ce1ff;
-      }
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-        background: var(--bg);
-        color: var(--ink);
-        font-family: 'Be Vietnam Pro', system-ui, sans-serif;
-      }
-      #app {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 300px;
-        height: 100%;
-      }
-      #stage {
-        position: relative;
-        min-width: 0;
-      }
-      canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-      #noGL[hidden] {
-        display: none;
-      }
-      #noGL {
-        position: absolute;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-        text-align: center;
-        color: var(--muted);
-      }
-      .brand {
-        position: absolute;
-        left: 16px;
-        top: 12px;
-      }
-      .brand h1 {
-        font-size: 18px;
-        margin: 0;
-      }
-      .brand p {
-        margin: 2px 0 0;
-        color: var(--muted);
-        font-size: 12px;
-      }
-      a {
-        color: var(--cyan);
-      }
-      .bar {
-        position: absolute;
-        left: 16px;
-        bottom: 14px;
-        display: flex;
-        gap: 6px;
-      }
-      button,
-      select {
-        font: inherit;
-        color: var(--ink);
-        background: #1f1c2c;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        padding: 6px 10px;
-        cursor: pointer;
-      }
-      button[aria-pressed='true'] {
-        border-color: #a66bff;
-        background: #2e2548;
-      }
-      #panel {
-        box-sizing: border-box;
-        background: var(--panel);
-        border-left: 1px solid var(--line);
-        overflow: auto;
-        padding: 14px;
-        font-size: 13px;
-      }
-      h2 {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        margin: 14px 0 6px;
-      }
-      .row {
-        display: grid;
-        grid-template-columns: 96px 1fr 44px;
-        align-items: center;
-        gap: 8px;
-        padding: 3px 0;
-      }
-      .row input[type='range'] {
-        width: 100%;
-      }
-      .row output {
-        text-align: right;
-        color: var(--muted);
-        font-variant-numeric: tabular-nums;
-      }
-      p.note {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 12px;
-      }
-      #meter {
-        position: absolute;
-        right: 12px;
-        bottom: 12px;
-        color: var(--muted);
-        font-size: 12px;
-        display: flex;
-        gap: 12px;
-      }
-      #meter b {
-        color: var(--ink);
-        margin-left: 4px;
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Be+Vietnam+Pro:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="shared/gallery.css" />
     <script type="importmap">
       {
         "imports": {
@@ -148,77 +25,83 @@
       }
     </script>
   </head>
-  <body>
-    <div id="app">
-      <div id="stage">
-        <canvas id="gl" aria-label="Tiệm giới thiệu với ánh sáng nướng sẵn"></canvas>
-        <p id="noGL" hidden>
-          Trình duyệt này chưa bật WebGL 2 nên chưa vẽ được. Nếu Chrome vừa mất GPU, gõ
-          chrome://restart vào thanh địa chỉ rồi thử lại.
-        </p>
-        <div class="brand">
-          <h1>Tiệm giới thiệu</h1>
-          <p>
-            Ánh sáng nướng sẵn, không đèn thời gian thực; màu vẫn đổi theo công thức.
-            <a href="./">Về thư viện</a> · <a href="shop.html">Phòng thử</a> ·
-            <a href="lab.html">Phòng lab</a>
+  <body class="gallery">
+    <aside class="gallery-nav" id="nav"></aside>
+    <main class="gallery-main gallery-wide gallery-bench">
+      <header class="page-head">
+        <div class="stage-name">
+          <h1 id="page-title">Tiệm mẫu</h1>
+          <span id="page-badge"></span>
+        </div>
+        <p class="stage-summary" id="page-summary"></p>
+        <div class="stage-bar">
+          <nav class="stage-tabs" id="page-tabs" aria-label="Các trang trong mục" hidden></nav>
+        </div>
+      </header>
+      <div class="bench" id="app">
+        <div class="bench-view shop-view" id="stage">
+          <canvas id="gl" aria-label="Tiệm giới thiệu với ánh sáng nướng sẵn"></canvas>
+          <p id="noGL" hidden>
+            Trình duyệt này chưa bật WebGL 2 nên chưa vẽ được. Nếu Chrome vừa mất GPU, gõ
+            chrome://restart vào thanh địa chỉ rồi thử lại.
           </p>
+          <div class="bar" id="recipeBar" role="group" aria-label="Bộ màu"></div>
+          <div id="meter">
+            <span>lời gọi vẽ<b id="mCalls">0</b></span>
+            <span>tam giác<b id="mTris">0</b></span>
+          </div>
         </div>
-        <div class="bar" id="recipeBar" role="group" aria-label="Bộ màu"></div>
-        <div id="meter">
-          <span>lời gọi vẽ<b id="mCalls">0</b></span>
-          <span>tam giác<b id="mTris">0</b></span>
-        </div>
+        <aside class="bench-panel shop-panel" id="panel">
+          <h2>Lớp ánh sáng</h2>
+          <div class="row">
+            <span>Nền nướng</span>
+            <input id="ambient" type="range" min="0" max="20" step="0.1" value="6" />
+            <output for="ambient">6.00</output>
+          </div>
+          <div class="row">
+            <span>Lan sáng dải</span>
+            <input id="strip" type="range" min="0" max="20" step="0.1" value="8" />
+            <output for="strip">8.0</output>
+          </div>
+          <div class="row">
+            <span>Lan sáng màn</span>
+            <input id="screen" type="range" min="0" max="20" step="0.1" value="6" />
+            <output for="screen">6.0</output>
+          </div>
+          <div class="row">
+            <span>Lan sáng điểm</span>
+            <input id="accent" type="range" min="0" max="20" step="0.1" value="6" />
+            <output for="accent">6.0</output>
+          </div>
+          <div class="row">
+            <span>Phát sáng</span>
+            <input id="glow" type="range" min="0.5" max="2.5" step="0.05" value="1.2" />
+            <output for="glow">1.20</output>
+          </div>
+          <div class="row">
+            <span>Phơi sáng</span>
+            <input id="exposure" type="range" min="0.4" max="2" step="0.05" value="1" />
+            <output for="exposure">1.00</output>
+          </div>
+          <div class="row">
+            <span>Bloom</span>
+            <input id="bloom" type="range" min="0" max="1" step="0.05" value="0.2" />
+            <output for="bloom">0.20</output>
+          </div>
+          <h2>Xem lớp</h2>
+          <select id="layer">
+            <option value="all">Kết hợp</option>
+            <option value="base">Chỉ nền nướng</option>
+            <option value="spill">Chỉ lan sáng</option>
+          </select>
+          <p class="note">
+            Cảnh dùng đúng bộ máy và module phòng của thư viện; hai ảnh nướng trong Blender: ánh
+            sáng nền với albedo trắng và mặt nạ lan sáng ba kênh cho dải, màn hình, điểm nhấn.
+          </p>
+        </aside>
       </div>
-      <aside id="panel">
-        <h2>Lớp ánh sáng</h2>
-        <div class="row">
-          <span>Nền nướng</span>
-          <input id="ambient" type="range" min="0" max="20" step="0.1" value="6" />
-          <output for="ambient">6.00</output>
-        </div>
-        <div class="row">
-          <span>Lan sáng dải</span>
-          <input id="strip" type="range" min="0" max="20" step="0.1" value="8" />
-          <output for="strip">8.0</output>
-        </div>
-        <div class="row">
-          <span>Lan sáng màn</span>
-          <input id="screen" type="range" min="0" max="20" step="0.1" value="6" />
-          <output for="screen">6.0</output>
-        </div>
-        <div class="row">
-          <span>Lan sáng điểm</span>
-          <input id="accent" type="range" min="0" max="20" step="0.1" value="6" />
-          <output for="accent">6.0</output>
-        </div>
-        <div class="row">
-          <span>Phát sáng</span>
-          <input id="glow" type="range" min="0.5" max="2.5" step="0.05" value="1.2" />
-          <output for="glow">1.20</output>
-        </div>
-        <div class="row">
-          <span>Phơi sáng</span>
-          <input id="exposure" type="range" min="0.4" max="2" step="0.05" value="1" />
-          <output for="exposure">1.00</output>
-        </div>
-        <div class="row">
-          <span>Bloom</span>
-          <input id="bloom" type="range" min="0" max="1" step="0.05" value="0.2" />
-          <output for="bloom">0.20</output>
-        </div>
-        <h2>Xem lớp</h2>
-        <select id="layer">
-          <option value="all">Kết hợp</option>
-          <option value="base">Chỉ nền nướng</option>
-          <option value="spill">Chỉ lan sáng</option>
-        </select>
-        <p class="note">
-          Cảnh dùng đúng bộ máy và module phòng của thư viện; hai ảnh nướng trong Blender: ánh sáng
-          nền với albedo trắng và mặt nạ lan sáng ba kênh cho dải, màn hình, điểm nhấn.
-        </p>
-      </aside>
-    </div>
+    </main>
+    <script type="module" src="shared/page-head.mjs?section=shops&view=1"></script>
     <script type="module">
       import * as THREE from 'three';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';

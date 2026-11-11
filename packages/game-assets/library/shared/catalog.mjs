@@ -98,9 +98,12 @@ export function sectionCards(sections, summary, config = {}) {
       summary: section.summary,
       href: sectionHref(section),
       state: section.state,
-      more: (section.pages ?? [])
-        .map((page, index) => ({ title: page.title, href: pageHref(section, index) }))
-        .slice(section.state === 'legacy' ? 1 : 0),
+      more: [
+        ...(section.views ?? []).slice(1).map((view) => ({ title: view.title, href: view.href })),
+        ...(section.pages ?? [])
+          .map((page, index) => ({ title: page.title, href: pageHref(section, index) }))
+          .slice(section.state === 'legacy' ? 1 : 0),
+      ],
       figure: sectionFigure(section, summary, config),
     }));
 }
@@ -120,12 +123,19 @@ export function stageTarget(sections, search) {
   return { section: section.id, page };
 }
 
+export function sectionViews(section, mainTitle) {
+  if (section.views) return section.views;
+  return section.href ? [{ title: mainTitle, href: section.href }] : [];
+}
+
 export function sectionTabs(section, current, mainTitle) {
-  const main = section.href
-    ? [{ title: mainTitle, href: section.href, page: null, current: current === 'main' }]
-    : [];
   return [
-    ...main,
+    ...sectionViews(section, mainTitle).map((view, index) => ({
+      title: view.title,
+      href: view.href,
+      page: null,
+      current: current === (index === 0 ? 'main' : `view:${index}`),
+    })),
     ...(section.pages ?? []).map((page, index) => ({
       title: page.title,
       href: pageHref(section, index),

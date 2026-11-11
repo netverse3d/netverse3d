@@ -91,7 +91,11 @@ async function main() {
     style.textContent = OLD_FRAME_RULES[file] ?? OLD_HEADING_RULE;
     frame.contentDocument.head.append(style);
     const found = whereIs(sections, file, inside.hash, current.section);
-    if (!found || (found.section === current.section && found.page === current.page)) return;
+    if (!found) {
+      window.location.replace(inside.href);
+      return;
+    }
+    if (found.section === current.section && found.page === current.page) return;
     current = found;
     window.history.replaceState(null, '', pageHref(sectionNow(), current.page));
     drawFrameChrome();
