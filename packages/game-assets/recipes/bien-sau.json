@@ -47,7 +47,10 @@
     "lamp": "a",
     "bin": "a",
     "planter": "a",
-    "board": "a"
+    "board": "a",
+    "shopfront": "a",
+    "storey": "b",
+    "roof": "a"
   },
   "layout": {
     "cells": [3, 4],
