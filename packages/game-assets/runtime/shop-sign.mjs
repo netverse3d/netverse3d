@@ -3,11 +3,11 @@ import { buildShop } from './three-shop.mjs';
 
 const CELL_SIZE = 2;
 const INSIDE_MOUNT = 0.678;
-const INSIDE_HEIGHT = 2.36;
+const INSIDE_HEIGHT = 2.85;
 const OUTSIDE_MOUNT = 1.002;
-const OUTSIDE_HEIGHT = 2.62;
+const OUTSIDE_HEIGHT = 2.95;
 const BLADE_SIDE = 0.88;
-const BLADE_HEIGHT = 2.2;
+const BLADE_HEIGHT = 2.5;
 const CANVAS_SIZE = [1024, 256];
 const TEXT_ANCHOR = [512, 136];
 const FONT_FAMILY = '"Be Vietnam Pro", sans-serif';

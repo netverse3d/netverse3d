@@ -149,19 +149,19 @@ test('tên tiệm dài thì cỡ chữ nhỏ lại để vừa mặt biển', ()
 test('mỗi tiệm có một biển trong tiệm, một biển mặt ngoài và một biển vẫy cạnh cửa', () => {
   const plan = signPlan(recipe({ wall: 'south', at: 1 }));
   assert.deepEqual(plan, [
-    { slot: 'sign', part: 'sign_a', position: [-1, 2.36, 2.678], yaw: 0 },
-    { slot: 'sign', part: 'sign_a', position: [-1, 2.62, 3.002], yaw: Math.PI },
-    { slot: 'blade', part: 'blade_a', position: [-1.88, 2.2, 3.002], yaw: Math.PI },
+    { slot: 'sign', part: 'sign_a', position: [-1, 2.85, 2.678], yaw: 0 },
+    { slot: 'sign', part: 'sign_a', position: [-1, 2.95, 3.002], yaw: Math.PI },
+    { slot: 'blade', part: 'blade_a', position: [-1.88, 2.5, 3.002], yaw: Math.PI },
   ]);
 });
 
 test('biển đi theo bức tường có cửa ở cả bốn hướng', () => {
   const inside = (door) => signPlan(recipe(door))[0];
-  assert.deepEqual(inside({ wall: 'north', at: 2 }).position, [1, 2.36, -2.678]);
+  assert.deepEqual(inside({ wall: 'north', at: 2 }).position, [1, 2.85, -2.678]);
   assert.equal(inside({ wall: 'north', at: 2 }).yaw, Math.PI);
-  assert.deepEqual(inside({ wall: 'east', at: 1 }).position, [3.678, 2.36, 0]);
+  assert.deepEqual(inside({ wall: 'east', at: 1 }).position, [3.678, 2.85, 0]);
   assert.equal(inside({ wall: 'east', at: 1 }).yaw, Math.PI / 2);
-  assert.deepEqual(inside({ wall: 'west', at: 0 }).position, [-3.678, 2.36, -2]);
+  assert.deepEqual(inside({ wall: 'west', at: 0 }).position, [-3.678, 2.85, -2]);
   assert.equal(inside({ wall: 'west', at: 0 }).yaw, -Math.PI / 2);
 });
 
@@ -203,4 +203,11 @@ test('chữ đo ra rộng hơn mặt biển thì thu cỡ lại cho vừa, khôn
   canvas.context.measureText = () => ({ width: 1175 });
   paintSign(canvas, signStyle(recipe({ wall: 'south', at: 1 }, { sign: { text: 'CAM RETRO' } })));
   assert.equal(canvas.context.font, '800 130px "Be Vietnam Pro", sans-serif');
+});
+
+test('biển trong tiệm treo cao hơn đầu nhân vật và thấp hơn dải hắt sáng của trần', () => {
+  const [inside] = signPlan(recipe({ wall: 'south', at: 1 }));
+  const halfBoard = 0.26;
+  assert.ok(inside.position[1] - halfBoard >= 2.5, 'đáy biển từ 2,5 m');
+  assert.ok(inside.position[1] + halfBoard <= 3.3, 'đỉnh biển dưới dải hắt sáng');
 });
