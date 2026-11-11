@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
 import { test } from 'node:test';
-import { parseReply, send, sketchCommands, summarize } from './blender-socket.mjs';
+import { parseReply, sendBlenderCommand, sketchCommands, summarize } from './blender-socket.mjs';
 
 test('một bản phác thành hai lệnh: chạy mã rồi chụp viewport vào đúng tệp', () => {
   const commands = sketchCommands('import bpy', 'C:/tmp/shot.png');
@@ -44,7 +44,10 @@ test('gửi lệnh qua socket và nhận trả lời JSON từ máy chủ giả'
   });
   await new Promise((fulfil) => server.listen(0, '127.0.0.1', fulfil));
   try {
-    const reply = await send({ type: 'ping', params: {} }, { port: server.address().port });
+    const reply = await sendBlenderCommand(
+      { type: 'ping', params: {} },
+      { port: server.address().port },
+    );
     assert.deepEqual(reply, { status: 'success', result: { echo: 'ping' } });
   } finally {
     server.close();
@@ -56,5 +59,8 @@ test('không có Blender đang mở thì báo lỗi rõ thay vì treo', async ()
   await new Promise((fulfil) => server.listen(0, '127.0.0.1', fulfil));
   const port = server.address().port;
   await new Promise((fulfil) => server.close(fulfil));
-  await assert.rejects(send({ type: 'ping', params: {} }, { port }), /Blender socket/);
+  await assert.rejects(
+    sendBlenderCommand({ type: 'ping', params: {} }, { port }),
+    /Blender socket/,
+  );
 });

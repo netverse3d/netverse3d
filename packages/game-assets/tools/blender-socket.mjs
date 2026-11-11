@@ -32,7 +32,7 @@ export function summarize(reply) {
   return JSON.stringify(result).slice(0, 200);
 }
 
-export function send(command, { port = DEFAULT_PORT, timeoutMs = 120000 } = {}) {
+export function sendBlenderCommand(command, { port = DEFAULT_PORT, timeoutMs = 120000 } = {}) {
   return new Promise((fulfil, reject) => {
     let buffer = '';
     const socket = createConnection({ host: '127.0.0.1', port }, () => {
@@ -65,7 +65,7 @@ async function main() {
   const code = readFileSync(resolve(scriptPath), 'utf8');
   const target = screenshotPath ? resolve(screenshotPath).replace(/\\/g, '/') : null;
   for (const command of sketchCommands(code, target)) {
-    const reply = await send(command, { port });
+    const reply = await sendBlenderCommand(command, { port });
     console.log(`${command.type}: ${summarize(reply)}`);
     if (reply.status !== 'success') process.exit(1);
   }
