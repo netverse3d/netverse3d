@@ -165,7 +165,15 @@ test('50 máy cùng công thức không tăng số hình khối hay lời gọi 
   assert.equal(drawCalls(kit, one), 2 + 9);
 });
 
-const ROOM_VARIANTS = { floor: 'a', wall: 'a', corner: 'a', door: 'a', window: 'a', ceiling: 'a' };
+const ROOM_VARIANTS = {
+  floor: 'a',
+  wall: 'a',
+  corner: 'a',
+  door: 'a',
+  window: 'a',
+  ceiling: 'a',
+  light: 'a',
+};
 
 function roomRecipe(cells, door, windows = []) {
   return {
@@ -184,7 +192,7 @@ function placementAt(plan, slot, position) {
   return plan.find((p) => p.slot === slot && p.position.join(',') === position.join(','));
 }
 
-test('phòng 2×2 có bốn sàn, bốn trần, ba góc, một cửa và một tường', () => {
+test('phòng 2×2 có bốn sàn, bốn trần, ba góc, một cửa, một tường và hai đèn', () => {
   const plan = roomPlan(roomRecipe([2, 2], { wall: 'south', at: 0 }));
   assert.deepEqual(partsOf(plan), {
     floor_a: 4,
@@ -192,6 +200,7 @@ test('phòng 2×2 có bốn sàn, bốn trần, ba góc, một cửa và một t
     corner_a: 3,
     door_a: 1,
     wall_a: 1,
+    light_a: 2,
   });
 });
 
@@ -226,7 +235,13 @@ test('phòng một ô rộng không có góc, hai tường đối diện đứng
     [3, 1],
   ]) {
     const plan = roomPlan(roomRecipe(cells, { wall: 'south', at: 0 }));
-    assert.deepEqual(partsOf(plan), { floor_a: 3, ceiling_a: 3, door_a: 1, wall_a: 7 });
+    assert.deepEqual(partsOf(plan), {
+      floor_a: 3,
+      ceiling_a: 3,
+      door_a: 1,
+      wall_a: 7,
+      light_a: 2,
+    });
     assert.ok(plan.every((placement) => Number.isFinite(placement.yaw)));
   }
 });
@@ -247,4 +262,42 @@ test('bộ máy thật có đủ socket cho mọi ô trong công thức mẫu', 
   const plan = shopPlan(recipe, kitAnchors(gltf));
   assert.equal(plan.length, recipe.layout.stations.length * 11);
   assert.equal(drawCalls(gltf, plan), 24);
+});
+
+function lightsOf(plan) {
+  return plan
+    .filter((placement) => placement.slot === 'light')
+    .map((placement) => [...placement.position, placement.yaw]);
+}
+
+test('đèn trần nằm trên mối nối giữa hai ô trần kề nhau theo chiều ngang, sát trần', () => {
+  const plan = roomPlan(roomRecipe([4, 3], { wall: 'south', at: 1 }));
+  const lights = lightsOf(plan);
+  assert.equal(lights.length, 9);
+  assert.deepEqual(lights.slice(0, 3), [
+    [-2, 2.9, -2, 0],
+    [0, 2.9, -2, 0],
+    [2, 2.9, -2, 0],
+  ]);
+  assert.ok(plan.filter((p) => p.slot === 'light').every((p) => p.part === 'light_a'));
+});
+
+test('phòng một ô rộng treo đèn dọc theo chiều dài phòng', () => {
+  assert.deepEqual(lightsOf(roomPlan(roomRecipe([1, 3], { wall: 'south', at: 0 }))), [
+    [0, 2.9, -1, Math.PI / 2],
+    [0, 2.9, 1, Math.PI / 2],
+  ]);
+  assert.deepEqual(lightsOf(roomPlan(roomRecipe([3, 1], { wall: 'south', at: 0 }))), [
+    [-1, 2.9, 0, 0],
+    [1, 2.9, 0, 0],
+  ]);
+});
+
+test('phòng một ô không có mối nối nên không có đèn trần', () => {
+  assert.deepEqual(lightsOf(roomPlan(roomRecipe([1, 1], { wall: 'south', at: 0 }))), []);
+});
+
+test('đèn trần không chắn lối đi', () => {
+  const plan = roomPlan(roomRecipe([3, 3], { wall: 'south', at: 1 }));
+  assert.ok(lightsOf(plan).every(([, height]) => height > 2.5));
 });

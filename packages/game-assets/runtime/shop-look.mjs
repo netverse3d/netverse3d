@@ -1,5 +1,6 @@
 export const PALETTE_WIDTH = 128;
 const CELL_SIZE = 2;
+const LIGHT_HEIGHT = 2.9;
 const STATION_SLOTS = ['monitor', 'keyboard', 'mouse', 'mat', 'headset', 'mic', 'chair', 'case'];
 const SPEAKER_SOCKETS = ['socket_speaker_left', 'socket_speaker_right'];
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 };
@@ -157,7 +158,29 @@ export function roomPlan(recipe) {
       }
     }
   }
-  return plan;
+  return [...plan, ...ceilingLights(recipe)];
+}
+
+function ceilingLights(recipe) {
+  const [width, depth] = recipe.layout.cells;
+  const part = `light_${recipe.variants.light}`;
+  const alongDepth = width === 1;
+  const [seams, rows] = alongDepth ? [depth - 1, width] : [width - 1, depth];
+  const [seamSpan, rowSpan] = alongDepth ? [depth, width] : [width, depth];
+  const lights = [];
+  for (let row = 0; row < rows; row += 1) {
+    for (let seam = 0; seam < seams; seam += 1) {
+      const across = snap((seam + 1 - seamSpan / 2) * CELL_SIZE);
+      const along = snap((row - (rowSpan - 1) / 2) * CELL_SIZE);
+      lights.push({
+        slot: 'light',
+        part,
+        position: alongDepth ? [along, LIGHT_HEIGHT, across] : [across, LIGHT_HEIGHT, along],
+        yaw: alongDepth ? Math.PI / 2 : 0,
+      });
+    }
+  }
+  return lights;
 }
 
 export function instanceGroups(plan) {
