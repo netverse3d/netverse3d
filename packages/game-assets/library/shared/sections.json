@@ -38,7 +38,8 @@
     "state": "legacy",
     "pages": [
       { "title": "Phòng thử tiệm", "src": "shop.html" },
-      { "title": "Tiệm giới thiệu", "src": "showcase.html" }
+      { "title": "Tiệm giới thiệu", "src": "showcase.html" },
+      { "title": "Hẻm mẫu", "src": "street.html" }
     ]
   },
   {

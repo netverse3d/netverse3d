@@ -21,7 +21,14 @@ import {
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LIBRARY = join(ROOT, 'library');
 const SECTIONS = JSON.parse(readFileSync(join(LIBRARY, 'shared/sections.json'), 'utf8'));
-const OLD_PAGES = ['studio.html', 'gallery.html', 'lab.html', 'shop.html', 'showcase.html'];
+const OLD_PAGES = [
+  'studio.html',
+  'gallery.html',
+  'lab.html',
+  'shop.html',
+  'showcase.html',
+  'street.html',
+];
 const withPages = (section) => (section.pages ?? []).length > 0;
 
 const CONFIG = {
@@ -198,7 +205,7 @@ test('thẻ của từng mục mang đúng con số và mọi nút trên thẻ �
   const shops = cards.find((card) => card.id === 'shops');
   assert.deepEqual(
     shops?.more.map((link) => link.href),
-    [`${STAGE_PAGE}?section=shops&page=1`],
+    [`${STAGE_PAGE}?section=shops&page=1`, `${STAGE_PAGE}?section=shops&page=2`],
   );
 });
 
@@ -239,6 +246,7 @@ test('dãy thẻ của mục còn trang cũ chỉ gồm các trang cũ', () => {
     [
       [0, false],
       [1, true],
+      [2, false],
     ],
   );
 });
