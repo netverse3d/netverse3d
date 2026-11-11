@@ -16,11 +16,12 @@
   {
     "id": "parts",
     "title": "Món đồ",
-    "summary": "Bàn, ghế, màn hình, bàn phím, chuột, tai nghe, micro, loa và thùng máy, mỗi món đủ các biến thể.",
-    "state": "legacy",
+    "summary": "Mọi món của bàn máy và góc console, đủ các biến thể: đổi bộ màu tiệm, bộ màu phím và LED, lọc theo bộ, xem số tam giác so với mức trần.",
+    "href": "parts.html",
+    "state": "rebuilt",
     "pages": [
-      { "title": "Danh mục món", "src": "gallery.html" },
-      { "title": "Soi từng món", "src": "lab.html" }
+      { "title": "Soi từng món", "src": "lab.html" },
+      { "title": "Danh mục cũ", "src": "gallery.html" }
     ]
   },
   {

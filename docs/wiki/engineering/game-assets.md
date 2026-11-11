@@ -8,6 +8,8 @@ Nhân vật và đồ vật nằm ở `packages/game-assets`. Lý do chọn các
 
 Thư viện mở ra ở trang Tổng quan, chia mục theo loại tài sản: Nhân vật, Món đồ, Phòng, Tiệm mẫu, Soi lỗi và Lưu trữ. Thanh mục, bộ màu, kiểu chữ, thẻ và nút dùng chung nằm ở `library/shared/`; danh sách mục khai trong `library/shared/sections.json`, chữ trên khung nằm ở `library/shared/text.json`. Mỗi mục mang một nhãn: đã dựng lại theo khung mới, còn mở trang cũ, hoặc sắp có. Mục còn trang cũ khai các trang con của nó trong `pages` và được mở bên trong khung qua `library/view.html?section=<mục>&page=<số>`, nên thanh mục không bao giờ biến mất; trang cũ vẫn mở riêng được bằng đường dẫn gốc của nó.
 
+Mục Món đồ là mục đầu tiên đã dựng lại: `library/parts.html` vẽ mọi món của bộ bàn máy và bộ góc console từ `assets.config.json`, cho đổi bộ màu tiệm, bộ màu phím và LED, lọc theo bộ, tìm theo tên, và so số tam giác của từng món với mức trần của ô. Mục đã dựng lại khai trang mới ở `href`; các trang cũ còn cần của nó vẫn nằm trong `pages` và hiện thành dãy thẻ cạnh trang mới. Tham số riêng của trang cũ đi kèm địa chỉ khung, ví dụ `view.html?section=parts&part=mic_b&spin=0` mở đúng món đó trong trang soi.
+
 Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của nó dùng đúng mô hình trong `exported/`, nên xuất xong tải lại trang là thấy. Các tab phố Sài Gòn, bộ sưu tập, xưởng và tiệm là bản phác để chốt hướng, gồm hình khối dựng bằng mã và hai mô hình thử nghiệm trong `library/models/`, chưa phải tài sản chính thức, và được xếp vào mục Lưu trữ. Thư viện chỉ để xem; game thật viết trong `apps/web-3d`.
 
 ## Bốn nguyên tắc
