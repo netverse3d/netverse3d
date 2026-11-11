@@ -161,8 +161,8 @@
           "size": [0.46, 0.06, 0.2]
         },
         "mouse": {
-          "variants": ["a"],
-          "maxTriangles": 1400,
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 2000,
           "size": [0.1, 0.06, 0.14]
         },
         "mat": {
@@ -171,9 +171,9 @@
           "size": [0.9, 0.02, 0.4]
         },
         "headset": {
-          "variants": ["a"],
-          "maxTriangles": 1600,
-          "size": [0.3, 0.32, 0.18]
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 3000,
+          "size": [0.3, 0.32, 0.22]
         },
         "mic": {
           "variants": ["a", "b"],
