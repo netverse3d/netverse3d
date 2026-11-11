@@ -181,7 +181,7 @@
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       import { paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
-      import { legendTexture } from '../runtime/keyboard-legends.mjs';
+      import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -261,7 +261,7 @@
             material.dispose();
           }
         }
-        const legends = legendTexture(THREE, keyboards, recipes[state.recipeId]);
+        const legends = legendTextures(THREE, keyboards, recipes[state.recipeId]);
         materialSets = Object.fromEntries(
           Object.entries(kits).map(([file, gltf]) => [
             file,

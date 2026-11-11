@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join } from 'node:path';
 import { Ajv2020 } from 'ajv/dist/2020.js';
+import { COLORWAYS, LED_MODES } from '../runtime/keyboard-styles.mjs';
 import { doorwayCell } from '../runtime/shop-look.mjs';
 
 const RECIPE_FOLDER = 'recipes';
@@ -37,6 +38,18 @@ function checkRecipePalette(recipe, palette, label) {
     if (!palette.surface.includes(row)) {
       errors.push(`${label}: emissive row ${row} is not a surface row`);
     }
+  }
+  return errors;
+}
+
+function checkRecipeKeyboard(recipe, label) {
+  const errors = [];
+  const chosen = recipe.keyboard ?? {};
+  if (chosen.colorway !== undefined && !COLORWAYS[chosen.colorway]) {
+    errors.push(`${label}: unknown keyboard colorway ${chosen.colorway}`);
+  }
+  if (chosen.led !== undefined && !LED_MODES[chosen.led]) {
+    errors.push(`${label}: unknown keyboard led mode ${chosen.led}`);
   }
   return errors;
 }
@@ -150,6 +163,7 @@ export function checkRecipes(root, config) {
     errors.push(
       ...checkRecipePalette(recipe, config.palette, recipe.id),
       ...checkRecipeVariants(recipe, config.kits ?? [], recipe.id),
+      ...checkRecipeKeyboard(recipe, recipe.id),
       ...checkRecipeLayout(recipe, recipe.id),
     );
   }

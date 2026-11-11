@@ -16,7 +16,7 @@ export function paletteRows(palette) {
   return [...palette.surface, ...palette.glow];
 }
 
-function hexToBytes(hex) {
+export function hexToBytes(hex) {
   const value = Number.parseInt(hex.slice(1), 16);
   return [16, 8, 0].map((shift) => (value >> shift) & 255);
 }

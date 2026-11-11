@@ -259,3 +259,9 @@ test('máy sát tường quay màn hình vào tường, hoặc quay ngang, thì 
     '',
   );
 });
+
+test('công thức chọn bộ màu keycap và chế độ LED có trong danh sách', () => {
+  assert.doesNotMatch(errorsOf({ keyboard: { colorway: 'retro', led: 'white' } }), /keyboard/);
+  assert.match(errorsOf({ keyboard: { colorway: 'nope' } }), /unknown keyboard colorway nope/);
+  assert.match(errorsOf({ keyboard: { led: 'disco' } }), /\/keyboard\/led must be equal to one of/);
+});

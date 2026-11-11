@@ -57,11 +57,20 @@ export function shopMaterials(
   glow.color.setScalar(glowBoost);
   const display = new THREE.MeshBasicMaterial({ color: '#0a0a14', toneMapped: false });
   const decal = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+  const legendMap = legends?.isTexture ? legends : (legends?.map ?? null);
+  const legendGlow = legends?.emissive ?? null;
   const legend = new THREE.MeshStandardMaterial({
-    map: legends,
-    color: legends ? '#ffffff' : '#5a5668',
-    roughness: 0.82,
+    map: legendMap,
+    color: legendMap ? '#ffffff' : '#5a5668',
+    roughness: 0.7,
     envMapIntensity: 0.6,
+    ...(legendGlow
+      ? {
+          emissiveMap: legendGlow,
+          emissive: new THREE.Color('#ffffff'),
+          emissiveIntensity: glowBoost,
+        }
+      : {}),
     ...(lightmap ? { aoMap: lightmap, aoMapIntensity: lightmapIntensity } : {}),
   });
   if (lightmap) legend.onBeforeCompile = occludeDirectLight;

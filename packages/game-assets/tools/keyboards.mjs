@@ -1,9 +1,11 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { zoneOf } from '../runtime/keyboard-styles.mjs';
 
 export const KEY_UNIT = 0.01905;
 export const ATLAS_WIDTH = 2048;
+export const SIDE_COLUMN = { x0: 0.08, x1: 0.11, y0: 0.32, y1: 0.68 };
 
 const SHIFTED = {
   '`': '~',
@@ -62,6 +64,7 @@ const CODES = {
   '↓': 'ArrowDown',
   '←': 'ArrowLeft',
   '→': 'ArrowRight',
+  Num: 'NumLock',
 };
 
 function codeOf(label) {
@@ -71,15 +74,17 @@ function codeOf(label) {
   return label;
 }
 
-function row(y, items, x = 0) {
+function keyRow(y, items, x = 0) {
   const keys = [];
   for (const item of items) {
     if (typeof item === 'number') {
       x += item;
       continue;
     }
-    const [label, w = 1, code] = Array.isArray(item) ? item : [item];
-    keys.push({ code: code ?? codeOf(label), label, shift: SHIFTED[label] ?? null, x, y, w, h: 1 });
+    const [label, w = 1, code, h = 1] = Array.isArray(item) ? item : [item];
+    const key = { code: code ?? codeOf(label), label, shift: SHIFTED[label] ?? null, x, y, w, h };
+    key.zone = zoneOf(key);
+    keys.push(key);
     x += w;
   }
   return keys;
@@ -98,11 +103,15 @@ const MODIFIERS_LEFT = [
 
 function mainRows(y0, bottomRow, rightShift = 2.75) {
   return [
-    ...row(y0, [...NUMBERS, ['Backspace', 2]]),
-    ...row(y0 + 1, [['Tab', 1.5], ...TOP, ['\\', 1.5]]),
-    ...row(y0 + 2, [['Caps', 1.75], ...HOME, ['Enter', 2.25]]),
-    ...row(y0 + 3, [['Shift', 2.25, 'ShiftLeft'], ...BOTTOM, ['Shift', rightShift, 'ShiftRight']]),
-    ...row(y0 + 4, bottomRow),
+    ...keyRow(y0, [...NUMBERS, ['Backspace', 2]]),
+    ...keyRow(y0 + 1, [['Tab', 1.5], ...TOP, ['\\', 1.5]]),
+    ...keyRow(y0 + 2, [['Caps', 1.75], ...HOME, ['Enter', 2.25]]),
+    ...keyRow(y0 + 3, [
+      ['Shift', 2.25, 'ShiftLeft'],
+      ...BOTTOM,
+      ['Shift', rightShift, 'ShiftRight'],
+    ]),
+    ...keyRow(y0 + 4, bottomRow),
   ];
 }
 
@@ -114,6 +123,89 @@ const COMPACT_BOTTOM = [
   ['Menu', 1.25],
   ['Ctrl', 1.25, 'ControlRight'],
 ];
+
+const ARROW_BOTTOM = [
+  ...MODIFIERS_LEFT,
+  ['Space', 6.25],
+  ['Alt', 1, 'AltRight'],
+  ['Fn', 1],
+  ['Ctrl', 1, 'ControlRight'],
+  '←',
+  '↓',
+  '→',
+];
+
+function fRow(gaps, tail) {
+  return keyRow(0, [
+    'Esc',
+    gaps[0],
+    ...F_KEYS.slice(0, 4),
+    gaps[1],
+    ...F_KEYS.slice(4, 8),
+    gaps[1],
+    ...F_KEYS.slice(8, 12),
+    gaps[2],
+    ...tail,
+  ]);
+}
+
+function navCluster(y0, x0) {
+  return [
+    ...keyRow(y0, ['Ins', 'Home', 'PgUp'], x0),
+    ...keyRow(y0 + 1, ['Del', 'End', 'PgDn'], x0),
+    ...keyRow(y0 + 3, ['↑'], x0 + 1),
+    ...keyRow(y0 + 4, ['←', '↓', '→'], x0),
+  ];
+}
+
+function numpad(y0, x0) {
+  return [
+    ...keyRow(
+      y0,
+      ['Num', ['/', 1, 'NumpadDivide'], ['*', 1, 'NumpadMultiply'], ['-', 1, 'NumpadSubtract']],
+      x0,
+    ),
+    ...keyRow(
+      y0 + 1,
+      [
+        ['7', 1, 'Numpad7'],
+        ['8', 1, 'Numpad8'],
+        ['9', 1, 'Numpad9'],
+        ['+', 1, 'NumpadAdd', 2],
+      ],
+      x0,
+    ),
+    ...keyRow(
+      y0 + 2,
+      [
+        ['4', 1, 'Numpad4'],
+        ['5', 1, 'Numpad5'],
+        ['6', 1, 'Numpad6'],
+      ],
+      x0,
+    ),
+    ...keyRow(
+      y0 + 3,
+      [
+        ['1', 1, 'Numpad1'],
+        ['2', 1, 'Numpad2'],
+        ['3', 1, 'Numpad3'],
+        ['Enter', 1, 'NumpadEnter', 2],
+      ],
+      x0,
+    ),
+    ...keyRow(
+      y0 + 4,
+      [
+        ['0', 2, 'Numpad0'],
+        ['.', 1, 'NumpadDecimal'],
+      ],
+      x0,
+    ),
+  ].map((key) =>
+    key.code.startsWith('Numpad') || key.code === 'NumLock' ? { ...key, shift: null } : key,
+  );
+}
 
 function ansi60() {
   return {
@@ -127,62 +219,26 @@ function ansi60() {
 }
 
 function ansiTkl() {
-  const fRow = row(0, [
-    'Esc',
-    1,
-    ...F_KEYS.slice(0, 4),
-    0.5,
-    ...F_KEYS.slice(4, 8),
-    0.5,
-    ...F_KEYS.slice(8, 12),
-    0.25,
-    'PrtSc',
-    'ScrLk',
-    'Pause',
-  ]);
-  const nav = [
-    ...row(1.5, ['Ins', 'Home', 'PgUp'], 15.25),
-    ...row(2.5, ['Del', 'End', 'PgDn'], 15.25),
-    ...row(4.5, ['↑'], 16.25),
-    ...row(5.5, ['←', '↓', '→'], 15.25),
-  ];
   return {
     id: 'ansi-tkl',
     variant: 'b',
     name: 'Tenkeyless ANSI',
     width: 18.25,
     depth: 6.5,
-    keys: [...fRow, ...mainRows(1.5, COMPACT_BOTTOM), ...nav],
+    keys: [
+      ...fRow([1, 0.5, 0.25], ['PrtSc', 'ScrLk', 'Pause']),
+      ...mainRows(1.5, COMPACT_BOTTOM),
+      ...navCluster(1.5, 15.25),
+    ],
   };
 }
 
 function ansi75() {
-  const fRow = row(0, [
-    'Esc',
-    0.5,
-    ...F_KEYS.slice(0, 4),
-    0.5,
-    ...F_KEYS.slice(4, 8),
-    0.5,
-    ...F_KEYS.slice(8, 12),
-    0.5,
-    'Del',
-  ]);
-  const bottom = [
-    ...MODIFIERS_LEFT,
-    ['Space', 6.25],
-    ['Alt', 1, 'AltRight'],
-    ['Fn', 1],
-    ['Ctrl', 1, 'ControlRight'],
-    '←',
-    '↓',
-    '→',
-  ];
   const column = [
-    ...row(1.25, ['Home'], 15),
-    ...row(2.25, ['PgUp'], 15),
-    ...row(3.25, ['PgDn'], 15),
-    ...row(4.25, ['↑', 'End'], 14),
+    ...keyRow(1.25, ['Home'], 15),
+    ...keyRow(2.25, ['PgUp'], 15),
+    ...keyRow(3.25, ['PgDn'], 15),
+    ...keyRow(4.25, ['↑', 'End'], 14),
   ];
   return {
     id: 'ansi-75',
@@ -190,12 +246,45 @@ function ansi75() {
     name: '75% ANSI',
     width: 16,
     depth: 6.25,
-    keys: [...fRow, ...mainRows(1.25, bottom, 1.75), ...column],
+    keys: [...fRow([0.5, 0.5, 0.5], ['Del']), ...mainRows(1.25, ARROW_BOTTOM, 1.75), ...column],
+  };
+}
+
+function ansi65() {
+  const column = [
+    ...keyRow(0, ['Del'], 15),
+    ...keyRow(1, ['PgUp'], 15),
+    ...keyRow(2, ['PgDn'], 15),
+    ...keyRow(3, ['↑', 'End'], 14),
+  ];
+  return {
+    id: 'ansi-65',
+    variant: 'd',
+    name: '65% ANSI',
+    width: 16,
+    depth: 5,
+    keys: [...mainRows(0, ARROW_BOTTOM, 1.75), ...column],
+  };
+}
+
+function ansi100() {
+  return {
+    id: 'ansi-100',
+    variant: 'e',
+    name: 'Full-size ANSI',
+    width: 22.5,
+    depth: 6.5,
+    keys: [
+      ...fRow([1, 0.5, 0.25], ['PrtSc', 'ScrLk', 'Pause']),
+      ...mainRows(1.5, COMPACT_BOTTOM),
+      ...navCluster(1.5, 15.25),
+      ...numpad(1.5, 18.5),
+    ],
   };
 }
 
 export function keyboardLayouts() {
-  return [ansi60(), ansiTkl(), ansi75()];
+  return [ansi60(), ansiTkl(), ansi75(), ansi65(), ansi100()];
 }
 
 export function layoutProblems(layout) {
@@ -237,7 +326,7 @@ export function atlasOf(layouts, width = ATLAS_WIDTH) {
     y += height;
     return strip;
   });
-  return { width, height: y, strips };
+  return { width, height: y, strips, sideColumn: SIDE_COLUMN };
 }
 
 export function keyboardCatalog() {

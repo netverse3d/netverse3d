@@ -93,7 +93,7 @@ declare module '@netverse/game-assets/runtime/three-shop.mjs' {
       glowBoost?: number;
       lightmap?: Texture | null;
       lightmapIntensity?: number;
-      legends?: Texture | null;
+      legends?: Texture | { map: Texture | null; emissive?: Texture | null } | null;
     },
   ): ShopMaterials;
   export function kitLightmap(kitScene: Object3D): Texture | null;

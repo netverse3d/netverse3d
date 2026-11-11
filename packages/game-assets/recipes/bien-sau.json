@@ -15,6 +15,7 @@
     "screen": ["#36c7ff", "#9af5ff"],
     "accent": ["#22e0c0"]
   },
+  "keyboard": { "colorway": "graphite", "led": "single" },
   "variants": {
     "desk": "b",
     "monitor": "a",
