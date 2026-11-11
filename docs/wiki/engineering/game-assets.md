@@ -97,6 +97,10 @@ Chuột (`pipeline/hero_mouse.py`) là một khối subdivision liền: mười 
 
 Tai nghe (`pipeline/hero_headset.py`) treo trên đế để bàn: vành đầu là loft tiết diện chữ nhật bo góc dọc cung tròn, đệm vành là dải thứ hai bên trong, củ tai là revolve hai mươi cạnh với đệm bo tròn và lưng củ có vòng điểm nhấn, càng kim loại nối vành với trục củ. Ba mẫu: `a` gaming có mic cần và đế phát sáng, `b` studio củ to lưng kim loại, `c` on-ear nhỏ vành mỏng.
 
+### Ghế
+
+Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là ghế gaming lưng cao (`pipeline/hero_chair.py`). `b` và `c` nằm trong `pipeline/hero_chairs.py`: `b` là ghế công thái lưng lưới có tựa đầu, đệm thắt lưng và tay vịn; `c` là ghế làm việc tối giản với một đệm lưng, không tay vịn. Cả ba dùng chung đế sao và trụ nâng của `build_base`, cùng một điểm ngồi `SEAT_ANCHOR`, và mặt đệm ngồi cao khoảng 0,41 m để hành động ngồi của nhân vật khớp với mọi mẫu. Mặt trước của lưng ghế phải lùi sau tâm ghế ít nhất 0,19 m, nếu không lưng nhân vật sẽ xuyên vào. Mỗi mẫu có hộp va chạm riêng trong `CHAIR_COLLISIONS`. Thêm mẫu mới thì xem nó trong trang Soi lỗi với nhân vật ngồi trước khi nướng bóng.
+
 ### Thùng máy
 
 Ba mẫu, mỗi tiệm mẫu dùng một mẫu. `a` là tháp kính hông có ba quạt trước (`build_case` trong `pipeline/hero_station.py`). `b` và `c` nằm trong `pipeline/hero_cases.py`: `b` là máy mini vuông bo góc đặt trên kệ thấp hai tầng, tầng dưới có hộp lưu trữ, vì ô thùng máy nằm dưới sàn cạnh bàn nên máy mini cần kệ để còn nhìn thấy; `c` là tháp hiện đại thân tối bo góc, mặt trước là hàng nan dọc trên nền lưới tối, nút nguồn và cổng nằm trên nóc, dải sáng chạy ở chân mặt trước và hai bên. Phần phát sáng của cả ba dùng các hàng `strip`, `accent`, `screen` nên ăn theo bộ màu của tiệm. Mỗi mẫu có hộp va chạm riêng khai trong `CASE_COLLISIONS`; thêm mẫu mới thì thêm một dòng ở đó. Chi tiết gắn lên mặt vỏ phải nhô ít nhất 2 mm, và hai khối chồng lên nhau không được chung mặt đáy hay mặt bên, nếu không bộ kiểm đồng phẳng sẽ báo.

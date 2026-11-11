@@ -187,7 +187,7 @@
           "size": [0.62, 0.3, 0.2]
         },
         "chair": {
-          "variants": ["a"],
+          "variants": ["a", "b", "c"],
           "maxTriangles": 8000,
           "size": [0.75, 1.4, 0.8],
           "anchors": ["seat_anchor", "collision_main"]
