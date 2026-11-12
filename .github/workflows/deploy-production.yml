@@ -2,7 +2,7 @@ name: deploy-production
 
 on:
   push:
-    tags: ['prod-v*']
+    tags: ['*/prod-v*']
 
 permissions:
   contents: read
@@ -46,7 +46,7 @@ jobs:
       - name: Reuse the image tested on staging
         env:
           IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.component.id }}
-          SOURCE_TAG: ${{ matrix.component.sourceTag }}
+          VERSION: ${{ matrix.component.version }}
         run: |
-          docker buildx imagetools create --tag "$IMAGE:$GITHUB_REF_NAME" "$IMAGE:$SOURCE_TAG"
-          docker buildx imagetools inspect "$IMAGE:$GITHUB_REF_NAME"
+          docker buildx imagetools create --tag "$IMAGE:prod-v$VERSION" "$IMAGE:$VERSION"
+          docker buildx imagetools inspect "$IMAGE:prod-v$VERSION"

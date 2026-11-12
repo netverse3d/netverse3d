@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import {
   affectedComponents,
+  dependencyClosure,
   findDependencyCycle,
   loadDependencies,
   SHARED_ROOT_FILES,
@@ -105,4 +106,9 @@ test('đọc phụ thuộc từ package.json của workspace và từ depends_on
   assert.deepEqual(loaded.get('payment'), ['contracts']);
   assert.deepEqual(loaded.get('game'), ['contracts']);
   assert.deepEqual(loaded.get('contracts'), []);
+});
+
+test('phụ thuộc của một thành phần tính cả phần gián tiếp và không gồm chính nó', () => {
+  assert.deepEqual(dependencyClosure('payment', dependencies), ['nest-kit', 'contracts']);
+  assert.deepEqual(dependencyClosure('contracts', dependencies), []);
 });

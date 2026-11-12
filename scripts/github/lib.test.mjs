@@ -84,11 +84,11 @@ test('mỗi App chỉ được tạo tag của đúng môi trường', () => {
   });
   const staging = byName(rulesets, 'release-tags-staging-by-app');
   const production = byName(rulesets, 'release-tags-production-by-app');
-  assert.deepEqual(staging.conditions.ref_name.include, ['refs/tags/stg-v*']);
+  assert.deepEqual(staging.conditions.ref_name.include, ['refs/tags/*/stg-v*']);
   assert.equal(staging.bypass_actors[0].actor_id, 11);
   assert.equal(staging.bypass_actors[0].actor_type, 'Integration');
   assert.deepEqual(staging.rules, [{ type: 'creation' }]);
-  assert.deepEqual(production.conditions.ref_name.include, ['refs/tags/prod-v*']);
+  assert.deepEqual(production.conditions.ref_name.include, ['refs/tags/*/prod-v*']);
   assert.equal(production.bypass_actors[0].actor_id, 22);
   assert.equal(production.bypass_actors.length, 1);
 });

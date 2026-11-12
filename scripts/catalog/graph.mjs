@@ -63,6 +63,18 @@ export function findDependencyCycle(dependencies) {
   return null;
 }
 
+export function dependencyClosure(id, dependencies) {
+  const seen = new Set();
+  const queue = [...(dependencies.get(id) ?? [])];
+  while (queue.length > 0) {
+    const next = queue.shift();
+    if (next === id || seen.has(next)) continue;
+    seen.add(next);
+    queue.push(...(dependencies.get(next) ?? []));
+  }
+  return [...seen];
+}
+
 function dependentsOf(dependencies) {
   const dependents = new Map();
   for (const [id, needs] of dependencies) {
