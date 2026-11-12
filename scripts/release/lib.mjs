@@ -118,3 +118,19 @@ export function evaluateChecks(checkRuns, required = REQUIRED_CHECKS) {
     return [];
   });
 }
+
+export function environmentState(tags, deployableIds) {
+  return deployableIds.map((id) => ({
+    id,
+    staging: latestVersion(tags, id, 'staging'),
+    production: latestVersion(tags, id, 'production'),
+  }));
+}
+
+export function renderState(rows) {
+  const lines = rows.map(
+    (row) =>
+      `| ${row.id} | ${row.staging ?? 'not released'} | ${row.production ?? 'not released'} |`,
+  );
+  return ['| Component | Staging | Production |', '| --- | --- | --- |', ...lines].join('\n');
+}

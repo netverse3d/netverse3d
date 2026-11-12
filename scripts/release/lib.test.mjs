@@ -5,9 +5,11 @@ import {
   contentPaths,
   evaluateChecks,
   evaluatePlacement,
+  environmentState,
   evaluateRelease,
   latestVersion,
   parseTag,
+  renderState,
   tagFor,
 } from './lib.mjs';
 
@@ -216,4 +218,30 @@ test('không tin check cùng tên nhưng không do GitHub Actions tạo', () => 
     { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
   ];
   assert.match(evaluateChecks(runs).join(), /"verify" has not run/);
+});
+
+test('bảng trạng thái lấy bản mới nhất của từng thành phần ở từng môi trường', () => {
+  const tags = [
+    'identity/stg-v0.1.0',
+    'identity/stg-v0.2.0',
+    'identity/prod-v0.1.0',
+    'media/stg-v1.0.0',
+    'contracts/stg-v9.0.0',
+    'stg-v5.0.0',
+    'note',
+  ];
+  assert.deepEqual(environmentState(tags, ['identity', 'media', 'web-3d']), [
+    { id: 'identity', staging: '0.2.0', production: '0.1.0' },
+    { id: 'media', staging: '1.0.0', production: null },
+    { id: 'web-3d', staging: null, production: null },
+  ]);
+});
+
+test('bảng trạng thái in ra dạng bảng, chỗ chưa phát hành ghi rõ', () => {
+  const page = renderState([
+    { id: 'identity', staging: '0.2.0', production: '0.1.0' },
+    { id: 'web-3d', staging: null, production: null },
+  ]);
+  assert.ok(page.includes('| identity | 0.2.0 | 0.1.0 |'));
+  assert.ok(page.includes('| web-3d | not released | not released |'));
 });

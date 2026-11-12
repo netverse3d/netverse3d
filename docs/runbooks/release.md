@@ -46,6 +46,15 @@ Lỗi thường gặp:
 
 Thay đổi của thành phần khác trên `main` không gây lỗi này.
 
+## Xem thành phần nào đang ở phiên bản nào
+
+```
+git fetch --tags
+pnpm release:state
+```
+
+Lệnh in một bảng: mỗi thành phần triển khai được một dòng, kèm bản mới nhất đã phát hành ở staging và ở production. Bảng này cũng hiện ở phần tóm tắt của mỗi lần chạy **build-staging** và **deploy-production**. Mã trên `main` có thể mới hơn bản đang chạy của một thành phần, nên lấy bảng này làm căn cứ, không suy từ nhánh.
+
 ## Tìm thành phần có lỗi
 
 1. Trên PR: tên job đỏ trong CI là tên thành phần hỏng.
