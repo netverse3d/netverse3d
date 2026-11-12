@@ -10,3 +10,9 @@ docs/requirements/index.md
 docs/decisions/index.md
 docs/wiki/team/roadmap.md
 docs/wiki/engineering/components.md
+apps/README.md
+services/README.md
+workers/README.md
+packages/README.md
+infra/README.md
+scripts/README.md
