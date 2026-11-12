@@ -7,7 +7,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `apps/web-3d` | app | Next.js, Three.js | Web 3D và PWA cho người chơi và chủ tiệm | M1 |
 | `apps/admin` | app | Next.js | Quản trị hệ thống | M1 |
 | `services/identity` | service | NestJS, Prisma | Đăng ký, đăng nhập, JWT, RBAC | M1 |
-| `services/core-api` | service | NestJS, Prisma | Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình | M3 |
+| `services/shop` | service | NestJS, Prisma | Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình | M3 |
 | `services/world` | service | NestJS, Prisma | Thế giới, bản đồ, bố cục, phòng net | M4 |
 | `services/media` | service | NestJS, Prisma | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |
 | `services/payment` | service | NestJS, Prisma | PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn | M3 |

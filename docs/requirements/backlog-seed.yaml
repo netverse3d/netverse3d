@@ -94,7 +94,7 @@ tasks:
         size: M
   - requirement: REQ-011
     items:
-      - title: Dựng service core-api
+      - title: Dựng service shop
         size: M
       - title: Tính phí thuê máy và gia hạn
         size: M

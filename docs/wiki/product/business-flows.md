@@ -90,7 +90,7 @@ Liên quan: REQ-011, REQ-029, REQ-030. Xèng của người chơi không bao gi�
 ```mermaid
 sequenceDiagram
   participant G as Game server
-  participant C as Core API
+  participant C as Shop
   participant P as Payment service
   participant K as Kafka
   G->>C: Người chơi xin block giờ máy ở máy 12

@@ -29,7 +29,7 @@ Xem [ngày đầu tiên](docs/wiki/team/onboarding.md).
 
 ```
 apps/       web-3d, admin
-services/   identity, core-api, world, media, payment, ai-chat, notification, game
+services/   identity, shop, world, media, payment, ai-chat, notification, game
 workers/    asset, ai, jobs
 packages/   contracts, game-shared, game-assets, ui, config
 docs/       wiki, requirements, decisions, runbooks, sources

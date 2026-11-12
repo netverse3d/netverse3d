@@ -69,7 +69,7 @@ requirements:
     status: accepted
     priority: must
     milestone: M4
-    area: core-api
+    area: shop
     sources: [mentor-brief, mentor-architecture-full]
   - id: REQ-010
     title: Thanh toán qua PayOS
@@ -85,7 +85,7 @@ requirements:
     status: draft
     priority: must
     milestone: M3
-    area: core-api
+    area: shop
     sources: [mentor-architecture-lite, mentor-demo]
   - id: REQ-012
     title: Hoá đơn và lịch sử giao dịch
@@ -125,7 +125,7 @@ requirements:
     status: draft
     priority: should
     milestone: M4
-    area: core-api
+    area: shop
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-017
     title: Vào tiệm và di chuyển đa người realtime
@@ -237,7 +237,7 @@ requirements:
     status: draft
     priority: must
     milestone: M4
-    area: core-api
+    area: shop
     sources: [team-decision, mentor-architecture-lite]
   - id: REQ-031
     title: Phút miễn phí hằng ngày do hệ thống cấp

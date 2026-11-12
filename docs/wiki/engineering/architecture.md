@@ -18,7 +18,7 @@ flowchart TB
   end
   subgraph Services
     ID[identity]
-    CO[core-api]
+    CO[shop]
     WO[world]
     ME[media]
     PA[payment]
