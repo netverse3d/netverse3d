@@ -24,4 +24,5 @@ REQ hoặc ADR:
 - [ ] `pnpm verify` xanh ở local
 - [ ] Việc này không lệch với REQ hoặc ADR đã chốt; nếu lệch, đã hỏi và ghi lại quyết định
 - [ ] Đã cập nhật wiki, hợp đồng, trạng thái REQ nếu cần
+- [ ] Việc chưa xong nằm sau cờ tính năng đã khai trong `docs/flags.yaml`; thay đổi schema và hợp đồng chạy được với bản liền trước
 - [ ] Không có secret, mã số sinh viên, dữ liệu thật, hoặc mã chưa rõ nguồn gốc

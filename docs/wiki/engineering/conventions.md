@@ -49,6 +49,7 @@ Tiêu đề nói thay đổi cho người đọc, không nói tên tệp hay tê
 | `pnpm verify:repo`                 | Phần kiểm chung của repo            |
 | `pnpm catalog:check`               | Cấu trúc và chuẩn thành phần        |
 | `pnpm boundaries:check`            | Hướng phụ thuộc giữa các lớp        |
+| `pnpm flags:check`                 | Sổ cờ tính năng và mã đọc cờ        |
 | `pnpm trace:check`                 | Sổ yêu cầu và ADR                   |
 | `pnpm trace:link REQ-001`          | Liên kết nhánh hiện tại với yêu cầu |
 | `pnpm docs:generate`               | Sinh lại các trang từ dữ liệu       |
