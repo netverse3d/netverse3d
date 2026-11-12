@@ -40,6 +40,7 @@ export function buildOpenApiDocument(app: INestApplication, config: AppConfig): 
   const options = new DocumentBuilder()
     .setTitle(config.service.name)
     .setVersion(config.service.version)
+    .setOpenAPIVersion('3.1.0')
     .addBearerAuth()
     .addSecurityRequirements('bearer')
     .build();

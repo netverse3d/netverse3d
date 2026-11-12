@@ -41,6 +41,20 @@ Service kiểm JWT bằng JWKS lấy từ `AUTH_JWKS_URL`, đối chiếu `AUTH_
 
 Mỗi thay đổi ghi vào bảng `outbox_events` cùng giao dịch: `media.completed`, `media.promoted`, `media.deleted`, `media.moderated`. Job chuyển sự kiện qua cổng `EventPublisher`; hiện chỉ có adapter ghi log.
 
+Sự kiện gửi ra theo vỏ chung `packages/contracts/events/v1/envelope.schema.json`, với `source` là tên service. Phần `data` theo `packages/contracts/events/v1/media.schema.json` và luôn có `mediaId`, `tenantId`.
+
+## Hợp đồng HTTP
+
+`openapi.yaml` được sinh từ mã, theo OpenAPI 3.1. Bản công bố cho service khác nằm ở `packages/contracts/openapi/v1/media.yaml` và phải trùng với bản sinh ra; unit test của service kiểm điều này. Sau lúc đổi API:
+
+```
+pnpm --filter @netverse/media openapi:export
+pnpm format
+cp services/media/openapi.yaml packages/contracts/openapi/v1/media.yaml
+```
+
+Bộ kiểm hợp đồng chặn thay đổi phá vỡ trên bản công bố; lúc đó phải mở phiên bản mới theo README của `packages/contracts`.
+
 ## Health
 
 `/livez` báo tiến trình còn sống. `/healthz` báo cơ sở dữ liệu và object storage đã sẵn sàng.

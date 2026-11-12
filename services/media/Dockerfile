@@ -2,6 +2,7 @@ FROM node:22-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY packages/contracts packages/contracts
 COPY services/media services/media
 RUN pnpm install --frozen-lockfile --filter @netverse/media
 RUN pnpm --filter @netverse/media build
