@@ -12,6 +12,7 @@ const DECISION_ID = /^ADR-\d{4}$/;
 const MANIFESTS = ['package.json', 'go.mod', 'pyproject.toml'];
 const TEST_FILE = /([.-](test|spec)\.[cm]?[jt]sx?|_test\.go|^test_.+\.py)$/;
 const HEALTH_ENDPOINTS = { livez: /["'`/]livez["'`]?/, healthz: /["'`/]healthz["'`]?/ };
+const PRODUCTION_IMAGE = /^ENV\s+NODE_ENV[=\s]production\s*$/m;
 const SOURCE_FILE = /\.([cm]?[jt]sx?|go|py)$/;
 const README_MILESTONE = /^-\s*Milestone:\s*(M\d+)\s*$/m;
 
@@ -209,6 +210,10 @@ export function checkComponent(root, component) {
     errors.push(`${label}: has no test files`);
   }
   if (component.kind === 'service') {
+    const dockerfile = join(directory, 'Dockerfile');
+    if (existsSync(dockerfile) && !PRODUCTION_IMAGE.test(readFileSync(dockerfile, 'utf8'))) {
+      errors.push(`${label}: Dockerfile does not set NODE_ENV=production`);
+    }
     if (!implementation.some((file) => file.endsWith('openapi.yaml'))) {
       errors.push(`${label}: missing openapi.yaml`);
     }

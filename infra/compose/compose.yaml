@@ -104,10 +104,12 @@ services:
       KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
       OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
       OTP_DELIVERY: webhook
-      OTP_WEBHOOK_URL: ${IDENTITY_OTP_WEBHOOK_URL:-http://stack-smoke:4100/otp}
+      OTP_WEBHOOK_URL: ${IDENTITY_OTP_WEBHOOK_URL:-http://host.docker.internal:4100/otp}
       OTP_WEBHOOK_SECRET: ${IDENTITY_OTP_WEBHOOK_SECRET:-local-development-webhook-secret-value}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.test}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-admin-password}
+    extra_hosts:
+      - host.docker.internal:host-gateway
     ports:
       - 127.0.0.1:${IDENTITY_PORT:-53002}:3000
     healthcheck:
@@ -147,6 +149,8 @@ services:
       S3_PORT: 8333
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-netverse-local}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me-local-only}
+      S3_PUBLIC_ENDPOINT: ${MEDIA_S3_PUBLIC_ENDPOINT:-localhost}
+      S3_PUBLIC_PORT: ${MEDIA_S3_PUBLIC_PORT:-58333}
       AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://identity:3000/.well-known/jwks.json}
       AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://identity:3000}
       AUTH_AUDIENCE: media
@@ -165,24 +169,6 @@ services:
       object-store:
         condition: service_started
       identity:
-        condition: service_healthy
-
-  stack-smoke:
-    profiles: [smoke]
-    image: node:22-alpine
-    command: [node, /tests/stack-smoke.mjs]
-    environment:
-      SMOKE_IDENTITY_URL: http://identity:3000
-      SMOKE_MEDIA_URL: http://media:3000
-      SMOKE_OTP_PORT: 4100
-      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.test}
-      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-admin-password}
-    volumes:
-      - ../../tests/e2e:/tests:ro
-    depends_on:
-      identity:
-        condition: service_healthy
-      media:
         condition: service_healthy
 
   otel-collector:

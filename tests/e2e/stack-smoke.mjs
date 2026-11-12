@@ -4,6 +4,7 @@ import { createServer } from 'node:http';
 const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? 'http://127.0.0.1:53002';
 const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
 const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
+const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? 'change-me-admin-password';
 const RUN = Date.now();
@@ -27,7 +28,7 @@ const otpSink = createServer((request, response) => {
     response.end('{}');
   });
 });
-await new Promise((resolve) => otpSink.listen(OTP_PORT, '0.0.0.0', resolve));
+await new Promise((resolve) => otpSink.listen(OTP_PORT, OTP_HOST, resolve));
 
 function waitForCode(email) {
   if (codes.has(email)) return Promise.resolve(codes.get(email));
@@ -189,6 +190,14 @@ try {
   const outsider = await media('GET', `/v1/media/${shopFile}`, undefined, playerToken);
   assert.equal(outsider.status, 404, JSON.stringify(outsider.body));
   console.log('a token outside the shop tenant cannot see the shop file ok');
+
+  const shopPhoto = await uploadAs(ownerToken, 'shop-photo', 'PUBLIC');
+  const seen = await media('GET', `/v1/media/${shopPhoto}`, undefined, playerToken);
+  assert.equal(seen.status, 200, JSON.stringify(seen.body));
+  await downloadAs(playerToken, shopPhoto);
+  const removed = await media('DELETE', `/v1/media/${shopPhoto}`, undefined, playerToken);
+  assert.equal(removed.status, 404, JSON.stringify(removed.body));
+  console.log('a player reads and downloads a public shop file but cannot delete it ok');
 
   const decision = { decision: 'APPROVED' };
   const selfApproved = await media(

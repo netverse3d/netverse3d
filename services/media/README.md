@@ -20,23 +20,26 @@ Tệp nháp dùng `temporary: true`, tự hết hạn theo `ttlHours`; muốn gi
 
 ## Khái niệm
 
-| Khái niệm    | Giá trị              | Ý nghĩa                                                            |
-| ------------ | -------------------- | ------------------------------------------------------------------ |
-| `mediaClass` | `USER_CONTENT`       | Người dùng tải lên, theo chính sách chặt, có thể phải kiểm duyệt   |
-|              | `SYSTEM_ASSET`       | Tài nguyên hệ thống như mô hình 3D, chỉ quản trị nền tảng được tạo |
-| `visibility` | `PRIVATE`            | Chỉ người tạo và quản trị của tiệm                                 |
-|              | `INTERNAL`, `PUBLIC` | Mọi thành viên trong tenant của tiệm, khác bucket lưu              |
-| `lifecycle`  | `TEMPORARY`          | Tự xoá lúc hết hạn                                                 |
-|              | `PERMANENT`          | Giữ lâu dài, bắt buộc có `ownerType`, `ownerId`                    |
+| Khái niệm    | Giá trị        | Ý nghĩa                                                            |
+| ------------ | -------------- | ------------------------------------------------------------------ |
+| `mediaClass` | `USER_CONTENT` | Người dùng tải lên, theo chính sách chặt, có thể phải kiểm duyệt   |
+|              | `SYSTEM_ASSET` | Tài nguyên hệ thống như mô hình 3D, chỉ quản trị nền tảng được tạo |
+| `visibility` | `PRIVATE`      | Chỉ người tạo và quản trị của tiệm                                 |
+|              | `INTERNAL`     | Mọi thành viên trong tenant của tiệm                               |
+|              | `PUBLIC`       | Mọi tài khoản đã đăng nhập, lưu ở bucket riêng                     |
+| `lifecycle`  | `TEMPORARY`    | Tự xoá lúc hết hạn                                                 |
+|              | `PERMANENT`    | Giữ lâu dài, bắt buộc có `ownerType`, `ownerId`                    |
 
 Không có quyền thì trả `404`, không để lộ việc tệp có tồn tại. Quyền theo [ADR-0025](../../docs/decisions/ADR-0025-media-access-by-tenant-model.md):
 
 - Token gắn tenant của một tiệm chỉ chạm được tệp của tiệm đó. Vai trò `admin` của tiệm quản lý mọi tệp trong tiệm.
 - Token không gắn tenant là của người chơi: chỉ thấy tệp do mình tạo, và tải lên với `ownerId` là chính tài khoản đó.
-- Tệp `PUBLIC` không gắn tenant thì mọi tài khoản đã đăng nhập đọc được.
+- Tệp `PUBLIC` thì mọi tài khoản đã đăng nhập đọc và tải được, dù thuộc tiệm nào, theo [ADR-0026](../../docs/decisions/ADR-0026-public-shop-media-and-tenant-creation.md). Người ngoài tiệm không liệt kê, không đổi, không xoá được.
 - Quản trị nền tảng, tức token không gắn tenant mang `platform_admin`, thấy mọi tệp, duyệt nội dung và tạo asset hệ thống. Quản trị của tiệm không duyệt được nội dung của tiệm mình.
 
-Ở production service từ chối khởi động nếu `S3_SECRET_KEY` là giá trị mẫu.
+Ở production service từ chối khởi động nếu `S3_SECRET_KEY` hoặc mật khẩu trong `DATABASE_URL` là giá trị mẫu.
+
+URL ký sẵn được ký theo địa chỉ kho mà client gọi tới. Lúc địa chỉ đó khác địa chỉ service dùng nội bộ, khai `S3_PUBLIC_ENDPOINT`, `S3_PUBLIC_PORT`, `S3_PUBLIC_USE_SSL`; `infra/compose` khai sẵn để trình duyệt trên máy dev dùng được URL.
 
 Định dạng và dung lượng cho từng lớp cấu hình qua `MEDIA_SYSTEM_ASSET_*`, `MEDIA_USER_CONTENT_*`. Đặt `MEDIA_USER_CONTENT_REQUIRES_REVIEW=true` để nội dung người dùng phải được `POST /v1/media/:id/moderation` duyệt trước lúc người khác tải được.
 

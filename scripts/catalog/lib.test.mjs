@@ -37,7 +37,7 @@ function createRepository(provenance = 'none') {
 
 function addCompleteService(root) {
   write(root, 'services/identity/package.json', '{}');
-  write(root, 'services/identity/Dockerfile');
+  write(root, 'services/identity/Dockerfile', 'FROM node:22-alpine\nENV NODE_ENV=production\n');
   write(root, 'services/identity/.env.example');
   write(root, 'services/identity/openapi.yaml');
   write(root, 'services/identity/src/health.ts', "app.get('/livez'); app.get('/healthz');");
@@ -228,6 +228,20 @@ test('báo service chỉ có endpoint còn sống mà thiếu endpoint sẵn sà
   const text = checkAllComponents(root).join();
   assert.ok(text.includes('no /healthz endpoint found'), text);
   assert.ok(!text.includes('no /livez endpoint found'), text);
+});
+
+test('báo service có Dockerfile không đặt chế độ production cho image', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/Dockerfile', 'FROM node:22-alpine\n');
+  const text = checkAllComponents(root).join();
+  assert.ok(text.includes('services/identity: Dockerfile does not set NODE_ENV=production'), text);
+});
+
+test('nhận service có Dockerfile đặt chế độ production', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  assert.ok(!checkAllComponents(root).join().includes('NODE_ENV=production'));
 });
 
 test('chặn tệp test nằm trong src của service, vì test phải ở thư mục test riêng', () => {

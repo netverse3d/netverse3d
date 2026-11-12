@@ -18,7 +18,7 @@ function isCreator(media: AccessibleMedia, actor: Actor): boolean {
 }
 
 function isOpenToEveryone(media: AccessibleMedia): boolean {
-  return media.tenantId === null && media.visibility === 'PUBLIC';
+  return media.visibility === 'PUBLIC';
 }
 
 function inActorTenant(media: AccessibleMedia, actor: Actor): boolean {
