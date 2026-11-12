@@ -22,12 +22,12 @@ Người dẫn dắt nhóm chốt các điểm dưới đây ngày 2026-11-12, t
 
 ### 1. Giữ bảy service
 
-[ADR-0003](./ADR-0003-seven-services.md) không đổi. Nhóm không gộp service theo bản mẫu. Bảng dưới chỉ để đối chiếu khi đọc bản mẫu hoặc khi nhận mã theo [ADR-0004](./ADR-0004-game-core-boundary.md).
+Số service và ranh giới theo [ADR-0003](./ADR-0003-seven-services.md) không đổi; chỉ `core-api` đổi tên thành `shop` ở mục 3. Nhóm không gộp service theo bản mẫu. Bảng dưới chỉ để đối chiếu khi đọc bản mẫu hoặc khi nhận mã theo [ADR-0004](./ADR-0004-game-core-boundary.md).
 
 | Thành phần của nhóm     | Phần tương ứng trong bản mẫu của mentor                     |
 | ----------------------- | ----------------------------------------------------------- |
 | `services/identity`     | Đăng ký, đăng nhập, token, vai trò trong ứng dụng nghiệp vụ |
-| `services/core-api`     | Tiệm, máy, quyền dùng máy, trang tổng quan quản trị         |
+| `services/shop`         | Tiệm, máy, quyền dùng máy, trang tổng quan quản trị         |
 | `services/world`        | Bố cục tiệm bản nháp và bản phát hành, vé vào phòng         |
 | `services/media`        | Tải lên bằng URL ký sẵn, duyệt asset, danh mục asset        |
 | `services/payment`      | Ứng dụng thanh toán và tiến trình chuyển sự kiện thanh toán |
@@ -55,7 +55,7 @@ Backend không nằm trong `apps/`. Test của riêng một thành phần ở tr
 ### 3. Đặt tên
 
 - Tên thư mục viết thường, nối bằng gạch ngang, bằng tiếng Anh.
-- Tên service là tên miền nghiệp vụ, không kèm hậu tố `-api`, `-service`, `-server`. `services/core-api` giữ tên cũ vì đã có trong ADR-0003.
+- Tên service là tên miền nghiệp vụ, không kèm hậu tố `-api`, `-service`, `-server`. `services/core-api` đổi tên thành `services/shop`, vì miền của nó là tiệm: tiệm, máy, thuê đất, giờ máy và điểm doanh thu. Tên bảy service là `identity`, `shop`, `world`, `media`, `payment`, `ai-chat`, `notification`.
 - Tên package là `@netverse/<id>`, với `<id>` trùng mã trong catalog.
 - Hợp đồng đặt phiên bản theo thư mục: `packages/contracts/<loại>/v<N>/<tên>`. Thay đổi phá vỡ mở thư mục phiên bản mới, bản cũ giữ cho tới khi hết bên dùng.
 
