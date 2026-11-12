@@ -79,3 +79,13 @@ test('cờ đã khai và có mã dùng thì không báo gì', () => {
   const usages = [{ name: 'machine-license', path: 'services/payment/src/a.ts' }];
   assert.deepEqual(checkUsages(usages, [flag]), []);
 });
+
+test('tìm cờ dù biến môi trường mang tiền tố của công cụ khác', () => {
+  const usages = findFlagUsages([
+    { path: 'apps/a.ts', text: 'import.meta.env.VITE_FLAG_NEW_MAP; env.APP_FLAG_FAST_PAY' },
+  ]);
+  assert.deepEqual(
+    usages.map((usage) => usage.name),
+    ['new-map', 'fast-pay'],
+  );
+});

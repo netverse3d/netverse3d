@@ -300,3 +300,33 @@ test('tag production bị từ chối khi nội dung thành phần khác bản s
   assert.equal(result.status, 1);
   assert.match(result.stderr, /content of identity differs/);
 });
+
+test('từ chối production khi thành phần bỏ khai phụ thuộc rồi package đó đổi', () => {
+  const { cwd, git, change, promote } = createRepository();
+  const withDependency = CATALOG.replace(
+    '    summary: Media\n    milestone: M2\n',
+    '    summary: Media\n    milestone: M2\n    depends_on: [contracts]\n',
+  );
+  writeFileSync(join(cwd, 'docs/catalog.yaml'), withDependency);
+  git('add', '-A');
+  git('commit', '-qm', 'chore: declare a dependency');
+  git('tag', 'media/stg-v0.1.0');
+  writeFileSync(join(cwd, 'docs/catalog.yaml'), CATALOG);
+  git('add', '-A');
+  git('commit', '-qm', 'chore: drop the dependency');
+  change('packages/contracts/events/v1/a.json', 'feat: change a contract');
+  promote();
+  const result = validate(cwd, 'media', 'production', '0.1.0', 'main');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /content of media differs/);
+});
+
+test('từ chối production khi tệp quyết định nội dung image đổi sau bản staging', () => {
+  const { cwd, git, change, promote } = createRepository();
+  git('tag', 'media/stg-v0.1.0');
+  change('.dockerignore', 'chore: change what enters images');
+  promote();
+  const result = validate(cwd, 'media', 'production', '0.1.0', 'main');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /content of media differs/);
+});

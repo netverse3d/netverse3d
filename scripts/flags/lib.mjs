@@ -1,7 +1,7 @@
 const REQUIRED_FIELDS = ['name', 'component', 'owner', 'remove_by', 'summary'];
 const FLAG_NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const FLAG_USAGE = /\b(?:NEXT_PUBLIC_)?FLAG_([A-Z][A-Z0-9_]*)\b/g;
+const FLAG_USAGE = /(?<![A-Za-z0-9])(?:[A-Z0-9]+_)*FLAG_([A-Z][A-Z0-9_]*)\b/g;
 
 export function envNameOf(name) {
   return `FLAG_${name.replaceAll('-', '_').toUpperCase()}`;

@@ -22,6 +22,10 @@ permissions:
   contents: read
   checks: read
 
+concurrency:
+  group: release-${{ inputs.component }}
+  cancel-in-progress: false
+
 jobs:
   validate:
     runs-on: ubuntu-latest
