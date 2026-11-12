@@ -2,6 +2,7 @@
 
 - Trạng thái: proposed
 - Ngày: 2026-11-08
+- Xem thêm: [ADR-0021](./ADR-0021-two-real-money-flows.md) thêm dòng tiền license máy và bỏ việc mua máy bằng điểm
 
 ## Bối cảnh
 
@@ -19,7 +20,7 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
 - Tiền ảo tên tạm là **Xèng**. Trong mã dùng tên trung tính `Credit` để đổi tên hiển thị không phải đổi mã.
 - Xèng chỉ có được bằng cách nạp qua PayOS hoặc do hệ thống cấp. Xèng chỉ tiêu, không rút, không chuyển cho người khác, không đổi ngược.
 - Chủ tiệm nhận **điểm doanh thu** (`RevenuePoints`), không nhận Xèng. Khi người chơi trả Xèng cho giờ máy, Xèng bị huỷ và hệ thống cấp điểm cho chủ tiệm theo một tỷ lệ.
-- Điểm doanh thu chỉ dùng để thuê đất, mua máy, nâng cấp tiệm. Không chuyển, không đổi ra Xèng, không đổi ra tiền.
+- Điểm doanh thu chỉ dùng để thuê đất, nâng cấp và bài trí tiệm. Không chuyển, không đổi ra Xèng, không đổi ra tiền.
 - Chủ tiệm dùng máy ở tiệm mình không tạo điểm doanh thu.
 - Bot khách tạo điểm doanh thu có giới hạn: có trần theo ngày, chỉ tiệm mới nhận điểm này, và thấp hơn nhiều so với khách thật. Mục đích là cho tiệm mới có điểm để lớn lên và hạn chế việc cày điểm bằng bot.
 - Bot không phải bot khách thì không tạo điểm doanh thu.

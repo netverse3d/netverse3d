@@ -33,10 +33,11 @@ flowchart LR
 
 ## Kinh tế (hướng tạm)
 
-Theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md), đang ở mức đề xuất:
+Theo [ADR-0010](../../decisions/ADR-0010-one-way-virtual-currency.md), đang ở mức đề xuất, và [ADR-0021](../../decisions/ADR-0021-two-real-money-flows.md):
 
 - Người chơi nạp tiền thật để có **Xèng** (tên tạm). Xèng chỉ tiêu trong Netverse, không rút, không chuyển cho người khác.
-- Xèng trả cho giờ máy bị huỷ. Hệ thống cấp **điểm doanh thu** cho chủ tiệm, chỉ dùng để thuê đất, mua máy, nâng cấp.
+- Xèng trả cho giờ máy bị huỷ. Hệ thống cấp **điểm doanh thu** cho chủ tiệm, chỉ dùng để thuê đất, nâng cấp và bài trí tiệm.
+- Chủ tiệm trả tiền thật để mua **license máy**: quyền bật một số máy của tiệm trong một chu kỳ. License không tạo ra Xèng hay điểm doanh thu.
 - Tiệm vắng có bot khách. Chỉ tiệm mới nhận điểm từ bot khách, có trần và thấp hơn nhiều so với khách thật.
 
 ```mermaid
@@ -44,7 +45,9 @@ flowchart LR
   P[Người chơi] -->|Nạp qua PayOS| X[Xèng]
   X -->|Trả giờ máy, bị huỷ| S[Hệ thống]
   S -->|Cấp theo tỷ lệ| R[Điểm doanh thu của chủ tiệm]
-  R -->|Thuê đất, mua máy, nâng cấp| S
+  R -->|Thuê đất, nâng cấp, bài trí| S
+  O[Chủ tiệm] -->|Mua qua PayOS| L[License máy]
+  L -->|Quyền bật máy theo chu kỳ| T[Tiệm]
 ```
 
 ## Phạm vi theo giai đoạn

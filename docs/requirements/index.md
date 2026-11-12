@@ -42,6 +42,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-028 | Tiền ảo Xèng nạp một chiều | Nháp | Bắt buộc | `payment` |
 | REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
+| REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
 
 ## M4 · Chủ tiệm
 
@@ -149,13 +150,13 @@ Nguồn: `mentor-brief`, `mentor-architecture-full`
 
 ### REQ-010: Thanh toán qua PayOS
 
-PayOS chỉ dùng để nạp Xèng. Webhook được xác thực và xử lý lặp an toàn. Chạy môi trường thử cho tới khi có quyết định khác.
+PayOS dùng cho hai loại đơn theo ADR-0021, gồm người chơi nạp Xèng và chủ tiệm mua license máy. Webhook được xác thực và xử lý lặp an toàn. Chạy môi trường thử cho tới khi có quyết định khác.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-011: Thuê máy theo thời gian và gia hạn
 
-Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Sơ đồ ghi 1.000đ một máy; giá quy ra Xèng còn mở.
+Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Giá quy ra Xèng còn mở. Đơn giá 1.000đ một máy trong sơ đồ là giá license máy, theo REQ-045.
 
 Nguồn: `mentor-architecture-lite`, `mentor-demo`
 
@@ -269,7 +270,7 @@ Nguồn: `team-decision`
 
 ### REQ-030: Điểm doanh thu của chủ tiệm
 
-Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, mua máy, nâng cấp tiệm; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
+Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, nâng cấp và bài trí tiệm, theo ADR-0021; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
 
 Nguồn: `team-decision`, `mentor-architecture-lite`
 
@@ -356,3 +357,9 @@ Nguồn: `team-decision`
 Mỗi thư mục cấp cao của repo có vai trò và quy tắc đặt tên được ghi rõ. Mọi thư mục cấp cao và mọi thành phần được khai ở một nơi, trang chỉ mục sinh từ đó và công cụ kiểm chặn khi lệch. Hợp đồng đặt phiên bản theo thư mục. Service giữ chuẩn chung qua hợp đồng và bộ kiểm chạy trên service thật, không phụ thuộc ngôn ngữ viết service, theo ADR-0020.
 
 Nguồn: `team-decision`, `mentor-backend-sample`
+
+### REQ-045: License máy cho chủ tiệm
+
+Chủ tiệm trả tiền thật qua PayOS để có quyền bật một số máy của một tiệm trong một chu kỳ. Tiệm chỉ bật được số máy không vượt license còn hạn. Mua thêm thì cộng số máy và kéo dài hạn. Quyền chỉ được cấp sau lúc webhook được xác thực, xử lý an toàn với webhook lặp. License không tạo ra Xèng hay điểm doanh thu, không chuyển cho tiệm khác và không hoàn lại. Giá mẫu là 1.000đ một máy trong 30 ngày; giá và chu kỳ chính thức còn mở. Theo ADR-0021.
+
+Nguồn: `team-decision`, `mentor-backend-sample`, `mentor-architecture-full`
