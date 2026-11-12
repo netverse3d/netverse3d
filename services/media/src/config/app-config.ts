@@ -1,3 +1,4 @@
+import { KitConfig } from '@netverse/nest-kit';
 import { Env } from './env.schema';
 
 export interface S3Endpoint {
@@ -11,7 +12,7 @@ export interface UploadPolicy {
   maxBytes: number;
 }
 
-export class AppConfig {
+export class AppConfig extends KitConfig {
   readonly service: { name: string; version: string; environment: Env['NODE_ENV'] };
   readonly http: {
     port: number;
@@ -57,6 +58,7 @@ export class AppConfig {
   };
 
   constructor(env: Env) {
+    super();
     this.service = {
       name: env.SERVICE_NAME,
       version: env.SERVICE_VERSION,

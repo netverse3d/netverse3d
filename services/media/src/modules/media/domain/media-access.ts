@@ -1,4 +1,4 @@
-import type { Actor } from '../../../common/context/request-context';
+import type { Actor } from '@netverse/nest-kit';
 
 export const MEDIA_MANAGER_ROLE = 'admin';
 

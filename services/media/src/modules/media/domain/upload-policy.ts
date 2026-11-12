@@ -1,4 +1,4 @@
-import { AppException } from '../../../common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import type { UploadPolicy } from '../../../config/app-config';
 import { MediaErrorCode } from '../media-error-codes';
 import { normalizeContentType } from './object-file-name';

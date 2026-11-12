@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppConfig } from '../../../config/app-config';
-import { LockedJob } from '../../../infrastructure/jobs/locked-job';
+import { LockedJob } from '@netverse/nest-kit';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import { StorageService } from '../../../infrastructure/storage/storage.service';
 import { MediaRepository, MediaRow } from '../repositories/media.repository';

@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { setupApp } from './bootstrap/setup-app';
+import { setupApp } from '@netverse/nest-kit';
 import { AppConfig } from './config/app-config';
 
 async function bootstrap(): Promise<void> {

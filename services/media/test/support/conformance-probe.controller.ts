@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { IsString, MinLength } from 'class-validator';
-import { Public } from '../../src/common/decorators/public.decorator';
-import { AppException } from '../../src/common/errors/app.exception';
-import { ErrorCode } from '../../src/common/errors/error-code';
-import { PageResponseDto } from '../../src/common/pagination/page-response.dto';
-import { PaginationQueryDto } from '../../src/common/pagination/pagination-query.dto';
-import { Audit } from '../../src/modules/audit/audit.decorator';
+import { Public } from '@netverse/nest-kit';
+import { AppException } from '@netverse/nest-kit';
+import { ErrorCode } from '@netverse/nest-kit';
+import { PageResponseDto } from '@netverse/nest-kit';
+import { PaginationQueryDto } from '@netverse/nest-kit';
+import { Audit } from '@netverse/nest-kit';
 
 export const INTERNAL_ERROR_DETAIL = 'connection string leaked here';
 

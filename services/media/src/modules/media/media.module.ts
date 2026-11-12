@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OutboxModule } from '../outbox/outbox.module';
+import { OutboxModule } from '@netverse/nest-kit';
 import { MediaController } from './controllers/media.controller';
 import { HardDeleteReaper, PendingReaper, TemporaryReaper } from './jobs/media-reapers';
 import { MediaRepository } from './repositories/media.repository';

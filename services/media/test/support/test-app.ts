@@ -1,7 +1,7 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import { setupApp } from '../../src/bootstrap/setup-app';
+import { setupApp } from '@netverse/nest-kit';
 import { AppConfig } from '../../src/config/app-config';
 import { StorageService } from '../../src/infrastructure/storage/storage.service';
 import { ConformanceProbeController } from './conformance-probe.controller';

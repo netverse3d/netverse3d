@@ -41,7 +41,7 @@ function addCompleteService(root) {
   write(root, 'services/identity/.env.example');
   write(root, 'services/identity/openapi.yaml');
   write(root, 'services/identity/src/health.ts', "app.get('/livez'); app.get('/healthz');");
-  write(root, 'services/identity/src/health.test.ts');
+  write(root, 'services/identity/test/health.test.ts');
 }
 
 test('báo thư mục không có trong catalog', () => {
@@ -228,4 +228,23 @@ test('báo service chỉ có endpoint còn sống mà thiếu endpoint sẵn sà
   const text = checkAllComponents(root).join();
   assert.ok(text.includes('no /healthz endpoint found'), text);
   assert.ok(!text.includes('no /livez endpoint found'), text);
+});
+
+test('chặn tệp test nằm trong src của service, vì test phải ở thư mục test riêng', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/src/login.spec.ts');
+  const text = checkAllComponents(root).join();
+  assert.ok(
+    text.includes('services/identity: test file src/login.spec.ts must live under test/'),
+    text,
+  );
+});
+
+test('nhận service có test nằm trong thư mục test riêng', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/test/unit/login.spec.ts');
+  const text = checkAllComponents(root).join();
+  assert.ok(!text.includes('must live under test/'), text);
 });

@@ -50,6 +50,9 @@ Xoá khỏi bản nhập: giấy phép riêng, workflow CI, cấu hình lint và
 
 ### 5.2. Chạy được dưới pnpm
 
+- Phần khung đã có ở `packages/nest-kit` thì không nhập: response, lỗi, phân trang, xác thực, log, audit, outbox, health. Service khai phụ thuộc vào `@netverse/nest-kit` và chỉ giữ phần riêng của nó.
+- Tệp test đưa vào `test/unit` theo đúng cây thư mục của `src`, không để cạnh tệp nguồn.
+
 - Đổi tên package thành `@netverse/<id>`.
 - `tsconfig.json` kế thừa `tsconfig.base.json`. Cấu hình gốc chặt hơn, nên sửa các chỗ nó báo lỗi thay vì tắt luật.
 - Script của package theo quy ước của repo: `lint` là kiểm kiểu, `test` là unit test không cần hạ tầng, `build` ra `dist`, `test:e2e` là test cần database.

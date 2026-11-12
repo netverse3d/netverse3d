@@ -4,8 +4,8 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { dump } from 'js-yaml';
 import { AppModule } from '../src/app.module';
-import { setupApp } from '../src/bootstrap/setup-app';
-import { buildOpenApiDocument } from '../src/bootstrap/setup-swagger';
+import { setupApp } from '@netverse/nest-kit';
+import { buildOpenApiDocument } from '@netverse/nest-kit';
 import { AppConfig } from '../src/config/app-config';
 
 const PLACEHOLDER_ENV = {

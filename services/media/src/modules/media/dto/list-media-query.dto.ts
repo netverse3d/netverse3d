@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
-import { PaginationQueryDto } from '../../../common/pagination/pagination-query.dto';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { MEDIA_CLASSES, MediaClassValue } from './issue-upload-url.dto';
 
 export class ListMediaQueryDto extends PaginationQueryDto {

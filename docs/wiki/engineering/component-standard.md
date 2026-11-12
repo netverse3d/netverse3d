@@ -73,7 +73,9 @@ src/
   modules/<miền>/   controller, service, repository của từng miền nghiệp vụ
 ```
 
-Phần `common` và `infrastructure` giống nhau giữa các service sẽ nằm ở `packages/nest-kit`. Service viết bằng ngôn ngữ khác không theo cấu trúc này nhưng phải qua bộ kiểm ở `tests/conformance`. Theo [ADR-0020](../../decisions/ADR-0020-monorepo-layout-and-index.md).
+Phần `common`, `infrastructure`, audit, outbox và health giống nhau giữa các service nằm ở `packages/nest-kit`; service dùng package này, không chép lại. Trong `src` của service chỉ còn phần riêng: `config`, kết nối cơ sở dữ liệu, và `modules/<miền>`.
+
+Tệp test không nằm cạnh tệp nguồn. Unit test ở `test/unit`, theo đúng cây thư mục của `src`; test đầu cuối ở `test`. `pnpm catalog:check` chặn tệp test nằm trong `src` của service. Service viết bằng ngôn ngữ khác không theo cấu trúc này nhưng phải qua bộ kiểm ở `tests/conformance`. Theo [ADR-0020](../../decisions/ADR-0020-monorepo-layout-and-index.md).
 
 ## Quy ước chung cho service
 

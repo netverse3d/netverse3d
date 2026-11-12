@@ -157,6 +157,10 @@ function requiredFilesFor(kind) {
   return [];
 }
 
+function keepsTestsOutOfSource(component) {
+  return component.kind === 'service' || /\bNestJS\b/.test(component.stack ?? '');
+}
+
 function decisionExists(root, id) {
   const directory = join(root, 'docs/decisions');
   return existsSync(directory) && readdirSync(directory).some((name) => name.startsWith(`${id}-`));
@@ -190,6 +194,13 @@ export function checkComponent(root, component) {
   }
   for (const required of requiredFilesFor(component.kind)) {
     if (!files.includes(required)) errors.push(`${label}: missing ${required}`);
+  }
+  if (keepsTestsOutOfSource(component)) {
+    for (const file of files) {
+      if (file.startsWith('src/') && TEST_FILE.test(file.split('/').pop())) {
+        errors.push(`${label}: test file ${file} must live under test/, not next to the source`);
+      }
+    }
   }
   if (!files.some((file) => TEST_FILE.test(file.split('/').pop()))) {
     errors.push(`${label}: has no test files`);

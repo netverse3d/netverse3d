@@ -45,7 +45,7 @@ export default [
     },
   },
   {
-    files: ['services/*/src/**/*.ts'],
+    files: ['services/*/src/**/*.ts', 'packages/nest-kit/src/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       'no-restricted-properties': [
