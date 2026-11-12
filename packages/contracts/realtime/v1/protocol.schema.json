@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://netverse3d.github.io/contracts/realtime/protocol.v1.schema.json",
+  "$id": "https://netverse3d.github.io/contracts/realtime/v1/protocol.schema.json",
   "title": "Realtime protocol",
   "description": "Bản nháp giao thức giữa client và game server, có thể đổi khi nhận core từ mentor",
   "x-status": "draft",

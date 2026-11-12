@@ -145,6 +145,11 @@ export function parseContract(file, text) {
   return file.endsWith('.json') ? JSON.parse(text) : parse(text);
 }
 
+export function versionedPath(file) {
+  const match = file.match(/^(.+)\/([^/]+)\.(v\d+)\.([^/]+)$/);
+  return match ? `${match[1]}/${match[3]}/${match[2]}.${match[4]}` : null;
+}
+
 export function isDraft(contract) {
   return (contract['x-status'] ?? contract.info?.['x-status']) === 'draft';
 }

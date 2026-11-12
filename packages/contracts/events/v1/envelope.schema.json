@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://netverse3d.github.io/contracts/events/envelope.v1.schema.json",
+  "$id": "https://netverse3d.github.io/contracts/events/v1/envelope.schema.json",
   "title": "Event envelope",
   "description": "Vỏ chung của mọi sự kiện Kafka",
   "type": "object",

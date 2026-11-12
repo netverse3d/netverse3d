@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://netverse3d.github.io/contracts/world/street-block.v1.schema.json",
+  "$id": "https://netverse3d.github.io/contracts/world/v1/street-block.schema.json",
   "title": "Street block",
   "description": "Một khối phố trên lưới ô đường 4 m: các ô mặt hẻm, dải vỉa hè, lô tiệm 2 × 2 ô với mặt tiền nhà ống xếp tầng, và đồ đường phố. Toạ độ ô đếm từ góc tây-bắc; mặt tiền của lô quay về phía facing.",
   "x-status": "draft",

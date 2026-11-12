@@ -67,3 +67,40 @@ test('xoá tệp cuối cùng của thư mục không làm công cụ hỏng', (
   const result = check(cwd);
   assert.equal(result.status, 0, result.stderr);
 });
+
+const WITH_FIELD = JSON.stringify({
+  $id: 'https://x.test/a',
+  title: 'A',
+  type: 'object',
+  properties: { name: { type: 'string' } },
+});
+
+function move(cwd, from, to, content) {
+  rmSync(join(cwd, from));
+  mkdirSync(dirname(join(cwd, to)), { recursive: true });
+  writeFileSync(join(cwd, to), content);
+}
+
+test('dời hợp đồng chính thức vào thư mục phiên bản mà không đổi nội dung thì qua', () => {
+  const cwd = createRepository({ 'events/a.v1.schema.json': WITH_FIELD });
+  move(cwd, 'events/a.v1.schema.json', 'events/v1/a.schema.json', WITH_FIELD);
+  const result = check(cwd);
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('dời vào thư mục phiên bản kèm xoá trường thì bị chặn', () => {
+  const cwd = createRepository({ 'events/a.v1.schema.json': WITH_FIELD });
+  move(cwd, 'events/a.v1.schema.json', 'events/v1/a.schema.json', PUBLISHED);
+  const result = check(cwd);
+  assert.equal(result.status, 1);
+  assert.ok(result.stderr.includes('events/v1/a.schema.json: breaking change'), result.stderr);
+  assert.ok(result.stderr.includes('property "name" was removed'), result.stderr);
+});
+
+test('dời sang thư mục của phiên bản khác vẫn bị coi là xoá', () => {
+  const cwd = createRepository({ 'events/a.v1.schema.json': WITH_FIELD });
+  move(cwd, 'events/a.v1.schema.json', 'events/v2/a.schema.json', WITH_FIELD);
+  const result = check(cwd);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /a published file was removed/);
+});

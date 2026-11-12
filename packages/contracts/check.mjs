@@ -9,6 +9,7 @@ import {
   parseContract,
   validateJsonSchema,
   validateOpenApi,
+  versionedPath,
 } from './lib.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -54,8 +55,8 @@ function listContractsAtRef(ref) {
   return output.split('\n').filter(isContractFile);
 }
 
-function compare(file, contract, baseRef) {
-  const previousText = readAtRef(baseRef, file);
+function compare(file, contract, baseRef, previousFile = file) {
+  const previousText = readAtRef(baseRef, previousFile);
   if (previousText === null) return [];
   const previous = parseContract(file, previousText);
   if (isDraft(previous)) return [];
@@ -85,6 +86,12 @@ for (const file of files) {
 if (baseRef) {
   for (const file of listContractsAtRef(baseRef)) {
     if (files.includes(file)) continue;
+    const movedTo = versionedPath(file);
+    if (movedTo && files.includes(movedTo)) {
+      const contract = parseContract(movedTo, readFileSync(join(ROOT, movedTo), 'utf8'));
+      errors.push(...compare(movedTo, contract, baseRef, file));
+      continue;
+    }
     const previous = parseContract(file, readAtRef(baseRef, file));
     if (!isDraft(previous)) errors.push(`${file}: breaking change, a published file was removed`);
   }

@@ -6,6 +6,7 @@ import {
   isDraft,
   validateJsonSchema,
   validateOpenApi,
+  versionedPath,
 } from './lib.mjs';
 
 const schema = {
@@ -184,4 +185,14 @@ test('nhận biết hợp đồng còn là nháp', () => {
   assert.equal(isDraft({ 'x-status': 'draft' }), true);
   assert.equal(isDraft({ info: { 'x-status': 'draft' } }), true);
   assert.equal(isDraft({}), false);
+});
+
+test('đường dẫn có hậu tố phiên bản đổi được sang thư mục phiên bản', () => {
+  assert.equal(versionedPath('events/envelope.v1.schema.json'), 'events/v1/envelope.schema.json');
+  assert.equal(versionedPath('openapi/health.v2.yaml'), 'openapi/v2/health.yaml');
+});
+
+test('đường dẫn không có hậu tố phiên bản thì không có đích dời', () => {
+  assert.equal(versionedPath('events/sub/a.schema.json'), null);
+  assert.equal(versionedPath('events/v1/a.schema.json'), null);
 });

@@ -84,7 +84,7 @@ Người nghe đăng ký bằng `subscribe`:
 
 Người chơi trên đường truyền không có khoá `seatId` được hiểu là không ngồi máy nào.
 
-Thông điệp theo giao thức nháp `packages/contracts/realtime/protocol.v1.schema.json`. Phần dựng và đọc thông điệp nằm ở `@netverse/game-shared/room-protocol`.
+Thông điệp theo giao thức nháp `packages/contracts/realtime/v1/protocol.schema.json`. Phần dựng và đọc thông điệp nằm ở `@netverse/game-shared/room-protocol`.
 
 Chưa có, sẽ bổ sung lúc ghép game server thật:
 
