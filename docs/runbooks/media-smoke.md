@@ -22,6 +22,8 @@ pnpm --filter @netverse/media dev:issuer
 
 Kết quả mong đợi: `curl http://127.0.0.1:4000/.well-known/jwks.json` trả 200.
 
+Trên Linux không dùng Docker Desktop, container không tới được cổng chỉ mở ở `127.0.0.1` của máy. Lúc đó chạy bộ phát với `DEV_ISSUER_HOST=0.0.0.0` và chỉ làm vậy trên máy dev, vì bộ phát này cấp token cho bất kỳ ai gọi tới.
+
 ## 3. Dựng và chạy media
 
 ```

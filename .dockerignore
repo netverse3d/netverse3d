@@ -10,5 +10,6 @@ apps/web-3d/public/game-assets
 docs/.vitepress/dist
 docs/.vitepress/cache
 *.log
-.env
-.env.*
+**/.env
+**/.env.*
+!**/.env.example

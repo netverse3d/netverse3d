@@ -9,7 +9,7 @@ import { buildOpenApiDocument } from '../src/bootstrap/setup-swagger';
 import { AppConfig } from '../src/config/app-config';
 
 const PLACEHOLDER_ENV = {
-  SERVICE_NAME: process.env.SERVICE_NAME ?? 'media',
+  SERVICE_NAME: 'media',
   S3_ENDPOINT: 'localhost',
   S3_PORT: '9000',
   S3_ACCESS_KEY: 'unused',
@@ -20,7 +20,7 @@ const PLACEHOLDER_ENV = {
   S3_BUCKET_TEMP: 'unused-temp',
   S3_AUTO_CREATE_BUCKETS: 'false',
   JOBS_ENABLED: 'false',
-  SERVICE_VERSION: process.env.SERVICE_VERSION ?? '0.1.0',
+  SERVICE_VERSION: '0.1.0',
   DATABASE_URL: process.env.DATABASE_URL ?? 'postgresql://localhost/unused',
   AUTH_JWKS_URL: process.env.AUTH_JWKS_URL ?? 'http://localhost/jwks.json',
   AUTH_ISSUER: process.env.AUTH_ISSUER ?? 'unused',
