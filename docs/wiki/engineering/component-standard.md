@@ -50,13 +50,39 @@ provenance: cleared
 provenance_ref: ADR-9999
 ```
 
+## Cấu hình để ở đâu
+
+| Lớp                | Ví dụ                                                                   | Để ở đâu                                  |
+| ------------------ | ----------------------------------------------------------------------- | ----------------------------------------- |
+| Công cụ phát triển | Lint, định dạng, cấu hình TypeScript gốc, lockfile, workflow            | Gốc repo, một bản                         |
+| Cấu hình lúc chạy  | `.env.example`, khai biến môi trường, `Dockerfile`, schema dữ liệu, API | Trong từng thành phần                     |
+| Hạ tầng local      | PostgreSQL, Redis, Kafka, object storage                                | `infra/compose`, mỗi service một database |
+
+Thành phần không mang theo cấu hình lint, lockfile hay workflow riêng. `tsconfig.json` của thành phần kế thừa `tsconfig.base.json`.
+
+## Cấu trúc trong một service NestJS
+
+```
+src/
+  main.ts
+  app.module.ts
+  bootstrap/        khởi động ứng dụng, middleware chung
+  config/           đọc và kiểm biến môi trường
+  common/           response, lỗi, phân trang, validation
+  infrastructure/   xác thực, log, cơ sở dữ liệu, giới hạn tần suất
+  modules/<miền>/   controller, service, repository của từng miền nghiệp vụ
+```
+
+Phần `common` và `infrastructure` giống nhau giữa các service sẽ nằm ở `packages/nest-kit`. Service viết bằng ngôn ngữ khác không theo cấu trúc này nhưng phải qua bộ kiểm ở `tests/conformance`. Theo [ADR-0020](../../decisions/ADR-0020-monorepo-layout-and-index.md).
+
 ## Quy ước chung cho service
 
-- Tên package: `@netverse/<id>`.
+- Tên thư mục là tên miền nghiệp vụ, không kèm hậu tố `-api`, `-service`, `-server`. Tên package: `@netverse/<id>`.
 - Mỗi service có cơ sở dữ liệu riêng, không đọc bảng của service khác.
 - Service chỉ nói chuyện với nhau qua `packages/contracts`: HTTP, gRPC hoặc sự kiện Kafka.
 - Cấu hình qua biến môi trường, không có giá trị thật trong `.env.example`.
 - Log có cấu trúc, xuất metric và trace theo OpenTelemetry.
+- Mỗi service được phát hành riêng với tag `<id>/stg-vX.Y.Z`, nên phải chạy được với bản liền trước của service khác.
 - Không phụ thuộc vào ngữ cảnh của hệ thống khác: tên miền, tenant, dữ liệu mẫu đều phải thuộc Netverse 3D.
 
 Đưa một service có sẵn vào repo thì làm theo [quy trình nhận service](../../runbooks/import-service.md).

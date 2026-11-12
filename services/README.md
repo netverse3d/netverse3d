@@ -13,4 +13,4 @@ Trang này được sinh từ `docs/catalog.yaml`. Muốn đổi thì sửa ở 
 | [`payment`](./payment/README.md) | service | NestJS, Prisma | PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn | M3 |
 | [`ai-chat`](./ai-chat/README.md) | service | Python | Chatbot LLM chạy local và TTS tiếng Việt | M7 |
 | [`notification`](./notification/README.md) | service | NestJS, Prisma | Thông báo realtime, email, trong ứng dụng | M3 |
-| [`game`](./game/README.md) | service | Chưa chốt, chờ core của mentor | Game Gateway và Authoritative Room Server | M5 |
+| [`game`](./game/README.md) | service | Go theo bản mẫu của mentor, chưa nhận mã | Game Gateway và Authoritative Room Server | M5 |
