@@ -2,37 +2,36 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   compareVersions,
+  contentPaths,
   evaluateChecks,
   evaluatePlacement,
   evaluateRelease,
+  latestVersion,
   parseTag,
-  previousTag,
-  selectChangedComponents,
-  selectSourceTag,
-  stagingTagsUpTo,
   tagFor,
 } from './lib.mjs';
 
 const staging = {
+  component: 'identity',
+  deployable: true,
   environment: 'staging',
   version: '1.4.0',
   branch: 'staging',
   tagExists: false,
   peerExists: false,
-  sameTree: false,
+  sameContent: false,
+  previousVersion: null,
 };
-const components = [
-  { id: 'identity', path: 'services/identity', hasDockerfile: true },
-  { id: 'media', path: 'services/media', hasDockerfile: true },
-  { id: 'world', path: 'services/world', hasDockerfile: false },
-];
 const production = {
+  component: 'identity',
+  deployable: true,
   environment: 'production',
   version: '1.4.0',
   branch: 'main',
   tagExists: false,
   peerExists: true,
-  sameTree: true,
+  sameContent: true,
+  previousVersion: null,
 };
 
 for (const version of ['1.04.0', '1.4', 'v1.4.0', '1.4.0-rc.1', '', undefined]) {
@@ -42,32 +41,41 @@ for (const version of ['1.04.0', '1.4', 'v1.4.0', '1.4.0-rc.1', '', undefined]) 
 }
 
 test('từ chối môi trường lạ', () => {
-  assert.match(evaluateRelease({ ...staging, environment: 'dev' }).join(), /Unknown environment/);
+  assert.match(evaluateRelease({ ...staging, environment: 'qa' }).join(), /Unknown environment/);
+});
+
+test('từ chối thành phần không triển khai được hoặc không có trong catalog', () => {
+  const errors = evaluateRelease({ ...staging, component: 'contracts', deployable: false }).join();
+  assert.match(errors, /"contracts" is not a deployable component/);
+});
+
+test('từ chối khi thiếu tên thành phần', () => {
+  const errors = evaluateRelease({ ...staging, component: undefined, deployable: false }).join();
+  assert.match(errors, /Component is required/);
 });
 
 test('staging chỉ chạy được trên nhánh staging', () => {
   assert.deepEqual(evaluateRelease(staging), []);
-  assert.match(evaluateRelease({ ...staging, branch: 'fix/13-pay' }).join(), /must be on staging/);
 });
 
 test('staging không chạy trên nhánh khác', () => {
   const errors = evaluateRelease({ ...staging, branch: 'main' }).join();
-  assert.match(errors, /stg-v1\.4\.0 must be on staging/);
+  assert.match(errors, /identity\/stg-v1\.4\.0 must be on staging/);
 });
 
 test('production chỉ chạy trên main', () => {
   const errors = evaluateRelease({ ...production, branch: 'staging' }).join();
-  assert.match(errors, /prod-v1\.4\.0 must be on main/);
+  assert.match(errors, /identity\/prod-v1\.4\.0 must be on main/);
 });
 
-test('production cần có bản staging cùng số', () => {
+test('production cần có bản staging cùng số của chính thành phần đó', () => {
   const errors = evaluateRelease({ ...production, peerExists: false }).join();
-  assert.match(errors, /stg-v1\.4\.0 does not exist/);
+  assert.match(errors, /identity\/stg-v1\.4\.0 does not exist/);
 });
 
-test('production cần cùng nội dung với bản staging', () => {
-  const errors = evaluateRelease({ ...production, sameTree: false }).join();
-  assert.match(errors, /content differs from stg-v1\.4\.0/);
+test('production cần nội dung của thành phần giống bản staging', () => {
+  const errors = evaluateRelease({ ...production, sameContent: false }).join();
+  assert.match(errors, /content of identity differs from identity\/stg-v1\.4\.0/);
 });
 
 test('production hợp lệ khi đủ điều kiện', () => {
@@ -78,13 +86,102 @@ test('không dùng lại tag đã có', () => {
   assert.match(evaluateRelease({ ...staging, tagExists: true }).join(), /already exists/);
 });
 
+test('số phiên bản phải lớn hơn bản trước của chính thành phần đó', () => {
+  const lower = evaluateRelease({ ...staging, version: '1.3.9', previousVersion: '1.4.0' }).join();
+  assert.match(lower, /1\.3\.9 must be greater than 1\.4\.0/);
+  assert.deepEqual(evaluateRelease({ ...staging, version: '1.4.1', previousVersion: '1.4.0' }), []);
+});
+
+test('từ chối phát hành khi đang chạy trên tag thay vì nhánh', () => {
+  const errors = evaluateRelease({ ...staging, refType: 'tag' }).join();
+  assert.match(errors, /must run on a branch/);
+  assert.deepEqual(evaluateRelease({ ...staging, refType: 'branch' }), []);
+});
+
 test('tag staging nằm trên nhánh staging được chấp nhận', () => {
   const result = evaluatePlacement({
+    component: 'identity',
     environment: 'staging',
     version: '1.4.1',
     branches: ['staging', 'feat/x'],
   });
   assert.deepEqual(result, []);
+});
+
+test('đọc đúng tag có mã thành phần và từ chối tag sai', () => {
+  assert.deepEqual(parseTag('identity/stg-v1.4.0'), {
+    component: 'identity',
+    environment: 'staging',
+    version: '1.4.0',
+  });
+  assert.deepEqual(parseTag('web-3d/prod-v1.4.0'), {
+    component: 'web-3d',
+    environment: 'production',
+    version: '1.4.0',
+  });
+  for (const tag of [
+    'stg-v1.4.0',
+    'prod-v1.4.0',
+    'v1.4.0',
+    'identity/v1.4.0',
+    'identity/stg-v1.04.0',
+    'identity/stg-1.4.0',
+    'identity/staging-v1.4.0',
+    'identity/prod-v1.4.0-rc.1',
+    'Identity/stg-v1.4.0',
+    'services/identity/stg-v1.4.0',
+    '/stg-v1.4.0',
+  ]) {
+    assert.equal(parseTag(tag), null, tag);
+  }
+});
+
+test('tạo tên tag theo thành phần và môi trường', () => {
+  assert.equal(tagFor('identity', 'staging', '1.0.0'), 'identity/stg-v1.0.0');
+  assert.equal(tagFor('web-3d', 'production', '1.0.0'), 'web-3d/prod-v1.0.0');
+});
+
+test('bản mới nhất chỉ tính tag của đúng thành phần và đúng môi trường', () => {
+  const tags = [
+    'identity/stg-v0.9.0',
+    'identity/stg-v0.10.0',
+    'identity/prod-v0.9.0',
+    'media/stg-v3.0.0',
+    'stg-v9.9.9',
+    'note',
+  ];
+  assert.equal(latestVersion(tags, 'identity', 'staging'), '0.10.0');
+  assert.equal(latestVersion(tags, 'identity', 'production'), '0.9.0');
+  assert.equal(latestVersion(tags, 'media', 'production'), null);
+});
+
+test('so sánh phiên bản theo số, không theo chữ', () => {
+  assert.ok(compareVersions('0.10.0', '0.9.0') > 0);
+  assert.ok(compareVersions('1.0.0', '0.99.99') > 0);
+  assert.equal(compareVersions('1.2.3', '1.2.3'), 0);
+});
+
+test('nội dung của thành phần gồm thư mục của nó, package nó phụ thuộc và tệp gốc dùng chung', () => {
+  const components = [
+    { id: 'identity', path: 'services/identity' },
+    { id: 'nest-kit', path: 'packages/nest-kit' },
+    { id: 'contracts', path: 'packages/contracts' },
+    { id: 'media', path: 'services/media' },
+  ];
+  const dependencies = new Map([
+    ['identity', ['nest-kit']],
+    ['nest-kit', ['contracts']],
+    ['contracts', []],
+    ['media', ['contracts']],
+  ]);
+  const paths = contentPaths(components[0], components, dependencies);
+  assert.deepEqual(paths.slice(0, 3), [
+    'services/identity',
+    'packages/nest-kit',
+    'packages/contracts',
+  ]);
+  assert.ok(paths.includes('pnpm-lock.yaml'));
+  assert.ok(!paths.includes('services/media'));
 });
 
 test('không cho qua khi có một lần chạy cùng tên bị lỗi', () => {
@@ -95,19 +192,6 @@ test('không cho qua khi có một lần chạy cùng tên bị lỗi', () => {
     { name: 'secrets', conclusion: 'success', app },
   ];
   assert.match(evaluateChecks(runs).join(), /"verify" is failure/);
-});
-
-test('đọc đúng tag hợp lệ và từ chối tag sai', () => {
-  assert.deepEqual(parseTag('stg-v1.4.0'), { environment: 'staging', version: '1.4.0' });
-  assert.deepEqual(parseTag('prod-v1.4.0'), { environment: 'production', version: '1.4.0' });
-  for (const tag of ['v1.4.0', 'stg-v1.04.0', 'stg-1.4.0', 'staging-v1.4.0', 'prod-v1.4.0-rc.1']) {
-    assert.equal(parseTag(tag), null, tag);
-  }
-});
-
-test('tạo tên tag theo môi trường', () => {
-  assert.equal(tagFor('staging', '1.0.0'), 'stg-v1.0.0');
-  assert.equal(tagFor('production', '1.0.0'), 'prod-v1.0.0');
 });
 
 test('chặn khi check bắt buộc chưa chạy hoặc chưa đạt', () => {
@@ -132,75 +216,4 @@ test('không tin check cùng tên nhưng không do GitHub Actions tạo', () => 
     { name: 'secrets', conclusion: 'success', app: { slug: 'github-actions' } },
   ];
   assert.match(evaluateChecks(runs).join(), /"verify" has not run/);
-});
-
-test('từ chối phát hành khi đang chạy trên tag thay vì nhánh', () => {
-  const errors = evaluateRelease({ ...staging, refType: 'tag' }).join();
-  assert.match(errors, /must run on a branch/);
-  assert.deepEqual(evaluateRelease({ ...staging, refType: 'branch' }), []);
-});
-
-test('lấy image từ bản staging nơi thành phần đổi lần cuối', () => {
-  const changedAt = new Set(['stg-v0.1.0']);
-  const tags = ['stg-v0.1.2', 'stg-v0.1.1', 'stg-v0.1.0'];
-  assert.equal(
-    selectSourceTag(tags, (tag) => changedAt.has(tag)),
-    'stg-v0.1.1',
-  );
-});
-
-test('không có bản staging nào cùng nội dung thì không chọn image cũ', () => {
-  assert.equal(
-    selectSourceTag(['stg-v0.1.2', 'stg-v0.1.1'], () => true),
-    null,
-  );
-});
-
-test('đổi cấu hình gốc của workspace thì build mọi thành phần', () => {
-  for (const file of ['package.json', 'pnpm-workspace.yaml', 'turbo.json', '.nvmrc']) {
-    assert.equal(selectChangedComponents(components, [file]).length, 2, file);
-  }
-});
-
-test('so sánh phiên bản theo số, không theo chữ', () => {
-  assert.ok(compareVersions('0.10.0', '0.2.0') > 0);
-  assert.ok(compareVersions('1.0.0', '1.0.1') < 0);
-  assert.equal(compareVersions('1.2.3', '1.2.3'), 0);
-});
-
-test('tìm tag trước đó trong cùng môi trường', () => {
-  const tags = ['stg-v0.2.0', 'stg-v0.10.0', 'prod-v0.9.0', 'stg-v0.9.0', 'other'];
-  assert.equal(previousTag(tags, 'stg-v0.10.0'), 'stg-v0.9.0');
-  assert.equal(previousTag(tags, 'stg-v0.2.0'), null);
-  assert.equal(previousTag(tags, 'prod-v0.10.0'), 'prod-v0.9.0');
-});
-
-test('liệt kê bản staging từ mới đến cũ, không vượt quá phiên bản đang phát hành', () => {
-  const tags = ['stg-v0.1.0', 'stg-v0.10.0', 'stg-v0.2.0', 'prod-v0.2.0', 'stg-v0.2.1'];
-  assert.deepEqual(stagingTagsUpTo(tags, '0.2.0'), ['stg-v0.2.0', 'stg-v0.1.0']);
-});
-
-test('chỉ build thành phần có thay đổi', () => {
-  const changed = selectChangedComponents(components, ['services/identity/src/a.ts', 'README.md']);
-  assert.deepEqual(
-    changed.map((item) => item.id),
-    ['identity'],
-  );
-});
-
-test('thành phần chưa có Dockerfile không được build', () => {
-  assert.deepEqual(selectChangedComponents(components, ['services/world/src/a.ts']), []);
-});
-
-test('đổi package dùng chung thì build mọi thành phần', () => {
-  const changed = selectChangedComponents(components, ['packages/contracts/events/a.json']);
-  assert.equal(changed.length, 2);
-});
-
-test('lần phát hành đầu tiên build mọi thành phần', () => {
-  assert.equal(selectChangedComponents(components, null).length, 2);
-});
-
-test('chỉ đổi tài liệu thì không build gì', () => {
-  assert.deepEqual(selectChangedComponents(components, ['docs/wiki/index.md']), []);
 });

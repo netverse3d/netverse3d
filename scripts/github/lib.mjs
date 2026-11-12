@@ -1,6 +1,9 @@
 const LABEL_COLORS = { area: '1d76db', status: 'e4e669' };
 const GITHUB_ACTIONS_APP_ID = 15368;
-const RELEASE_TAG_PATTERNS = { staging: 'refs/tags/stg-v*', production: 'refs/tags/prod-v*' };
+const RELEASE_TAG_PATTERNS = {
+  staging: 'refs/tags/*/stg-v*',
+  production: 'refs/tags/*/prod-v*',
+};
 
 export const REPOSITORY_SETTINGS = {
   has_wiki: false,
@@ -113,7 +116,7 @@ export function buildEnvironments(settings) {
     },
     {
       name: 'production',
-      branchPolicy: [{ name: 'prod-v*', type: 'tag' }],
+      branchPolicy: [{ name: '*/prod-v*', type: 'tag' }],
       reviewers: [],
       preventSelfReview: false,
       canAdminsBypass: false,

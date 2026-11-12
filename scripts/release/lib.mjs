@@ -1,62 +1,108 @@
+import { dependencyClosure, SHARED_ROOT_FILES } from '../catalog/graph.mjs';
+
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-const TAG = /^(stg|prod)-v(.+)$/;
+const TAG = /^([a-z0-9][a-z0-9-]*)\/(stg|prod)-v(.+)$/;
 const CHECK_PROVIDER = 'github-actions';
 
-export const SHARED_PATHS = [
-  'packages',
-  'package.json',
-  'pnpm-lock.yaml',
-  'pnpm-workspace.yaml',
-  'turbo.json',
-  'tsconfig.base.json',
-  '.nvmrc',
-];
 export const REQUIRED_CHECKS = ['verify', 'secrets'];
 export const TAG_PREFIX = { staging: 'stg', production: 'prod' };
 
-export function tagFor(environment, version) {
-  return `${TAG_PREFIX[environment]}-v${version}`;
+export function tagFor(component, environment, version) {
+  return `${component}/${TAG_PREFIX[environment]}-v${version}`;
 }
 
 export function parseTag(tag) {
   const match = tag.match(TAG);
-  if (!match || !VERSION.test(match[2])) return null;
-  return { environment: match[1] === 'stg' ? 'staging' : 'production', version: match[2] };
+  if (!match || !VERSION.test(match[3])) return null;
+  return {
+    component: match[1],
+    environment: match[2] === 'stg' ? 'staging' : 'production',
+    version: match[3],
+  };
 }
 
-export function evaluatePlacement({ environment, version, branches, peerExists, sameTreeAsPeer }) {
-  const tag = tagFor(environment, version);
-  const peer = tagFor('staging', version);
+export function evaluatePlacement({
+  component,
+  environment,
+  version,
+  branches,
+  peerExists,
+  sameContentAsPeer,
+}) {
+  const tag = tagFor(component, environment, version);
+  const peer = tagFor(component, 'staging', version);
   if (environment === 'staging') {
     return branches.includes('staging') ? [] : [`${tag} must be on staging`];
   }
   if (!branches.includes('main')) return [`${tag} must be on main`];
   if (!peerExists) return [`${peer} does not exist; release staging first`];
-  if (!sameTreeAsPeer) return [`${tag} content differs from ${peer}; it was not tested`];
+  if (!sameContentAsPeer) {
+    return [`${tag}: content of ${component} differs from ${peer}; it was not tested`];
+  }
   return [];
 }
 
+function versionParts(version) {
+  return version.split('.').map(Number);
+}
+
+export function compareVersions(left, right) {
+  const [a, b] = [versionParts(left), versionParts(right)];
+  return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+}
+
 export function evaluateRelease({
+  component,
+  deployable,
   environment,
   version,
   branch,
   refType = 'branch',
   tagExists,
   peerExists,
-  sameTree,
+  sameContent,
+  previousVersion = null,
 }) {
+  if (!component) return ['Component is required, for example identity'];
+  if (!deployable) return [`"${component}" is not a deployable component in docs/catalog.yaml`];
   if (!TAG_PREFIX[environment]) return [`Unknown environment "${environment}"`];
   if (!VERSION.test(version ?? '')) return ['Version must look like 1.4.0'];
   if (refType !== 'branch') return ['Release must run on a branch'];
   const errors = evaluatePlacement({
+    component,
     environment,
     version,
     branches: [branch],
     peerExists,
-    sameTreeAsPeer: sameTree,
+    sameContentAsPeer: sameContent,
   });
-  if (tagExists) errors.push(`${tagFor(environment, version)} already exists; use a new version`);
+  const tag = tagFor(component, environment, version);
+  if (tagExists) {
+    errors.push(`${tag} already exists; use a new version`);
+  } else if (previousVersion && compareVersions(version, previousVersion) <= 0) {
+    errors.push(
+      `${version} must be greater than ${previousVersion}, the latest ${environment} release of ${component}`,
+    );
+  }
   return errors;
+}
+
+export function latestVersion(tags, component, environment) {
+  const versions = tags
+    .map(parseTag)
+    .filter((parsed) => parsed?.component === component && parsed.environment === environment)
+    .map((parsed) => parsed.version)
+    .sort(compareVersions);
+  return versions.at(-1) ?? null;
+}
+
+export function contentPaths(component, components, dependencies) {
+  const pathById = new Map(components.map((item) => [item.id, item.path]));
+  return [
+    component.path,
+    ...dependencyClosure(component.id, dependencies).map((id) => pathById.get(id)),
+    ...SHARED_ROOT_FILES,
+  ];
 }
 
 export function evaluateChecks(checkRuns, required = REQUIRED_CHECKS) {
@@ -71,59 +117,4 @@ export function evaluateChecks(checkRuns, required = REQUIRED_CHECKS) {
     }
     return [];
   });
-}
-
-function versionParts(version) {
-  return version.split('.').map(Number);
-}
-
-export function compareVersions(left, right) {
-  const [a, b] = [versionParts(left), versionParts(right)];
-  return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
-}
-
-export function previousTag(tags, tag) {
-  const current = parseTag(tag);
-  if (!current) return null;
-  const earlier = tags
-    .map((name) => ({ name, parsed: parseTag(name) }))
-    .filter(
-      ({ parsed }) =>
-        parsed?.environment === current.environment &&
-        compareVersions(parsed.version, current.version) < 0,
-    )
-    .sort((a, b) => compareVersions(a.parsed.version, b.parsed.version));
-  return earlier.at(-1)?.name ?? null;
-}
-
-export function stagingTagsUpTo(tags, version) {
-  return tags
-    .map((name) => ({ name, parsed: parseTag(name) }))
-    .filter(
-      ({ parsed }) =>
-        parsed?.environment === 'staging' && compareVersions(parsed.version, version) <= 0,
-    )
-    .sort((a, b) => compareVersions(b.parsed.version, a.parsed.version))
-    .map(({ name }) => name);
-}
-
-export function selectSourceTag(stagingTagsNewestFirst, hasChangedSince) {
-  let source = null;
-  for (const tag of stagingTagsNewestFirst) {
-    if (hasChangedSince(tag)) break;
-    source = tag;
-  }
-  return source;
-}
-
-function isSharedPath(file) {
-  return SHARED_PATHS.some((path) => file === path || file.startsWith(`${path}/`));
-}
-
-export function selectChangedComponents(components, files) {
-  const deployable = components.filter((component) => component.hasDockerfile);
-  if (files === null || files.some(isSharedPath)) return deployable;
-  return deployable.filter((component) =>
-    files.some((file) => file.startsWith(`${component.path}/`)),
-  );
 }

@@ -2,7 +2,7 @@ name: build-staging
 
 on:
   push:
-    tags: ['stg-v*']
+    tags: ['*/stg-v*']
 
 permissions:
   contents: read
@@ -48,4 +48,4 @@ jobs:
           context: .
           file: ${{ matrix.component.path }}/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.component.id }}:${{ github.ref_name }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.component.id }}:${{ matrix.component.version }}

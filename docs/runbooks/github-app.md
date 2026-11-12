@@ -4,10 +4,10 @@ Workflow **release** dùng GitHub App của tổ chức để tạo tag, vì tag
 
 Cần **hai App riêng**, mỗi App chỉ tạo được tag của một môi trường. Khoá lưu trong secret của Environment, không lưu ở cấp repo. Lý do: workflow chạy từ file trên chính nhánh được chọn, nên secret cấp repo có thể bị đọc bởi một workflow sửa đổi trên nhánh bất kỳ. Secret của Environment chỉ mở cho đúng nhánh được phép, và khoá production còn phải qua bước duyệt.
 
-| App                             | Environment          | Nhánh được dùng  | Tag được tạo |
-| ------------------------------- | -------------------- | ---------------- | ------------ |
-| `netverse3d-release-staging`    | `release-staging`    | `staging`        | `stg-v*`     |
-| `netverse3d-release-production` | `production-release` | `main`, có duyệt | `prod-v*`    |
+| App                             | Environment          | Nhánh được dùng  | Tag được tạo   |
+| ------------------------------- | -------------------- | ---------------- | -------------- |
+| `netverse3d-release-staging`    | `release-staging`    | `staging`        | `<id>/stg-v*`  |
+| `netverse3d-release-production` | `production-release` | `main`, có duyệt | `<id>/prod-v*` |
 
 Làm các bước dưới đây cho từng App.
 
@@ -51,7 +51,7 @@ Sửa `releaseAppIds` trong `.github/settings/repository.json` thành App ID c�
 node scripts/github/setup-repo.mjs
 ```
 
-Kết quả mong đợi: tạo tay tag `stg-v*` hoặc `prod-v*` bị từ chối, còn workflow **release** thì tạo được.
+Kết quả mong đợi: tạo tay tag `<id>/stg-v*` hoặc `<id>/prod-v*`, ví dụ `identity/stg-v0.1.0`, bị từ chối, còn workflow **release** thì tạo được.
 
 ## Xoay vòng khoá
 
