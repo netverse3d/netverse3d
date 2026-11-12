@@ -1,6 +1,4 @@
-import type { Actor } from '@netverse/nest-kit';
-
-export const MEDIA_MANAGER_ROLE = 'admin';
+import { isPlatformAdmin, isTenantAdmin, type Actor } from '@netverse/nest-kit';
 
 export interface AccessibleMedia {
   tenantId: string | null;
@@ -9,28 +7,76 @@ export interface AccessibleMedia {
   moderationStatus: 'NOT_REQUIRED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
-export function isMediaManager(actor: Actor): boolean {
-  return actor.roles.includes(MEDIA_MANAGER_ROLE);
+export interface MediaListScope {
+  tenantId: string | null | undefined;
+  viewerSubject: string | null;
+  sharedVisibilities: AccessibleMedia['visibility'][];
 }
 
-function isOwnerOrManager(media: AccessibleMedia, actor: Actor): boolean {
-  return media.createdBy === actor.subject || isMediaManager(actor);
+function isCreator(media: AccessibleMedia, actor: Actor): boolean {
+  return media.createdBy === actor.subject;
+}
+
+function isOpenToEveryone(media: AccessibleMedia): boolean {
+  return media.tenantId === null && media.visibility === 'PUBLIC';
+}
+
+function inActorTenant(media: AccessibleMedia, actor: Actor): boolean {
+  return actor.tenantId !== null && media.tenantId === actor.tenantId;
+}
+
+export function canModerate(actor: Actor): boolean {
+  return isPlatformAdmin(actor);
+}
+
+export function canUploadSystemAsset(actor: Actor): boolean {
+  return isPlatformAdmin(actor);
 }
 
 export function canRead(media: AccessibleMedia, actor: Actor): boolean {
-  return (
-    media.tenantId === actor.tenantId &&
-    (media.visibility !== 'PRIVATE' || isOwnerOrManager(media, actor))
-  );
+  if (isPlatformAdmin(actor) || isOpenToEveryone(media)) {
+    return true;
+  }
+  if (inActorTenant(media, actor)) {
+    return media.visibility !== 'PRIVATE' || isCreator(media, actor) || isTenantAdmin(actor);
+  }
+  return actor.tenantId === null && media.tenantId === null && isCreator(media, actor);
 }
 
 export function canChange(media: AccessibleMedia, actor: Actor): boolean {
-  return media.tenantId === actor.tenantId && isOwnerOrManager(media, actor);
+  if (isPlatformAdmin(actor)) {
+    return true;
+  }
+  if (inActorTenant(media, actor)) {
+    return isCreator(media, actor) || isTenantAdmin(actor);
+  }
+  return actor.tenantId === null && media.tenantId === null && isCreator(media, actor);
 }
 
 export function canDownload(media: AccessibleMedia, actor: Actor): boolean {
-  if (media.moderationStatus === 'REJECTED') {
-    return isMediaManager(actor);
+  if (isPlatformAdmin(actor)) {
+    return true;
   }
-  return media.moderationStatus !== 'PENDING' || isOwnerOrManager(media, actor);
+  if (media.moderationStatus === 'REJECTED') {
+    return false;
+  }
+  return media.moderationStatus !== 'PENDING' || isCreator(media, actor);
+}
+
+export function ownsUploadTarget(actor: Actor, ownerId: string): boolean {
+  return actor.tenantId !== null || isPlatformAdmin(actor) || ownerId === actor.subject;
+}
+
+export function listScopeFor(actor: Actor): MediaListScope {
+  if (isPlatformAdmin(actor)) {
+    return { tenantId: undefined, viewerSubject: null, sharedVisibilities: [] };
+  }
+  if (actor.tenantId === null) {
+    return { tenantId: null, viewerSubject: actor.subject, sharedVisibilities: ['PUBLIC'] };
+  }
+  return {
+    tenantId: actor.tenantId,
+    viewerSubject: isTenantAdmin(actor) ? null : actor.subject,
+    sharedVisibilities: ['INTERNAL', 'PUBLIC'],
+  };
 }

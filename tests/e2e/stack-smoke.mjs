@@ -9,6 +9,7 @@ const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? 'change-me-admin-
 const RUN = Date.now();
 const PLAYER_EMAIL = `player-${RUN}@example.test`;
 const OWNER_EMAIL = `owner-${RUN}@example.test`;
+const RIVAL_EMAIL = `rival-${RUN}@example.test`;
 const PASSWORD = 'smoke-password-123';
 const CONTENT = Buffer.from('stack smoke payload');
 const CONTENT_TYPE = 'image/png';
@@ -122,9 +123,35 @@ try {
   assert.equal(claims(playerToken).tenant_id, undefined);
   console.log('player registers, verifies and logs in at identity ok');
 
-  const playerFile = await uploadAs(playerToken, 'player-avatar');
+  const playerId = claims(playerToken).sub;
+  const playerFile = await uploadAs(playerToken, playerId, 'INTERNAL');
   await downloadAs(playerToken, playerFile);
   console.log('player uploads and downloads at media with the identity token ok');
+
+  await registerAndVerify(RIVAL_EMAIL);
+  const rivalToken = await login(RIVAL_EMAIL, PASSWORD);
+  const peeked = await media('GET', `/v1/media/${playerFile}`, undefined, rivalToken);
+  assert.equal(peeked.status, 404, JSON.stringify(peeked.body));
+  const listed = await media(
+    'GET',
+    `/v1/media?ownerType=avatar&ownerId=${playerId}`,
+    undefined,
+    rivalToken,
+  );
+  assert.equal(listed.body.result.totalElements, 0, JSON.stringify(listed.body));
+  const spoofed = await media(
+    'POST',
+    '/v1/media/issue-upload-url',
+    {
+      contentType: CONTENT_TYPE,
+      declaredSizeBytes: CONTENT.length,
+      ownerType: 'avatar',
+      ownerId: playerId,
+    },
+    rivalToken,
+  );
+  assert.equal(spoofed.status, 403, JSON.stringify(spoofed.body));
+  console.log('one player cannot see or overwrite another player file ok');
 
   await registerAndVerify(OWNER_EMAIL);
   const adminToken = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
@@ -139,20 +166,20 @@ try {
   const role = await identity(
     'PUT',
     `/v1/tenants/${tenantId}/roles`,
-    { name: 'owner', permissions: ['shop:manage'] },
+    { name: 'admin', permissions: ['shop:manage'] },
     adminToken,
   );
   assert.equal(role.status, 200, JSON.stringify(role.body));
   const member = await identity(
     'POST',
     `/v1/tenants/${tenantId}/members`,
-    { email: OWNER_EMAIL, roles: ['owner'] },
+    { email: OWNER_EMAIL, roles: ['admin'] },
     adminToken,
   );
   assert.equal(member.status, 201, JSON.stringify(member.body));
   const ownerToken = await login(OWNER_EMAIL, PASSWORD, tenantId);
   assert.equal(claims(ownerToken).tenant_id, tenantId);
-  assert.deepEqual(claims(ownerToken).roles, ['owner']);
+  assert.deepEqual(claims(ownerToken).roles, ['admin']);
   console.log('shop tenant, owner role and tenant-scoped token ok');
 
   const shopFile = await uploadAs(ownerToken, 'shop-sign', 'INTERNAL');
@@ -162,6 +189,23 @@ try {
   const outsider = await media('GET', `/v1/media/${shopFile}`, undefined, playerToken);
   assert.equal(outsider.status, 404, JSON.stringify(outsider.body));
   console.log('a token outside the shop tenant cannot see the shop file ok');
+
+  const decision = { decision: 'APPROVED' };
+  const selfApproved = await media(
+    'POST',
+    `/v1/media/${shopFile}/moderation`,
+    decision,
+    ownerToken,
+  );
+  assert.equal(selfApproved.status, 403, JSON.stringify(selfApproved.body));
+  console.log('a shop admin cannot moderate the shop own content ok');
+
+  for (const file of [shopFile, playerFile]) {
+    const approved = await media('POST', `/v1/media/${file}/moderation`, decision, adminToken);
+    assert.equal(approved.status, 200, JSON.stringify(approved.body));
+    assert.equal(approved.body.result.moderationStatus, 'APPROVED');
+  }
+  console.log('the platform admin moderates shop and player content ok');
 
   console.log('STACK SMOKE PASSED');
 } finally {

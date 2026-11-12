@@ -14,11 +14,10 @@ import {
 import { ApiHeader, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Actor } from '@netverse/nest-kit';
 import { CurrentActor } from '@netverse/nest-kit';
-import { Roles } from '@netverse/nest-kit';
+import { PLATFORM_ADMIN_ROLE, Roles } from '@netverse/nest-kit';
 import { PageResponseDto } from '@netverse/nest-kit';
 import { ApiEnvelope, ApiPagedEnvelope } from '@netverse/nest-kit';
 import { Audit, AuditResourceInput } from '@netverse/nest-kit';
-import { MEDIA_MANAGER_ROLE } from '../domain/media-access';
 import { IssueDownloadUrlDto } from '../dto/issue-download-url.dto';
 import { IssueUploadUrlDto } from '../dto/issue-upload-url.dto';
 import { ListMediaQueryDto } from '../dto/list-media-query.dto';
@@ -125,7 +124,7 @@ export class MediaController {
 
   @Post(':id/moderation')
   @HttpCode(HttpStatus.OK)
-  @Roles(MEDIA_MANAGER_ROLE)
+  @Roles(PLATFORM_ADMIN_ROLE)
   @Audit({ action: 'media.moderate', resourceType: 'media', resourceId: mediaIdParam })
   @ApiOperation({ summary: 'Record a moderation decision for user content' })
   @ApiEnvelope(MediaResponseDto)

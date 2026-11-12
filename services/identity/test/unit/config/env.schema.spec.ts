@@ -11,6 +11,60 @@ const valid = {
   OTP_HASH_SECRET: 'b'.repeat(32),
 };
 
+const production = {
+  ...valid,
+  NODE_ENV: 'production',
+  OTP_DELIVERY: 'webhook',
+  OTP_WEBHOOK_URL: 'https://otp.internal/send',
+  OTP_WEBHOOK_SECRET: 'c'.repeat(32),
+};
+const SAMPLE_HEX = '00112233445566778899aabbccddeeff'.repeat(2);
+const SAMPLE_PHRASE = `local-development-${'x'.repeat(24)}`;
+
+describe('giá trị mẫu ở production', () => {
+  it.each([
+    ['KEY_ENCRYPTION_SECRET', SAMPLE_HEX],
+    ['OTP_HASH_SECRET', SAMPLE_PHRASE],
+    ['OTP_WEBHOOK_SECRET', SAMPLE_PHRASE],
+  ])('production từ chối boot khi %s là giá trị mẫu', (name, value) => {
+    expect(() => parseEnv({ ...production, [name]: value })).toThrow(
+      `${name}: sample value is not allowed in production`,
+    );
+  });
+
+  it('production từ chối mật khẩu quản trị mẫu', () => {
+    const source = {
+      ...production,
+      BOOTSTRAP_ADMIN_EMAIL: 'admin@example.test',
+      BOOTSTRAP_ADMIN_PASSWORD: `change-me-${'x'.repeat(12)}`,
+    };
+    expect(() => parseEnv(source)).toThrow('BOOTSTRAP_ADMIN_PASSWORD');
+  });
+
+  it('production từ chối mật khẩu database mẫu', () => {
+    const source = {
+      ...production,
+      DATABASE_URL: `postgresql://user:change-me-${'x'.repeat(8)}@db/identity`,
+    };
+    expect(() => parseEnv(source)).toThrow('DATABASE_URL: sample value');
+  });
+
+  it('production nhận giá trị riêng', () => {
+    expect(parseEnv(production).NODE_ENV).toBe('production');
+  });
+
+  it('development vẫn chạy được với giá trị mẫu', () => {
+    expect(parseEnv({ ...valid, OTP_HASH_SECRET: SAMPLE_PHRASE }).NODE_ENV).toBe('development');
+  });
+});
+
+describe('định dạng log', () => {
+  it('development mặc định in log dễ đọc, LOG_PRETTY=false thì in JSON', () => {
+    expect(new AppConfig(parseEnv(valid)).log.pretty).toBe(true);
+    expect(new AppConfig(parseEnv({ ...valid, LOG_PRETTY: 'false' })).log.pretty).toBe(false);
+  });
+});
+
 describe('cấu hình môi trường', () => {
   it('nhận cấu hình tối thiểu và áp giá trị mặc định', () => {
     const env = parseEnv(valid);

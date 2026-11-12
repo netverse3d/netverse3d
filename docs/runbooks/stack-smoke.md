@@ -48,9 +48,12 @@ Kịch bản `tests/e2e/stack-smoke.mjs` chạy bên trong mạng Docker và là
 1. Gọi `media` không có token, phải bị từ chối.
 2. Đăng ký một người chơi ở `identity`, nhận mã xác minh, xác minh email, đăng nhập. Token không gắn tenant.
 3. Dùng token đó tải một tệp lên `media`, báo hoàn tất, tải về và so nội dung.
-4. Quản trị nền tảng tạo tenant cho một tiệm, tạo vai trò chủ tiệm và thêm một tài khoản làm thành viên.
-5. Chủ tiệm đăng nhập vào tenant của tiệm, tải tệp lên và tải về trong tenant đó.
-6. Người chơi ở bước 2 xin tệp của tiệm, phải nhận 404.
+4. Một người chơi thứ hai xin tệp của người chơi đầu, tìm nó trong danh sách, rồi thử tải lên dưới mã chủ sở hữu của người chơi đầu. Cả ba đều phải bị từ chối.
+5. Quản trị nền tảng tạo tenant cho một tiệm, tạo vai trò `admin` của tiệm và thêm một tài khoản làm thành viên.
+6. Chủ tiệm đăng nhập vào tenant của tiệm, tải tệp lên và tải về trong tenant đó.
+7. Người chơi ở bước 2 xin tệp của tiệm, phải nhận 404.
+8. Chủ tiệm tự duyệt tệp của tiệm mình, phải nhận 403.
+9. Quản trị nền tảng duyệt tệp của tiệm và tệp của người chơi, cả hai đều được.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 
@@ -66,7 +69,7 @@ Hai lệnh này dừng và xoá container, giữ lại dữ liệu trong volume.
 ## Giới hạn đã biết
 
 - `media` chỉ có một địa chỉ kho, dùng cho cả việc của chính nó lẫn URL ký sẵn trả cho client. Trong Compose địa chỉ đó là `object-store:8333`, chỉ đúng bên trong mạng Docker, nên trình duyệt trên máy thật chưa dùng được URL ký sẵn. Vì vậy kịch bản phải chạy trong mạng Docker.
-- Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `IDENTITY_OTP_WEBHOOK_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
+- Compose chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu; ở production service từ chối khởi động với các giá trị này. Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `IDENTITY_OTP_WEBHOOK_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
 - Mã xác minh email ở đây đi qua webhook tới chính kịch bản thử. Gửi email thật qua `notification` chưa có.
 
 ## Chạy riêng media với bộ phát token mẫu

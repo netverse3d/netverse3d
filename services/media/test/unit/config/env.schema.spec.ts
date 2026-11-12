@@ -17,6 +17,43 @@ const valid = {
   S3_BUCKET_TEMP: 'media-temp',
 };
 
+const SAMPLE_PHRASE = `change-me-${'x'.repeat(12)}`;
+
+describe('giá trị mẫu ở production', () => {
+  it('production từ chối boot khi khoá của kho là giá trị mẫu', () => {
+    const source = { ...valid, NODE_ENV: 'production', S3_SECRET_KEY: SAMPLE_PHRASE };
+    expect(() => parseEnv(source)).toThrow(
+      'S3_SECRET_KEY: sample value is not allowed in production',
+    );
+  });
+
+  it('production từ chối mật khẩu database mẫu', () => {
+    const source = {
+      ...valid,
+      NODE_ENV: 'production',
+      S3_SECRET_KEY: 'q'.repeat(24),
+      DATABASE_URL: `postgresql://user:change-me-${'x'.repeat(8)}@db/media`,
+    };
+    expect(() => parseEnv(source)).toThrow('DATABASE_URL: sample value');
+  });
+
+  it('production nhận giá trị riêng', () => {
+    const source = { ...valid, NODE_ENV: 'production', S3_SECRET_KEY: 'q'.repeat(24) };
+    expect(parseEnv(source).NODE_ENV).toBe('production');
+  });
+
+  it('development vẫn chạy được với giá trị mẫu', () => {
+    expect(parseEnv({ ...valid, S3_SECRET_KEY: SAMPLE_PHRASE }).NODE_ENV).toBe('development');
+  });
+});
+
+describe('định dạng log', () => {
+  it('development mặc định in log dễ đọc, LOG_PRETTY=false thì in JSON', () => {
+    expect(new AppConfig(parseEnv(valid)).log.pretty).toBe(true);
+    expect(new AppConfig(parseEnv({ ...valid, LOG_PRETTY: 'false' })).log.pretty).toBe(false);
+  });
+});
+
 describe('cấu hình môi trường', () => {
   it('nhận cấu hình tối thiểu và áp giá trị mặc định', () => {
     const env = parseEnv(valid);

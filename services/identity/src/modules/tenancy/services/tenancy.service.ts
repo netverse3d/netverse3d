@@ -6,7 +6,7 @@ import { PageResponseDto } from '@netverse/nest-kit';
 import { PaginationQueryDto } from '@netverse/nest-kit';
 import { IdentityErrorCode } from '../../identity/identity-error-codes';
 import { OutboxRepository } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE, isPlatformAdmin, isPlatformOnlyRole } from '../domain/platform-roles';
+import { isPlatformAdmin, isPlatformOnlyRole, isTenantAdmin } from '../domain/platform-roles';
 import {
   AddMemberDto,
   CreateTenantDto,
@@ -204,7 +204,7 @@ export class TenancyService {
   }
 
   private assertCanManage(tenantId: string, actor: Actor): void {
-    const ownAdmin = actor.tenantId === tenantId && actor.roles.includes(TENANT_ADMIN_ROLE);
+    const ownAdmin = actor.tenantId === tenantId && isTenantAdmin(actor);
     if (!isPlatformAdmin(actor) && !ownAdmin) {
       throw new AppException(ErrorCode.FORBIDDEN);
     }

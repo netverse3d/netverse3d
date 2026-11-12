@@ -42,6 +42,8 @@ describe('media', () => {
 
   const token = (name: string, roles: string[] = [], tenantId = tenant) =>
     subject.tokens.sign({ subject: name, roles, tenantId });
+  const playerToken = (name: string) => subject.tokens.sign({ subject: name });
+  const platformToken = () => subject.tokens.sign({ subject: 'ops', roles: ['platform_admin'] });
 
   async function call(
     method: 'get' | 'post' | 'delete',
@@ -148,10 +150,20 @@ describe('media', () => {
       const response = await call(
         'post',
         '/v1/media/issue-upload-url',
-        await token('ops', ['admin']),
+        await platformToken(),
         permanentUpload({ ...glb, mediaClass: 'SYSTEM_ASSET' }),
       );
       expect(response.status).toBe(201);
+    });
+
+    it('quản trị của tiệm không tạo được asset hệ thống', async () => {
+      const response = await call(
+        'post',
+        '/v1/media/issue-upload-url',
+        await token('shop-admin', ['admin']),
+        permanentUpload({ ...glb, mediaClass: 'SYSTEM_ASSET' }),
+      );
+      expect(response.status).toBe(403);
     });
 
     it('người thường không tạo được asset hệ thống', async () => {
@@ -190,6 +202,19 @@ describe('media', () => {
       const second = await issueWithKey(bearer, key, permanentUpload());
       expect(second.status).toBe(201);
       expect(second.body.result.mediaId).toBe(first.body.result.mediaId);
+    });
+
+    it('gọi lại cùng khoá sau lúc tải lên đã hoàn tất thì không cấp URL ghi nữa', async () => {
+      const bearer = await token('alice');
+      const key = randomUUID();
+      const first = await issueWithKey(bearer, key, permanentUpload());
+      const id = first.body.result.mediaId as string;
+      await uploadObject(id);
+      await call('post', `/v1/media/${id}/complete`, bearer);
+      const replay = await issueWithKey(bearer, key, permanentUpload());
+      expect(replay.status).toBe(409);
+      expect(replay.body.code).toBe('MEDIA.ALREADY_COMPLETED');
+      expect(replay.body.result).toBeUndefined();
     });
 
     it('khoá dùng lại với nội dung khác bị từ chối', async () => {
@@ -328,6 +353,93 @@ describe('media', () => {
     });
   });
 
+  describe('media của người chơi, không gắn tenant', () => {
+    const ownUpload = (name: string, overrides: Record<string, unknown> = {}) =>
+      permanentUpload({ ownerId: name, ...overrides });
+
+    it('người chơi không đọc, không tải, không xoá được media nội bộ của người chơi khác', async () => {
+      const id = await activeMedia(
+        await playerToken('ann'),
+        ownUpload('ann', { visibility: 'INTERNAL' }),
+      );
+      const other = await playerToken('ben');
+      expect((await call('get', `/v1/media/${id}`, other)).status).toBe(404);
+      expect((await call('post', `/v1/media/${id}/issue-download-url`, other, {})).status).toBe(
+        404,
+      );
+      expect((await call('delete', `/v1/media/${id}`, other)).status).toBe(404);
+    });
+
+    it('danh sách của người chơi chỉ gồm media của mình và media công khai', async () => {
+      const owner = `ann-${randomUUID()}`;
+      const viewer = `ben-${randomUUID()}`;
+      const ann = await playerToken(owner);
+      await activeMedia(ann, ownUpload(owner, { ownerType: 'list-case', visibility: 'INTERNAL' }));
+      const shared = await activeMedia(
+        ann,
+        ownUpload(owner, { ownerType: 'list-case', visibility: 'PUBLIC' }),
+      );
+      const seen = await call(
+        'get',
+        `/v1/media?ownerType=list-case&ownerId=${owner}`,
+        await playerToken(viewer),
+      );
+      expect(seen.body.result.content.map((item: { id: string }) => item.id)).toEqual([shared]);
+      const mine = await call('get', `/v1/media?ownerType=list-case&ownerId=${owner}`, ann);
+      expect(mine.body.result.totalElements).toBe(2);
+    });
+
+    it('media công khai không gắn tenant thì thành viên của một tiệm cũng đọc được', async () => {
+      const id = await activeMedia(
+        await playerToken('ann'),
+        ownUpload('ann', { visibility: 'PUBLIC' }),
+      );
+      expect((await call('get', `/v1/media/${id}`, await token('alice'))).status).toBe(200);
+    });
+
+    it('người chơi không tải lên được dưới mã chủ sở hữu của người khác', async () => {
+      const response = await call(
+        'post',
+        '/v1/media/issue-upload-url',
+        await playerToken('ann'),
+        ownUpload('ben'),
+      );
+      expect(response.status).toBe(403);
+    });
+
+    it('người chơi không chuyển được tệp tạm thành tệp dưới mã chủ sở hữu của người khác', async () => {
+      const ann = await playerToken('ann');
+      const id = await activeMedia(ann, {
+        contentType: PNG,
+        declaredSizeBytes: 100,
+        temporary: true,
+      });
+      const target = { ownerType: 'avatar', ownerId: 'ben', visibility: 'PUBLIC' };
+      expect((await call('post', `/v1/media/${id}/promote`, ann, target)).status).toBe(403);
+      const batch = await call('post', '/v1/media/promote-batch', ann, {
+        items: [{ mediaId: id, ...target }],
+      });
+      expect(batch.body.result.succeeded).toHaveLength(0);
+      expect((await row(id)).lifecycle).toBe('TEMPORARY');
+      const own = { ...target, ownerId: 'ann' };
+      expect((await call('post', `/v1/media/${id}/promote`, ann, own)).status).toBe(200);
+    });
+
+    it('vai trò admin trên token không gắn tenant không mở được media của người chơi', async () => {
+      const id = await activeMedia(await playerToken('ann'), ownUpload('ann'));
+      const forged = await subject.tokens.sign({ subject: 'eve', roles: ['admin'] });
+      expect((await call('get', `/v1/media/${id}`, forged)).status).toBe(404);
+    });
+
+    it('quản trị nền tảng đọc được media của người chơi và của mọi tiệm', async () => {
+      const playerFile = await activeMedia(await playerToken('ann'), ownUpload('ann'));
+      const shopFile = await activeMedia(await token('alice'));
+      const platform = await platformToken();
+      expect((await call('get', `/v1/media/${playerFile}`, platform)).status).toBe(200);
+      expect((await call('get', `/v1/media/${shopFile}`, platform)).status).toBe(200);
+    });
+  });
+
   describe('kiểm duyệt', () => {
     let moderated: TestApp;
     const moderatedHttp = () => request(moderated.app.getHttpServer());
@@ -347,11 +459,13 @@ describe('media', () => {
       owner: string;
       viewer: string;
       manager: string;
+      shopAdmin: string;
     }> {
-      const [owner, viewer, manager] = await Promise.all([
+      const [owner, viewer, manager, shopAdmin] = await Promise.all([
         bearerFor('owner'),
         bearerFor('viewer'),
-        bearerFor('ops', ['admin']),
+        moderated.tokens.sign({ subject: 'ops', roles: ['platform_admin'] }),
+        bearerFor('shop-admin', ['admin']),
       ]);
       const issued = await moderatedHttp()
         .post('/v1/media/issue-upload-url')
@@ -366,7 +480,7 @@ describe('media', () => {
         .post(`/v1/media/${id}/complete`)
         .set('authorization', `Bearer ${owner}`)
         .expect(200);
-      return { id, owner, viewer, manager };
+      return { id, owner, viewer, manager, shopAdmin };
     }
 
     const download = (id: string, bearer: string) =>
@@ -404,6 +518,18 @@ describe('media', () => {
     it('người thường không duyệt được', async () => {
       const { id, owner } = await pendingReview();
       await decide(id, owner, 'APPROVED').expect(403);
+    });
+
+    it('quản trị của tiệm không duyệt được nội dung của chính tiệm mình', async () => {
+      const { id, shopAdmin } = await pendingReview();
+      await decide(id, shopAdmin, 'APPROVED').expect(403);
+      expect((await download(id, shopAdmin)).status).toBe(403);
+    });
+
+    it('token gắn tenant mang tên vai trò nền tảng không duyệt được', async () => {
+      const { id } = await pendingReview();
+      const forged = await bearerFor('eve', ['platform_admin']);
+      await decide(id, forged, 'APPROVED').expect(403);
     });
   });
 

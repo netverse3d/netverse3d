@@ -3,6 +3,10 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Actor } from '../../../common/context/request-context';
 import { CurrentActor } from '../../../common/decorators/current-actor.decorator';
 import { Roles } from '../../../common/decorators/roles.decorator';
+import {
+  PLATFORM_ADMIN_ROLE,
+  TENANT_ADMIN_ROLE,
+} from '../../../infrastructure/auth/platform-roles';
 import { PageResponseDto } from '../../../common/pagination/page-response.dto';
 import { ApiPagedEnvelope } from '../../../common/swagger/api-envelope.decorators';
 import { AuditLogQueryDto } from '../dto/audit-log-query.dto';
@@ -15,7 +19,7 @@ export class AuditLogsController {
   constructor(private readonly audit: AuditService) {}
 
   @Get()
-  @Roles('admin', 'platform_admin')
+  @Roles(TENANT_ADMIN_ROLE, PLATFORM_ADMIN_ROLE)
   @ApiOperation({ summary: 'List audit log entries, newest first' })
   @ApiPagedEnvelope(AuditLogResponseDto)
   list(

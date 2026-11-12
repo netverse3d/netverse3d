@@ -28,3 +28,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0022](./ADR-0022-per-component-release-tags.md) | Phát hành theo từng thành phần, mỗi thành phần một dòng tag | Đã chốt |
 | [ADR-0023](./ADR-0023-media-service-origin-and-object-storage.md) | Nguồn gốc mã của media service và object storage ở môi trường dev | Đã chốt |
 | [ADR-0024](./ADR-0024-identity-origin-and-shop-tenants.md) | Nguồn gốc mã của identity service và mỗi tiệm là một tenant | Đã chốt |
+| [ADR-0025](./ADR-0025-media-access-by-tenant-model.md) | Quyền trên media theo mô hình tenant, duyệt nội dung là quyền nền tảng | Đã chốt |

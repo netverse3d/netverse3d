@@ -10,7 +10,15 @@ import { AppConfig, UploadPolicy } from '../../../config/app-config';
 import { StorageObjectMissingError } from '../../../infrastructure/storage/storage.errors';
 import { StorageService } from '../../../infrastructure/storage/storage.service';
 import { OutboxRepository } from '@netverse/nest-kit';
-import { canChange, canDownload, canRead, isMediaManager } from '../domain/media-access';
+import {
+  canChange,
+  canDownload,
+  canModerate,
+  canRead,
+  canUploadSystemAsset,
+  listScopeFor,
+  ownsUploadTarget,
+} from '../domain/media-access';
 import { normalizeContentType, objectFileName } from '../domain/object-file-name';
 import { assertContentTypeAllowed, assertSizeAllowed } from '../domain/upload-policy';
 import { IssueDownloadUrlDto } from '../dto/issue-download-url.dto';
@@ -78,7 +86,7 @@ export class MediaService {
     const requestHash = createHash('sha256').update(canonicalJson(dto)).digest();
     const replay = await this.findReplay(scope, idempotencyKey, requestHash);
     if (replay) {
-      return this.toUploadResponse(replay);
+      return this.toReplayResponse(replay);
     }
 
     try {
@@ -98,7 +106,7 @@ export class MediaService {
         ? await this.findReplay(scope, idempotencyKey, requestHash)
         : null;
       if (raced) {
-        return this.toUploadResponse(raced);
+        return this.toReplayResponse(raced);
       }
       throw error;
     }
@@ -176,8 +184,7 @@ export class MediaService {
     const orderBy = resolveSort(query.sort, SORTABLE_FIELDS, { createdAt: 'desc' });
     const [rows, total] = await this.repository.findPage(
       {
-        tenantId: actor.tenantId,
-        viewerSubject: isMediaManager(actor) ? null : actor.subject,
+        ...listScopeFor(actor),
         ownerType: query.ownerType,
         ownerId: query.ownerId,
         mediaClass: query.mediaClass,
@@ -211,6 +218,9 @@ export class MediaService {
     const media = await this.requireChangeable(id, actor);
     if (media.lifecycle === 'PERMANENT') {
       return MediaResponseDto.from(media);
+    }
+    if (!ownsUploadTarget(actor, dto.ownerId)) {
+      throw new AppException(ErrorCode.FORBIDDEN);
     }
     if (media.status !== 'ACTIVE') {
       throw new AppException(MediaErrorCode.NOT_ACTIVE);
@@ -273,6 +283,9 @@ export class MediaService {
   }
 
   async moderate(id: string, dto: ModerateMediaDto, actor: Actor): Promise<MediaResponseDto> {
+    if (!canModerate(actor)) {
+      throw new AppException(ErrorCode.FORBIDDEN);
+    }
     const media = await this.requireReadable(id, actor);
     if (media.mediaClass !== 'USER_CONTENT') {
       throw invalidUpload('Only user content can be moderated');
@@ -295,7 +308,7 @@ export class MediaService {
   }
 
   private assertUploadRequest(dto: IssueUploadUrlDto, actor: Actor): void {
-    if (dto.mediaClass === 'SYSTEM_ASSET' && !isMediaManager(actor)) {
+    if (dto.mediaClass === 'SYSTEM_ASSET' && !canUploadSystemAsset(actor)) {
       throw new AppException(ErrorCode.FORBIDDEN);
     }
     const policy = this.policyFor(dto.mediaClass);
@@ -314,6 +327,9 @@ export class MediaService {
       throw invalidUpload('declaredSizeBytes must be at least 1 for permanent uploads');
     if (!dto.ownerType || !dto.ownerId)
       throw invalidUpload('ownerType and ownerId are required for permanent uploads');
+    if (!ownsUploadTarget(actor, dto.ownerId)) {
+      throw new AppException(ErrorCode.FORBIDDEN);
+    }
   }
 
   private policyFor(mediaClass: MediaClassValue): UploadPolicy {
@@ -407,6 +423,13 @@ export class MediaService {
       await afterCreate?.(media, transaction);
       return media;
     });
+  }
+
+  private toReplayResponse(media: MediaRow): Promise<UploadUrlResponseDto> {
+    if (media.status !== 'PENDING') {
+      throw new AppException(MediaErrorCode.ALREADY_COMPLETED);
+    }
+    return this.toUploadResponse(media);
   }
 
   private async toUploadResponse(media: MediaRow): Promise<UploadUrlResponseDto> {

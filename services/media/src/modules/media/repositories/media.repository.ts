@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MediaIdempotency, MediaObject, Prisma } from '../../../infrastructure/prisma/client';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import type { MediaListScope } from '../domain/media-access';
 
 export type MediaRow = MediaObject;
 export type MediaTransaction = Prisma.TransactionClient;
@@ -9,9 +10,7 @@ export type MediaChanges = Prisma.MediaObjectUncheckedUpdateManyInput;
 export type MediaOrderBy = Prisma.MediaObjectOrderByWithRelationInput;
 export type IdempotentMedia = MediaIdempotency & { media: MediaObject };
 
-export interface MediaListFilter {
-  tenantId: string | null;
-  viewerSubject: string | null;
+export interface MediaListFilter extends MediaListScope {
   ownerType?: string;
   ownerId?: string;
   mediaClass?: MediaObject['mediaClass'];
@@ -80,14 +79,19 @@ export class MediaRepository {
     take: number,
   ): Promise<[MediaRow[], number]> {
     const where: Prisma.MediaObjectWhereInput = {
-      tenantId: filter.tenantId,
+      ...(filter.tenantId === undefined ? {} : { tenantId: filter.tenantId }),
       lifecycle: 'PERMANENT',
       status: { not: 'DELETED' },
       ...(filter.ownerType ? { ownerType: filter.ownerType } : {}),
       ...(filter.ownerId ? { ownerId: filter.ownerId } : {}),
       ...(filter.mediaClass ? { mediaClass: filter.mediaClass } : {}),
       ...(filter.viewerSubject
-        ? { OR: [{ visibility: { not: 'PRIVATE' } }, { createdBy: filter.viewerSubject }] }
+        ? {
+            OR: [
+              { visibility: { in: filter.sharedVisibilities } },
+              { createdBy: filter.viewerSubject },
+            ],
+          }
         : {}),
     };
     return this.prisma.$transaction([

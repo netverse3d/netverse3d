@@ -1,4 +1,4 @@
-import { parseEnvWith } from '@netverse/nest-kit';
+import { parseEnvWith, sampleSecretNames } from '@netverse/nest-kit';
 import { z } from 'zod';
 
 const booleanFlag = z.enum(['true', 'false']).transform((value) => value === 'true');
@@ -13,11 +13,23 @@ const commaSeparated = z
       .filter((item) => item.length > 0),
   );
 
+const GUARDED_NAMES = [
+  'DATABASE_URL',
+  'FACEBOOK_APP_SECRET',
+  'GITHUB_CLIENT_SECRET',
+  'ZALO_APP_SECRET',
+  'KEY_ENCRYPTION_SECRET',
+  'OTP_HASH_SECRET',
+  'OTP_WEBHOOK_SECRET',
+  'BOOTSTRAP_ADMIN_PASSWORD',
+];
+
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
 
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    LOG_PRETTY: booleanFlag.optional(),
     SERVICE_NAME: z.string().min(1),
     SERVICE_VERSION: z.string().min(1).default('0.0.0'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
@@ -88,6 +100,15 @@ export const envSchema = z
   .superRefine((env, context) => {
     const missing = (path: string, message: string) =>
       context.addIssue({ code: 'custom', path: [path], message });
+    if (env.NODE_ENV === 'production') {
+      for (const name of sampleSecretNames(env, GUARDED_NAMES)) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: 'sample value is not allowed in production',
+        });
+      }
+    }
     if (env.NODE_ENV === 'production' && env.OTP_DELIVERY === 'log') {
       missing('OTP_DELIVERY', 'log delivery would write one-time codes to logs in production');
     }

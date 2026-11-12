@@ -11,17 +11,18 @@ Package này chỉ phục vụ service viết bằng NestJS. Chuẩn chung cho m
 
 ## Có gì
 
-| Phần                        | Nội dung                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `common`                    | Ngữ cảnh request, decorator, response và lỗi chuẩn, filter, interceptor, phân trang, validation |
-| `infrastructure/auth`       | Kiểm JWT qua JWKS, guard xác thực và guard vai trò                                              |
-| `infrastructure/logger`     | Log có cấu trúc, che trường nhạy cảm                                                            |
-| `infrastructure/rate-limit` | Giới hạn tần suất                                                                               |
-| `infrastructure/jobs`       | Job chạy định kỳ có khoá, để nhiều bản sao không chạy trùng                                     |
-| `modules/audit`             | Ghi và đọc audit log                                                                            |
-| `modules/outbox`            | Outbox, job chuyển sự kiện, vỏ sự kiện chung                                                    |
-| `modules/health`            | `/livez` và `/healthz`                                                                          |
-| `bootstrap`                 | Cấu hình ứng dụng HTTP và tài liệu OpenAPI                                                      |
+| Phần                        | Nội dung                                                                                           |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `common`                    | Ngữ cảnh request, decorator, response và lỗi chuẩn, filter, interceptor, phân trang, validation    |
+| `infrastructure/auth`       | Kiểm JWT qua JWKS, guard xác thực và guard vai trò, phép kiểm quản trị nền tảng và quản trị tenant |
+| `infrastructure/logger`     | Log có cấu trúc, che trường nhạy cảm                                                               |
+| `infrastructure/rate-limit` | Giới hạn tần suất                                                                                  |
+| `infrastructure/jobs`       | Job chạy định kỳ có khoá, để nhiều bản sao không chạy trùng                                        |
+| `modules/audit`             | Ghi và đọc audit log                                                                               |
+| `modules/outbox`            | Outbox, job chuyển sự kiện, vỏ sự kiện chung                                                       |
+| `modules/health`            | `/livez` và `/healthz`                                                                             |
+| `config`                    | Đọc biến môi trường theo schema, nhận ra giá trị mẫu để từ chối ở production                       |
+| `bootstrap`                 | Cấu hình ứng dụng HTTP và tài liệu OpenAPI                                                         |
 
 ## Service nối vào thế nào
 
