@@ -252,7 +252,7 @@ Nguồn: `mentor-architecture-full`, `team-decision`
 
 ### REQ-027: Tách staging và production, phát hành theo tag
 
-Mọi thay đổi được test trên staging trước; tag kích hoạt phát hành, ai trong nhóm cũng phát hành được nếu đúng quy trình.
+Mọi thay đổi được test trên staging trước; tag kích hoạt phát hành, ai trong nhóm cũng phát hành được nếu đúng quy trình. Mỗi thành phần triển khai có dòng tag riêng, để sửa và đưa riêng thành phần đó lên mà không kéo theo thành phần khác, theo ADR-0022.
 
 Nguồn: `team-decision`
 
