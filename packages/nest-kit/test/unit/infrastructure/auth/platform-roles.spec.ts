@@ -1,8 +1,5 @@
-import type { Actor } from '@netverse/nest-kit';
-import {
-  isPlatformAdmin,
-  isPlatformOnlyRole,
-} from '../../../../../src/modules/tenancy/domain/platform-roles';
+import type { Actor } from '../../../../src/common/context/request-context';
+import { isPlatformAdmin, isTenantAdmin } from '../../../../src/infrastructure/auth/platform-roles';
 
 const actor = (tenantId: string | null, roles: string[]): Actor => ({
   subject: 'principal-1',
@@ -10,12 +7,7 @@ const actor = (tenantId: string | null, roles: string[]): Actor => ({
   roles,
 });
 
-describe('vai trò nền tảng', () => {
-  it('tên platform_admin chỉ dành cho nền tảng, tên admin thì tenant dùng được', () => {
-    expect(isPlatformOnlyRole('platform_admin')).toBe(true);
-    expect(isPlatformOnlyRole('admin')).toBe(false);
-  });
-
+describe('vai trò nền tảng và vai trò tenant', () => {
   it('token không gắn tenant mang platform_admin là quản trị nền tảng', () => {
     expect(isPlatformAdmin(actor(null, ['platform_admin']))).toBe(true);
   });
@@ -26,5 +18,13 @@ describe('vai trò nền tảng', () => {
 
   it('token không gắn tenant, không có vai trò thì không phải quản trị nền tảng', () => {
     expect(isPlatformAdmin(actor(null, []))).toBe(false);
+  });
+
+  it('admin của một tenant là quản trị tenant đó', () => {
+    expect(isTenantAdmin(actor('tenant-1', ['admin']))).toBe(true);
+  });
+
+  it('token không gắn tenant mang admin không phải quản trị tenant nào', () => {
+    expect(isTenantAdmin(actor(null, ['admin']))).toBe(false);
   });
 });

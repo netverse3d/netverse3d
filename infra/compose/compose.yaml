@@ -93,7 +93,8 @@ services:
     env_file:
       - ../../services/identity/.env.example
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${APP_ENV:-development}
+      LOG_PRETTY: 'false'
       SERVICE_NAME: identity
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/identity
       AUTH_JWKS_URL: http://127.0.0.1:3000/.well-known/jwks.json
@@ -138,7 +139,8 @@ services:
     env_file:
       - ../../services/media/.env.example
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${APP_ENV:-development}
+      LOG_PRETTY: 'false'
       SERVICE_NAME: media
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
       S3_ENDPOINT: object-store

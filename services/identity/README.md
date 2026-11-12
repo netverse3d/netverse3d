@@ -17,6 +17,8 @@ Service quản lý tài khoản, phiên đăng nhập, token, tenant và vai tr�
 
 Người chơi là mọi tài khoản đã đăng nhập, dùng token không gắn tenant. Chủ tiệm là thành viên tenant của tiệm mình. Quản trị là quyền nền tảng gắn trên tài khoản.
 
+Tên vai trò `platform_admin` dành riêng cho nền tảng: tenant không tạo được vai trò trùng tên, và tên đó chỉ có trong token không gắn tenant. Ở production service từ chối khởi động nếu khoá hoặc mật khẩu quản trị là giá trị mẫu.
+
 ## Đăng nhập
 
 | Cách              | Endpoint                         | Ghi chú                                                                    |
