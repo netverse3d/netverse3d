@@ -11,3 +11,4 @@ Trang này được sinh từ `docs/catalog.yaml`. Muốn đổi thì sửa ở 
 | [`ui`](./ui/README.md) | package | React | Thành phần giao diện dùng chung | M1 |
 | [`config`](./config/README.md) | package | TypeScript | Cấu hình dùng chung cho lint, TypeScript | M1 |
 | [`game-assets`](./game-assets/README.md) | package | Blender, glTF | Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật | M1 |
+| [`nest-kit`](./nest-kit/README.md) | package | NestJS | Bộ khung dùng chung của các service NestJS, gồm response, lỗi, phân trang, xác thực, log | M1 |
