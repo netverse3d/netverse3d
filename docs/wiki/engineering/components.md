@@ -24,7 +24,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `services/identity` | service | NestJS, Prisma | Đăng ký, đăng nhập, JWT, RBAC | M1 |
 | `services/shop` | service | NestJS, Prisma | Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình | M3 |
 | `services/world` | service | NestJS, Prisma | Thế giới, bản đồ, bố cục, phòng net | M4 |
-| `services/media` | service | NestJS, Prisma | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |
+| `services/media` | service | NestJS, Prisma, PostgreSQL, object storage chuẩn S3 | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |
 | `services/payment` | service | NestJS, Prisma | PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn | M3 |
 | `services/ai-chat` | service | Python | Chatbot LLM chạy local và TTS tiếng Việt | M7 |
 | `services/notification` | service | NestJS, Prisma | Thông báo realtime, email, trong ứng dụng | M3 |

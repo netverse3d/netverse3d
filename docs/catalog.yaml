@@ -35,7 +35,7 @@ components:
   - id: media
     path: services/media
     kind: service
-    stack: NestJS, Prisma
+    stack: NestJS, Prisma, PostgreSQL, object storage chuẩn S3
     summary: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN
     milestone: M2
     maps_to: Tải lên bằng URL ký sẵn, duyệt asset, danh mục asset
