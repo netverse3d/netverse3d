@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { renderDecisions, renderRequirements, renderRoadmap } from './render.mjs';
+import {
+  renderAreaIndex,
+  renderCatalog,
+  renderDecisions,
+  renderRequirements,
+  renderRoadmap,
+} from './render.mjs';
 
 const milestones = [
   { id: 'M1', title: 'M1 · Một', goal: 'Mục tiêu một' },
@@ -42,4 +48,52 @@ test('lộ trình báo milestone chưa có yêu cầu', () => {
   const page = renderRoadmap(requirements, milestones);
   assert.match(page, /M1 · Một \| Mục tiêu một \| REQ-001/);
   assert.match(page, /M2 · Hai \| Mục tiêu hai \| Chưa có/);
+});
+
+const components = [
+  {
+    id: 'identity',
+    path: 'services/identity',
+    kind: 'service',
+    stack: 'NestJS',
+    summary: 'Đăng nhập | token',
+    milestone: 'M1',
+  },
+  {
+    id: 'web-3d',
+    path: 'apps/web-3d',
+    kind: 'app',
+    stack: 'Next.js',
+    summary: 'Web 3D',
+    milestone: 'M1',
+  },
+];
+const areas = [
+  { path: 'services', summary: 'Tiến trình phục vụ API' },
+  { path: 'infra', summary: 'Hạ tầng chạy hệ thống' },
+];
+
+test('trang chỉ mục của một thư mục chỉ liệt kê thành phần nằm trong nó, có liên kết', () => {
+  const page = renderAreaIndex(areas[0], components);
+  assert.ok(page.startsWith('# services\n'));
+  assert.ok(page.includes('Tiến trình phục vụ API'));
+  assert.ok(page.includes('[`identity`](./identity/README.md)'));
+  assert.ok(!page.includes('web-3d'));
+});
+
+test('thư mục không chứa thành phần thì trang chỉ mục không có bảng', () => {
+  const page = renderAreaIndex(areas[1], components);
+  assert.ok(page.includes('Hạ tầng chạy hệ thống'));
+  assert.ok(!page.includes('| --- |'));
+});
+
+test('trang chỉ mục ghi rõ nó được sinh từ catalog', () => {
+  assert.ok(renderAreaIndex(areas[1], components).includes('docs/catalog.yaml'));
+});
+
+test('danh sách thành phần mở đầu bằng bảng thư mục cấp cao kèm số thành phần', () => {
+  const page = renderCatalog(components, areas);
+  assert.ok(page.includes('| `services/` | Tiến trình phục vụ API | 1 |'));
+  assert.ok(page.includes('| `infra/` | Hạ tầng chạy hệ thống | 0 |'));
+  assert.ok(page.indexOf('## Thư mục cấp cao') < page.indexOf('## Thành phần'));
 });

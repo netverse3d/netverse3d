@@ -1,9 +1,17 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { parse } from 'yaml';
-import { loadCatalog } from '../catalog/lib.mjs';
+import { loadAreas, loadCatalog } from '../catalog/lib.mjs';
 import { loadDecisions, loadRegistry } from '../trace/lib.mjs';
-import { renderCatalog, renderDecisions, renderRequirements, renderRoadmap } from './render.mjs';
+import {
+  renderAreaIndex,
+  renderCatalog,
+  renderDecisions,
+  renderRequirements,
+  renderRoadmap,
+} from './render.mjs';
+
+const AREAS_WITH_OWN_INDEX = new Set(['docs']);
 
 const root = process.cwd();
 const isCheck = process.argv.includes('--check');
@@ -18,11 +26,19 @@ const decisions = loadDecisions(root).map((decision) => {
   return { ...decision, title };
 });
 
+const components = loadCatalog(root);
+const areas = loadAreas(root);
+
 const pages = {
   'docs/requirements/index.md': renderRequirements(requirements, milestones),
   'docs/decisions/index.md': renderDecisions(decisions),
   'docs/wiki/team/roadmap.md': renderRoadmap(requirements, milestones),
-  'docs/wiki/engineering/components.md': renderCatalog(loadCatalog(root)),
+  'docs/wiki/engineering/components.md': renderCatalog(components, areas),
+  ...Object.fromEntries(
+    areas
+      .filter((area) => !AREAS_WITH_OWN_INDEX.has(area.path))
+      .map((area) => [`${area.path}/README.md`, renderAreaIndex(area, components)]),
+  ),
 };
 
 function readExisting(file) {

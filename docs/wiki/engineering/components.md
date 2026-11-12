@@ -2,6 +2,20 @@
 
 Trang này được sinh từ `docs/catalog.yaml`.
 
+## Thư mục cấp cao
+
+| Thư mục | Vai trò | Số thành phần |
+| --- | --- | --- |
+| `apps/` | Giao diện chạy trên trình duyệt | 2 |
+| `services/` | Tiến trình phục vụ API hoặc kết nối realtime, mỗi service một thư mục | 8 |
+| `workers/` | Tiến trình xử lý việc nền | 3 |
+| `packages/` | Mã và dữ liệu dùng chung, không tự triển khai | 5 |
+| `infra/` | Hạ tầng chạy hệ thống, gồm Compose, cổng vào và cấu hình quan sát | 0 |
+| `scripts/` | Công cụ của repo để kiểm, sinh tài liệu và phát hành | 0 |
+| `docs/` | Yêu cầu, quyết định, wiki và runbook | 0 |
+
+## Thành phần
+
 | Đường dẫn | Loại | Stack | Vai trò | Milestone |
 | --- | --- | --- | --- | --- |
 | `apps/web-3d` | app | Next.js, Three.js | Web 3D và PWA cho người chơi và chủ tiệm | M1 |

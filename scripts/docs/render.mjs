@@ -78,7 +78,16 @@ export function renderRoadmap(requirements, milestones) {
     .concat('\n');
 }
 
-export function renderCatalog(components) {
+function componentsIn(area, components) {
+  return components.filter((component) => component.path.startsWith(`${area.path}/`));
+}
+
+export function renderCatalog(components, areas = []) {
+  const areaRows = areas.map((area) => [
+    `\`${area.path}/\``,
+    escapeCell(area.summary),
+    componentsIn(area, components).length,
+  ]);
   const rows = components.map((component) => [
     `\`${component.path}\``,
     component.kind,
@@ -89,8 +98,33 @@ export function renderCatalog(components) {
   return [
     '# Danh sách thành phần',
     'Trang này được sinh từ `docs/catalog.yaml`.',
+    '## Thư mục cấp cao',
+    table(['Thư mục', 'Vai trò', 'Số thành phần'], areaRows),
+    '## Thành phần',
     table(['Đường dẫn', 'Loại', 'Stack', 'Vai trò', 'Milestone'], rows),
   ]
     .join('\n\n')
     .concat('\n');
+}
+
+export function renderAreaIndex(area, components) {
+  const rows = componentsIn(area, components).map((component) => {
+    const name = component.path.slice(area.path.length + 1);
+    return [
+      `[\`${name}\`](./${name}/README.md)`,
+      component.kind,
+      escapeCell(component.stack),
+      escapeCell(component.summary),
+      component.milestone,
+    ];
+  });
+  const sections = [
+    `# ${area.path}`,
+    `${area.summary}.`,
+    'Trang này được sinh từ `docs/catalog.yaml`. Muốn đổi thì sửa ở đó rồi chạy `pnpm docs:generate`.',
+  ];
+  if (rows.length > 0) {
+    sections.push(table(['Thành phần', 'Loại', 'Stack', 'Vai trò', 'Milestone'], rows));
+  }
+  return sections.join('\n\n').concat('\n');
 }
