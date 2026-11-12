@@ -16,7 +16,7 @@
     "start:prod": "node dist/main",
     "lint": "tsc --noEmit --incremental false",
     "test": "jest",
-    "test:e2e": "jest --config test/jest-e2e.json --runInBand",
+    "test:e2e": "prisma migrate deploy && jest --config test/jest-e2e.json --runInBand",
     "openapi:export": "ts-node scripts/export-openapi.ts",
     "dev:issuer": "ts-node scripts/dev-issuer.ts",
     "prisma:generate": "prisma generate",

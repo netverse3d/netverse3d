@@ -6,24 +6,27 @@ export const CI_SHARED_FILES = ['eslint.config.mjs', '.github/workflows/ci.yml']
 
 const REQUIRED_JOBS = ['repo', 'plan', 'unit'];
 
-function packageNameAt(root, path) {
+function manifestAt(root, path) {
   const file = join(root, path, 'package.json');
-  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).name : null;
+  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+}
+
+function unitAt(root, id, path, standalone) {
+  const manifest = manifestAt(root, path);
+  return {
+    id,
+    path,
+    package: manifest?.name ?? null,
+    e2e: Boolean(manifest?.scripts?.['test:e2e']),
+    ...(standalone ? { standalone: true } : {}),
+  };
 }
 
 export function loadUnits(root, components, areas) {
-  const fromComponents = components.map((component) => ({
-    id: component.id,
-    path: component.path,
-    package: packageNameAt(root, component.path),
-  }));
-  const fromAreas = areas.map((area) => ({
-    id: area.path,
-    path: area.path,
-    package: packageNameAt(root, area.path),
-    standalone: true,
-  }));
-  return [...fromComponents, ...fromAreas].filter((unit) => unit.package);
+  return [
+    ...components.map((component) => unitAt(root, component.id, component.path, false)),
+    ...areas.map((area) => unitAt(root, area.path, area.path, true)),
+  ].filter((unit) => unit.package);
 }
 
 export function selectUnits(units, components, dependencies, files) {

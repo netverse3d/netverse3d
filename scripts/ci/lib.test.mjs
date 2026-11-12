@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { concludeRun, findUnitsWithoutJob, selectUnits } from './lib.mjs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { concludeRun, findUnitsWithoutJob, loadUnits, selectUnits } from './lib.mjs';
 
 const components = [
   { id: 'contracts', path: 'packages/contracts' },
@@ -152,4 +155,36 @@ test('thành phần có mã nhưng chưa có cách kiểm trong CI bị nêu tê
     (component) => stacks.get(component.id) ?? null,
   );
   assert.deepEqual(withoutJob, ['game: has go.mod but CI has no job for it yet']);
+});
+
+test('đơn vị có script test đầu cuối được đánh dấu để CI bật database', () => {
+  const root = mkdtempSync(join(tmpdir(), 'ci-units-'));
+  const write = (file, content) => {
+    mkdirSync(dirname(join(root, file)), { recursive: true });
+    writeFileSync(join(root, file), content);
+  };
+  write(
+    'services/media/package.json',
+    '{"name":"@netverse/media","scripts":{"test":"jest","test:e2e":"jest --config e2e.json"}}',
+  );
+  write(
+    'packages/contracts/package.json',
+    '{"name":"@netverse/contracts","scripts":{"test":"node --test"}}',
+  );
+  const loaded = loadUnits(
+    root,
+    [
+      { id: 'media', path: 'services/media' },
+      { id: 'contracts', path: 'packages/contracts' },
+      { id: 'identity', path: 'services/identity' },
+    ],
+    [],
+  );
+  assert.deepEqual(
+    loaded.map((unit) => [unit.id, unit.e2e]),
+    [
+      ['media', true],
+      ['contracts', false],
+    ],
+  );
 });
