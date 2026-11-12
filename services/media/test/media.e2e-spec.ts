@@ -204,6 +204,19 @@ describe('media', () => {
       expect(second.body.result.mediaId).toBe(first.body.result.mediaId);
     });
 
+    it('gọi lại cùng khoá sau lúc tải lên đã hoàn tất thì không cấp URL ghi nữa', async () => {
+      const bearer = await token('alice');
+      const key = randomUUID();
+      const first = await issueWithKey(bearer, key, permanentUpload());
+      const id = first.body.result.mediaId as string;
+      await uploadObject(id);
+      await call('post', `/v1/media/${id}/complete`, bearer);
+      const replay = await issueWithKey(bearer, key, permanentUpload());
+      expect(replay.status).toBe(409);
+      expect(replay.body.code).toBe('MEDIA.ALREADY_COMPLETED');
+      expect(replay.body.result).toBeUndefined();
+    });
+
     it('khoá dùng lại với nội dung khác bị từ chối', async () => {
       const bearer = await token('alice');
       const key = randomUUID();
@@ -392,6 +405,24 @@ describe('media', () => {
         ownUpload('ben'),
       );
       expect(response.status).toBe(403);
+    });
+
+    it('người chơi không chuyển được tệp tạm thành tệp dưới mã chủ sở hữu của người khác', async () => {
+      const ann = await playerToken('ann');
+      const id = await activeMedia(ann, {
+        contentType: PNG,
+        declaredSizeBytes: 100,
+        temporary: true,
+      });
+      const target = { ownerType: 'avatar', ownerId: 'ben', visibility: 'PUBLIC' };
+      expect((await call('post', `/v1/media/${id}/promote`, ann, target)).status).toBe(403);
+      const batch = await call('post', '/v1/media/promote-batch', ann, {
+        items: [{ mediaId: id, ...target }],
+      });
+      expect(batch.body.result.succeeded).toHaveLength(0);
+      expect((await row(id)).lifecycle).toBe('TEMPORARY');
+      const own = { ...target, ownerId: 'ann' };
+      expect((await call('post', `/v1/media/${id}/promote`, ann, own)).status).toBe(200);
     });
 
     it('vai trò admin trên token không gắn tenant không mở được media của người chơi', async () => {

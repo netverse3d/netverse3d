@@ -27,6 +27,16 @@ describe('giá trị mẫu ở production', () => {
     );
   });
 
+  it('production từ chối mật khẩu database mẫu', () => {
+    const source = {
+      ...valid,
+      NODE_ENV: 'production',
+      S3_SECRET_KEY: 'q'.repeat(24),
+      DATABASE_URL: `postgresql://user:change-me-${'x'.repeat(8)}@db/media`,
+    };
+    expect(() => parseEnv(source)).toThrow('DATABASE_URL: sample value');
+  });
+
   it('production nhận giá trị riêng', () => {
     const source = { ...valid, NODE_ENV: 'production', S3_SECRET_KEY: 'q'.repeat(24) };
     expect(parseEnv(source).NODE_ENV).toBe('production');

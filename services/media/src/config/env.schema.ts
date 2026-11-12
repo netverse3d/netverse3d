@@ -87,7 +87,7 @@ export const envSchema = z
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV === 'production') {
-      for (const name of sampleSecretNames(env, ['S3_SECRET_KEY'])) {
+      for (const name of sampleSecretNames(env, ['DATABASE_URL', 'S3_SECRET_KEY'])) {
         context.addIssue({
           code: 'custom',
           path: [name],

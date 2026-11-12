@@ -41,6 +41,14 @@ describe('giá trị mẫu ở production', () => {
     expect(() => parseEnv(source)).toThrow('BOOTSTRAP_ADMIN_PASSWORD');
   });
 
+  it('production từ chối mật khẩu database mẫu', () => {
+    const source = {
+      ...production,
+      DATABASE_URL: `postgresql://user:change-me-${'x'.repeat(8)}@db/identity`,
+    };
+    expect(() => parseEnv(source)).toThrow('DATABASE_URL: sample value');
+  });
+
   it('production nhận giá trị riêng', () => {
     expect(parseEnv(production).NODE_ENV).toBe('production');
   });

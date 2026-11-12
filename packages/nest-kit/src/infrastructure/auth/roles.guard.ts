@@ -4,6 +4,7 @@ import { currentActor } from '../../common/context/request-context';
 import { ROLES_METADATA } from '../../common/decorators/roles.decorator';
 import { AppException } from '../../common/errors/app.exception';
 import { ErrorCode } from '../../common/errors/error-code';
+import { rolesInScope } from './platform-roles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,7 +18,8 @@ export class RolesGuard implements CanActivate {
     if (!required || required.length === 0) {
       return true;
     }
-    const roles = currentActor()?.roles ?? [];
+    const actor = currentActor();
+    const roles = actor ? rolesInScope(actor) : [];
     if (!required.some((role) => roles.includes(role))) {
       throw new AppException(ErrorCode.FORBIDDEN);
     }

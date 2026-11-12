@@ -86,7 +86,7 @@ export class MediaService {
     const requestHash = createHash('sha256').update(canonicalJson(dto)).digest();
     const replay = await this.findReplay(scope, idempotencyKey, requestHash);
     if (replay) {
-      return this.toUploadResponse(replay);
+      return this.toReplayResponse(replay);
     }
 
     try {
@@ -106,7 +106,7 @@ export class MediaService {
         ? await this.findReplay(scope, idempotencyKey, requestHash)
         : null;
       if (raced) {
-        return this.toUploadResponse(raced);
+        return this.toReplayResponse(raced);
       }
       throw error;
     }
@@ -218,6 +218,9 @@ export class MediaService {
     const media = await this.requireChangeable(id, actor);
     if (media.lifecycle === 'PERMANENT') {
       return MediaResponseDto.from(media);
+    }
+    if (!ownsUploadTarget(actor, dto.ownerId)) {
+      throw new AppException(ErrorCode.FORBIDDEN);
     }
     if (media.status !== 'ACTIVE') {
       throw new AppException(MediaErrorCode.NOT_ACTIVE);
@@ -420,6 +423,13 @@ export class MediaService {
       await afterCreate?.(media, transaction);
       return media;
     });
+  }
+
+  private toReplayResponse(media: MediaRow): Promise<UploadUrlResponseDto> {
+    if (media.status !== 'PENDING') {
+      throw new AppException(MediaErrorCode.ALREADY_COMPLETED);
+    }
+    return this.toUploadResponse(media);
   }
 
   private async toUploadResponse(media: MediaRow): Promise<UploadUrlResponseDto> {

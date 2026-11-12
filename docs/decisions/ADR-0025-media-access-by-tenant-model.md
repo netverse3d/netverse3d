@@ -20,7 +20,7 @@ Ngoài ra identity và media khởi động được ở production với các g
 
 1. Quản trị nền tảng là token không gắn tenant mang vai trò `platform_admin`. Token gắn tenant mang tên vai trò đó không phải quản trị nền tảng.
 2. Quản trị của một tiệm là token gắn tenant của tiệm mang vai trò `admin`. Vai trò `admin` trên token không gắn tenant không có nghĩa gì.
-3. Hai phép kiểm này nằm trong `packages/nest-kit`. Service không tự so tên vai trò nền tảng.
+3. Hai phép kiểm này nằm trong `packages/nest-kit`. Service không tự so tên vai trò nền tảng. Guard vai trò của `packages/nest-kit` bỏ vai trò đặt sai phạm vi trước lúc so, nên route đòi quản trị nền tảng không nhận token gắn tenant, và route đòi quản trị tenant không nhận token không gắn tenant.
 
 ### Quyền trên media
 
@@ -29,15 +29,18 @@ Ngoài ra identity và media khởi động được ở production với các g
 6. Trong một tiệm: thành viên đọc được media nội bộ và công khai của tiệm; media riêng tư chỉ người tạo và quản trị của tiệm đọc được; chỉ người tạo và quản trị của tiệm đổi hoặc xoá được.
 7. Media không gắn tenant: người chơi chỉ đọc, đổi, liệt kê được media do mình tạo. Mức nội bộ chỉ có nghĩa bên trong một tenant.
 8. Media công khai không gắn tenant thì mọi tài khoản đã đăng nhập đọc được, kể cả thành viên đang dùng token của một tiệm. Asset hệ thống dùng đường này.
-9. Người chơi tải lên thì mã chủ sở hữu phải là chính tài khoản đó. Thành viên của tiệm và quản trị nền tảng đặt được mã chủ sở hữu theo nghiệp vụ.
+9. Người chơi tải lên, hoặc chuyển một tệp tạm thành tệp lâu dài, thì mã chủ sở hữu phải là chính tài khoản đó. Thành viên của tiệm và quản trị nền tảng đặt được mã chủ sở hữu theo nghiệp vụ.
 10. Media chờ duyệt chỉ người tạo và quản trị nền tảng tải được. Media bị từ chối chỉ quản trị nền tảng tải được. Quản trị của tiệm không vượt được trạng thái duyệt.
+
+11. Gọi lại yêu cầu cấp URL tải lên với cùng khoá chống trùng chỉ được cấp lại URL lúc tệp còn chờ tải. Tệp đã hoàn tất thì bị từ chối, để nội dung đã duyệt không bị ghi đè.
 
 ### Giá trị mẫu
 
-11. Identity và media từ chối khởi động ở production nếu khoá hoặc mật khẩu là giá trị mẫu. `infra/compose` chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu.
+12. Identity và media từ chối khởi động ở production nếu khoá, mật khẩu hoặc mật khẩu trong địa chỉ database là giá trị mẫu. `infra/compose` chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu.
 
 ## Hệ quả
 
+- Phép chặn giá trị mẫu chỉ chạy ở production, và chế độ mặc định lúc không khai là development. Môi trường thật phải đặt `NODE_ENV=production`; quên thì service nhận giá trị mẫu, ghi mã một lần ra log và mở tài liệu API.
 - Chủ tiệm không tự duyệt được nội dung của tiệm. Nếu về sau cần tiệm tự duyệt nội dung nội bộ, đó là một mức duyệt mới và cần yêu cầu riêng.
 - Người chơi chưa đọc được media công khai của một tiệm, vì tệp của tiệm chỉ mở trong tenant của tiệm. Việc hiển thị biển hiệu hay ảnh của tiệm cho người chơi cần một quyết định riêng; đây là câu hỏi mở.
 - Service tiêu thụ media của người chơi gắn tệp với đối tượng nghiệp vụ của mình bằng mã tệp, không dựa vào mã chủ sở hữu do client khai.
