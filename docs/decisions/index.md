@@ -24,3 +24,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0018](./ADR-0018-script-generated-asset-sources.md) | Mô hình bàn máy và phòng có bản gốc là script trong repo | Đã chốt |
 | [ADR-0019](./ADR-0019-registered-parts-and-one-render-standard.md) | Thế giới chỉ lắp từ thành phần đã đăng ký và dùng chung một chuẩn dựng hình | Đã chốt |
 | [ADR-0020](./ADR-0020-monorepo-layout-and-index.md) | Bố cục monorepo, chỉ mục toàn repo và cách giữ chuẩn chung giữa các service | Đã chốt |
+| [ADR-0021](./ADR-0021-two-real-money-flows.md) | Hai dòng tiền thật: người chơi nạp Xèng, chủ tiệm mua license máy | Đã chốt |

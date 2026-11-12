@@ -67,7 +67,7 @@ sequenceDiagram
 
 ## Nạp Xèng
 
-Liên quan: REQ-010, REQ-012, REQ-028, REQ-029. Webhook có thể đến nhiều lần hoặc không theo thứ tự. PayOS chỉ dùng để nạp; không có luồng rút.
+Liên quan: REQ-010, REQ-012, REQ-028, REQ-029. Webhook có thể đến nhiều lần hoặc không theo thứ tự. PayOS chỉ nhận tiền vào, gồm nạp Xèng ở đây và mua license máy ở mục dưới; không có luồng rút.
 
 ```mermaid
 sequenceDiagram
@@ -81,6 +81,30 @@ sequenceDiagram
   P->>P: Xác thực chữ ký, bỏ qua nếu mã đơn đã xử lý
   P->>P: Ghi sổ cái: cộng Xèng
   P-->>U: Thông báo số dư mới
+```
+
+## Chủ tiệm mua license máy
+
+Liên quan: REQ-010, REQ-029, REQ-045, ADR-0021. Quyền bật máy chỉ đổi sau lúc webhook được xác thực. License không tạo ra Xèng hay điểm doanh thu.
+
+```mermaid
+sequenceDiagram
+  participant O as Chủ tiệm
+  participant P as Payment service
+  participant Y as PayOS
+  participant K as Kafka
+  participant C as Shop
+  O->>P: Mua license cho N máy của một tiệm
+  P->>P: Kiểm chủ tiệm, tính tiền, tạo đơn loại license
+  P->>Y: Tạo link thanh toán
+  Y-->>O: Trang thanh toán
+  Y->>P: Webhook kết quả
+  P->>P: Xác thực chữ ký, so số tiền, bỏ qua nếu mã đơn đã xử lý
+  P->>P: Ghi sổ cái, cộng số máy và kéo dài hạn license
+  P->>K: Sự kiện license của tiệm thay đổi
+  K->>C: Cập nhật bản sao quyền bật máy
+  O->>C: Bật thêm máy
+  C->>C: Từ chối nếu vượt số máy của license còn hạn
 ```
 
 ## Trả giờ máy và cấp điểm doanh thu
