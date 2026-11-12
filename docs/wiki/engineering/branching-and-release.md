@@ -87,3 +87,28 @@ Các thành phần khác giữ nguyên bản đang chạy, kể cả lúc mã c�
 - Việc chưa xong của một thành phần không lên production cho tới lúc chính thành phần đó được phát hành.
 - Việc chưa xong nằm trong cùng thành phần sắp phát hành, hoặc trong package dùng chung mà nó phụ thuộc, vẫn phải ẩn sau feature flag hoặc được revert trước lúc phát hành.
 - Thay đổi schema và hợp đồng phải chạy được với bản liền trước của bên còn lại, vì các thành phần lên production ở những thời điểm khác nhau.
+
+## Cờ tính năng
+
+Cờ tính năng ẩn một việc chưa xong đã nằm trong mã. Mỗi cờ được khai trong `docs/flags.yaml`:
+
+```yaml
+flags:
+  - name: machine-license
+    component: payment
+    owner: tên GitHub của người phụ trách
+    remove_by: 2027-01-31
+    summary: Chủ tiệm mua license máy
+```
+
+- Mã đọc cờ qua biến môi trường `FLAG_<TÊN>`, ví dụ `FLAG_MACHINE_LICENSE`. Mã chạy trong trình duyệt dùng `NEXT_PUBLIC_FLAG_<TÊN>`.
+- Cờ chỉ bật lúc biến có đúng giá trị `true`. Không khai biến thì cờ tắt, nên production mặc định không thấy việc chưa xong.
+- `pnpm flags:check` đỏ lúc mã đọc một cờ chưa khai, lúc cờ đã khai mà không còn mã nào đọc, và lúc cờ quá ngày `remove_by`.
+- Việc xong thì gỡ cả đoạn mã đọc cờ lẫn dòng khai trong một PR.
+
+## Giữ `staging` luôn phát hành được
+
+- Việc dài hơn một PR phải nằm sau cờ tính năng ngay từ PR đầu tiên.
+- PR làm hỏng một thành phần trên `staging` thì revert PR đó trước, rồi sửa trên nhánh mới. Không để `staging` hỏng trong lúc chờ bản sửa.
+- Trước lúc phát hành một thành phần, xem các thay đổi chưa phát hành của nó và của package nó phụ thuộc: cái nào chưa xong thì phải sau cờ hoặc được revert.
+- Thay đổi schema theo ba bước: thêm phần mới, chuyển bên đọc sang phần mới, rồi mới gỡ phần cũ ở một bản sau.
