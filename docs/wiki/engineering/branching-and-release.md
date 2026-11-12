@@ -1,6 +1,6 @@
 # Nhánh và phát hành
 
-Theo [ADR-0007](../../decisions/ADR-0007-branching-and-release.md).
+Theo [ADR-0007](../../decisions/ADR-0007-branching-and-release.md) về nhánh và [ADR-0022](../../decisions/ADR-0022-per-component-release-tags.md) về tag.
 
 ```mermaid
 gitGraph
@@ -10,21 +10,23 @@ gitGraph
   commit id: "wip"
   commit id: "review"
   checkout staging
-  commit id: "feat: login (#12)" tag: "stg-v0.1.0"
-  commit id: "fix: payment (#13)" tag: "stg-v0.1.1"
+  commit id: "feat: login (#12)" tag: "identity/stg-v0.1.0"
+  commit id: "fix: payment (#13)" tag: "payment/stg-v0.3.1"
   checkout main
-  merge staging tag: "prod-v0.1.1"
+  merge staging tag: "payment/prod-v0.3.1"
 ```
 
 ## Hai môi trường
 
-|                 | Staging                          | Production                                                    |
-| --------------- | -------------------------------- | ------------------------------------------------------------- |
-| Nhánh           | `staging`, là nhánh mặc định     | `main`                                                        |
-| Tag             | `stg-vX.Y.Z`                     | `prod-vX.Y.Z`                                                 |
-| Ý nghĩa         | Bản đưa ra test                  | Bản chính thức, đúng số của bản staging đã đạt                |
-| Khi phát hành   | Build image của phần có thay đổi | Thành viên khác duyệt rồi mới tạo tag, dùng lại image đã test |
-| Dữ liệu, secret | Riêng cho test                   | Thật, tách hoàn toàn                                          |
+|                 | Staging                            | Production                                                    |
+| --------------- | ---------------------------------- | ------------------------------------------------------------- |
+| Nhánh           | `staging`, là nhánh mặc định       | `main`                                                        |
+| Tag             | `<id>/stg-vX.Y.Z`                  | `<id>/prod-vX.Y.Z`                                            |
+| Ý nghĩa         | Bản của một thành phần đưa ra test | Bản chính thức, đúng số của bản staging đã đạt                |
+| Khi phát hành   | Build image của thành phần đó      | Thành viên khác duyệt rồi mới tạo tag, dùng lại image đã test |
+| Dữ liệu, secret | Riêng cho test                     | Thật, tách hoàn toàn                                          |
+
+`<id>` là mã thành phần trong `docs/catalog.yaml`, ví dụ `identity/stg-v1.2.0`. Chỉ thành phần có `Dockerfile` mới phát hành được. Package dùng chung không có tag; thay đổi của nó đi theo thành phần dùng nó.
 
 ## Đưa thay đổi vào
 
@@ -37,22 +39,33 @@ Thay đổi chỉ đi một chiều từ `staging` lên `main`. Không squash �
 
 Sau khi merge thì xoá nhánh; việc tiếp theo tạo nhánh mới từ `staging`. Làm tiếp trên nhánh đã squash sẽ gây xung đột.
 
-Promote mang theo mọi thứ đang có trong `staging`, nên việc chưa xong phải ẩn sau feature flag.
+Đưa `staging` lên `main` mang theo mã của mọi thành phần, nhưng chỉ thành phần được phát hành mới lên production. Mã trên `main` vì vậy có thể mới hơn bản đang chạy của một thành phần.
 
 ## Số phiên bản
 
-Cả hệ thống dùng chung một số phiên bản. CI chỉ build và deploy phần có thay đổi.
+Mỗi thành phần triển khai có dòng số phiên bản riêng.
 
 - `fix` tăng Z, `feat` tăng Y, thay đổi phá vỡ tăng X.
 - Bắt đầu từ `0.1.0`, `1.0.0` dành cho lần ra mắt thật.
+- Số mới phải lớn hơn bản trước của chính thành phần đó.
 - Test lại trên staging thì tăng Z. Production lấy đúng số của bản đạt, nên số production có thể nhảy cóc:
 
 ```
-stg-v0.1.0   test thấy lỗi thanh toán
-stg-v0.1.1   đã sửa, test thấy lỗi đăng nhập
-stg-v0.1.2   đã sửa, test đạt
-prod-v0.1.2  lên production
+payment/stg-v0.3.0   test thấy lỗi webhook
+payment/stg-v0.3.1   đã sửa, test thấy lỗi hoá đơn
+payment/stg-v0.3.2   đã sửa, test đạt
+payment/prod-v0.3.2  lên production
 ```
+
+## Điều kiện của tag production
+
+Tag `<id>/prod-vX.Y.Z` chỉ được tạo khi:
+
+- Lần chạy nằm trên `main`.
+- Đã có `<id>/stg-vX.Y.Z`.
+- Nội dung của thành phần trên `main` giống tag staging đó. Nội dung gồm thư mục của thành phần, các package nó phụ thuộc và các tệp gốc dùng chung như `pnpm-lock.yaml`.
+
+Thay đổi chưa phát hành của thành phần khác không chặn và không đi theo.
 
 ## Phát hành
 
@@ -60,6 +73,17 @@ Ai có quyền ghi cũng phát hành được và phải đi qua các bước ki
 
 ## Sửa lỗi gấp
 
-Sửa gấp là một `fix` bình thường, không có luồng riêng: nhánh `fix/*` vào `staging`, phát hành staging, test đạt rồi đưa lên `main` và phát hành production.
+Sửa gấp là một `fix` bình thường, không có luồng riêng:
 
-Bản sửa sẽ mang theo mọi thứ đang có trong `staging`, nên việc chưa xong phải luôn ẩn sau feature flag.
+1. Xác định thành phần có lỗi.
+2. Nhánh `fix/*` vào `staging`.
+3. Phát hành staging cho riêng thành phần đó, tăng Z.
+4. Test đạt thì đưa `staging` lên `main` và phát hành production cho riêng thành phần đó.
+
+Các thành phần khác giữ nguyên bản đang chạy, kể cả lúc mã của chúng trên `main` đã đổi.
+
+## Việc chưa xong
+
+- Việc chưa xong của một thành phần không lên production cho tới lúc chính thành phần đó được phát hành.
+- Việc chưa xong nằm trong cùng thành phần sắp phát hành, hoặc trong package dùng chung mà nó phụ thuộc, vẫn phải ẩn sau feature flag hoặc được revert trước lúc phát hành.
+- Thay đổi schema và hợp đồng phải chạy được với bản liền trước của bên còn lại, vì các thành phần lên production ở những thời điểm khác nhau.
