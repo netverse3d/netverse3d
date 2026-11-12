@@ -102,7 +102,7 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`, `mentor-demo`
 
 ### REQ-002: Phân quyền theo vai trò người chơi, chủ tiệm, quản trị
 
-Một người dùng có thể vừa là người chơi vừa là chủ tiệm; quản trị là vai trò riêng.
+Một người dùng có thể vừa là người chơi vừa là chủ tiệm; quản trị là vai trò riêng. Mỗi tiệm là một tenant. Người chơi là mọi tài khoản đã đăng nhập, chủ tiệm là thành viên tenant của tiệm mình, quản trị là quyền nền tảng trên tài khoản. Vai trò nằm trong token do identity cấp, theo ADR-0024.
 
 Nguồn: `mentor-brief`, `mentor-architecture-full`
 

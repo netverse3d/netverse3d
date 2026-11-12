@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/events/v1/identity.schema.json",
+  "title": "Identity event data",
+  "description": "Phần data của các sự kiện do identity service phát, đặt trong vỏ chung envelope",
+  "x-status": "draft",
+  "x-event-types": [
+    "user.registered",
+    "user.email-verified",
+    "user.deactivated",
+    "user.reactivated",
+    "membership.added",
+    "membership.revoked",
+    "role.changed"
+  ],
+  "type": "object",
+  "required": ["principalId", "tenantId"],
+  "properties": {
+    "principalId": { "type": "string", "format": "uuid" },
+    "tenantId": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"] },
+    "status": { "type": "string" },
+    "roles": { "type": "array", "items": { "type": "string" } }
+  }
+}

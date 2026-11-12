@@ -5,6 +5,7 @@ packages:
   - packages/*
   - docs
 allowBuilds:
+  bcrypt: true
   esbuild: true
   '@parcel/watcher': false
   '@prisma/engines': true

@@ -26,8 +26,10 @@ Mỗi loại hợp đồng có thư mục phiên bản: `<loại>/v<N>/<tên>`, 
 | Tệp                                 | Của ai      | Trạng thái |
 | ----------------------------------- | ----------- | ---------- |
 | `openapi/v1/health.yaml`            | mọi service | chính thức |
+| `openapi/v1/identity.yaml`          | identity    | chính thức |
 | `openapi/v1/media.yaml`             | media       | chính thức |
 | `events/v1/envelope.schema.json`    | mọi sự kiện | chính thức |
+| `events/v1/identity.schema.json`    | identity    | nháp       |
 | `events/v1/media.schema.json`       | media       | nháp       |
 | `realtime/v1/protocol.schema.json`  | game        | nháp       |
 | `world/v1/shop-look.schema.json`    | game-assets | nháp       |

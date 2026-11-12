@@ -1,0 +1,2616 @@
+openapi: 3.1.0
+paths:
+  /v1/audit-logs:
+    get:
+      operationId: AuditLogsController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: action
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceType
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: actorSubject
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: from
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+        - name: to
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/AuditLogResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List audit log entries, newest first
+      tags:
+        - audit-logs
+  /v1/auth/register:
+    post:
+      operationId: AuthController_register_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDto'
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: >-
+        Register with email and password; the answer never reveals whether the
+        email exists
+      tags:
+        - auth
+      security: []
+  /v1/auth/verify-email:
+    post:
+      operationId: AuthController_verifyEmail_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Confirm an email address with a one-time code
+      tags:
+        - auth
+      security: []
+  /v1/auth/resend-verification:
+    post:
+      operationId: AuthController_resendVerification_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailDto'
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Send a new verification code
+      tags:
+        - auth
+      security: []
+  /v1/auth/login:
+    post:
+      operationId: AuthController_login_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TokenPairDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Sign in with email and password
+      tags:
+        - auth
+      security: []
+  /v1/auth/providers:
+    get:
+      operationId: AuthController_providers_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProvidersDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List enabled sign-in providers
+      tags:
+        - auth
+      security: []
+  /v1/auth/social/{provider}:
+    post:
+      operationId: AuthController_socialLogin_v1
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - FACEBOOK
+              - APPLE
+              - ZALO
+              - GITHUB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialLoginDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TokenPairDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Sign in with a provider credential
+      tags:
+        - auth
+      security: []
+  /v1/auth/refresh:
+    post:
+      operationId: AuthController_refresh_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TokenPairDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Exchange a refresh token for a new token pair
+      tags:
+        - auth
+      security: []
+  /v1/auth/logout:
+    post:
+      operationId: AuthController_logout_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: End the session of a refresh token
+      tags:
+        - auth
+      security: []
+  /v1/auth/password/forgot:
+    post:
+      operationId: AuthController_forgotPassword_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailDto'
+      responses:
+        '202':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: >-
+        Send a password reset code; the answer never reveals whether the email
+        exists
+      tags:
+        - auth
+      security: []
+  /v1/auth/password/reset:
+    post:
+      operationId: AuthController_resetPassword_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Set a new password with a reset code and end every session
+      tags:
+        - auth
+      security: []
+  /v1/auth/switch-tenant:
+    post:
+      operationId: AuthController_switchTenant_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchTenantDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TokenPairDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Start a session scoped to another tenant
+      tags:
+        - auth
+  /v1/me:
+    get:
+      operationId: MeController_profile_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProfileDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Current account and tenant memberships
+      tags:
+        - me
+    patch:
+      operationId: MeController_update_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProfileDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Update display name and avatar
+      tags:
+        - me
+  /v1/me/password:
+    post:
+      operationId: MeController_changePassword_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Change password and end every session
+      tags:
+        - me
+  /v1/me/sessions:
+    get:
+      operationId: MeController_listSessions_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/SessionListDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List active sessions
+      tags:
+        - me
+  /v1/me/sessions/{id}:
+    delete:
+      operationId: MeController_revokeSession_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: End one session
+      tags:
+        - me
+  /v1/me/logout-all:
+    post:
+      operationId: MeController_logoutAll_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: End every session and invalidate issued tokens
+      tags:
+        - me
+  /v1/me/identities:
+    get:
+      operationId: MeController_listIdentities_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/LinkedIdentityListDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List linked sign-in providers
+      tags:
+        - me
+  /v1/me/identities/{provider}:
+    post:
+      operationId: MeController_link_v1
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - FACEBOOK
+              - APPLE
+              - ZALO
+              - GITHUB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkIdentityDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Link a sign-in provider to this account
+      tags:
+        - me
+    delete:
+      operationId: MeController_unlink_v1
+      parameters:
+        - name: provider
+          required: true
+          in: path
+          schema:
+            type: string
+            enum:
+              - GOOGLE
+              - FACEBOOK
+              - APPLE
+              - ZALO
+              - GITHUB
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Unlink a sign-in provider
+      tags:
+        - me
+  /.well-known/jwks.json:
+    get:
+      operationId: JwksController_publicKeys
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Public keys used to verify issued tokens
+      tags:
+        - keys
+      security: []
+  /v1/admin/keys:
+    get:
+      operationId: KeysAdminController_list_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/SigningKeyListDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List signing keys without private material
+      tags:
+        - keys
+  /v1/admin/keys/rotate:
+    post:
+      operationId: KeysAdminController_rotate_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RotateResultDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a new active key and keep the old one for verification
+      tags:
+        - keys
+  /livez:
+    get:
+      operationId: HealthController_live
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the process is alive
+      tags:
+        - health
+      security: []
+  /healthz:
+    get:
+      operationId: HealthController_ready
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the service and its required dependencies are ready
+      tags:
+        - health
+      security: []
+  /v1/tenants:
+    post:
+      operationId: TenantsController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a tenant
+      tags:
+        - tenants
+    get:
+      operationId: TenantsController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/TenantDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List tenants
+      tags:
+        - tenants
+  /v1/tenants/{id}:
+    get:
+      operationId: TenantsController_get_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Get one tenant
+      tags:
+        - tenants
+    patch:
+      operationId: TenantsController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Rename or suspend a tenant
+      tags:
+        - tenants
+  /v1/tenants/{id}/roles:
+    get:
+      operationId: TenantsController_listRoles_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RoleListDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List roles of a tenant
+      tags:
+        - tenants
+    put:
+      operationId: TenantsController_upsertRole_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertRoleDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RoleDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a role or replace its permissions
+      tags:
+        - tenants
+  /v1/tenants/{id}/roles/{name}:
+    delete:
+      operationId: TenantsController_deleteRole_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: name
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Delete a role
+      tags:
+        - tenants
+  /v1/tenants/{id}/members:
+    get:
+      operationId: TenantsController_listMembers_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/MemberDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List members of a tenant
+      tags:
+        - tenants
+    post:
+      operationId: TenantsController_addMember_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MemberDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Add an existing account to a tenant
+      tags:
+        - tenants
+  /v1/tenants/{id}/members/{principalId}/roles:
+    put:
+      operationId: TenantsController_setMemberRoles_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: principalId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetMemberRolesDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MemberDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Replace the roles of a member
+      tags:
+        - tenants
+  /v1/tenants/{id}/members/{principalId}:
+    delete:
+      operationId: TenantsController_removeMember_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: principalId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Remove a member and end their sessions in this tenant
+      tags:
+        - tenants
+  /v1/admin/principals/{id}/suspend:
+    post:
+      operationId: PrincipalsAdminController_suspend_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Suspend an account and end every session
+      tags:
+        - principals
+  /v1/admin/principals/{id}/activate:
+    post:
+      operationId: PrincipalsAdminController_activate_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Reactivate an account
+      tags:
+        - principals
+info:
+  title: identity
+  description: ''
+  version: 0.1.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    ApiResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SUCCESS
+        message:
+          type: string
+          nullable: true
+          example: null
+        result:
+          type: object
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - result
+        - requestId
+    PageResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: number
+          example: 1
+        size:
+          type: number
+          example: 20
+        totalElements:
+          type: number
+          example: 42
+        totalPages:
+          type: number
+          example: 3
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+    AuditLogResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          nullable: true
+        actorSubject:
+          type: string
+          nullable: true
+        actorRoles:
+          type: array
+          items:
+            type: string
+        ip:
+          type: string
+          nullable: true
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+        errorCode:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+      required:
+        - id
+        - occurredAt
+        - requestId
+        - tenantId
+        - actorSubject
+        - actorRoles
+        - ip
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+        - errorCode
+        - metadata
+    AcceptedDto:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+          example: true
+      required:
+        - accepted
+    RegisterDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 72
+        displayName:
+          type: string
+          maxLength: 120
+      required:
+        - email
+        - password
+    VerifyEmailDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          example: '123456'
+      required:
+        - email
+        - code
+    EmailDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+    TokenPairDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: number
+          example: 900
+        tenantId:
+          type: string
+          nullable: true
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresIn
+        - tenantId
+    LoginDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+      required:
+        - email
+        - password
+    ProvidersDto:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            type: string
+      required:
+        - providers
+    SocialLoginDto:
+      type: object
+      properties:
+        credential:
+          type: string
+          description: >-
+            ID token, access token or authorization code, depending on the
+            provider
+        redirectUri:
+          type: string
+          description: Required when the provider exchanged a code
+        tenantId:
+          type: string
+          format: uuid
+      required:
+        - credential
+    RefreshDto:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+    ResetPasswordDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          example: '123456'
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 72
+      required:
+        - email
+        - code
+        - newPassword
+    SwitchTenantDto:
+      type: object
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+      required:
+        - tenantId
+    MembershipSummaryDto:
+      type: object
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - tenantId
+        - slug
+        - name
+        - roles
+    ProfileDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          nullable: true
+        emailVerified:
+          type: boolean
+        displayName:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        hasPassword:
+          type: boolean
+        memberships:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipSummaryDto'
+      required:
+        - id
+        - email
+        - emailVerified
+        - displayName
+        - avatarUrl
+        - hasPassword
+        - memberships
+    UpdateProfileDto:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 120
+        avatarUrl:
+          type: string
+          maxLength: 1024
+    ChangePasswordDto:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 72
+      required:
+        - currentPassword
+        - newPassword
+    SessionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          nullable: true
+        ip:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+        current:
+          type: boolean
+      required:
+        - id
+        - tenantId
+        - ip
+        - userAgent
+        - createdAt
+        - lastUsedAt
+        - current
+    SessionListDto:
+      type: object
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionDto'
+      required:
+        - sessions
+    LinkedIdentityDto:
+      type: object
+      properties:
+        provider:
+          type: string
+        email:
+          type: string
+          nullable: true
+        linkedAt:
+          type: string
+          format: date-time
+      required:
+        - provider
+        - email
+        - linkedAt
+    LinkedIdentityListDto:
+      type: object
+      properties:
+        identities:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedIdentityDto'
+      required:
+        - identities
+    LinkIdentityDto:
+      type: object
+      properties:
+        credential:
+          type: string
+        redirectUri:
+          type: string
+      required:
+        - credential
+    SigningKeySummaryDto:
+      type: object
+      properties:
+        kid:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - RETIRING
+            - REVOKED
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - kid
+        - status
+        - createdAt
+    SigningKeyListDto:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/SigningKeySummaryDto'
+      required:
+        - keys
+    RotateResultDto:
+      type: object
+      properties:
+        activeKid:
+          type: string
+        retiringKid:
+          type: string
+          nullable: true
+      required:
+        - activeKid
+        - retiringKid
+    HealthResponseDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        version:
+          type: string
+          example: 0.1.0
+      required:
+        - status
+        - version
+    TenantDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - SUSPENDED
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - slug
+        - name
+        - status
+        - createdAt
+    CreateTenantDto:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: acme
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 120
+      required:
+        - slug
+        - name
+    UpdateTenantDto:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - SUSPENDED
+    RoleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - permissions
+    RoleListDto:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleDto'
+      required:
+        - roles
+    UpsertRoleDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: editor
+          maxLength: 64
+        permissions:
+          example:
+            - media:write
+          type: array
+          items:
+            type: string
+      required:
+        - name
+    MemberDto:
+      type: object
+      properties:
+        principalId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          nullable: true
+        displayName:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - REVOKED
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - principalId
+        - email
+        - displayName
+        - status
+        - roles
+    AddMemberDto:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - email
+    SetMemberRolesDto:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - roles
+    ApiErrorResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: COMMON.VALIDATION
+        message:
+          type: string
+          example: Request validation failed
+        details:
+          type: object
+          nullable: true
+        path:
+          type: string
+          example: /v1/examples
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - path
+        - timestamp
+        - requestId
+security:
+  - bearer: []

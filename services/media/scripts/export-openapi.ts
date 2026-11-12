@@ -1,12 +1,6 @@
 import 'reflect-metadata';
-import { writeFileSync } from 'node:fs';
-import { NestFactory } from '@nestjs/core';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { dump } from 'js-yaml';
+import { exportOpenApiFile } from '@netverse/nest-kit/testing';
 import { AppModule } from '../src/app.module';
-import { setupApp } from '../src/bootstrap/setup-app';
-import { buildOpenApiDocument } from '../src/bootstrap/setup-swagger';
-import { AppConfig } from '../src/config/app-config';
 
 const PLACEHOLDER_ENV = {
   SERVICE_NAME: 'media',
@@ -30,16 +24,5 @@ const PLACEHOLDER_ENV = {
   SWAGGER_ENABLED: 'false',
 };
 
-async function exportOpenApi(): Promise<void> {
-  Object.assign(process.env, PLACEHOLDER_ENV);
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: false,
-    bodyParser: false,
-  });
-  const config = app.get(AppConfig);
-  setupApp(app, config);
-  writeFileSync('openapi.yaml', dump(buildOpenApiDocument(app, config), { noRefs: true }));
-  await app.close();
-}
-
-void exportOpenApi();
+Object.assign(process.env, PLACEHOLDER_ENV);
+void exportOpenApiFile(AppModule, 'openapi.yaml');

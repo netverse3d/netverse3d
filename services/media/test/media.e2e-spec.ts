@@ -6,9 +6,9 @@ import {
   PendingReaper,
   TemporaryReaper,
 } from '../src/modules/media/jobs/media-reapers';
-import { EventEnvelope } from '../src/modules/outbox/domain/event-envelope';
-import { EventPublisher } from '../src/modules/outbox/ports/event-publisher';
-import { OutboxRelayJob } from '../src/modules/outbox/services/outbox-relay.job';
+import { EventEnvelope } from '@netverse/nest-kit';
+import { EventPublisher } from '@netverse/nest-kit';
+import { OutboxRelayJob } from '@netverse/nest-kit';
 import { createTestApp, TestApp } from './support/test-app';
 
 const PNG = 'image/png';

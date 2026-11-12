@@ -12,12 +12,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiHeader, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Actor } from '../../../common/context/request-context';
-import { CurrentActor } from '../../../common/decorators/current-actor.decorator';
-import { Roles } from '../../../common/decorators/roles.decorator';
-import { PageResponseDto } from '../../../common/pagination/page-response.dto';
-import { ApiEnvelope, ApiPagedEnvelope } from '../../../common/swagger/api-envelope.decorators';
-import { Audit, AuditResourceInput } from '../../audit/audit.decorator';
+import type { Actor } from '@netverse/nest-kit';
+import { CurrentActor } from '@netverse/nest-kit';
+import { Roles } from '@netverse/nest-kit';
+import { PageResponseDto } from '@netverse/nest-kit';
+import { ApiEnvelope, ApiPagedEnvelope } from '@netverse/nest-kit';
+import { Audit, AuditResourceInput } from '@netverse/nest-kit';
 import { MEDIA_MANAGER_ROLE } from '../domain/media-access';
 import { IssueDownloadUrlDto } from '../dto/issue-download-url.dto';
 import { IssueUploadUrlDto } from '../dto/issue-upload-url.dto';

@@ -6,7 +6,7 @@ Trang này được sinh từ `docs/catalog.yaml`. Muốn đổi thì sửa ở 
 
 | Thành phần | Loại | Stack | Vai trò | Milestone |
 | --- | --- | --- | --- | --- |
-| [`identity`](./identity/README.md) | service | NestJS, Prisma | Đăng ký, đăng nhập, JWT, RBAC | M1 |
+| [`identity`](./identity/README.md) | service | NestJS, Prisma, PostgreSQL | Đăng ký, đăng nhập, JWT, RBAC | M1 |
 | [`shop`](./shop/README.md) | service | NestJS, Prisma | Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình | M3 |
 | [`world`](./world/README.md) | service | NestJS, Prisma | Thế giới, bản đồ, bố cục, phòng net | M4 |
 | [`media`](./media/README.md) | service | NestJS, Prisma, PostgreSQL, object storage chuẩn S3 | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |

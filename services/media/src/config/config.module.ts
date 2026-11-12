@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { KitConfig } from '@netverse/nest-kit';
 import { config as loadDotEnv } from 'dotenv';
 import { AppConfig } from './app-config';
 import { parseEnv } from './env.schema';
@@ -10,7 +11,10 @@ function loadAppConfig(): AppConfig {
 
 @Global()
 @Module({
-  providers: [{ provide: AppConfig, useFactory: loadAppConfig }],
-  exports: [AppConfig],
+  providers: [
+    { provide: AppConfig, useFactory: loadAppConfig },
+    { provide: KitConfig, useExisting: AppConfig },
+  ],
+  exports: [AppConfig, KitConfig],
 })
 export class ConfigModule {}

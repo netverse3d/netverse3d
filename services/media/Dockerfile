@@ -3,9 +3,10 @@ RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY packages/contracts packages/contracts
+COPY packages/nest-kit packages/nest-kit
 COPY services/media services/media
-RUN pnpm install --frozen-lockfile --filter @netverse/media
-RUN pnpm --filter @netverse/media build
+RUN pnpm install --frozen-lockfile --filter "@netverse/media..."
+RUN pnpm --filter "@netverse/media..." build
 RUN pnpm --filter @netverse/media deploy --legacy --prod /out
 RUN cd /out && node_modules/.bin/prisma generate
 

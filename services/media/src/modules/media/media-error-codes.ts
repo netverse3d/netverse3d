@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { ErrorCodeDefinition } from '../../common/errors/error-code';
+import { ErrorCodeDefinition } from '@netverse/nest-kit';
 
 export const MediaErrorCode = {
   NOT_FOUND: {

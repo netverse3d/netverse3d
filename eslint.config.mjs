@@ -10,6 +10,7 @@ export default [
       '**/.next/**',
       '**/.turbo/**',
       '**/coverage/**',
+      'services/*/generated/**',
       'docs/.vitepress/dist/**',
       'docs/.vitepress/cache/**',
       'apps/admin/**',
@@ -45,7 +46,7 @@ export default [
     },
   },
   {
-    files: ['services/*/src/**/*.ts'],
+    files: ['services/*/src/**/*.ts', 'packages/nest-kit/src/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       'no-restricted-properties': [
@@ -59,7 +60,7 @@ export default [
     },
   },
   {
-    files: ['services/*/src/config/**/*.ts'],
+    files: ['services/*/src/config/**/*.ts', 'packages/nest-kit/src/testing/**/*.ts'],
     rules: { 'no-restricted-properties': 'off' },
   },
   {
@@ -71,9 +72,14 @@ export default [
       'no-restricted-imports': [
         'error',
         {
-          paths: [
+          patterns: [
             {
-              name: '@prisma/client',
+              group: [
+                '@prisma/client',
+                '**/infrastructure/prisma/client',
+                '**/generated/prisma',
+                '**/generated/prisma/**',
+              ],
               message: 'Only repositories and the Prisma infrastructure may use the Prisma client.',
             },
           ],
