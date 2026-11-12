@@ -26,3 +26,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0020](./ADR-0020-monorepo-layout-and-index.md) | Bố cục monorepo, chỉ mục toàn repo và cách giữ chuẩn chung giữa các service | Đã chốt |
 | [ADR-0021](./ADR-0021-two-real-money-flows.md) | Hai dòng tiền thật: người chơi nạp Xèng, chủ tiệm mua license máy | Đã chốt |
 | [ADR-0022](./ADR-0022-per-component-release-tags.md) | Phát hành theo từng thành phần, mỗi thành phần một dòng tag | Đã chốt |
+| [ADR-0023](./ADR-0023-media-service-origin-and-object-storage.md) | Nguồn gốc mã của media service và object storage ở môi trường dev | Đã chốt |

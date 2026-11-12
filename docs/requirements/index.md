@@ -23,7 +23,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
-| REQ-006 | Lưu trữ và phân phối asset 3D | Nháp | Bắt buộc | `media` |
+| REQ-006 | Lưu trữ và phân phối asset 3D | Đã chốt | Bắt buộc | `media` |
 | REQ-032 | Màn hình máy cá nhân | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-033 | Game đầu tiên trên máy | Nháp | Bắt buộc | `web-3d` |
 | REQ-036 | Vào tiệm dựng sẵn và ngồi máy với room server giả | Đã chốt | Bắt buộc | `web-3d` |
@@ -48,7 +48,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
-| REQ-007 | Người dùng tải lên ảnh và âm thanh có kiểm soát | Nháp | Nên có | `media` |
+| REQ-007 | Người dùng tải lên ảnh và âm thanh có kiểm soát | Đã chốt | Nên có | `media` |
 | REQ-009 | Chủ tiệm thuê đất để mở tiệm | Đã chốt | Bắt buộc | `shop` |
 | REQ-013 | Chủ tiệm xây dựng và bài trí tiệm | Đã chốt | Bắt buộc | `world` |
 | REQ-014 | Người chơi khám phá và chọn tiệm bất kỳ | Đã chốt | Bắt buộc | `world` |
@@ -126,13 +126,13 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`, `mentor-demo`
 
 ### REQ-006: Lưu trữ và phân phối asset 3D
 
-Quản lý GLB, texture, âm thanh, hoạt ảnh và metadata trên object storage chuẩn S3, phân phối được qua CDN. Sơ đồ ghi MinIO; sản phẩm cụ thể còn là câu hỏi mở.
+Quản lý GLB, glTF, ảnh, âm thanh, video và metadata của hệ thống trên object storage chuẩn S3. Tệp được tải lên và tải về bằng URL ký sẵn có thời hạn, service không chuyển tiếp nội dung tệp. Mỗi tệp thuộc một tenant và tenant này không đọc được tệp của tenant khác. Trạng thái tệp đổi thì phát sự kiện. Phân phối qua CDN làm sau. Object storage ở dev là SeaweedFS, theo ADR-0023.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-007: Người dùng tải lên ảnh và âm thanh có kiểm soát
 
-Giới hạn định dạng, dung lượng và có đường xử lý nội dung vi phạm.
+Nội dung người dùng tải lên là một lớp riêng với asset của hệ thống, có danh sách định dạng và giới hạn dung lượng riêng. Tệp chỉ được dùng sau lúc tải lên hoàn tất và khớp kích thước, loại đã khai. Quản trị viên duyệt, từ chối hoặc gỡ được nội dung; có thể bật chế độ phải duyệt trước lúc hiển thị. Tệp tải dở quá hạn và tệp đã xoá được dọn tự động. Theo ADR-0023.
 
 Nguồn: `mentor-demo`
 
