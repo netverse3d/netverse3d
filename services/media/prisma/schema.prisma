@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+}
+
+model AuditLog {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt   DateTime     @default(now()) @map("occurred_at") @db.Timestamptz
+  requestId    String?      @map("request_id") @db.VarChar(128)
+  tenantId     String?      @map("tenant_id") @db.VarChar(128)
+  actorSubject String?      @map("actor_subject") @db.VarChar(255)
+  actorRoles   String[]     @default([]) @map("actor_roles")
+  ip           String?      @db.VarChar(64)
+  userAgent    String?      @map("user_agent") @db.VarChar(512)
+  action       String       @db.VarChar(128)
+  resourceType String       @map("resource_type") @db.VarChar(64)
+  resourceId   String?      @map("resource_id") @db.VarChar(255)
+  outcome      AuditOutcome
+  errorCode    String?      @map("error_code") @db.VarChar(128)
+  metadata     Json         @default("{}")
+
+  @@index([tenantId, occurredAt])
+  @@index([resourceType, resourceId])
+  @@index([actorSubject, occurredAt])
+  @@map("audit_logs")
+}
+
+enum MediaClass {
+  SYSTEM_ASSET
+  USER_CONTENT
+}
+
+enum MediaStatus {
+  PENDING
+  ACTIVE
+  DELETED
+}
+
+enum MediaVisibility {
+  PRIVATE
+  INTERNAL
+  PUBLIC
+}
+
+enum MediaLifecycle {
+  TEMPORARY
+  PERMANENT
+}
+
+enum ModerationStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  DEAD
+}
+
+model MediaObject {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId          String?          @map("tenant_id") @db.VarChar(128)
+  mediaClass        MediaClass       @map("media_class")
+  ownerType         String?          @map("owner_type") @db.VarChar(64)
+  ownerId           String?          @map("owner_id") @db.VarChar(255)
+  bucket            String           @db.VarChar(128)
+  objectKey         String           @map("object_key") @db.VarChar(1024)
+  previousObjectKey String?          @map("previous_object_key") @db.VarChar(1024)
+  contentType       String           @map("content_type") @db.VarChar(128)
+  declaredSizeBytes BigInt           @map("declared_size_bytes")
+  actualSizeBytes   BigInt?          @map("actual_size_bytes")
+  originalFilename  String?          @map("original_filename") @db.VarChar(255)
+  status            MediaStatus      @default(PENDING)
+  visibility        MediaVisibility  @default(PRIVATE)
+  lifecycle         MediaLifecycle   @default(PERMANENT)
+  moderationStatus  ModerationStatus @default(NOT_REQUIRED) @map("moderation_status")
+  moderatedBy       String?          @map("moderated_by") @db.VarChar(255)
+  moderatedAt       DateTime?        @map("moderated_at") @db.Timestamptz
+  moderationReason  String?          @map("moderation_reason") @db.VarChar(500)
+  expiresAt         DateTime?        @map("expires_at") @db.Timestamptz
+  retentionUntil    DateTime?        @map("retention_until") @db.Timestamptz
+  promotedAt        DateTime?        @map("promoted_at") @db.Timestamptz
+  promotedBy        String?          @map("promoted_by") @db.VarChar(255)
+  createdBy         String           @map("created_by") @db.VarChar(255)
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  completedAt       DateTime?        @map("completed_at") @db.Timestamptz
+  deletedAt         DateTime?        @map("deleted_at") @db.Timestamptz
+  hardDeletedAt     DateTime?        @map("hard_deleted_at") @db.Timestamptz
+  metadata          Json             @default("{}")
+
+  idempotencyKeys MediaIdempotency[]
+
+  @@unique([bucket, objectKey])
+  @@index([tenantId, ownerType, ownerId])
+  @@index([status, createdAt])
+  @@index([lifecycle, expiresAt])
+  @@map("media_objects")
+}
+
+model MediaIdempotency {
+  scope       String   @db.VarChar(400)
+  key         String   @db.VarChar(128)
+  mediaId     String   @map("media_id") @db.Uuid
+  requestHash Bytes    @map("request_hash")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  media MediaObject @relation(fields: [mediaId], references: [id])
+
+  @@id([scope, key], name: "scope_key")
+  @@map("media_idempotency")
+}
+
+model OutboxEvent {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          String       @db.VarChar(128)
+  aggregateId   String       @map("aggregate_id") @db.Uuid
+  tenantId      String?      @map("tenant_id") @db.VarChar(128)
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  nextAttemptAt DateTime     @default(now()) @map("next_attempt_at") @db.Timestamptz
+  lastError     String?      @map("last_error")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  publishedAt   DateTime?    @map("published_at") @db.Timestamptz
+
+  @@index([status, nextAttemptAt])
+  @@map("outbox_events")
+}

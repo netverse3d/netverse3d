@@ -1,0 +1,1170 @@
+openapi: 3.0.0
+paths:
+  /v1/audit-logs:
+    get:
+      operationId: AuditLogsController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: action
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceType
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: actorSubject
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: from
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+        - name: to
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/AuditLogResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List audit log entries, newest first
+      tags:
+        - audit-logs
+  /livez:
+    get:
+      operationId: HealthController_live
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the process is alive
+      tags:
+        - health
+      security: []
+  /healthz:
+    get:
+      operationId: HealthController_ready
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the service and its required dependencies are ready
+      tags:
+        - health
+      security: []
+  /v1/media/issue-upload-url:
+    post:
+      operationId: MediaController_issueUploadUrl_v1
+      parameters:
+        - name: idempotency-key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueUploadUrlDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/UploadUrlResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a pending media record and issue a presigned upload URL
+      tags:
+        - media
+  /v1/media/promote-batch:
+    post:
+      operationId: MediaController_promoteBatch_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromoteBatchDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PromoteBatchResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Promote up to 50 temporary media objects
+      tags:
+        - media
+  /v1/media:
+    get:
+      operationId: MediaController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: ownerType
+          required: false
+          in: query
+          schema:
+            maxLength: 64
+            type: string
+        - name: ownerId
+          required: false
+          in: query
+          schema:
+            maxLength: 255
+            type: string
+        - name: mediaClass
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - SYSTEM_ASSET
+              - USER_CONTENT
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/MediaResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List permanent media visible to the caller
+      tags:
+        - media
+  /v1/media/{id}:
+    get:
+      operationId: MediaController_get_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MediaResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Get one media object
+      tags:
+        - media
+    delete:
+      operationId: MediaController_remove_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Soft-delete a media object
+      tags:
+        - media
+  /v1/media/{id}/complete:
+    post:
+      operationId: MediaController_complete_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MediaResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Verify the uploaded object and activate the media
+      tags:
+        - media
+  /v1/media/{id}/issue-download-url:
+    post:
+      operationId: MediaController_issueDownloadUrl_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueDownloadUrlDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/DownloadUrlResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Issue a presigned download URL
+      tags:
+        - media
+  /v1/media/{id}/promote:
+    post:
+      operationId: MediaController_promote_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromoteMediaDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MediaResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Turn temporary media into permanent media
+      tags:
+        - media
+  /v1/media/{id}/moderation:
+    post:
+      operationId: MediaController_moderate_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerateMediaDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MediaResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Record a moderation decision for user content
+      tags:
+        - media
+info:
+  title: media-service
+  description: ''
+  version: 0.1.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    ApiResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SUCCESS
+        message:
+          type: string
+          nullable: true
+          example: null
+        result:
+          type: object
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - result
+        - requestId
+    PageResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: number
+          example: 1
+        size:
+          type: number
+          example: 20
+        totalElements:
+          type: number
+          example: 42
+        totalPages:
+          type: number
+          example: 3
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+    AuditLogResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          nullable: true
+        actorSubject:
+          type: string
+          nullable: true
+        actorRoles:
+          type: array
+          items:
+            type: string
+        ip:
+          type: string
+          nullable: true
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+        errorCode:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+      required:
+        - id
+        - occurredAt
+        - requestId
+        - tenantId
+        - actorSubject
+        - actorRoles
+        - ip
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+        - errorCode
+        - metadata
+    HealthResponseDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        version:
+          type: string
+          example: 0.1.0
+      required:
+        - status
+        - version
+    UploadUrlResponseDto:
+      type: object
+      properties:
+        mediaId:
+          type: string
+          format: uuid
+        lifecycle:
+          type: string
+          enum:
+            - TEMPORARY
+            - PERMANENT
+        uploadUrl:
+          type: string
+        method:
+          type: string
+          example: PUT
+        uploadUrlExpiresAt:
+          type: string
+          format: date-time
+        mediaExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        requiredHeaders:
+          type: object
+          example:
+            Content-Type: image/png
+      required:
+        - mediaId
+        - lifecycle
+        - uploadUrl
+        - method
+        - uploadUrlExpiresAt
+        - mediaExpiresAt
+        - requiredHeaders
+    IssueUploadUrlDto:
+      type: object
+      properties:
+        mediaClass:
+          type: string
+          enum:
+            - SYSTEM_ASSET
+            - USER_CONTENT
+          default: USER_CONTENT
+        contentType:
+          type: string
+          example: image/png
+        declaredSizeBytes:
+          type: number
+          minimum: 0
+        originalFilename:
+          type: string
+          maxLength: 255
+        visibility:
+          type: string
+          enum:
+            - PRIVATE
+            - INTERNAL
+            - PUBLIC
+          default: PRIVATE
+        ownerType:
+          type: string
+          description: Required for permanent uploads
+          maxLength: 64
+        ownerId:
+          type: string
+          description: Required for permanent uploads
+          maxLength: 255
+        retentionUntil:
+          type: string
+          format: date-time
+        temporary:
+          type: boolean
+          default: false
+        ttlHours:
+          type: number
+          minimum: 1
+          maximum: 720
+          default: 24
+        metadata:
+          type: object
+      required:
+        - contentType
+        - declaredSizeBytes
+    MediaResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mediaClass:
+          type: string
+          enum:
+            - SYSTEM_ASSET
+            - USER_CONTENT
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - DELETED
+        visibility:
+          type: string
+          enum:
+            - PRIVATE
+            - INTERNAL
+            - PUBLIC
+        lifecycle:
+          type: string
+          enum:
+            - TEMPORARY
+            - PERMANENT
+        moderationStatus:
+          type: string
+          enum:
+            - NOT_REQUIRED
+            - PENDING
+            - APPROVED
+            - REJECTED
+        ownerType:
+          type: string
+          nullable: true
+        ownerId:
+          type: string
+          nullable: true
+        contentType:
+          type: string
+        declaredSizeBytes:
+          type: number
+        actualSizeBytes:
+          type: number
+          nullable: true
+        originalFilename:
+          type: string
+          nullable: true
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        retentionUntil:
+          type: string
+          format: date-time
+          nullable: true
+        metadata:
+          type: object
+      required:
+        - id
+        - mediaClass
+        - status
+        - visibility
+        - lifecycle
+        - moderationStatus
+        - ownerType
+        - ownerId
+        - contentType
+        - declaredSizeBytes
+        - actualSizeBytes
+        - originalFilename
+        - createdBy
+        - createdAt
+        - completedAt
+        - expiresAt
+        - retentionUntil
+        - metadata
+    PromoteBatchFailureDto:
+      type: object
+      properties:
+        mediaId:
+          type: string
+          format: uuid
+        errorCode:
+          type: string
+          example: MEDIA.NOT_FOUND
+        message:
+          type: string
+      required:
+        - mediaId
+        - errorCode
+        - message
+    PromoteBatchResponseDto:
+      type: object
+      properties:
+        succeeded:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaResponseDto'
+        failed:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromoteBatchFailureDto'
+      required:
+        - succeeded
+        - failed
+    PromoteBatchItemDto:
+      type: object
+      properties:
+        ownerType:
+          type: string
+          maxLength: 64
+        ownerId:
+          type: string
+          maxLength: 255
+        visibility:
+          type: string
+          enum:
+            - PRIVATE
+            - INTERNAL
+            - PUBLIC
+        retentionUntil:
+          type: string
+          format: date-time
+        metadataMerge:
+          type: object
+        mediaId:
+          type: string
+          format: uuid
+      required:
+        - ownerType
+        - ownerId
+        - mediaId
+    PromoteBatchDto:
+      type: object
+      properties:
+        items:
+          minItems: 1
+          maxItems: 50
+          type: array
+          items:
+            $ref: '#/components/schemas/PromoteBatchItemDto'
+      required:
+        - items
+    DownloadUrlResponseDto:
+      type: object
+      properties:
+        downloadUrl:
+          type: string
+        method:
+          type: string
+          example: GET
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - downloadUrl
+        - method
+        - expiresAt
+    IssueDownloadUrlDto:
+      type: object
+      properties:
+        ttlSeconds:
+          type: number
+          minimum: 60
+          maximum: 3600
+        contentDisposition:
+          type: string
+          example: inline; filename="photo.jpg"
+          maxLength: 255
+    PromoteMediaDto:
+      type: object
+      properties:
+        ownerType:
+          type: string
+          maxLength: 64
+        ownerId:
+          type: string
+          maxLength: 255
+        visibility:
+          type: string
+          enum:
+            - PRIVATE
+            - INTERNAL
+            - PUBLIC
+        retentionUntil:
+          type: string
+          format: date-time
+        metadataMerge:
+          type: object
+      required:
+        - ownerType
+        - ownerId
+    ModerateMediaDto:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum:
+            - APPROVED
+            - REJECTED
+        reason:
+          type: string
+          maxLength: 500
+      required:
+        - decision
+    ApiErrorResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: COMMON.VALIDATION
+        message:
+          type: string
+          example: Request validation failed
+        details:
+          type: object
+          nullable: true
+        path:
+          type: string
+          example: /v1/examples
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - path
+        - timestamp
+        - requestId
+security:
+  - bearer: []
