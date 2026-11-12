@@ -1,12 +1,28 @@
 openapi: 3.1.0
 info:
   title: Netverse Health
-  version: 1.0.0
+  version: 1.1.0
 paths:
+  /livez:
+    get:
+      operationId: getLiveness
+      summary: Báo tiến trình còn sống, không kiểm phụ thuộc
+      responses:
+        '200':
+          description: Tiến trình đang chạy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
   /healthz:
     get:
       operationId: getHealth
-      summary: Báo service còn sống và sẵn sàng nhận việc
+      summary: Báo service và các phụ thuộc bắt buộc đã sẵn sàng nhận việc
       responses:
         '200':
           description: Service hoạt động bình thường

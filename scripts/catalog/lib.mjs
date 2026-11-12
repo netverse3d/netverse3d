@@ -11,7 +11,7 @@ const IGNORED_DIRECTORIES = new Set(['node_modules', 'dist', '.next', '.turbo', 
 const DECISION_ID = /^ADR-\d{4}$/;
 const MANIFESTS = ['package.json', 'go.mod', 'pyproject.toml'];
 const TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?|_test\.go|^test_.+\.py)$/;
-const HEALTH_ENDPOINT = /["'`/]healthz["'`]?/;
+const HEALTH_ENDPOINTS = { livez: /["'`/]livez["'`]?/, healthz: /["'`/]healthz["'`]?/ };
 const SOURCE_FILE = /\.([cm]?[jt]sx?|go|py)$/;
 const README_MILESTONE = /^-\s*Milestone:\s*(M\d+)\s*$/m;
 
@@ -198,11 +198,14 @@ export function checkComponent(root, component) {
     if (!implementation.some((file) => file.endsWith('openapi.yaml'))) {
       errors.push(`${label}: missing openapi.yaml`);
     }
-    const sources = implementation.filter((file) => SOURCE_FILE.test(file));
-    const hasHealth = sources.some((file) =>
-      HEALTH_ENDPOINT.test(readFileSync(join(directory, file), 'utf8')),
-    );
-    if (!hasHealth) errors.push(`${label}: no /healthz endpoint found`);
+    const sources = implementation
+      .filter((file) => SOURCE_FILE.test(file))
+      .map((file) => readFileSync(join(directory, file), 'utf8'));
+    for (const [name, pattern] of Object.entries(HEALTH_ENDPOINTS)) {
+      if (!sources.some((source) => pattern.test(source))) {
+        errors.push(`${label}: no /${name} endpoint found`);
+      }
+    }
   }
   return errors;
 }

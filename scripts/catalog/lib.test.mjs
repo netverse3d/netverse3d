@@ -40,7 +40,7 @@ function addCompleteService(root) {
   write(root, 'services/identity/Dockerfile');
   write(root, 'services/identity/.env.example');
   write(root, 'services/identity/openapi.yaml');
-  write(root, 'services/identity/src/health.ts', "app.get('/healthz');");
+  write(root, 'services/identity/src/health.ts', "app.get('/livez'); app.get('/healthz');");
   write(root, 'services/identity/src/health.test.ts');
 }
 
@@ -210,4 +210,22 @@ test('đọc được danh sách areas của catalog', () => {
     loadAreas(createRepository()).map((area) => area.path),
     ['services', 'docs'],
   );
+});
+
+test('báo service chỉ có endpoint sẵn sàng mà thiếu endpoint còn sống', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/src/health.ts', "app.get('/healthz');");
+  const text = checkAllComponents(root).join();
+  assert.ok(text.includes('no /livez endpoint found'), text);
+  assert.ok(!text.includes('no /healthz endpoint found'), text);
+});
+
+test('báo service chỉ có endpoint còn sống mà thiếu endpoint sẵn sàng', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/src/health.ts', "app.get('/livez');");
+  const text = checkAllComponents(root).join();
+  assert.ok(text.includes('no /healthz endpoint found'), text);
+  assert.ok(!text.includes('no /livez endpoint found'), text);
 });
