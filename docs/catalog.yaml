@@ -17,36 +17,42 @@ components:
     stack: NestJS, Prisma
     summary: Đăng ký, đăng nhập, JWT, RBAC
     milestone: M1
+    maps_to: Đăng ký, đăng nhập, token, vai trò trong ứng dụng nghiệp vụ
   - id: shop
     path: services/shop
     kind: service
     stack: NestJS, Prisma
     summary: Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình
     milestone: M3
+    maps_to: Tiệm, máy, quyền dùng máy, trang tổng quan quản trị
   - id: world
     path: services/world
     kind: service
     stack: NestJS, Prisma
     summary: Thế giới, bản đồ, bố cục, phòng net
     milestone: M4
+    maps_to: Bố cục tiệm bản nháp và bản phát hành, vé vào phòng
   - id: media
     path: services/media
     kind: service
     stack: NestJS, Prisma
     summary: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN
     milestone: M2
+    maps_to: Tải lên bằng URL ký sẵn, duyệt asset, danh mục asset
   - id: payment
     path: services/payment
     kind: service
     stack: NestJS, Prisma
     summary: PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn
     milestone: M3
+    maps_to: Ứng dụng thanh toán và tiến trình chuyển sự kiện thanh toán
   - id: ai-chat
     path: services/ai-chat
     kind: service
     stack: Python
     summary: Chatbot LLM chạy local và TTS tiếng Việt
     milestone: M7
+    maps_to: Ứng dụng AI
   - id: notification
     path: services/notification
     kind: service
@@ -59,6 +65,7 @@ components:
     stack: Chưa chốt, chờ core của mentor
     summary: Game Gateway và Authoritative Room Server
     milestone: M5
+    maps_to: Game server
   - id: worker-asset
     path: workers/asset
     kind: worker
@@ -83,6 +90,7 @@ components:
     stack: OpenAPI, JSON Schema
     summary: Hợp đồng HTTP, sự kiện Kafka và giao thức realtime
     milestone: M0
+    maps_to: Thư mục hợp đồng
   - id: game-shared
     path: packages/game-shared
     kind: package
@@ -107,3 +115,18 @@ components:
     stack: Blender, glTF
     summary: Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật
     milestone: M1
+areas:
+  - path: apps
+    summary: Giao diện chạy trên trình duyệt
+  - path: services
+    summary: Tiến trình phục vụ API hoặc kết nối realtime, mỗi service một thư mục
+  - path: workers
+    summary: Tiến trình xử lý việc nền
+  - path: packages
+    summary: Mã và dữ liệu dùng chung, không tự triển khai
+  - path: infra
+    summary: Hạ tầng chạy hệ thống, gồm Compose, cổng vào và cấu hình quan sát
+  - path: scripts
+    summary: Công cụ của repo để kiểm, sinh tài liệu và phát hành
+  - path: docs
+    summary: Yêu cầu, quyết định, wiki và runbook

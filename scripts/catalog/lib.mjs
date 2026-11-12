@@ -15,8 +15,73 @@ const HEALTH_ENDPOINT = /["'`/]healthz["'`]?/;
 const SOURCE_FILE = /\.([cm]?[jt]sx?|go|py)$/;
 const README_MILESTONE = /^-\s*Milestone:\s*(M\d+)\s*$/m;
 
+function readCatalogFile(root) {
+  return parse(readFileSync(join(root, 'docs/catalog.yaml'), 'utf8')) ?? {};
+}
+
 export function loadCatalog(root) {
-  return parse(readFileSync(join(root, 'docs/catalog.yaml'), 'utf8'))?.components ?? [];
+  return readCatalogFile(root).components ?? [];
+}
+
+export function loadAreas(root) {
+  return readCatalogFile(root).areas ?? [];
+}
+
+function withoutIgnoredPaths(directory, paths) {
+  if (paths.length === 0) return paths;
+  const result = spawnSync('git', ['check-ignore', '--stdin'], {
+    cwd: directory,
+    input: paths.join('\n'),
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) return paths;
+  const ignored = new Set(result.stdout.split('\n').filter(Boolean));
+  return paths.filter((path) => !ignored.has(path));
+}
+
+export function listTopLevelDirectories(root) {
+  const names = readdirSync(root).filter(
+    (name) =>
+      !name.startsWith('.') &&
+      !IGNORED_DIRECTORIES.has(name) &&
+      statSync(join(root, name)).isDirectory(),
+  );
+  return withoutIgnoredPaths(root, names);
+}
+
+function checkAreas(root) {
+  const errors = [];
+  const seen = new Set();
+  for (const area of loadAreas(root)) {
+    const label = area.path ?? '(missing path)';
+    if (!area.path) {
+      errors.push(`${label}: area is missing path`);
+      continue;
+    }
+    if (seen.has(area.path)) errors.push(`${label}: duplicate area`);
+    seen.add(area.path);
+    if (!area.summary) errors.push(`${label}: area is missing summary`);
+    if (!existsSync(join(root, area.path))) {
+      errors.push(`${label}: listed in areas but the directory is missing`);
+    }
+  }
+  for (const directory of listTopLevelDirectories(root)) {
+    if (!seen.has(directory)) {
+      errors.push(`${directory}: top-level directory is not in areas of docs/catalog.yaml`);
+    }
+  }
+  return errors;
+}
+
+function checkDependencies(component, ids) {
+  const label = component.path ?? component.id;
+  if (component.depends_on === undefined) return [];
+  if (!Array.isArray(component.depends_on)) return [`${label}: depends_on must be a list`];
+  return component.depends_on.flatMap((id) => {
+    if (id === component.id) return [`${label}: depends_on cannot name itself`];
+    if (!ids.has(id)) return [`${label}: depends_on "${id}" is not a component`];
+    return [];
+  });
 }
 
 export function listComponentDirectories(root) {
@@ -45,6 +110,7 @@ export function checkStructure(root) {
   const errors = [];
   const catalog = loadCatalog(root);
   const paths = new Set(catalog.map((component) => component.path));
+  const knownIds = new Set(catalog.map((component) => component.id));
   const ids = new Set();
   for (const component of catalog) {
     if (ids.has(component.id)) errors.push(`${component.id}: duplicate component id`);
@@ -64,9 +130,11 @@ export function checkStructure(root) {
     }
     errors.push(...checkReadmeMilestone(root, component));
   }
+  for (const component of catalog) errors.push(...checkDependencies(component, knownIds));
   for (const directory of listComponentDirectories(root)) {
     if (!paths.has(directory)) errors.push(`${directory}: directory is not in docs/catalog.yaml`);
   }
+  errors.push(...checkAreas(root));
   return errors;
 }
 
@@ -80,17 +148,6 @@ function walkFiles(directory, base = '') {
     else files.push(relative);
   }
   return files;
-}
-
-function withoutIgnoredFiles(directory, files) {
-  const result = spawnSync('git', ['check-ignore', '--stdin'], {
-    cwd: directory,
-    input: files.join('\n'),
-    encoding: 'utf8',
-  });
-  if (result.status !== 0) return files;
-  const ignored = new Set(result.stdout.split('\n').filter(Boolean));
-  return files.filter((file) => !ignored.has(file));
 }
 
 function requiredFilesFor(kind) {
@@ -107,7 +164,7 @@ function decisionExists(root, id) {
 
 export function checkComponent(root, component) {
   const directory = join(root, component.path);
-  const files = withoutIgnoredFiles(directory, walkFiles(directory));
+  const files = withoutIgnoredPaths(directory, walkFiles(directory));
   const implementation = files.filter((file) => !METADATA_FILES.has(file));
   const errors = [];
   const metadataPath = join(directory, 'component.yaml');
