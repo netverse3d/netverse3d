@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  CORE_SERVICES,
   findMissingTools,
   findUnhealthyServices,
   httpProbes,
@@ -52,5 +53,20 @@ test('liệt kê công cụ còn thiếu', () => {
   assert.deepEqual(
     findMissingTools((tool) => tool === 'node', ['node', 'docker']),
     ['docker'],
+  );
+});
+
+test('object storage thuộc nhóm dịch vụ lõi và bị báo lúc chưa được tạo', () => {
+  assert.ok(CORE_SERVICES.includes('object-store'));
+  const problems = findUnhealthyServices([], ['object-store']);
+  assert.deepEqual(problems, ['object-store: not created']);
+});
+
+test('đầu dò HTTP có object storage ở đúng cổng cấu hình', () => {
+  const probes = Object.fromEntries(httpProbes({ S3_PORT: '58444' }));
+  assert.equal(probes['object-store'], 'http://127.0.0.1:58444/healthz');
+  assert.equal(
+    Object.fromEntries(httpProbes({}))['object-store'],
+    'http://127.0.0.1:58333/healthz',
   );
 });

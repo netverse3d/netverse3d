@@ -56,6 +56,23 @@ services:
       retries: 20
       start_period: 15s
 
+  object-store:
+    image: chrislusf/seaweedfs:4.53
+    command:
+      - server
+      - -dir=/data
+      - -s3
+      - -s3.port=8333
+      - -master.volumeSizeLimitMB=64
+      - -volume.max=0
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?}
+    ports:
+      - 127.0.0.1:${S3_PORT:-58333}:8333
+    volumes:
+      - object-store-data:/data
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.131.0
     profiles: [observability]
@@ -106,6 +123,7 @@ volumes:
   postgres-data:
   redis-data:
   kafka-data:
+  object-store-data:
   prometheus-data:
   loki-data:
   grafana-data:
