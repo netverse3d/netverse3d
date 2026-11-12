@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AppConfig } from '../../../config/app-config';
 import { LockedJob } from '../../../infrastructure/jobs/locked-job';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import { toEnvelope } from '../domain/event-envelope';
 import { EventPublisher } from '../ports/event-publisher';
 import { OutboxRepository, OutboxRow } from '../repositories/outbox.repository';
 
@@ -35,14 +36,7 @@ export class OutboxRelayJob extends LockedJob {
 
   private async deliver(row: OutboxRow): Promise<void> {
     try {
-      await this.publisher.publish({
-        id: row.id,
-        type: row.type,
-        aggregateId: row.aggregateId,
-        tenantId: row.tenantId,
-        occurredAt: row.createdAt.toISOString(),
-        data: row.payload,
-      });
+      await this.publisher.publish(toEnvelope(row, this.config.service.name));
       await this.repository.markPublished(row.id);
     } catch (error) {
       const attempts = row.attempts + 1;

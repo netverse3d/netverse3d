@@ -9,7 +9,7 @@ import { buildOpenApiDocument } from '../src/bootstrap/setup-swagger';
 import { AppConfig } from '../src/config/app-config';
 
 const PLACEHOLDER_ENV = {
-  SERVICE_NAME: process.env.SERVICE_NAME ?? 'media-service',
+  SERVICE_NAME: process.env.SERVICE_NAME ?? 'media',
   S3_ENDPOINT: 'localhost',
   S3_PORT: '9000',
   S3_ACCESS_KEY: 'unused',

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/events/v1/media.schema.json",
+  "title": "Media event data",
+  "description": "Phần data của các sự kiện do media service phát, đặt trong vỏ chung envelope",
+  "x-status": "draft",
+  "x-event-types": ["media.completed", "media.promoted", "media.deleted", "media.moderated"],
+  "type": "object",
+  "required": [
+    "mediaId",
+    "tenantId",
+    "mediaClass",
+    "status",
+    "lifecycle",
+    "moderationStatus",
+    "contentType",
+    "createdBy"
+  ],
+  "properties": {
+    "mediaId": { "type": "string", "format": "uuid" },
+    "tenantId": { "type": ["string", "null"] },
+    "mediaClass": { "enum": ["SYSTEM_ASSET", "USER_CONTENT"] },
+    "status": { "enum": ["PENDING", "ACTIVE", "DELETED"] },
+    "lifecycle": { "enum": ["TEMPORARY", "PERMANENT"] },
+    "moderationStatus": { "enum": ["NOT_REQUIRED", "PENDING", "APPROVED", "REJECTED"] },
+    "ownerType": { "type": ["string", "null"] },
+    "ownerId": { "type": ["string", "null"] },
+    "contentType": { "type": "string" },
+    "createdBy": { "type": "string" }
+  }
+}

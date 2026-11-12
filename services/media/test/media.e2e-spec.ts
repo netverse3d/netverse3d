@@ -6,7 +6,8 @@ import {
   PendingReaper,
   TemporaryReaper,
 } from '../src/modules/media/jobs/media-reapers';
-import { EventPublisher, OutboundEvent } from '../src/modules/outbox/ports/event-publisher';
+import { EventEnvelope } from '../src/modules/outbox/domain/event-envelope';
+import { EventPublisher } from '../src/modules/outbox/ports/event-publisher';
 import { OutboxRelayJob } from '../src/modules/outbox/services/outbox-relay.job';
 import { createTestApp, TestApp } from './support/test-app';
 
@@ -603,7 +604,7 @@ describe('media', () => {
   });
 
   describe('phát sự kiện', () => {
-    let delivered: OutboundEvent[];
+    let delivered: EventEnvelope[];
     let publisher: EventPublisher;
     let original: EventPublisher['publish'];
 
@@ -627,8 +628,8 @@ describe('media', () => {
     it('chuyển sự kiện đã lưu ra ngoài và đánh dấu đã gửi', async () => {
       const id = await activeMedia(await token('alice'));
       await subject.app.get(OutboxRelayJob, { strict: false }).runOnce();
-      expect(delivered.map((event) => [event.type, event.aggregateId])).toEqual([
-        ['media.completed', id],
+      expect(delivered.map((event) => [event.type, event.source, event.data.mediaId])).toEqual([
+        ['media.completed', 'service-under-test', id],
       ]);
       const [event] = await prisma.outboxEvent.findMany({ where: { aggregateId: id } });
       expect(event?.status).toBe('PUBLISHED');
