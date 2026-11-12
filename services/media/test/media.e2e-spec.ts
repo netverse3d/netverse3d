@@ -313,6 +313,30 @@ describe('media', () => {
   });
 
   describe('cách ly tenant và quyền', () => {
+    it('media công khai của tiệm thì người chơi và tiệm khác đọc, tải được nhưng không xoá được', async () => {
+      const id = await activeMedia(await token('alice'), permanentUpload({ visibility: 'PUBLIC' }));
+      const visitors = [
+        await playerToken('visitor'),
+        await token('mallory', [], `tenant-${randomUUID()}`),
+      ];
+      for (const visitor of visitors) {
+        expect((await call('get', `/v1/media/${id}`, visitor)).status).toBe(200);
+        expect((await call('post', `/v1/media/${id}/issue-download-url`, visitor, {})).status).toBe(
+          200,
+        );
+        expect((await call('delete', `/v1/media/${id}`, visitor)).status).toBe(404);
+      }
+      expect((await row(id)).status).toBe('ACTIVE');
+    });
+
+    it('media nội bộ của tiệm thì người chơi không đọc được', async () => {
+      const id = await activeMedia(
+        await token('alice'),
+        permanentUpload({ visibility: 'INTERNAL' }),
+      );
+      expect((await call('get', `/v1/media/${id}`, await playerToken('visitor'))).status).toBe(404);
+    });
+
     it('tenant khác không đọc, tải, xác nhận, xoá được media', async () => {
       const id = await activeMedia(await token('alice'));
       const outsider = await token('mallory', ['admin'], `tenant-${randomUUID()}`);

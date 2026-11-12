@@ -30,9 +30,10 @@ const playerMedia = (overrides: Partial<AccessibleMedia> = {}): AccessibleMedia 
   media({ tenantId: null, createdBy: 'player', ...overrides });
 
 describe('quyền trên media của một tiệm', () => {
-  it('quản trị tiệm khác không đọc, không đổi được', () => {
-    expect(canRead(media({ visibility: 'PUBLIC' }), foreignAdmin)).toBe(false);
-    expect(canChange(media(), foreignAdmin)).toBe(false);
+  it('quản trị tiệm khác không đọc được media riêng tư hay nội bộ, và không đổi được gì', () => {
+    expect(canRead(media(), foreignAdmin)).toBe(false);
+    expect(canRead(media({ visibility: 'INTERNAL' }), foreignAdmin)).toBe(false);
+    expect(canChange(media({ visibility: 'PUBLIC' }), foreignAdmin)).toBe(false);
   });
 
   it('media riêng tư chỉ người tạo và quản trị tiệm đọc được', () => {
@@ -47,8 +48,23 @@ describe('quyền trên media của một tiệm', () => {
     expect(canChange(internal, colleague)).toBe(false);
   });
 
-  it('người chơi không đọc được media của tiệm, kể cả media công khai', () => {
-    expect(canRead(media({ visibility: 'PUBLIC' }), player)).toBe(false);
+  it('media công khai của tiệm thì người chơi và thành viên tiệm khác đọc được, nhưng không đổi được', () => {
+    const shared = media({ visibility: 'PUBLIC' });
+    expect(canRead(shared, player)).toBe(true);
+    expect(canRead(shared, foreignAdmin)).toBe(true);
+    expect(canChange(shared, player)).toBe(false);
+  });
+
+  it('người chơi không đọc được media nội bộ hay riêng tư của tiệm', () => {
+    expect(canRead(media({ visibility: 'INTERNAL' }), player)).toBe(false);
+    expect(canRead(media(), player)).toBe(false);
+  });
+
+  it('media công khai của tiệm đang chờ duyệt hoặc bị từ chối thì người ngoài không tải được', () => {
+    const pending = media({ visibility: 'PUBLIC', moderationStatus: 'PENDING' });
+    const rejected = media({ visibility: 'PUBLIC', moderationStatus: 'REJECTED' });
+    expect(canDownload(pending, player)).toBe(false);
+    expect(canDownload(rejected, player)).toBe(false);
   });
 });
 

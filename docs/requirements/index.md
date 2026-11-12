@@ -126,7 +126,7 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`, `mentor-demo`
 
 ### REQ-006: Lưu trữ và phân phối asset 3D
 
-Quản lý GLB, glTF, ảnh, âm thanh, video và metadata của hệ thống trên object storage chuẩn S3. Tệp được tải lên và tải về bằng URL ký sẵn có thời hạn, service không chuyển tiếp nội dung tệp. Mỗi tệp thuộc một tenant và tenant này không đọc được tệp của tenant khác. Trạng thái tệp đổi thì phát sự kiện. Phân phối qua CDN làm sau. Object storage ở dev là SeaweedFS, theo ADR-0023.
+Quản lý GLB, glTF, ảnh, âm thanh, video và metadata của hệ thống trên object storage chuẩn S3. Tệp được tải lên và tải về bằng URL ký sẵn có thời hạn, service không chuyển tiếp nội dung tệp. Tệp của một tiệm thuộc tenant của tiệm, và tiệm này không đọc được tệp không công khai của tiệm khác. Tệp ở mức công khai thì mọi tài khoản đã đăng nhập đọc được, theo ADR-0026. Trạng thái tệp đổi thì phát sự kiện. Phân phối qua CDN làm sau. Object storage ở dev là SeaweedFS, theo ADR-0023.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 

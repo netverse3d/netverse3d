@@ -30,6 +30,7 @@
     "infra:up": "node scripts/infra/compose.mjs up",
     "infra:down": "node scripts/infra/compose.mjs down",
     "infra:smoke": "node scripts/infra/compose.mjs smoke",
+    "smoke:stack": "node tests/e2e/stack-smoke.mjs",
     "release:state": "node scripts/release/state.mjs",
     "docs:generate": "node scripts/docs/generate.mjs",
     "docs:check": "node scripts/docs/generate.mjs --check"

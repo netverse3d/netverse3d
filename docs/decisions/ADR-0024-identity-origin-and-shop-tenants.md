@@ -34,7 +34,7 @@ Service đó không gắn vai trò cố định vào tài khoản. Nó có ba kh
 ## Hệ quả
 
 - Token có hai dạng, gắn tenant và không gắn tenant, và client phải đổi token lúc chuyển giữa chơi và quản lý tiệm.
-- Hiện chỉ quản trị nền tảng tạo được tenant. Lúc làm service `shop` phải quyết ai tạo tenant khi một tiệm được mở; việc này là câu hỏi mở.
+- Hiện chỉ quản trị nền tảng tạo được tenant. Ai tạo tenant lúc một tiệm được mở đã được quyết ở [ADR-0026](./ADR-0026-public-shop-media-and-tenant-creation.md): service `shop` tạo, bằng định danh riêng của service.
 - Đăng nhập bằng email và mật khẩu đòi xác minh email trước. Ở môi trường dev mã xác minh được ghi ra log; gửi thật qua `notification` làm sau.
 - `identity` chưa có trong repo trước quyết định này, nên media dùng một bộ phát token mẫu ở dev. Sau lúc nhập, media trong `infra/compose` tin JWKS của identity.
 - Mã đã công khai thì không thu hồi được, nên bước quét secret và đọc lại thay đổi trước lúc đẩy là bắt buộc.
