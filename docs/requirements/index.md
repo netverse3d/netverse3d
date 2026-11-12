@@ -7,6 +7,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-027 | Tách staging và production, phát hành theo tag | Đã chốt | Bắt buộc | `infra` |
+| REQ-044 | Bố cục monorepo thống nhất và chỉ mục toàn repo | Đã chốt | Nên có | `infra` |
 
 ## M1 · Giao diện và Identity
 
@@ -349,3 +350,9 @@ Nguồn: `team-decision`
 Thành phố luôn là ban đêm theo ADR-0014, nhưng thời tiết đổi ngẫu nhiên theo thời gian giữa các trạng thái như tạnh, mưa nhẹ, mưa lớn và sương dày. Trạng thái chuyển dần, không đổi đột ngột. Người chơi ở cùng một khu thấy cùng một thời tiết. Mưa đi cùng mặt đường ướt và hạt mưa bắt sáng theo chuẩn dựng hình ở ADR-0019. Mức chất lượng thấp tắt được hiệu ứng mà không đổi trạng thái thời tiết.
 
 Nguồn: `team-decision`
+
+### REQ-044: Bố cục monorepo thống nhất và chỉ mục toàn repo
+
+Mỗi thư mục cấp cao của repo có vai trò và quy tắc đặt tên được ghi rõ. Mọi thư mục cấp cao và mọi thành phần được khai ở một nơi, trang chỉ mục sinh từ đó và công cụ kiểm chặn khi lệch. Hợp đồng đặt phiên bản theo thư mục. Service giữ chuẩn chung qua hợp đồng và bộ kiểm chạy trên service thật, không phụ thuộc ngôn ngữ viết service, theo ADR-0020.
+
+Nguồn: `team-decision`, `mentor-backend-sample`
