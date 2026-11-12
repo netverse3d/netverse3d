@@ -29,7 +29,7 @@ const units = selectUnits(
   components,
   loadDependencies(root, components),
   changedFiles(base, 'HEAD', root),
-).map(({ id, path, package: name }) => ({ id, path, package: name }));
+).map(({ id, path, package: name, e2e }) => ({ id, path, package: name, e2e }));
 
 const matrix = JSON.stringify(units);
 console.log(`Units to verify: ${matrix}`);

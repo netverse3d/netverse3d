@@ -70,6 +70,22 @@ jobs:
       - env:
           UNIT_PACKAGE: ${{ matrix.unit.package }}
         run: pnpm exec turbo run lint test build --filter="$UNIT_PACKAGE"
+      - name: Start a database for end-to-end tests
+        if: matrix.unit.e2e
+        run: |
+          docker run -d --name e2e-database -e POSTGRES_PASSWORD=e2e -e POSTGRES_DB=e2e -p 127.0.0.1:5432:5432 postgres:17-alpine
+          for attempt in $(seq 1 30); do
+            if docker exec e2e-database pg_isready -U postgres -d e2e > /dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "The database did not become ready" >&2
+          exit 1
+      - name: Run end-to-end tests
+        if: matrix.unit.e2e
+        env:
+          UNIT_PACKAGE: ${{ matrix.unit.package }}
+          DATABASE_URL: postgresql://postgres:e2e@127.0.0.1:5432/e2e
+        run: pnpm exec turbo run test:e2e --filter="$UNIT_PACKAGE"
 
   verify:
     needs: [repo, plan, unit]
