@@ -8,6 +8,7 @@ export const SHARED_ROOT_FILES = [
   'turbo.json',
   'tsconfig.base.json',
   '.nvmrc',
+  '.dockerignore',
 ];
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies'];

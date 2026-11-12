@@ -72,7 +72,7 @@ Các thành phần khác không bị đụng tới trong cả hai cách.
 
 ## Khi build staging lỗi
 
-Workflow **build-staging** chỉ build thành phần của tag. Nếu build lỗi vì sự cố tạm thời thì chạy lại chính lần chạy đó bằng **Re-run failed jobs**. Nếu lỗi do mã thì sửa và phát hành số mới.
+Workflow **build-staging** chỉ build thành phần của tag. Nếu build lỗi vì sự cố tạm thời, trước lúc image được đẩy lên, thì chạy lại chính lần chạy đó bằng **Re-run failed jobs**. Nếu image của số đó đã có thì workflow từ chối build đè, để bản đã test không bị thay; lúc đó sửa và phát hành số mới.
 
 ## Hiện trạng
 

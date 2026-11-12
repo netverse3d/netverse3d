@@ -245,3 +245,8 @@ test('bảng trạng thái in ra dạng bảng, chỗ chưa phát hành ghi rõ'
   assert.ok(page.includes('| identity | 0.2.0 | 0.1.0 |'));
   assert.ok(page.includes('| web-3d | not released | not released |'));
 });
+
+test('tệp quyết định nội dung image nằm trong nội dung của mọi thành phần', () => {
+  const paths = contentPaths({ id: 'a', path: 'services/a' }, [], new Map([['a', []]]));
+  assert.ok(paths.includes('.dockerignore'));
+});

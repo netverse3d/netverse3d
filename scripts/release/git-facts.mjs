@@ -21,5 +21,5 @@ export function remoteBranchesContaining(ref, cwd) {
 export function changedFiles(from, to, cwd, paths = []) {
   if (!from) return null;
   const pathArguments = paths.length > 0 ? ['--', ...paths] : [];
-  return gitLines(['diff', '--name-only', from, to, ...pathArguments], cwd);
+  return gitLines(['diff', '--name-only', '--no-renames', from, to, ...pathArguments], cwd);
 }

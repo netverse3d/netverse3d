@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { concludeRun, selectUnits } from './lib.mjs';
+import { concludeRun, findUnitsWithoutJob, selectUnits } from './lib.mjs';
 
 const components = [
   { id: 'contracts', path: 'packages/contracts' },
@@ -135,4 +135,21 @@ test('thiếu kết quả của một job bắt buộc thì kết luận đỏ',
     'plan: missing',
     'unit: missing',
   ]);
+});
+
+test('thành phần có mã nhưng chưa có cách kiểm trong CI bị nêu tên', () => {
+  const stacks = new Map([
+    ['game', 'go.mod'],
+    ['identity', null],
+  ]);
+  const withoutJob = findUnitsWithoutJob(
+    [
+      { id: 'game', path: 'services/game' },
+      { id: 'identity', path: 'services/identity' },
+      { id: 'web-3d', path: 'apps/web-3d' },
+    ],
+    units,
+    (component) => stacks.get(component.id) ?? null,
+  );
+  assert.deepEqual(withoutJob, ['game: has go.mod but CI has no job for it yet']);
 });

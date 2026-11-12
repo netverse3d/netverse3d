@@ -52,3 +52,12 @@ export function concludeRun(needs) {
     return [`${job}: ${result}`];
   });
 }
+
+export function findUnitsWithoutJob(components, units, stackManifestOf) {
+  const covered = new Set(units.map((unit) => unit.id));
+  return components.flatMap((component) => {
+    if (covered.has(component.id)) return [];
+    const manifest = stackManifestOf(component);
+    return manifest ? [`${component.id}: has ${manifest} but CI has no job for it yet`] : [];
+  });
+}
