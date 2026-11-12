@@ -19,8 +19,19 @@ provenance: none
 | `Dockerfile`                                          | Có  | Có      | Có     |         |
 | `.env.example`                                        |     | Có      | Có     |         |
 | `openapi.yaml`                                        |     | Có      |        |         |
-| Endpoint `/healthz`                                   |     | Có      |        |         |
+| Endpoint `/livez` và `/healthz`                       |     | Có      |        |         |
 | Khai nguồn gốc trong `component.yaml`                 | Có  | Có      | Có     | Có      |
+
+## Health
+
+Service có hai endpoint, theo hợp đồng `packages/contracts/openapi/v1/health.yaml`:
+
+| Endpoint   | Trả lời câu hỏi                    | Kiểm phụ thuộc | Ai gọi                                                   |
+| ---------- | ---------------------------------- | -------------- | -------------------------------------------------------- |
+| `/livez`   | Tiến trình còn sống không          | Không          | Nền tảng chạy, để quyết định khởi động lại               |
+| `/healthz` | Service đã sẵn sàng nhận việc chưa | Có             | Cổng vào và nền tảng chạy, để quyết định gửi yêu cầu tới |
+
+Hai endpoint không cần đăng nhập và không ghi log truy cập. `/healthz` trả 503 lúc một phụ thuộc bắt buộc như cơ sở dữ liệu đang lỗi.
 
 ## Nguồn gốc mã
 
