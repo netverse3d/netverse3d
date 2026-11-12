@@ -12,6 +12,8 @@ export interface AuditEntry {
   outcome: 'SUCCESS' | 'FAILURE';
   errorCode?: string;
   metadata?: Record<string, unknown>;
+  actorSubject?: string;
+  tenantId?: string | null;
 }
 
 @Injectable()
@@ -25,8 +27,8 @@ export class AuditService {
     await this.repository.insert(
       {
         requestId: context?.requestId ?? null,
-        tenantId: context?.actor?.tenantId ?? null,
-        actorSubject: context?.actor?.subject ?? null,
+        tenantId: entry.tenantId ?? context?.actor?.tenantId ?? null,
+        actorSubject: entry.actorSubject ?? context?.actor?.subject ?? null,
         actorRoles: [...(context?.actor?.roles ?? [])],
         ip: context?.ip ?? null,
         userAgent: context?.userAgent ?? null,

@@ -4,9 +4,13 @@ import { AppModule } from '../../src/app.module';
 import { setupApp } from '@netverse/nest-kit';
 import { AppConfig } from '../../src/config/app-config';
 import { StorageService } from '../../src/infrastructure/storage/storage.service';
-import { ConformanceProbeController } from './conformance-probe.controller';
+import {
+  ConformanceProbeController,
+  TEST_AUDIENCE,
+  TEST_ISSUER,
+  TokenIssuer,
+} from '@netverse/nest-kit/testing';
 import { InMemoryStorage } from './in-memory-storage';
-import { TEST_AUDIENCE, TEST_ISSUER, TokenIssuer } from './token-issuer';
 
 export interface TestApp {
   app: NestExpressApplication;

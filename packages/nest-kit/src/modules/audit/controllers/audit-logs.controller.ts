@@ -15,7 +15,7 @@ export class AuditLogsController {
   constructor(private readonly audit: AuditService) {}
 
   @Get()
-  @Roles('admin')
+  @Roles('admin', 'platform_admin')
   @ApiOperation({ summary: 'List audit log entries, newest first' })
   @ApiPagedEnvelope(AuditLogResponseDto)
   list(

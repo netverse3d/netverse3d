@@ -42,7 +42,7 @@ Giữ lại `README.md` và cập nhật `component.yaml` của thành phần tr
 
 ## 5. Khớp với monorepo
 
-Làm theo thứ tự, mỗi nhóm một PR. `services/media` là ví dụ đã đi hết các bước này.
+Làm theo thứ tự trên một nhánh; cả việc nhập là một PR. `services/media` và `services/identity` là hai ví dụ đã đi hết các bước này.
 
 ### 5.1. Bỏ cấu hình công cụ riêng
 
@@ -57,7 +57,7 @@ Xoá khỏi bản nhập: giấy phép riêng, workflow CI, cấu hình lint và
 - `tsconfig.json` kế thừa `tsconfig.base.json`. Cấu hình gốc chặt hơn, nên sửa các chỗ nó báo lỗi thay vì tắt luật.
 - Script của package theo quy ước của repo: `lint` là kiểm kiểu, `test` là unit test không cần hạ tầng, `build` ra `dist`, `test:e2e` là test cần database.
 - Gói nào cần chạy script lúc cài thì ghi rõ cho phép hoặc từ chối trong `allowBuilds` của `pnpm-workspace.yaml`.
-- Prisma: không ghim `output` của generator vào `node_modules` của service, để client được sinh đúng chỗ pnpm tìm.
+- Prisma: mỗi service sinh client vào thư mục `generated/` của riêng mình (`output = "../generated/prisma"`) và chỉ import qua `src/infrastructure/prisma/client.ts`. Hai service dùng chung chỗ sinh mặc định sẽ ghi đè client của nhau. Service khai thêm phụ thuộc `@prisma/client-runtime-utils`, vì client sinh ra gọi thẳng gói này.
 - Bản build không dùng biên dịch tăng dần. Tệp trạng thái biên dịch cũ kết hợp với việc xoá `dist` trước mỗi lần build làm bản build thiếu tệp mà không báo lỗi.
 
 ### 5.3. Vào lint và CI chung
@@ -74,9 +74,9 @@ Xoá khỏi bản nhập: giấy phép riêng, workflow CI, cấu hình lint và
 ### 5.5. Hợp đồng và hạ tầng
 
 - Tài liệu API sinh theo OpenAPI 3.1; bản công bố nằm ở `packages/contracts/openapi/v1/<id>.yaml` và có test buộc nó trùng với bản service sinh ra.
-- Sự kiện gửi ra theo vỏ chung `events/v1/envelope`; phần `data` có hợp đồng riêng trong `packages/contracts/events/v1`.
+- Sự kiện gửi ra theo vỏ chung `events/v1/envelope`; phần `data` có hợp đồng riêng trong `packages/contracts/events/v1`. Tên loại sự kiện chỉ gồm chữ thường, dấu chấm và gạch ngang.
 - Dịch vụ hạ tầng mới thêm vào `infra/compose` và vào danh sách của `pnpm infra:smoke`. Service chạy dưới profile `apps`.
-- Có một runbook chạy thử service trên hạ tầng dev, như [chạy thử media service](./media-smoke.md).
+- Có một runbook chạy thử service trên hạ tầng dev, như [chạy thử identity và media](./stack-smoke.md).
 
 ### 5.6. Sổ sách
 

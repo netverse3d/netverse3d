@@ -73,6 +73,51 @@ services:
     volumes:
       - object-store-data:/data
 
+  identity-migrate:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/identity/Dockerfile
+    command: [node_modules/.bin/prisma, migrate, deploy]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/identity
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  identity:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/identity/Dockerfile
+    env_file:
+      - ../../services/identity/.env.example
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: identity
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/identity
+      AUTH_JWKS_URL: http://127.0.0.1:3000/.well-known/jwks.json
+      AUTH_ISSUER: http://identity:3000
+      AUTH_AUDIENCE: identity
+      TOKEN_AUDIENCES: media
+      KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
+      OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
+      OTP_DELIVERY: webhook
+      OTP_WEBHOOK_URL: ${IDENTITY_OTP_WEBHOOK_URL:-http://stack-smoke:4100/otp}
+      OTP_WEBHOOK_SECRET: ${IDENTITY_OTP_WEBHOOK_SECRET:-local-development-webhook-secret-value}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.test}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-admin-password}
+    ports:
+      - 127.0.0.1:${IDENTITY_PORT:-53002}:3000
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/livez || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      identity-migrate:
+        condition: service_completed_successfully
+
   media-migrate:
     profiles: [apps]
     build:
@@ -100,9 +145,9 @@ services:
       S3_PORT: 8333
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-netverse-local}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me-local-only}
-      AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://host.docker.internal:4000/.well-known/jwks.json}
-      AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://localhost:4000}
-      AUTH_AUDIENCE: media-service
+      AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://identity:3000/.well-known/jwks.json}
+      AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://identity:3000}
+      AUTH_AUDIENCE: media
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
@@ -117,19 +162,24 @@ services:
         condition: service_completed_successfully
       object-store:
         condition: service_started
+      identity:
+        condition: service_healthy
 
-  media-smoke:
+  stack-smoke:
     profiles: [smoke]
     image: node:22-alpine
-    command: [node, /scripts/smoke.mjs]
+    command: [node, /tests/stack-smoke.mjs]
     environment:
-      SMOKE_BASE_URL: http://media:3000
-      SMOKE_ISSUER_URL: ${MEDIA_SMOKE_ISSUER_URL:-http://host.docker.internal:4000}
-    extra_hosts:
-      - host.docker.internal:host-gateway
+      SMOKE_IDENTITY_URL: http://identity:3000
+      SMOKE_MEDIA_URL: http://media:3000
+      SMOKE_OTP_PORT: 4100
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.test}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-admin-password}
     volumes:
-      - ../../services/media/scripts:/scripts:ro
+      - ../../tests/e2e:/tests:ro
     depends_on:
+      identity:
+        condition: service_healthy
       media:
         condition: service_healthy
 

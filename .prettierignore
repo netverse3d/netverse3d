@@ -17,3 +17,4 @@ packages/README.md
 infra/README.md
 scripts/README.md
 tests/README.md
+services/*/generated

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MediaIdempotency, MediaObject, Prisma } from '@prisma/client';
+import { MediaIdempotency, MediaObject, Prisma } from '../../../infrastructure/prisma/client';
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 
 export type MediaRow = MediaObject;

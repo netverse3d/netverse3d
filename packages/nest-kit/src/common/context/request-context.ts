@@ -4,6 +4,8 @@ export interface Actor {
   subject: string;
   tenantId: string | null;
   roles: readonly string[];
+  sessionId?: string;
+  tokenVersion?: number;
 }
 
 export interface RequestContext {

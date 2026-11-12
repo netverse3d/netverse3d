@@ -14,7 +14,7 @@ components:
   - id: identity
     path: services/identity
     kind: service
-    stack: NestJS, Prisma
+    stack: NestJS, Prisma, PostgreSQL
     summary: Đăng ký, đăng nhập, JWT, RBAC
     milestone: M1
     maps_to: Đăng ký, đăng nhập, token, vai trò trong ứng dụng nghiệp vụ

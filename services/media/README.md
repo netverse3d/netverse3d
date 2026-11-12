@@ -4,7 +4,7 @@ Service: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN.
 
 - Stack: NestJS, Prisma, PostgreSQL, object storage chuẩn S3
 - Milestone: M2
-- Trạng thái: có mã, có image, chạy trên `packages/nest-kit`, chạy được trong `infra/compose`; xem [kịch bản chạy thử](../../docs/runbooks/media-smoke.md)
+- Trạng thái: có mã, có image, chạy trên `packages/nest-kit`, chạy được trong `infra/compose`; xem [kịch bản chạy thử](../../docs/runbooks/stack-smoke.md)
 - Nguồn gốc mã: [ADR-0023](../../docs/decisions/ADR-0023-media-service-origin-and-object-storage.md)
 
 Service quản lý vòng đời tệp trên object storage: cấp URL ký sẵn để client tải thẳng lên kho, xác minh tệp, phân quyền, kiểm duyệt, lưu tạm, lưu giữ và dọn dẹp. Service không chuyển tiếp nội dung tệp.
@@ -35,7 +35,7 @@ Mọi truy cập bị giới hạn trong tenant lấy từ token. Không có quy
 
 ## Xác thực
 
-Service kiểm JWT bằng JWKS lấy từ `AUTH_JWKS_URL`, đối chiếu `AUTH_ISSUER` và `AUTH_AUDIENCE`. Lúc `identity` chưa có trong repo, ở dev dùng bộ phát token mẫu: `pnpm --filter @netverse/media dev:issuer`.
+Service kiểm JWT bằng JWKS lấy từ `AUTH_JWKS_URL`, đối chiếu `AUTH_ISSUER` và `AUTH_AUDIENCE`. Trong `infra/compose` các giá trị này trỏ về `services/identity`. Lúc chỉ chạy riêng media, dùng bộ phát token mẫu: `pnpm --filter @netverse/media dev:issuer`.
 
 ## Sự kiện
 

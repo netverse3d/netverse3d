@@ -1,3 +1,4 @@
+import { parseEnvWith } from '@netverse/nest-kit';
 import { z } from 'zod';
 
 const booleanFlag = z.enum(['true', 'false']).transform((value) => value === 'true');
@@ -83,19 +84,6 @@ export const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-function withoutBlanks(
-  source: Record<string, string | undefined>,
-): Record<string, string | undefined> {
-  return Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ''));
-}
-
 export function parseEnv(source: Record<string, string | undefined>): Env {
-  const parsed = envSchema.safeParse(withoutBlanks(source));
-  if (parsed.success) {
-    return parsed.data;
-  }
-  const problems = parsed.error.issues
-    .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-    .join('; ');
-  throw new Error(`Invalid environment: ${problems}`);
+  return parseEnvWith(envSchema, source);
 }

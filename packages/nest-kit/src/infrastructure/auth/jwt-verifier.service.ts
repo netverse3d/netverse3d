@@ -10,7 +10,12 @@ export class JwtVerifier {
   private readonly keySet: ReturnType<typeof createRemoteJWKSet>;
 
   constructor(private readonly config: KitConfig) {
-    this.keySet = createRemoteJWKSet(new URL(config.auth.jwksUrl));
+    this.keySet = createRemoteJWKSet(
+      new URL(config.auth.jwksUrl),
+      config.auth.jwksCooldownMs === undefined
+        ? undefined
+        : { cooldownDuration: config.auth.jwksCooldownMs },
+    );
   }
 
   async verify(token: string): Promise<Actor> {
@@ -30,6 +35,8 @@ export class JwtVerifier {
       subject: payload.sub as string,
       tenantId: typeof tenant === 'string' ? tenant : null,
       roles: Array.isArray(roles) ? roles.filter((role) => typeof role === 'string') : [],
+      ...(typeof payload.sid === 'string' ? { sessionId: payload.sid } : {}),
+      ...(typeof payload.ver === 'number' ? { tokenVersion: payload.ver } : {}),
     };
   }
 }

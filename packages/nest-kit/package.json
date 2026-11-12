@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "testing"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -33,8 +34,14 @@
     "@nestjs/testing": "^11.2.8",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.19.7",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^6.0.3",
     "jest": "^30.4.2",
+    "js-yaml": "^4.1.0",
+    "pg": "^8.17.2",
+    "supertest": "^7.3.2",
     "ts-jest": "^29.4.11",
     "typescript": "~5.9.3"
   },
@@ -50,5 +57,21 @@
       "^.+\\.ts$": "ts-jest"
     },
     "testEnvironment": "node"
+  },
+  "peerDependencies": {
+    "js-yaml": "*",
+    "pg": "*",
+    "supertest": "*"
+  },
+  "peerDependenciesMeta": {
+    "js-yaml": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "supertest": {
+      "optional": true
+    }
   }
 }
