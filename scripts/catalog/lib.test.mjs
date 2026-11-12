@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { checkAllComponents, checkStructure } from './lib.mjs';
+import { checkAllComponents, checkStructure, loadAreas } from './lib.mjs';
 
 const CATALOG = `components:
   - id: identity
@@ -15,6 +15,13 @@ const CATALOG = `components:
     milestone: M1
 `;
 
+const AREAS = `areas:
+  - path: services
+    summary: Services
+  - path: docs
+    summary: Documents
+`;
+
 function write(root, file, content = '') {
   mkdirSync(dirname(join(root, file)), { recursive: true });
   writeFileSync(join(root, file), content);
@@ -22,7 +29,7 @@ function write(root, file, content = '') {
 
 function createRepository(provenance = 'none') {
   const root = mkdtempSync(join(tmpdir(), 'catalog-'));
-  write(root, 'docs/catalog.yaml', CATALOG);
+  write(root, 'docs/catalog.yaml', `${CATALOG}${AREAS}`);
   write(root, 'services/identity/README.md', '# identity\n');
   write(root, 'services/identity/component.yaml', `provenance: ${provenance}\n`);
   return root;
@@ -138,4 +145,69 @@ test('nhận service đủ chuẩn có mã đã được phép và trỏ về AD
 test('chặn nguồn gốc cleared trỏ tới ADR không tồn tại', () => {
   const root = createRepository('cleared\nprovenance_ref: ADR-9999');
   assert.match(checkAllComponents(root).join(), /ADR-9999 does not exist/);
+});
+
+test('báo thư mục cấp cao chưa khai trong areas', () => {
+  const root = createRepository();
+  write(root, 'tools/run.mjs');
+  assert.match(checkStructure(root).join(), /tools: top-level directory is not in areas/);
+});
+
+test('bỏ qua thư mục ẩn và thư mục sinh ra khi dựng', () => {
+  const root = createRepository();
+  write(root, '.github/workflows/ci.yml');
+  write(root, 'node_modules/yaml/index.js');
+  assert.deepEqual(checkStructure(root), []);
+});
+
+test('bỏ qua thư mục cấp cao bị git bỏ qua', () => {
+  const root = createRepository();
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  write(root, '.gitignore', 'scratch/\n');
+  write(root, 'scratch/notes.md');
+  assert.deepEqual(checkStructure(root), []);
+});
+
+test('báo areas trỏ tới thư mục không tồn tại', () => {
+  const root = createRepository();
+  write(root, 'docs/catalog.yaml', `${CATALOG}${AREAS}  - path: tests\n    summary: Tests\n`);
+  assert.match(checkStructure(root).join(), /tests: listed in areas but the directory is missing/);
+});
+
+test('báo areas thiếu mô tả hoặc khai trùng', () => {
+  const root = createRepository();
+  write(root, 'docs/catalog.yaml', `${CATALOG}${AREAS}  - path: docs\n`);
+  const errors = checkStructure(root).join();
+  assert.match(errors, /docs: duplicate area/);
+  assert.match(errors, /docs: area is missing summary/);
+});
+
+test('báo gốc chứa thành phần chưa khai trong areas', () => {
+  const root = createRepository();
+  write(root, 'docs/catalog.yaml', `${CATALOG}areas:\n  - path: docs\n    summary: Documents\n`);
+  assert.match(checkStructure(root).join(), /services: top-level directory is not in areas/);
+});
+
+test('báo depends_on trỏ tới thành phần không có', () => {
+  const root = createRepository();
+  write(root, 'docs/catalog.yaml', `${CATALOG.trimEnd()}\n    depends_on: [contracts]\n${AREAS}`);
+  assert.match(
+    checkStructure(root).join(),
+    /services\/identity: depends_on "contracts" is not a component/,
+  );
+});
+
+test('báo depends_on trỏ về chính nó hoặc không phải danh sách', () => {
+  const root = createRepository();
+  write(root, 'docs/catalog.yaml', `${CATALOG.trimEnd()}\n    depends_on: [identity]\n${AREAS}`);
+  assert.match(checkStructure(root).join(), /services\/identity: depends_on cannot name itself/);
+  write(root, 'docs/catalog.yaml', `${CATALOG.trimEnd()}\n    depends_on: contracts\n${AREAS}`);
+  assert.match(checkStructure(root).join(), /services\/identity: depends_on must be a list/);
+});
+
+test('đọc được danh sách areas của catalog', () => {
+  assert.deepEqual(
+    loadAreas(createRepository()).map((area) => area.path),
+    ['services', 'docs'],
+  );
 });
