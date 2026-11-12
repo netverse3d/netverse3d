@@ -2,6 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
+- Xem thêm: [ADR-0022](./ADR-0022-per-component-release-tags.md) thay dạng tag chung bằng tag theo từng thành phần và đổi phạm vi so nội dung của tag production
 
 ## Bối cảnh
 
