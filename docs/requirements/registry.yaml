@@ -41,16 +41,16 @@ requirements:
     sources: [mentor-architecture-full, mentor-architecture-lite, mentor-demo]
   - id: REQ-006
     title: Lưu trữ và phân phối asset 3D
-    description: Quản lý GLB, texture, âm thanh, hoạt ảnh và metadata trên object storage chuẩn S3, phân phối được qua CDN. Sơ đồ ghi MinIO; sản phẩm cụ thể còn là câu hỏi mở.
-    status: draft
+    description: Quản lý GLB, glTF, ảnh, âm thanh, video và metadata của hệ thống trên object storage chuẩn S3. Tệp được tải lên và tải về bằng URL ký sẵn có thời hạn, service không chuyển tiếp nội dung tệp. Mỗi tệp thuộc một tenant và tenant này không đọc được tệp của tenant khác. Trạng thái tệp đổi thì phát sự kiện. Phân phối qua CDN làm sau. Object storage ở dev là SeaweedFS, theo ADR-0023.
+    status: accepted
     priority: must
     milestone: M2
     area: media
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-007
     title: Người dùng tải lên ảnh và âm thanh có kiểm soát
-    description: Giới hạn định dạng, dung lượng và có đường xử lý nội dung vi phạm.
-    status: draft
+    description: Nội dung người dùng tải lên là một lớp riêng với asset của hệ thống, có danh sách định dạng và giới hạn dung lượng riêng. Tệp chỉ được dùng sau lúc tải lên hoàn tất và khớp kích thước, loại đã khai. Quản trị viên duyệt, từ chối hoặc gỡ được nội dung; có thể bật chế độ phải duyệt trước lúc hiển thị. Tệp tải dở quá hạn và tệp đã xoá được dọn tự động. Theo ADR-0023.
+    status: accepted
     priority: should
     milestone: M4
     area: media

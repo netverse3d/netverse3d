@@ -30,7 +30,7 @@ flowchart TB
     R[Redis]
     WK[Workers]
     PG[PostgreSQL]
-    S3[Object storage chuẩn S3]:::pending
+    S3[Object storage chuẩn S3]
   end
   W --> GW
   AD --> GW
@@ -98,7 +98,7 @@ Service viết bằng Go hoặc Python tự viết phần khung của mình và 
 
 ## Hạ tầng dev
 
-`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Object storage chưa có, xem [câu hỏi mở](../open-questions.md).
+`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Object storage ở dev là SeaweedFS theo [ADR-0023](../../decisions/ADR-0023-media-service-origin-and-object-storage.md), sẽ được thêm vào Compose cùng lúc với media service.
 
 | Dịch vụ    | Địa chỉ mặc định                                   |
 | ---------- | -------------------------------------------------- |
