@@ -62,7 +62,7 @@ components:
   - id: game
     path: services/game
     kind: service
-    stack: Chưa chốt, chờ core của mentor
+    stack: Go theo bản mẫu của mentor, chưa nhận mã
     summary: Game Gateway và Authoritative Room Server
     milestone: M5
     maps_to: Game server
