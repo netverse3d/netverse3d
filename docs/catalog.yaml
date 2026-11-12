@@ -115,6 +115,12 @@ components:
     stack: Blender, glTF
     summary: Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật
     milestone: M1
+  - id: nest-kit
+    path: packages/nest-kit
+    kind: package
+    stack: NestJS
+    summary: Bộ khung dùng chung của các service NestJS, gồm response, lỗi, phân trang, xác thực, log
+    milestone: M1
 areas:
   - path: apps
     summary: Giao diện chạy trên trình duyệt
@@ -126,6 +132,8 @@ areas:
     summary: Mã và dữ liệu dùng chung, không tự triển khai
   - path: infra
     summary: Hạ tầng chạy hệ thống, gồm Compose, cổng vào và cấu hình quan sát
+  - path: tests
+    summary: Kiểm chạy trên nhiều thành phần cùng lúc, gồm kiểm chuẩn, đầu cuối và tải
   - path: scripts
     summary: Công cụ của repo để kiểm, sinh tài liệu và phát hành
   - path: docs
