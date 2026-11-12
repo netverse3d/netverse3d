@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 
 const PORT = Number(process.env.DEV_ISSUER_PORT ?? 4000);
+const HOST = process.env.DEV_ISSUER_HOST ?? '127.0.0.1';
 const ISSUER = process.env.AUTH_ISSUER ?? `http://localhost:${PORT}`;
 const AUDIENCE = process.env.AUTH_AUDIENCE ?? 'media-service';
 const KEY_ID = 'dev-key';
@@ -38,7 +39,7 @@ async function startDevIssuer(): Promise<void> {
     res.end('{}');
   });
 
-  server.listen(PORT, '127.0.0.1');
+  server.listen(PORT, HOST);
 }
 
 void startDevIssuer();

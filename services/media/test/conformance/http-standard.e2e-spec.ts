@@ -256,6 +256,13 @@ describe('chuẩn HTTP chung', () => {
       expect(Object.keys(exported.paths).sort()).toEqual(Object.keys(document.paths).sort());
     });
 
+    it('openapi.yaml trong repo trùng từng operation và schema với tài liệu service đang sinh ra', async () => {
+      const exported = load(readFileSync('openapi.yaml', 'utf8')) as Record<string, unknown>;
+      const running = (await http().get('/docs-json').expect(200)).body as Record<string, unknown>;
+      expect(exported.paths).toEqual(JSON.parse(JSON.stringify(running.paths)));
+      expect(exported.components).toEqual(JSON.parse(JSON.stringify(running.components)));
+    });
+
     it('chỉ các route đã khai mới công khai', () => {
       const publicPaths = operations()
         .filter(({ operation }) => operation.security?.length === 0)

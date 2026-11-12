@@ -66,8 +66,8 @@ services:
       - -master.volumeSizeLimitMB=64
       - -volume.max=0
     environment:
-      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?}
-      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?}
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:-netverse-local}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:-change-me-local-only}
     ports:
       - 127.0.0.1:${S3_PORT:-58333}:8333
     volumes:
@@ -98,13 +98,20 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
       S3_ENDPOINT: object-store
       S3_PORT: 8333
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
-      S3_SECRET_KEY: ${S3_SECRET_KEY:?}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-netverse-local}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me-local-only}
       AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://host.docker.internal:4000/.well-known/jwks.json}
       AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://localhost:4000}
       AUTH_AUDIENCE: media-service
+    extra_hosts:
+      - host.docker.internal:host-gateway
     ports:
       - 127.0.0.1:${MEDIA_PORT:-53001}:3000
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/livez || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     depends_on:
       media-migrate:
         condition: service_completed_successfully
@@ -118,10 +125,13 @@ services:
     environment:
       SMOKE_BASE_URL: http://media:3000
       SMOKE_ISSUER_URL: ${MEDIA_SMOKE_ISSUER_URL:-http://host.docker.internal:4000}
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
       - ../../services/media/scripts:/scripts:ro
     depends_on:
-      - media
+      media:
+        condition: service_healthy
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.131.0
