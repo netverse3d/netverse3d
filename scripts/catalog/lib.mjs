@@ -10,7 +10,7 @@ const METADATA_FILES = new Set(['README.md', 'component.yaml']);
 const IGNORED_DIRECTORIES = new Set(['node_modules', 'dist', '.next', '.turbo', 'coverage']);
 const DECISION_ID = /^ADR-\d{4}$/;
 const MANIFESTS = ['package.json', 'go.mod', 'pyproject.toml'];
-const TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?|_test\.go|^test_.+\.py)$/;
+const TEST_FILE = /([.-](test|spec)\.[cm]?[jt]sx?|_test\.go|^test_.+\.py)$/;
 const HEALTH_ENDPOINTS = { livez: /["'`/]livez["'`]?/, healthz: /["'`/]healthz["'`]?/ };
 const SOURCE_FILE = /\.([cm]?[jt]sx?|go|py)$/;
 const README_MILESTONE = /^-\s*Milestone:\s*(M\d+)\s*$/m;
@@ -197,7 +197,10 @@ export function checkComponent(root, component) {
   }
   if (keepsTestsOutOfSource(component)) {
     for (const file of files) {
-      if (file.startsWith('src/') && TEST_FILE.test(file.split('/').pop())) {
+      if (
+        file.startsWith('src/') &&
+        (file.includes('/__tests__/') || TEST_FILE.test(file.split('/').pop()))
+      ) {
         errors.push(`${label}: test file ${file} must live under test/, not next to the source`);
       }
     }

@@ -74,7 +74,12 @@ export default [
         {
           patterns: [
             {
-              group: ['@prisma/client', '**/infrastructure/prisma/client'],
+              group: [
+                '@prisma/client',
+                '**/infrastructure/prisma/client',
+                '**/generated/prisma',
+                '**/generated/prisma/**',
+              ],
               message: 'Only repositories and the Prisma infrastructure may use the Prisma client.',
             },
           ],

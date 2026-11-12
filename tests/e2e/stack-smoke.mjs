@@ -76,7 +76,7 @@ async function login(email, password, tenantId) {
   return result.body.result.accessToken;
 }
 
-async function uploadAs(bearer, ownerId) {
+async function uploadAs(bearer, ownerId, visibility = 'PRIVATE') {
   const issued = await media(
     'POST',
     '/v1/media/issue-upload-url',
@@ -86,6 +86,7 @@ async function uploadAs(bearer, ownerId) {
       ownerType: 'avatar',
       ownerId,
       originalFilename: 'smoke.png',
+      visibility,
     },
     bearer,
   );
@@ -154,7 +155,7 @@ try {
   assert.deepEqual(claims(ownerToken).roles, ['owner']);
   console.log('shop tenant, owner role and tenant-scoped token ok');
 
-  const shopFile = await uploadAs(ownerToken, 'shop-sign');
+  const shopFile = await uploadAs(ownerToken, 'shop-sign', 'INTERNAL');
   await downloadAs(ownerToken, shopFile);
   console.log('owner uploads and downloads inside the shop tenant ok');
 

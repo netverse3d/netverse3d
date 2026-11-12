@@ -110,7 +110,7 @@ services:
     ports:
       - 127.0.0.1:${IDENTITY_PORT:-53002}:3000
     healthcheck:
-      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/livez || exit 1]
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/healthz || exit 1]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -153,7 +153,7 @@ services:
     ports:
       - 127.0.0.1:${MEDIA_PORT:-53001}:3000
     healthcheck:
-      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/livez || exit 1]
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/healthz || exit 1]
       interval: 5s
       timeout: 3s
       retries: 20

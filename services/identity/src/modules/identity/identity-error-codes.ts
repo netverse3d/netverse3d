@@ -93,6 +93,11 @@ export const IdentityErrorCode = {
     httpStatus: HttpStatus.BAD_REQUEST,
     message: 'Role not found',
   },
+  ROLE_NAME_RESERVED: {
+    code: 'IDENTITY.ROLE_NAME_RESERVED',
+    httpStatus: HttpStatus.BAD_REQUEST,
+    message: 'Role name is reserved for the platform',
+  },
   MEMBER_NOT_FOUND: {
     code: 'IDENTITY.MEMBER_NOT_FOUND',
     httpStatus: HttpStatus.NOT_FOUND,

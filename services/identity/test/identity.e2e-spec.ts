@@ -643,6 +643,35 @@ describe('identity', () => {
         .expect(403);
     });
 
+    it('admin tenant không tạo được vai trò trùng tên vai trò nền tảng', async () => {
+      const tenant = await createTenant();
+      const token = await tenantAdmin(tenant);
+      const { body } = await http()
+        .put(`/v1/tenants/${tenant}/roles`)
+        .set(bearer(token))
+        .send({ name: 'platform_admin' })
+        .expect(400);
+      expect(body.code).toBe('IDENTITY.ROLE_NAME_RESERVED');
+    });
+
+    it('vai trò mang tên nền tảng có sẵn trong dữ liệu không vào token và không mở quyền nền tảng', async () => {
+      const tenant = await createTenant();
+      const address = await registerVerified();
+      await addRole(tenant, 'staff');
+      await addMember(tenant, address, ['staff']);
+      await prisma.role.updateMany({
+        where: { tenantId: tenant, name: 'staff' },
+        data: { name: 'platform_admin' },
+      });
+      const token = (await login(address, tenant)).accessToken;
+      expect(decodeJwt(token).roles).toEqual([]);
+      await http()
+        .post('/v1/tenants')
+        .set(bearer(token))
+        .send({ slug: 'escalated-tenant', name: 'x' })
+        .expect(403);
+    });
+
     it('trùng slug tenant bị từ chối', async () => {
       const admin = await adminToken();
       const slug = `t-${randomUUID().slice(0, 18)}`;

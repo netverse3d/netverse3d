@@ -6,7 +6,7 @@ import { PageResponseDto } from '@netverse/nest-kit';
 import { PaginationQueryDto } from '@netverse/nest-kit';
 import { IdentityErrorCode } from '../../identity/identity-error-codes';
 import { OutboxRepository } from '@netverse/nest-kit';
-import { PLATFORM_ADMIN_ROLE, TENANT_ADMIN_ROLE } from '../domain/platform-roles';
+import { TENANT_ADMIN_ROLE, isPlatformAdmin, isPlatformOnlyRole } from '../domain/platform-roles';
 import {
   AddMemberDto,
   CreateTenantDto,
@@ -87,6 +87,9 @@ export class TenancyService {
 
   async upsertRole(tenantId: string, dto: UpsertRoleDto, actor: Actor): Promise<RoleDto> {
     this.assertCanManage(tenantId, actor);
+    if (isPlatformOnlyRole(dto.name)) {
+      throw new AppException(IdentityErrorCode.ROLE_NAME_RESERVED);
+    }
     await this.requireTenant(tenantId);
     return toRoleDto(await this.repository.upsertRole(tenantId, dto.name, dto.permissions));
   }
@@ -201,9 +204,8 @@ export class TenancyService {
   }
 
   private assertCanManage(tenantId: string, actor: Actor): void {
-    const platform = actor.roles.includes(PLATFORM_ADMIN_ROLE);
     const ownAdmin = actor.tenantId === tenantId && actor.roles.includes(TENANT_ADMIN_ROLE);
-    if (!platform && !ownAdmin) {
+    if (!isPlatformAdmin(actor) && !ownAdmin) {
       throw new AppException(ErrorCode.FORBIDDEN);
     }
   }

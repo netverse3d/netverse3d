@@ -4,7 +4,7 @@ import { currentRequestContext } from '@netverse/nest-kit';
 import { AppException } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import { KeysService } from '../../keys/services/keys.service';
-import { PLATFORM_ADMIN_ROLE } from '../../tenancy/domain/platform-roles';
+import { PLATFORM_ADMIN_ROLE, isPlatformOnlyRole } from '../../tenancy/domain/platform-roles';
 import { TokenPairDto } from '../dto/identity-response.dto';
 import { IdentityErrorCode } from '../identity-error-codes';
 import {
@@ -116,8 +116,9 @@ export class TokenService {
     if (!membership || membership.status !== 'ACTIVE' || membership.tenant.status !== 'ACTIVE') {
       throw new AppException(IdentityErrorCode.NOT_A_MEMBER);
     }
-    const roles = membership.roles.map(({ role }) => role.name);
-    const permissions = [...new Set(membership.roles.flatMap(({ role }) => role.permissions))];
+    const granted = membership.roles.filter(({ role }) => !isPlatformOnlyRole(role.name));
+    const roles = granted.map(({ role }) => role.name);
+    const permissions = [...new Set(granted.flatMap(({ role }) => role.permissions))];
     return { tenantId, roles, permissions };
   }
 

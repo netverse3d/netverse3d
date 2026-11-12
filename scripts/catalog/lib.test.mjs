@@ -241,6 +241,16 @@ test('chặn tệp test nằm trong src của service, vì test phải ở thư 
   );
 });
 
+test('chặn cả test đầu cuối và thư mục __tests__ nằm trong src của service', () => {
+  const root = createRepository('original');
+  addCompleteService(root);
+  write(root, 'services/identity/src/login.e2e-spec.ts');
+  write(root, 'services/identity/src/__tests__/login.ts');
+  const text = checkAllComponents(root).join();
+  assert.ok(text.includes('test file src/login.e2e-spec.ts must live under test/'), text);
+  assert.ok(text.includes('test file src/__tests__/login.ts must live under test/'), text);
+});
+
 test('nhận service có test nằm trong thư mục test riêng', () => {
   const root = createRepository('original');
   addCompleteService(root);
