@@ -73,6 +73,56 @@ services:
     volumes:
       - object-store-data:/data
 
+  media-migrate:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/media/Dockerfile
+    command: [node_modules/.bin/prisma, migrate, deploy]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  media:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/media/Dockerfile
+    env_file:
+      - ../../services/media/.env.example
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: media
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
+      S3_ENDPOINT: object-store
+      S3_PORT: 8333
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?}
+      AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://host.docker.internal:4000/.well-known/jwks.json}
+      AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://localhost:4000}
+      AUTH_AUDIENCE: media-service
+    ports:
+      - 127.0.0.1:${MEDIA_PORT:-53001}:3000
+    depends_on:
+      media-migrate:
+        condition: service_completed_successfully
+      object-store:
+        condition: service_started
+
+  media-smoke:
+    profiles: [smoke]
+    image: node:22-alpine
+    command: [node, /scripts/smoke.mjs]
+    environment:
+      SMOKE_BASE_URL: http://media:3000
+      SMOKE_ISSUER_URL: ${MEDIA_SMOKE_ISSUER_URL:-http://host.docker.internal:4000}
+    volumes:
+      - ../../services/media/scripts:/scripts:ro
+    depends_on:
+      - media
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.131.0
     profiles: [observability]

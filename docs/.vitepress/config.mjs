@@ -67,6 +67,7 @@ export default withMermaid(
           text: 'Quy trình vận hành',
           items: [
             { text: 'Nhận service có sẵn', link: '/runbooks/import-service' },
+            { text: 'Chạy thử media service', link: '/runbooks/media-smoke' },
             { text: 'Phát hành', link: '/runbooks/release' },
             { text: 'Tạo GitHub App', link: '/runbooks/github-app' },
             { text: 'Cấu hình Project', link: '/runbooks/github-project' },

@@ -5,6 +5,7 @@
 **/dist
 **/.turbo
 **/coverage
+**/*.tsbuildinfo
 apps/web-3d/public/game-assets
 docs/.vitepress/dist
 docs/.vitepress/cache

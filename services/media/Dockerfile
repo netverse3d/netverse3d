@@ -1,20 +1,18 @@
 FROM node:22-alpine AS build
-WORKDIR /app
-COPY package.json package-lock.json prisma.config.ts ./
-COPY prisma ./prisma
-RUN npm ci
-COPY nest-cli.json tsconfig.json tsconfig.build.json ./
-COPY src ./src
-RUN npm run build && npm prune --omit=dev
+RUN corepack enable
+WORKDIR /repo
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY services/media services/media
+RUN pnpm install --frozen-lockfile --filter @netverse/media
+RUN pnpm --filter @netverse/media build
+RUN pnpm --filter @netverse/media deploy --legacy --prod /out
+RUN cd /out && node_modules/.bin/prisma generate
 
 FROM node:22-alpine AS runtime
 RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build --chown=node:node /app/node_modules ./node_modules
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --from=build --chown=node:node /app/prisma ./prisma
-COPY --from=build --chown=node:node /app/package.json /app/prisma.config.ts ./
+COPY --from=build --chown=node:node /out ./
 USER node
 EXPOSE 3000
 HEALTHCHECK CMD wget -qO- http://127.0.0.1:${PORT:-3000}/livez || exit 1

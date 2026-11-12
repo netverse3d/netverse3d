@@ -4,7 +4,7 @@ Service: Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN.
 
 - Stack: NestJS, Prisma, PostgreSQL, object storage chuẩn S3
 - Milestone: M2
-- Trạng thái: có mã, chạy được unit test và build; chưa chạy trong `infra/compose`
+- Trạng thái: có mã, có image, chạy được trong `infra/compose`; xem [kịch bản chạy thử](../../docs/runbooks/media-smoke.md)
 - Nguồn gốc mã: [ADR-0023](../../docs/decisions/ADR-0023-media-service-origin-and-object-storage.md)
 
 Service quản lý vòng đời tệp trên object storage: cấp URL ký sẵn để client tải thẳng lên kho, xác minh tệp, phân quyền, kiểm duyệt, lưu tạm, lưu giữ và dọn dẹp. Service không chuyển tiếp nội dung tệp.
