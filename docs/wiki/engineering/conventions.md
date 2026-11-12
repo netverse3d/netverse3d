@@ -45,7 +45,8 @@ Tiêu đề nói thay đổi cho người đọc, không nói tên tệp hay tê
 
 | Lệnh                               | Việc                                |
 | ---------------------------------- | ----------------------------------- |
-| `pnpm verify`                      | Toàn bộ kiểm tra như CI             |
+| `pnpm verify`                      | Toàn bộ kiểm tra, mọi thành phần    |
+| `pnpm verify:repo`                 | Phần kiểm chung của repo            |
 | `pnpm catalog:check`               | Cấu trúc và chuẩn thành phần        |
 | `pnpm boundaries:check`            | Hướng phụ thuộc giữa các lớp        |
 | `pnpm trace:check`                 | Sổ yêu cầu và ADR                   |
