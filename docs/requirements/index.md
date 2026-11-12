@@ -37,7 +37,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | --- | --- | --- | --- | --- |
 | REQ-008 | Thông báo realtime, trong ứng dụng và email | Nháp | Bắt buộc | `notification` |
 | REQ-010 | Thanh toán qua PayOS | Nháp | Bắt buộc | `payment` |
-| REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `core-api` |
+| REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `shop` |
 | REQ-012 | Hoá đơn và lịch sử giao dịch | Nháp | Nên có | `payment` |
 | REQ-028 | Tiền ảo Xèng nạp một chiều | Nháp | Bắt buộc | `payment` |
 | REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
@@ -48,12 +48,12 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-007 | Người dùng tải lên ảnh và âm thanh có kiểm soát | Nháp | Nên có | `media` |
-| REQ-009 | Chủ tiệm thuê đất để mở tiệm | Đã chốt | Bắt buộc | `core-api` |
+| REQ-009 | Chủ tiệm thuê đất để mở tiệm | Đã chốt | Bắt buộc | `shop` |
 | REQ-013 | Chủ tiệm xây dựng và bài trí tiệm | Đã chốt | Bắt buộc | `world` |
 | REQ-014 | Người chơi khám phá và chọn tiệm bất kỳ | Đã chốt | Bắt buộc | `world` |
 | REQ-015 | Duyệt tiệm và nội dung | Nháp | Nên có | `admin` |
-| REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `core-api` |
-| REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `core-api` |
+| REQ-016 | Nâng cấp tiệm và danh tiếng | Nháp | Nên có | `shop` |
+| REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `shop` |
 | REQ-042 | Thành phố mở nhiều khu | Đã chốt | Nên có | `web-3d` |
 | REQ-043 | Thời tiết ngẫu nhiên trong thành phố | Đã chốt | Nên có | `web-3d` |
 

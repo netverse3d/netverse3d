@@ -17,8 +17,8 @@ components:
     stack: NestJS, Prisma
     summary: Đăng ký, đăng nhập, JWT, RBAC
     milestone: M1
-  - id: core-api
-    path: services/core-api
+  - id: shop
+    path: services/shop
     kind: service
     stack: NestJS, Prisma
     summary: Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình

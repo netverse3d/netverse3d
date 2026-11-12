@@ -1,4 +1,4 @@
-# core-api
+# shop
 
 Service: Người dùng, tiệm, máy, thuê đất, giờ máy, điểm doanh thu, cấu hình.
 

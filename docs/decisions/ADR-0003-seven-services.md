@@ -2,6 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
+- Xem thêm: [ADR-0020](./ADR-0020-monorepo-layout-and-index.md) đổi tên `core-api` thành `shop`
 
 ## Bối cảnh
 
@@ -9,7 +10,7 @@ Mentor đưa hai sơ đồ: bản đầy đủ 7 service có Kafka, Kubernetes v
 
 ## Quyết định
 
-Theo bản đầy đủ: identity, core-api, world, media, payment, ai-chat, notification; Kafka cho sự kiện; Kubernetes khi triển khai; Prometheus, Grafana, Loki, OpenTelemetry để quan sát.
+Theo bản đầy đủ: identity, shop, world, media, payment, ai-chat, notification; Kafka cho sự kiện; Kubernetes khi triển khai; Prometheus, Grafana, Loki, OpenTelemetry để quan sát.
 
 ## Hệ quả
 
