@@ -98,13 +98,14 @@ Service viết bằng Go hoặc Python tự viết phần khung của mình và 
 
 ## Hạ tầng dev
 
-`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Object storage ở dev là SeaweedFS theo [ADR-0023](../../decisions/ADR-0023-media-service-origin-and-object-storage.md), sẽ được thêm vào Compose cùng lúc với media service.
+`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, object storage, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Object storage ở dev là SeaweedFS, nói giao thức S3, theo [ADR-0023](../../decisions/ADR-0023-media-service-origin-and-object-storage.md).
 
-| Dịch vụ    | Địa chỉ mặc định                                   |
-| ---------- | -------------------------------------------------- |
-| PostgreSQL | `localhost:55432`                                  |
-| Redis      | `localhost:56379`                                  |
-| Kafka      | `localhost:59092`                                  |
-| Grafana    | `http://localhost:53000`                           |
-| Prometheus | `http://localhost:59090`                           |
-| OTLP       | `localhost:54317` (gRPC), `localhost:54318` (HTTP) |
+| Dịch vụ                      | Địa chỉ mặc định                                   |
+| ---------------------------- | -------------------------------------------------- |
+| PostgreSQL                   | `localhost:55432`                                  |
+| Redis                        | `localhost:56379`                                  |
+| Kafka                        | `localhost:59092`                                  |
+| Object storage, giao thức S3 | `http://localhost:58333`                           |
+| Grafana                      | `http://localhost:53000`                           |
+| Prometheus                   | `http://localhost:59090`                           |
+| OTLP                         | `localhost:54317` (gRPC), `localhost:54318` (HTTP) |

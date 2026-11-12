@@ -1,4 +1,4 @@
-export const CORE_SERVICES = ['postgres', 'redis', 'kafka'];
+export const CORE_SERVICES = ['postgres', 'redis', 'kafka', 'object-store'];
 export const OBSERVABILITY_SERVICES = ['otel-collector', 'prometheus', 'loki', 'grafana'];
 export const ALL_SERVICES = [...CORE_SERVICES, ...OBSERVABILITY_SERVICES];
 
@@ -22,6 +22,7 @@ export function findUnhealthyServices(statuses, expected = ALL_SERVICES) {
 
 export function httpProbes(env) {
   return [
+    ['object-store', `http://127.0.0.1:${env.S3_PORT ?? 58333}/healthz`],
     ['otel-collector', `http://127.0.0.1:${env.OTEL_HEALTH_PORT ?? 53133}/`],
     ['prometheus', `http://127.0.0.1:${env.PROMETHEUS_PORT ?? 59090}/-/ready`],
     ['loki', `http://127.0.0.1:${env.LOKI_PORT ?? 53100}/ready`],
