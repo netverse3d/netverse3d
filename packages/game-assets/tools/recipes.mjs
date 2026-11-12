@@ -8,7 +8,7 @@ import { doorwayCell } from '../runtime/shop-look.mjs';
 const RECIPE_FOLDER = 'recipes';
 const INDEX_FILE = 'index.json';
 const RECIPE_SCHEMA = createRequire(import.meta.url).resolve(
-  '@netverse/contracts/world/shop-look.v1.schema.json',
+  '@netverse/contracts/world/v1/shop-look.schema.json',
 );
 const WALL_AXIS = { north: 0, south: 0, east: 1, west: 1 };
 const CHAIR_SIDE = { north: 'south', south: 'north', east: 'west', west: 'east' };

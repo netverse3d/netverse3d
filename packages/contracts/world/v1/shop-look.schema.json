@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://netverse3d.github.io/contracts/world/shop-look.v1.schema.json",
+  "$id": "https://netverse3d.github.io/contracts/world/v1/shop-look.schema.json",
   "title": "Shop look",
   "description": "Công thức bản sắc của một tiệm: bộ màu, biến thể theo ô đồ, bố cục, biển hiệu, kiểu đèn. Tên hàng màu và tên ô đồ lấy từ assets.config.json của game-assets.",
   "x-status": "draft",

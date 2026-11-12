@@ -11,7 +11,7 @@ import { createFakeRoom } from './fake-room.ts';
 import type { FakeRoom } from './fake-room.ts';
 
 const SCHEMA = fileURLToPath(
-  import.meta.resolve('@netverse/contracts/realtime/protocol.v1.schema.json'),
+  import.meta.resolve('@netverse/contracts/realtime/v1/protocol.schema.json'),
 );
 const matchesProtocol = new Ajv2020({ strict: false, allErrors: true }).compile(
   JSON.parse(readFileSync(SCHEMA, 'utf8')),

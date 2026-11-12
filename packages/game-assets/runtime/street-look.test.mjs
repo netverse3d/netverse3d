@@ -22,7 +22,7 @@ import {
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const SAMPLE = readJson(join(ROOT, 'blocks/hem-mau.json'));
-const SCHEMA = readJson(join(ROOT, '../contracts/world/street-block.v1.schema.json'));
+const SCHEMA = readJson(join(ROOT, '../contracts/world/v1/street-block.schema.json'));
 const CONFIG = readJson(join(ROOT, 'assets.config.json'));
 const STREET_KIT = CONFIG.kits.find((kit) => kit.file === 'street-parts.glb');
 
