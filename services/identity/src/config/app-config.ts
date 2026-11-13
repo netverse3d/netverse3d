@@ -51,6 +51,7 @@ export class AppConfig extends KitConfig {
     github: { clientId?: string; clientSecret?: string; oauthUrl: string; apiUrl: string };
   };
   readonly bootstrap: { adminEmail?: string; adminPassword?: string };
+  readonly events: { brokers: string[] };
   readonly jobs: {
     enabled: boolean;
     cleanupIntervalSeconds: number;
@@ -139,6 +140,7 @@ export class AppConfig extends KitConfig {
       adminEmail: env.BOOTSTRAP_ADMIN_EMAIL,
       adminPassword: env.BOOTSTRAP_ADMIN_PASSWORD,
     };
+    this.events = { brokers: env.KAFKA_BROKERS };
     this.jobs = {
       enabled: env.JOBS_ENABLED,
       cleanupIntervalSeconds: env.CLEANUP_INTERVAL_SECONDS,

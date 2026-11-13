@@ -11,7 +11,7 @@ import {
   MAX_LOCALE_LENGTH,
   MAX_SUBJECT_ID_LENGTH,
 } from '../../notifications/domain/limits';
-import { InvalidEventError } from '../ports/event-consumer';
+import { InvalidEventError } from '@netverse/nest-kit';
 
 const MAX_TENANT_ID_LENGTH = 128;
 

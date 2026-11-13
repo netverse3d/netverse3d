@@ -100,6 +100,7 @@ services:
       AUTH_JWKS_URL: http://127.0.0.1:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000
       AUTH_AUDIENCE: identity
+      KAFKA_BROKERS: kafka:19092
       TOKEN_AUDIENCES: media,notification
       KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
       OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
@@ -120,6 +121,8 @@ services:
     depends_on:
       identity-migrate:
         condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
 
   media-migrate:
     profiles: [apps]
@@ -154,6 +157,7 @@ services:
       AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://identity:3000/.well-known/jwks.json}
       AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://identity:3000}
       AUTH_AUDIENCE: media
+      KAFKA_BROKERS: kafka:19092
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
@@ -198,6 +202,7 @@ services:
       AUTH_JWKS_URL: http://identity:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000
       AUTH_AUDIENCE: notification
+      KAFKA_BROKERS: kafka:19092
       EMAIL_PROVIDER: log
       PUSH_PROVIDER: log
     ports:

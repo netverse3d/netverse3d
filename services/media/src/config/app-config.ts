@@ -48,6 +48,7 @@ export class AppConfig extends KitConfig {
     userContent: UploadPolicy;
     userContentRequiresReview: boolean;
   };
+  readonly events: { brokers: string[] };
   readonly jobs: {
     enabled: boolean;
     pendingExpirySeconds: number;
@@ -114,6 +115,7 @@ export class AppConfig extends KitConfig {
       },
       userContentRequiresReview: env.MEDIA_USER_CONTENT_REQUIRES_REVIEW,
     };
+    this.events = { brokers: env.KAFKA_BROKERS };
     this.jobs = {
       enabled: env.JOBS_ENABLED,
       pendingExpirySeconds: env.MEDIA_PENDING_EXPIRY_SECONDS,

@@ -78,6 +78,7 @@ export const envSchema = z
     MEDIA_USER_CONTENT_MAX_BYTES: positiveInt(26_214_400),
     MEDIA_USER_CONTENT_REQUIRES_REVIEW: booleanFlag.default(false),
 
+    KAFKA_BROKERS: commaSeparated,
     JOBS_ENABLED: booleanFlag.default(true),
     MEDIA_PENDING_EXPIRY_SECONDS: positiveInt(86_400),
     MEDIA_HARD_DELETE_GRACE_SECONDS: positiveInt(86_400),

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { createRequire } from 'node:module';
 
 const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? 'http://127.0.0.1:53002';
 const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
 const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? 'http://127.0.0.1:53003';
+const KAFKA_BROKERS = (process.env.SMOKE_KAFKA_BROKERS ?? '127.0.0.1:59092').split(',');
 const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
 const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
@@ -66,6 +68,35 @@ async function inboxOf(bearer, eventType) {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(`no inbox item arrived for ${eventType}`);
+}
+
+async function eventsOn(topic, matches) {
+  const kit = createRequire(new URL('../../packages/nest-kit/package.json', import.meta.url));
+  const { KafkaJS } = kit('@confluentinc/kafka-javascript');
+  const kafka = new KafkaJS.Kafka({
+    kafkaJS: { brokers: KAFKA_BROKERS, clientId: 'stack-smoke', logLevel: KafkaJS.logLevel.ERROR },
+  });
+  const consumer = kafka.consumer({
+    kafkaJS: { groupId: 'stack-smoke-' + RUN + '-' + topic, fromBeginning: true },
+  });
+  await consumer.connect();
+  await consumer.subscribe({ topic });
+  try {
+    return await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('no matching event on ' + topic)), 60_000);
+      consumer.run({
+        eachMessage: async ({ message }) => {
+          const event = JSON.parse(message.value.toString());
+          if (matches(event)) {
+            clearTimeout(timer);
+            resolve({ event, key: message.key.toString() });
+          }
+        },
+      });
+    });
+  } finally {
+    await consumer.disconnect();
+  }
 }
 
 function claims(token) {
@@ -294,6 +325,27 @@ try {
   });
   assert.equal(elsewhere.status, 403, JSON.stringify(elsewhere.body));
   console.log('a service token is refused on user routes and for audiences it was not given ok');
+
+  const registered = await eventsOn(
+    'netverse.identity.events.v1',
+    (event) => event.type === 'user.registered' && event.data.principalId === playerId,
+  );
+  assert.equal(registered.event.source, 'identity');
+  assert.equal(registered.key, 'platform');
+  const joined = await eventsOn(
+    'netverse.identity.events.v1',
+    (event) => event.type === 'membership.added' && event.data.tenantId === tenantId,
+  );
+  assert.equal(joined.key, tenantId);
+  console.log('identity events reach Kafka, keyed by platform or by shop ok');
+
+  const delivered = await eventsOn(
+    'netverse.notification.events.v1',
+    (event) => event.type === 'notification.delivery.sent' && event.data.eventType === eventType,
+  );
+  assert.equal(delivered.key, tenantId);
+  assert.equal(JSON.stringify(delivered.event).includes(OWNER_EMAIL), false);
+  console.log('notification delivery events reach Kafka without the recipient address ok');
 
   console.log('STACK SMOKE PASSED');
 } finally {

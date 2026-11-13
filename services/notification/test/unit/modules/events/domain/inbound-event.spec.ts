@@ -1,4 +1,4 @@
-import { InvalidEventError } from '../../../../../src/modules/events/ports/event-consumer';
+import { InvalidEventError } from '@netverse/nest-kit';
 import { parseInboundEvent } from '../../../../../src/modules/events/domain/inbound-event';
 
 const valid = { id: 'e-1', tenantId: 't-1', eventType: 'a.b', recipient: { subject: 'u-1' } };

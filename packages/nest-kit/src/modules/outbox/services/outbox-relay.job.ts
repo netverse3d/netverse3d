@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { KitConfig } from '../../../config/kit-config';
 import { LockedJob } from '../../../infrastructure/jobs/locked-job';
 import { Database } from '../../../infrastructure/database/database';
+import { EventContracts, InvalidEventError } from '../domain/event-contracts';
 import { toEnvelope } from '../domain/event-envelope';
 import { EventPublisher } from '../ports/event-publisher';
 import { OutboxRepository, OutboxRow } from '../repositories/outbox.repository';
@@ -22,6 +23,7 @@ export class OutboxRelayJob extends LockedJob {
     private readonly config: KitConfig,
     private readonly repository: OutboxRepository,
     private readonly publisher: EventPublisher,
+    private readonly contracts: EventContracts,
   ) {
     super(database, OUTBOX_LOCK_ID, config.jobs.outboxRelayIntervalMs, config.jobs.enabled);
   }
@@ -36,11 +38,14 @@ export class OutboxRelayJob extends LockedJob {
 
   private async deliver(row: OutboxRow): Promise<void> {
     try {
-      await this.publisher.publish(toEnvelope(row, this.config.service.name));
+      const event = toEnvelope(row, this.config.service.name);
+      this.contracts.assertValid(event);
+      await this.publisher.publish(event);
       await this.repository.markPublished(row.id);
     } catch (error) {
       const attempts = row.attempts + 1;
-      const exhausted = attempts >= this.config.jobs.outboxMaxAttempts;
+      const exhausted =
+        error instanceof InvalidEventError || attempts >= this.config.jobs.outboxMaxAttempts;
       const nextAttemptAt = exhausted ? null : new Date(Date.now() + retryDelayMs(attempts));
       const message = error instanceof Error ? error.message : String(error);
       await this.repository.markFailed(row.id, attempts, nextAttemptAt, message);

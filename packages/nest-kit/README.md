@@ -19,7 +19,9 @@ Package này chỉ phục vụ service viết bằng NestJS. Chuẩn chung cho m
 | `infrastructure/rate-limit` | Giới hạn tần suất                                                                                                     |
 | `infrastructure/jobs`       | Job chạy định kỳ có khoá, để nhiều bản sao không chạy trùng                                                           |
 | `modules/audit`             | Ghi và đọc audit log                                                                                                  |
-| `modules/outbox`            | Outbox, job chuyển sự kiện, vỏ sự kiện chung                                                                          |
+| `modules/outbox`            | Outbox, job chuyển sự kiện, vỏ sự kiện chung, kiểm theo hợp đồng, bộ phát lên Kafka hoặc ghi log                      |
+| `modules/events`            | Cổng nghe sự kiện, bộ nghe Kafka có chống trùng và thư chết                                                           |
+| `infrastructure/kafka`      | Nối tới Kafka: bộ gửi, đăng ký topic, tạo topic                                                                       |
 | `modules/health`            | `/livez` và `/healthz`                                                                                                |
 | `config`                    | Đọc biến môi trường theo schema, nhận ra giá trị mẫu để từ chối ở production                                          |
 | `bootstrap`                 | Cấu hình ứng dụng HTTP và tài liệu OpenAPI                                                                            |

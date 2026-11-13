@@ -2,7 +2,7 @@ import { Injectable, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/com
 import { AppException } from '@netverse/nest-kit';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { parseInboundEvent } from '../domain/inbound-event';
-import { EventConsumer, InvalidEventError } from '../ports/event-consumer';
+import { EventConsumer, InvalidEventError } from '@netverse/nest-kit';
 
 const SERVER_ERROR_STATUS = 500;
 

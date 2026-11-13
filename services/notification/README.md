@@ -65,9 +65,9 @@ Mỗi kênh là một adapter của cổng `ChannelSender`.
 
 ## Sự kiện
 
-Service ghi vào `outbox_events`: `notification.delivery.sent`, `notification.delivery.skipped`, `notification.delivery.dead`. Sự kiện gửi ra theo vỏ chung của hệ thống, phần `data` theo `packages/contracts/events/v1/notification.schema.json` và không chứa địa chỉ người nhận. Hiện chỉ có adapter ghi log.
+Service ghi vào `outbox_events`: `notification.delivery.sent`, `notification.delivery.skipped`, `notification.delivery.dead`. Sự kiện gửi ra theo vỏ chung của hệ thống, phần `data` theo `packages/contracts/events/v1/notification.schema.json` và không chứa địa chỉ người nhận. Khai `KAFKA_BROKERS` thì sự kiện lên topic `netverse.notification.events.v1`, để trống thì chỉ ghi log.
 
-Cổng nghe sự kiện vào `EventConsumer` được giữ lại nhưng đang tắt. Nghe sự kiện qua Kafka thuộc đợt chuẩn hoá sau, theo ADR-0027.
+Cổng nghe sự kiện vào `EventConsumer` nay nằm ở `packages/nest-kit`, cùng bộ nghe Kafka. Service chưa bật bộ nghe; việc phản ứng với sự kiện của service khác thuộc đợt chuẩn hoá notification, theo ADR-0028.
 
 ## Cấu hình tuỳ chọn
 

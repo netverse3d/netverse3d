@@ -93,6 +93,7 @@ export const envSchema = z
     BOOTSTRAP_ADMIN_EMAIL: z.email().optional(),
     BOOTSTRAP_ADMIN_PASSWORD: z.string().min(12).max(72).optional(),
 
+    KAFKA_BROKERS: commaSeparated,
     JOBS_ENABLED: booleanFlag.default(true),
     CLEANUP_INTERVAL_SECONDS: positiveInt(3_600),
     OUTBOX_RELAY_INTERVAL_MS: positiveInt(5_000),

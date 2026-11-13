@@ -49,7 +49,7 @@ Service kiểm JWT bằng JWKS lấy từ `AUTH_JWKS_URL`, đối chiếu `AUTH_
 
 ## Sự kiện
 
-Mỗi thay đổi ghi vào bảng `outbox_events` cùng giao dịch: `media.completed`, `media.promoted`, `media.deleted`, `media.moderated`. Job chuyển sự kiện qua cổng `EventPublisher`; hiện chỉ có adapter ghi log.
+Mỗi thay đổi ghi vào bảng `outbox_events` cùng giao dịch: `media.completed`, `media.promoted`, `media.deleted`, `media.moderated`. Job chuyển sự kiện qua cổng `EventPublisher`; hiện chỉ có adapter ghi log. Khai `KAFKA_BROKERS` thì sự kiện lên topic `netverse.media.events.v1`, để trống thì chỉ ghi log.
 
 Sự kiện gửi ra theo vỏ chung `packages/contracts/events/v1/envelope.schema.json`, với `source` là tên service. Phần `data` theo `packages/contracts/events/v1/media.schema.json` và luôn có `mediaId`, `tenantId`.
 

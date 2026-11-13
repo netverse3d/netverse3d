@@ -35,9 +35,7 @@ export class AppConfig extends KitConfig {
     firebasePrivateKey?: string;
   };
   readonly providers: { timeoutMs: number };
-  readonly events: {
-    transport: Env['EVENT_TRANSPORT'];
-  };
+  readonly events: { transport: Env['EVENT_TRANSPORT']; brokers: string[] };
   readonly delivery: {
     pollIntervalMs: number;
     batchSize: number;
@@ -88,9 +86,7 @@ export class AppConfig extends KitConfig {
       firebasePrivateKey: env.FIREBASE_PRIVATE_KEY,
     };
     this.providers = { timeoutMs: env.PROVIDER_TIMEOUT_MS };
-    this.events = {
-      transport: env.EVENT_TRANSPORT,
-    };
+    this.events = { transport: env.EVENT_TRANSPORT, brokers: env.KAFKA_BROKERS };
     this.delivery = {
       pollIntervalMs: env.DELIVERY_POLL_INTERVAL_MS,
       batchSize: env.DELIVERY_BATCH_SIZE,
