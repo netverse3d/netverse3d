@@ -14,6 +14,6 @@ export async function exportOpenApiFile(appModule: Type<unknown>, file: string):
   });
   const config = app.get(KitConfig);
   setupApp(app, config);
-  writeFileSync(file, dump(buildOpenApiDocument(app, config), { noRefs: true }));
+  writeFileSync(file, dump(buildOpenApiDocument(app, config), { noRefs: true, lineWidth: -1 }));
   await app.close();
 }

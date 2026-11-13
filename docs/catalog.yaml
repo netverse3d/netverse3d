@@ -56,8 +56,8 @@ components:
   - id: notification
     path: services/notification
     kind: service
-    stack: NestJS, Prisma
-    summary: Thông báo realtime, email, trong ứng dụng
+    stack: NestJS, Prisma, PostgreSQL
+    summary: Thông báo qua email, push và hộp thư trong ứng dụng
     milestone: M3
   - id: game
     path: services/game

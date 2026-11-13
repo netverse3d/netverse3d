@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 
 const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? 'http://127.0.0.1:53002';
 const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
+const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? 'http://127.0.0.1:53003';
 const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
 const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
@@ -53,6 +54,19 @@ async function call(base, method, path, body, bearer) {
 
 const identity = (method, path, body, bearer) => call(IDENTITY_URL, method, path, body, bearer);
 const media = (method, path, body, bearer) => call(MEDIA_URL, method, path, body, bearer);
+const notification = (method, path, body, bearer) =>
+  call(NOTIFICATION_URL, method, path, body, bearer);
+
+async function inboxOf(bearer, eventType) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const inbox = await notification('GET', '/v1/inbox', undefined, bearer);
+    assert.equal(inbox.status, 200, JSON.stringify(inbox.body));
+    const item = inbox.body.result.content.find((entry) => entry.eventType === eventType);
+    if (item) return item;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`no inbox item arrived for ${eventType}`);
+}
 
 function claims(token) {
   return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
@@ -215,6 +229,41 @@ try {
     assert.equal(approved.body.result.moderationStatus, 'APPROVED');
   }
   console.log('the platform admin moderates shop and player content ok');
+
+  const eventType = `shop.notice-${RUN}`;
+  const template = await notification(
+    'POST',
+    '/v1/templates',
+    {
+      eventType,
+      channel: 'IN_APP',
+      locale: 'en',
+      subject: 'Notice for {{name}}',
+      body: 'Open at {{hour}}',
+    },
+    ownerToken,
+  );
+  assert.equal(template.status, 201, JSON.stringify(template.body));
+  const sent = await notification(
+    'POST',
+    '/v1/notifications',
+    {
+      eventType,
+      recipient: { subject: claims(ownerToken).sub },
+      variables: { name: 'Owner', hour: '9' },
+      channels: ['IN_APP'],
+    },
+    ownerToken,
+  );
+  assert.ok([200, 201, 202].includes(sent.status), JSON.stringify(sent.body));
+  const item = await inboxOf(ownerToken, eventType);
+  assert.equal(item.title, 'Notice for Owner');
+  console.log('a shop admin sends an in-app notification and reads it in the inbox ok');
+
+  const tenantless = await notification('GET', '/v1/inbox', undefined, playerToken);
+  assert.equal(tenantless.status, 403, JSON.stringify(tenantless.body));
+  assert.equal(tenantless.body.code, 'NOTIFICATION.TENANT_REQUIRED');
+  console.log('notification refuses a token without a tenant ok');
 
   console.log('STACK SMOKE PASSED');
 } finally {

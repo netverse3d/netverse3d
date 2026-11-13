@@ -27,7 +27,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `services/media` | service | NestJS, Prisma, PostgreSQL, object storage chuẩn S3 | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |
 | `services/payment` | service | NestJS, Prisma | PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn | M3 |
 | `services/ai-chat` | service | Python | Chatbot LLM chạy local và TTS tiếng Việt | M7 |
-| `services/notification` | service | NestJS, Prisma | Thông báo realtime, email, trong ứng dụng | M3 |
+| `services/notification` | service | NestJS, Prisma, PostgreSQL | Thông báo qua email, push và hộp thư trong ứng dụng | M3 |
 | `services/game` | service | Go theo bản mẫu của mentor, chưa nhận mã | Game Gateway và Authoritative Room Server | M5 |
 | `workers/asset` | worker | Chưa chốt | Xử lý GLB, nén, chuyển đổi asset | M2 |
 | `workers/ai` | worker | Python | Mô phỏng headless, huấn luyện và chạy bot học tăng cường; hàng đợi LLM, TTS | M6 |

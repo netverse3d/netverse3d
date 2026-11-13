@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/events/v1/notification.schema.json",
+  "title": "Notification event data",
+  "description": "Phần data của các sự kiện do notification service phát, đặt trong vỏ chung envelope. Không chứa địa chỉ người nhận",
+  "x-status": "draft",
+  "x-event-types": [
+    "notification.delivery.sent",
+    "notification.delivery.skipped",
+    "notification.delivery.dead"
+  ],
+  "type": "object",
+  "required": [
+    "deliveryId",
+    "notificationId",
+    "eventType",
+    "channel",
+    "status",
+    "attempts",
+    "tenantId"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "deliveryId": { "type": "string", "format": "uuid" },
+    "notificationId": { "type": "string", "format": "uuid" },
+    "eventType": { "type": "string" },
+    "channel": { "enum": ["EMAIL", "PUSH", "IN_APP"] },
+    "status": { "enum": ["SENT", "SKIPPED", "DEAD"] },
+    "reason": { "type": ["string", "null"] },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "tenantId": { "type": "string" }
+  }
+}
