@@ -35,7 +35,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
-| REQ-008 | Thông báo realtime, trong ứng dụng và email | Nháp | Bắt buộc | `notification` |
+| REQ-008 | Thông báo realtime, trong ứng dụng và email | Đã chốt | Bắt buộc | `notification` |
 | REQ-010 | Thanh toán qua PayOS | Nháp | Bắt buộc | `payment` |
 | REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `shop` |
 | REQ-012 | Hoá đơn và lịch sử giao dịch | Nháp | Nên có | `payment` |
@@ -138,7 +138,7 @@ Nguồn: `mentor-demo`
 
 ### REQ-008: Thông báo realtime, trong ứng dụng và email
 
-Người dùng nhận được thông báo về thanh toán, gia hạn và sự kiện của tiệm.
+Người dùng nhận được thông báo về tài khoản, thanh toán, gia hạn và sự kiện của tiệm qua ba kênh là email, hộp thư trong ứng dụng và push. Mỗi tiệm tự đặt template, thương hiệu và danh sách chặn; người nhận tự tắt được từng loại thông báo. Theo ADR-0027.
 
 Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 

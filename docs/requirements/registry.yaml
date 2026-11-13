@@ -57,8 +57,8 @@ requirements:
     sources: [mentor-demo]
   - id: REQ-008
     title: Thông báo realtime, trong ứng dụng và email
-    description: Người dùng nhận được thông báo về thanh toán, gia hạn và sự kiện của tiệm.
-    status: draft
+    description: Người dùng nhận được thông báo về tài khoản, thanh toán, gia hạn và sự kiện của tiệm qua ba kênh là email, hộp thư trong ứng dụng và push. Mỗi tiệm tự đặt template, thương hiệu và danh sách chặn; người nhận tự tắt được từng loại thông báo. Theo ADR-0027.
+    status: accepted
     priority: must
     milestone: M3
     area: notification
