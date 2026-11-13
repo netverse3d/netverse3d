@@ -43,6 +43,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 | REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
+| REQ-046 | Service gọi service bằng định danh riêng | Đã chốt | Bắt buộc | `identity` |
 
 ## M4 · Chủ tiệm
 
@@ -363,3 +364,9 @@ Nguồn: `team-decision`, `mentor-backend-sample`
 Chủ tiệm trả tiền thật qua PayOS để có quyền bật một số máy của một tiệm trong một chu kỳ. Tiệm chỉ bật được số máy không vượt license còn hạn. Mua thêm thì cộng số máy và kéo dài hạn. Quyền chỉ được cấp sau lúc webhook được xác thực, xử lý an toàn với webhook lặp. License không tạo ra Xèng hay điểm doanh thu, không chuyển cho tiệm khác và không hoàn lại. Giá mẫu là 1.000đ một máy trong 30 ngày; giá và chu kỳ chính thức còn mở. Theo ADR-0021.
 
 Nguồn: `team-decision`, `mentor-backend-sample`, `mentor-architecture-full`
+
+### REQ-046: Service gọi service bằng định danh riêng
+
+Một service gọi service khác bằng token của chính nó do identity cấp, không dùng token của người dùng và không mượn quyền quản trị. Token của service ngắn hạn, mang quyền do nền tảng cấp, và chỉ dùng được ở những route khai quyền đó. Sự việc đi qua Kafka, mệnh lệnh đi qua gRPC, theo ADR-0028.
+
+Nguồn: `team-decision`

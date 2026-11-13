@@ -31,3 +31,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0025](./ADR-0025-media-access-by-tenant-model.md) | Quyền trên media theo mô hình tenant, duyệt nội dung là quyền nền tảng | Đã chốt |
 | [ADR-0026](./ADR-0026-public-shop-media-and-tenant-creation.md) | Tệp công khai của tiệm mở cho mọi tài khoản, và service shop tạo tenant lúc mở tiệm | Đã chốt |
 | [ADR-0027](./ADR-0027-notification-service-origin-and-channels.md) | Nguồn gốc mã của notification service và ba kênh thông báo | Đã chốt |
+| [ADR-0028](./ADR-0028-service-to-service-communication.md) | Giao tiếp giữa các service: định danh service, Kafka cho sự việc, gRPC cho mệnh lệnh | Đã chốt |
