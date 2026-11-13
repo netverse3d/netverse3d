@@ -23,10 +23,10 @@ export class AppConfig extends KitConfig {
   };
   readonly notification: { defaultLocale: string };
   readonly email: {
-    provider: Env['EMAIL_PROVIDER'];
+    provider: string;
     fromAddress?: string;
     fromName?: string;
-    brevoApiKey?: string;
+    settings: Record<string, unknown>;
   };
   readonly push: {
     provider: Env['PUSH_PROVIDER'];
@@ -78,7 +78,7 @@ export class AppConfig extends KitConfig {
       provider: env.EMAIL_PROVIDER,
       fromAddress: env.EMAIL_FROM_ADDRESS,
       fromName: env.EMAIL_FROM_NAME,
-      brevoApiKey: env.BREVO_API_KEY,
+      settings: env.EMAIL_SETTINGS,
     };
     this.push = {
       provider: env.PUSH_PROVIDER,

@@ -65,14 +65,40 @@ Kiểu TypeScript của hợp đồng được sinh vào `src/generated/grpc` l�
 
 ## Kênh gửi
 
-Mỗi kênh là một adapter của cổng `ChannelSender`.
+Mỗi kênh là một adapter của cổng `ChannelSender`. `IN_APP` luôn bật và lưu vào `inbox_items`.
 
-| Biến             | Giá trị                   | Ý nghĩa                       |
-| ---------------- | ------------------------- | ----------------------------- |
-| `EMAIL_PROVIDER` | `brevo`, `log`, `none`    | `log` bị từ chối ở production |
-| `PUSH_PROVIDER`  | `firebase`, `log`, `none` | `log` bị từ chối ở production |
+### Email
 
-`none` tắt kênh, lần gửi vào `DEAD` với `CHANNEL_DISABLED`. `IN_APP` luôn bật và lưu vào `inbox_items`.
+`EMAIL_PROVIDER` chọn nhà cung cấp. Nhà cung cấp thật nào cũng cần `EMAIL_FROM_ADDRESS`; `EMAIL_FROM_NAME` là tuỳ chọn.
+
+| `EMAIL_PROVIDER` | Biến bắt buộc                                                   | Biến tuỳ chọn                               | Ghi chú                                             |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------- |
+| `smtp`           | `SMTP_HOST`, `SMTP_PORT`                                        | `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` | Mọi máy chủ SMTP; Gmail dùng mật khẩu ứng dụng      |
+| `resend`         | `RESEND_API_KEY`                                                |                                             | Dùng mã lần gửi làm khoá chống trùng                |
+| `gmail-api`      | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` |                                             | OAuth của Google Cloud, phạm vi `gmail.send`        |
+| `brevo`          | `BREVO_API_KEY`                                                 |                                             |                                                     |
+| `log`            |                                                                 |                                             | Ghi ra log, bị từ chối ở production                 |
+| `none`           |                                                                 |                                             | Tắt kênh; lần gửi vào `DEAD` với `CHANNEL_DISABLED` |
+
+Chỉ biến của nhà cung cấp đang chọn được kiểm. Thiếu biến bắt buộc thì service không khởi động và nêu tên biến. Ở production, khoá và mật khẩu của nhà cung cấp không được là giá trị mẫu.
+
+Nhà cung cấp từ chối chính bức thư thì lần gửi vào `DEAD` với `PROVIDER_REJECTED`. Lỗi tạm thời, mất kết nối và khoá sai thì lần gửi được thử lại.
+
+### Thêm một nhà cung cấp email
+
+1. Viết một tệp trong `src/modules/channels/adapters` gồm bộ gửi và một `EmailProvider`: tên, các biến môi trường của riêng nó, biến nào bắt buộc, biến nào là bí mật, và hàm tạo bộ gửi.
+2. Thêm nó vào danh sách ở `src/modules/channels/email-providers.ts`.
+3. Cho nó chạy qua bộ test chung `describeEmailSenderContract` trong `test/unit/modules/channels/adapters`.
+
+Cấu hình, phép kiểm biến môi trường và phép chặn giá trị mẫu đọc từ danh sách đó, không cần sửa thêm chỗ nào.
+
+### Push
+
+| `PUSH_PROVIDER` | Ý nghĩa                                                                    |
+| --------------- | -------------------------------------------------------------------------- |
+| `firebase`      | Cần `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` |
+| `log`           | Ghi ra log, bị từ chối ở production                                        |
+| `none`          | Tắt kênh                                                                   |
 
 ## Sự kiện
 
@@ -80,14 +106,7 @@ Service ghi vào `outbox_events`: `notification.delivery.sent`, `notification.de
 
 Cổng nghe sự kiện vào `EventConsumer` nay nằm ở `packages/nest-kit`, cùng bộ nghe Kafka. Service chưa bật bộ nghe; việc phản ứng với sự kiện của service khác thuộc đợt chuẩn hoá notification, theo ADR-0028.
 
-## Cấu hình tuỳ chọn
-
-Các biến này không có trong `.env.example`, chỉ khai lúc dùng tới:
-
-| Biến                                                                   | Dùng cho              |
-| ---------------------------------------------------------------------- | --------------------- |
-| `BREVO_API_KEY`, `EMAIL_FROM_ADDRESS`, `EMAIL_FROM_NAME`               | Gửi email qua Brevo   |
-| `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Gửi push qua Firebase |
+## Giới hạn của một lô gửi
 
 Một lô gửi phải xong trong `DELIVERY_LEASE_MS` và 240 giây. Cấu hình `DELIVERY_BATCH_SIZE`, `DELIVERY_CONCURRENCY`, `PROVIDER_TIMEOUT_MS` vượt mức này thì service không khởi động. Ở production service cũng từ chối khởi động nếu khoá của nhà cung cấp hoặc mật khẩu trong `DATABASE_URL` là giá trị mẫu.
 

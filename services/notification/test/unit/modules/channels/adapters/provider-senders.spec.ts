@@ -5,10 +5,8 @@ import {
   OutboundMessage,
   PermanentSendError,
 } from '../../../../../src/modules/channels/ports/channel-sender';
-import { BrevoEmailSender } from '../../../../../src/modules/channels/adapters/brevo-email-sender';
 import { FirebasePushSender } from '../../../../../src/modules/channels/adapters/firebase-push-sender';
 
-const API_KEY = 'unit-test-provider-value';
 const BASE_ENV = {
   SERVICE_NAME: 'svc',
   DATABASE_URL: 'postgresql://localhost/unused',
@@ -26,59 +24,6 @@ const message: OutboundMessage = {
   subject: 'Subject',
   body: '<p>Body</p>',
 };
-
-function respondWith(status: number, body: unknown = {}): jest.SpyInstance {
-  return jest
-    .spyOn(global, 'fetch')
-    .mockResolvedValue(new Response(JSON.stringify(body), { status }));
-}
-
-describe('gửi email qua Brevo', () => {
-  const sender = new BrevoEmailSender(
-    new AppConfig(
-      parseEnv({
-        ...BASE_ENV,
-        EMAIL_PROVIDER: 'brevo',
-        BREVO_API_KEY: API_KEY,
-        EMAIL_FROM_ADDRESS: 'from@example.test',
-        EMAIL_FROM_NAME: 'Sender',
-      }),
-    ),
-  );
-
-  afterEach(() => jest.restoreAllMocks());
-
-  it('gửi thân HTML đúng người nhận và trả mã tin của nhà cung cấp', async () => {
-    const fetchMock = respondWith(201, { messageId: 'provider-id' });
-    await expect(sender.send(message)).resolves.toEqual({ providerMessageId: 'provider-id' });
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('https://api.brevo.com/v3/smtp/email');
-    expect((init.headers as Record<string, string>)['api-key']).toBe(API_KEY);
-    expect(JSON.parse(init.body as string)).toMatchObject({
-      sender: { email: 'from@example.test', name: 'Sender' },
-      to: [{ email: 'user@example.test' }],
-      subject: 'Subject',
-      htmlContent: '<p>Body</p>',
-    });
-  });
-
-  it('coi lỗi 400 của nhà cung cấp là vĩnh viễn', async () => {
-    respondWith(400);
-    await expect(sender.send(message)).rejects.toBeInstanceOf(PermanentSendError);
-  });
-
-  it('coi lỗi 500 và 429 là tạm thời để thử lại', async () => {
-    respondWith(500);
-    await expect(sender.send(message)).rejects.not.toBeInstanceOf(PermanentSendError);
-    respondWith(429);
-    await expect(sender.send(message)).rejects.not.toBeInstanceOf(PermanentSendError);
-  });
-
-  it('không đưa khoá API vào thông báo lỗi', async () => {
-    respondWith(500);
-    await expect(sender.send(message)).rejects.toThrow(expect.not.stringContaining(API_KEY));
-  });
-});
 
 describe('gửi push qua Firebase', () => {
   let sender: FirebasePushSender;

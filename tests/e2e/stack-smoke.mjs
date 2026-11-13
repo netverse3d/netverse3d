@@ -8,6 +8,7 @@ const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
 const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? 'http://127.0.0.1:53003';
 const KAFKA_BROKERS = (process.env.SMOKE_KAFKA_BROKERS ?? '127.0.0.1:59092').split(',');
 const NOTIFICATION_GRPC = process.env.SMOKE_NOTIFICATION_GRPC ?? '127.0.0.1:53103';
+const MAILBOX_URL = process.env.SMOKE_MAILBOX_URL ?? 'http://127.0.0.1:58025';
 const GRPC_PERMISSION_DENIED = 7;
 const GRPC_UNAUTHENTICATED = 16;
 const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
@@ -74,6 +75,22 @@ async function inboxOf(bearer, eventType, title) {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(`no inbox item arrived for ${eventType}`);
+}
+
+async function mailTo(address) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const search = await fetch(
+      MAILBOX_URL + '/api/v1/search?query=' + encodeURIComponent('to:' + address),
+    );
+    assert.equal(search.status, 200, 'the mailbox did not answer');
+    const [summary] = (await search.json()).messages;
+    if (summary) {
+      const message = await fetch(MAILBOX_URL + '/api/v1/message/' + summary.ID);
+      return message.json();
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error('no email arrived for ' + address);
 }
 
 function notificationCommands() {
@@ -337,6 +354,40 @@ try {
   const item = await inboxOf(ownerToken, eventType);
   assert.equal(item.title, 'Notice for Owner');
   console.log('a shop admin sends an in-app notification and reads it in the inbox ok');
+
+  const mailEvent = `shop.receipt-${RUN}`;
+  const mailTemplate = await notification(
+    'POST',
+    '/v1/templates',
+    {
+      eventType: mailEvent,
+      channel: 'EMAIL',
+      locale: 'en',
+      subject: 'Receipt for {{name}}',
+      body: '<p>Total {{total}}</p>',
+    },
+    ownerToken,
+  );
+  assert.equal(mailTemplate.status, 201, JSON.stringify(mailTemplate.body));
+  const customer = `customer-${RUN}@example.test`;
+  const mailed = await notification(
+    'POST',
+    '/v1/notifications',
+    {
+      eventType: mailEvent,
+      recipient: { email: customer },
+      variables: { name: 'Lan', total: '<b>50</b>' },
+      channels: ['EMAIL'],
+    },
+    ownerToken,
+  );
+  assert.ok([200, 201, 202].includes(mailed.status), JSON.stringify(mailed.body));
+  const mail = await mailTo(customer);
+  assert.equal(mail.Subject, 'Receipt for Lan');
+  assert.equal(mail.From.Address, 'no-reply@netverse.test');
+  assert.ok(mail.HTML.includes('Total &lt;b&gt;50&lt;/b&gt;'), mail.HTML);
+  assert.ok(mail.MessageID.includes('@netverse.test'), mail.MessageID);
+  console.log('an email goes out over SMTP and arrives with escaped variables ok');
 
   const tenantless = await notification('GET', '/v1/inbox', undefined, playerToken);
   assert.equal(tenantless.status, 403, JSON.stringify(tenantless.body));

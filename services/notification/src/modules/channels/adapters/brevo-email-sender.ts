@@ -1,17 +1,15 @@
-import { AppConfig } from '../../../config/app-config';
-import { DeliveryReason } from '../../notifications/domain/delivery-reasons';
-import {
-  ChannelSender,
-  OutboundMessage,
-  PermanentSendError,
-  SendReceipt,
-} from '../ports/channel-sender';
+import { z } from 'zod';
+import { ChannelSender, OutboundMessage, SendReceipt } from '../ports/channel-sender';
+import { assertAccepted, EmailProvider, EmailSenderContext } from '../ports/email-provider';
 
 const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email';
 const PERMANENT_STATUSES = new Set([400, 404, 422]);
 
 export class BrevoEmailSender extends ChannelSender {
-  constructor(private readonly config: AppConfig) {
+  constructor(
+    private readonly apiKey: string,
+    private readonly context: EmailSenderContext,
+  ) {
     super();
   }
 
@@ -21,26 +19,26 @@ export class BrevoEmailSender extends ChannelSender {
       headers: {
         accept: 'application/json',
         'content-type': 'application/json',
-        'api-key': this.config.email.brevoApiKey as string,
+        'api-key': this.apiKey,
       },
       body: JSON.stringify({
-        sender: { email: this.config.email.fromAddress, name: this.config.email.fromName },
+        sender: { email: this.context.fromAddress, name: this.context.fromName },
         to: [{ email: message.destination }],
         subject: message.subject,
         htmlContent: message.body,
       }),
-      signal: AbortSignal.timeout(this.config.providers.timeoutMs),
+      signal: AbortSignal.timeout(this.context.timeoutMs),
     });
-    if (PERMANENT_STATUSES.has(response.status)) {
-      throw new PermanentSendError(
-        DeliveryReason.PROVIDER_REJECTED,
-        `Email provider rejected the message with status ${response.status}`,
-      );
-    }
-    if (!response.ok) {
-      throw new Error(`Email provider answered ${response.status}`);
-    }
+    assertAccepted(response, PERMANENT_STATUSES, 'Brevo');
     const { messageId } = (await response.json()) as { messageId?: string };
     return { providerMessageId: messageId };
   }
 }
+
+export const brevoProvider: EmailProvider = {
+  name: 'brevo',
+  env: { BREVO_API_KEY: z.string().min(1).optional() },
+  required: ['BREVO_API_KEY'],
+  secrets: ['BREVO_API_KEY'],
+  create: (settings, context) => new BrevoEmailSender(settings.BREVO_API_KEY as string, context),
+};
