@@ -126,6 +126,25 @@ model Tenant {
   @@map("tenants")
 }
 
+enum ServiceClientStatus {
+  ACTIVE
+  REVOKED
+}
+
+model ServiceClient {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String              @unique @db.VarChar(64)
+  secretHash      String              @map("secret_hash") @db.VarChar(64)
+  audiences       String[]            @default([])
+  permissions     String[]            @default([])
+  status          ServiceClientStatus @default(ACTIVE)
+  secretRotatedAt DateTime            @default(now()) @map("secret_rotated_at") @db.Timestamptz
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("service_clients")
+}
+
 model Role {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId    String   @map("tenant_id") @db.Uuid

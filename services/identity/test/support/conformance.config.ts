@@ -12,6 +12,7 @@ export const PUBLIC_PATHS = [
   '/v1/auth/refresh',
   '/v1/auth/register',
   '/v1/auth/resend-verification',
+  '/v1/auth/service-token',
   '/v1/auth/social/{provider}',
   '/v1/auth/verify-email',
 ];

@@ -54,6 +54,7 @@ export const envSchema = z
 
     TOKEN_AUDIENCES: commaSeparated,
     ACCESS_TOKEN_TTL_SECONDS: positiveInt(900),
+    SERVICE_TOKEN_TTL_SECONDS: z.coerce.number().int().min(30).max(900).default(300),
     REFRESH_TOKEN_TTL_DAYS: positiveInt(30),
     REFRESH_REUSE_GRACE_SECONDS: positiveInt(10),
     KEY_ENCRYPTION_SECRET: z

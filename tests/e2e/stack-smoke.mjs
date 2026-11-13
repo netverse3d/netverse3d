@@ -265,6 +265,36 @@ try {
   assert.equal(tenantless.body.code, 'NOTIFICATION.TENANT_REQUIRED');
   console.log('notification refuses a token without a tenant ok');
 
+  const client = await identity(
+    'POST',
+    '/v1/admin/service-clients',
+    { name: 'smoke-' + RUN, audiences: ['media'], permissions: ['media:read'] },
+    adminToken,
+  );
+  assert.equal(client.status, 201, JSON.stringify(client.body));
+  const { id: clientId, clientSecret } = client.body.result;
+  const issued = await identity('POST', '/v1/auth/service-token', {
+    clientId,
+    clientSecret,
+    audience: 'media',
+  });
+  assert.equal(issued.status, 200, JSON.stringify(issued.body));
+  const serviceClaims = claims(issued.body.result.accessToken);
+  assert.equal(serviceClaims.client_id, clientId);
+  assert.equal(serviceClaims.aud, 'media');
+  assert.equal(serviceClaims.tenant_id, undefined);
+  console.log('the platform admin creates a service account and it gets a token ok');
+
+  const asUser = await media('GET', '/v1/media?size=1', undefined, issued.body.result.accessToken);
+  assert.equal(asUser.status, 403, JSON.stringify(asUser.body));
+  const elsewhere = await identity('POST', '/v1/auth/service-token', {
+    clientId,
+    clientSecret,
+    audience: 'notification',
+  });
+  assert.equal(elsewhere.status, 403, JSON.stringify(elsewhere.body));
+  console.log('a service token is refused on user routes and for audiences it was not given ok');
+
   console.log('STACK SMOKE PASSED');
 } finally {
   otpSink.close();

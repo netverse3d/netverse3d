@@ -93,6 +93,31 @@ export const IdentityErrorCode = {
     httpStatus: HttpStatus.BAD_REQUEST,
     message: 'Role not found',
   },
+  SERVICE_CLIENT_INVALID: {
+    code: 'IDENTITY.SERVICE_CLIENT_INVALID',
+    httpStatus: HttpStatus.UNAUTHORIZED,
+    message: 'Service account id or secret is incorrect',
+  },
+  SERVICE_CLIENT_NOT_FOUND: {
+    code: 'IDENTITY.SERVICE_CLIENT_NOT_FOUND',
+    httpStatus: HttpStatus.NOT_FOUND,
+    message: 'Service account not found',
+  },
+  SERVICE_CLIENT_NAME_TAKEN: {
+    code: 'IDENTITY.SERVICE_CLIENT_NAME_TAKEN',
+    httpStatus: HttpStatus.CONFLICT,
+    message: 'Service account name is already in use',
+  },
+  AUDIENCE_UNKNOWN: {
+    code: 'IDENTITY.AUDIENCE_UNKNOWN',
+    httpStatus: HttpStatus.BAD_REQUEST,
+    message: 'This service does not issue tokens for one of the audiences',
+  },
+  AUDIENCE_NOT_ALLOWED: {
+    code: 'IDENTITY.AUDIENCE_NOT_ALLOWED',
+    httpStatus: HttpStatus.FORBIDDEN,
+    message: 'The service account may not request this audience',
+  },
   ROLE_NAME_RESERVED: {
     code: 'IDENTITY.ROLE_NAME_RESERVED',
     httpStatus: HttpStatus.BAD_REQUEST,

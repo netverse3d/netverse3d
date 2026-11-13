@@ -11,6 +11,11 @@ import {
 
 const SIGNING_ALGORITHM = 'RS256';
 
+export interface TokenScope {
+  audience?: string;
+  ttlSeconds?: number;
+}
+
 @Injectable()
 export class KeysService implements OnModuleInit {
   private readonly logger = new Logger(KeysService.name);
@@ -35,7 +40,11 @@ export class KeysService implements OnModuleInit {
     return { keys: rows.map((row) => row.publicJwk) };
   }
 
-  async sign(claims: Record<string, unknown>, subject: string): Promise<string> {
+  async sign(
+    claims: Record<string, unknown>,
+    subject: string,
+    scope: TokenScope = {},
+  ): Promise<string> {
     const key = await this.repository.findActive();
     if (!key) {
       throw new Error('no active signing key');
@@ -48,9 +57,9 @@ export class KeysService implements OnModuleInit {
       .setProtectedHeader({ alg: SIGNING_ALGORITHM, kid: key.kid })
       .setSubject(subject)
       .setIssuer(this.config.auth.issuer)
-      .setAudience(this.config.tokens.audiences)
+      .setAudience(scope.audience ?? this.config.tokens.audiences)
       .setIssuedAt()
-      .setExpirationTime(`${this.config.tokens.accessTtlSeconds}s`)
+      .setExpirationTime(`${scope.ttlSeconds ?? this.config.tokens.accessTtlSeconds}s`)
       .sign(privateKey);
   }
 

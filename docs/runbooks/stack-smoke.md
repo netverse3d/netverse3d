@@ -58,6 +58,8 @@ Kịch bản làm lần lượt:
 10. Quản trị nền tảng duyệt tệp của tiệm và tệp của người chơi, cả hai đều được.
 11. Chủ tiệm tạo một template cho hộp thư trong ứng dụng ở `notification`, gửi một thông báo cho chính mình, rồi đọc thấy nó trong hộp thư với tiêu đề đã render.
 12. Người chơi gọi hộp thư bằng token không gắn tenant, phải nhận 403 với mã `NOTIFICATION.TENANT_REQUIRED`.
+13. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
+14. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 

@@ -27,6 +27,7 @@ export class AppConfig extends KitConfig {
   readonly tokens: {
     audiences: string[];
     accessTtlSeconds: number;
+    serviceTtlSeconds: number;
     refreshTtlDays: number;
     refreshReuseGraceSeconds: number;
     keyEncryptionSecret: string;
@@ -90,6 +91,7 @@ export class AppConfig extends KitConfig {
     this.tokens = {
       audiences: [...new Set([env.AUTH_AUDIENCE, ...env.TOKEN_AUDIENCES])],
       accessTtlSeconds: env.ACCESS_TOKEN_TTL_SECONDS,
+      serviceTtlSeconds: env.SERVICE_TOKEN_TTL_SECONDS,
       refreshTtlDays: env.REFRESH_TOKEN_TTL_DAYS,
       refreshReuseGraceSeconds: env.REFRESH_REUSE_GRACE_SECONDS,
       keyEncryptionSecret: env.KEY_ENCRYPTION_SECRET,

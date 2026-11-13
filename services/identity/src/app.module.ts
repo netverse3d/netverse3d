@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CoreModule } from './common/core.module';
 import { HealthModule } from '@netverse/nest-kit';
+import { ServiceClientsModule } from './modules/service-clients/service-clients.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
 @Module({
-  imports: [CoreModule, HealthModule, TenancyModule],
+  imports: [CoreModule, HealthModule, TenancyModule, ServiceClientsModule],
 })
 export class AppModule {}
