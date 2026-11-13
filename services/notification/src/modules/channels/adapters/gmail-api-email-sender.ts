@@ -26,7 +26,8 @@ interface AccessToken {
 }
 
 export class GmailApiEmailSender extends ChannelSender {
-  private token: Promise<AccessToken> | null = null;
+  private token: AccessToken | null = null;
+  private refreshing: Promise<AccessToken> | null = null;
 
   constructor(
     private readonly credentials: GmailCredentials,
@@ -44,16 +45,17 @@ export class GmailApiEmailSender extends ChannelSender {
     })
       .compile()
       .build();
+    const accessToken = await this.accessToken();
     const response = await fetch(SEND_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        authorization: `Bearer ${await this.accessToken()}`,
+        authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ raw: raw.toString('base64url') }),
       signal: AbortSignal.timeout(this.context.timeoutMs),
     });
-    if (response.status === 401) {
+    if (response.status === 401 && this.token?.value === accessToken) {
       this.token = null;
     }
     assertAccepted(response, PERMANENT_STATUSES, 'Gmail');
@@ -62,18 +64,21 @@ export class GmailApiEmailSender extends ChannelSender {
   }
 
   private async accessToken(): Promise<string> {
-    const current = this.token ? await this.token.catch(() => null) : null;
-    if (current && current.expiresAt - TOKEN_REFRESH_MARGIN_MS > Date.now()) {
-      return current.value;
+    if (this.token && this.token.expiresAt - TOKEN_REFRESH_MARGIN_MS > Date.now()) {
+      return this.token.value;
     }
-    const refreshing = this.refresh();
-    this.token = refreshing;
-    refreshing.catch(() => {
-      if (this.token === refreshing) {
-        this.token = null;
-      }
-    });
-    return (await refreshing).value;
+    this.refreshing ??= this.refresh().then(
+      (token) => {
+        this.token = token;
+        this.refreshing = null;
+        return token;
+      },
+      (error: unknown) => {
+        this.refreshing = null;
+        throw error;
+      },
+    );
+    return (await this.refreshing).value;
   }
 
   private async refresh(): Promise<AccessToken> {

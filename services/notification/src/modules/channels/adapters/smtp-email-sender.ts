@@ -12,6 +12,7 @@ import { EmailProvider, EmailSenderContext, formatSender } from '../ports/email-
 const FIRST_PERMANENT_REPLY = 500;
 const LAST_PERMANENT_REPLY = 599;
 const FAILURE_CODE = /^[A-Z_]+$/;
+const MESSAGE_STAGES: ReadonlySet<string> = new Set(['RCPT TO', 'DATA']);
 
 export interface SmtpSettings {
   host: string;
@@ -37,13 +38,14 @@ export type SmtpTransportFactory = (settings: SmtpSettings, timeoutMs: number) =
 
 type SmtpOutcome =
   | { accepted: true; messageId?: string }
-  | { accepted: false; replyCode: number | null; failureCode: string };
+  | { accepted: false; replyCode: number | null; failureCode: string; aboutTheMessage: boolean };
 
 function connect(settings: SmtpSettings, timeoutMs: number): SmtpTransport {
   return createTransport({
     host: settings.host,
     port: settings.port,
     secure: settings.secure,
+    requireTLS: !settings.secure && settings.user !== undefined,
     auth: settings.user ? { user: settings.user, pass: settings.password ?? '' } : undefined,
     connectionTimeout: timeoutMs,
     greetingTimeout: timeoutMs,
@@ -52,11 +54,16 @@ function connect(settings: SmtpSettings, timeoutMs: number): SmtpTransport {
 }
 
 function failureOf(error: unknown): SmtpOutcome {
-  const { responseCode, code } = (error ?? {}) as { responseCode?: unknown; code?: unknown };
+  const { responseCode, code, command } = (error ?? {}) as {
+    responseCode?: unknown;
+    code?: unknown;
+    command?: unknown;
+  };
   return {
     accepted: false,
     replyCode: typeof responseCode === 'number' ? responseCode : null,
     failureCode: typeof code === 'string' && FAILURE_CODE.test(code) ? code : 'no error code',
+    aboutTheMessage: typeof command === 'string' && MESSAGE_STAGES.has(command),
   };
 }
 
@@ -87,19 +94,28 @@ export class SmtpEmailSender extends ChannelSender {
     if (outcome.accepted) {
       return { providerMessageId: outcome.messageId };
     }
-    const { replyCode, failureCode } = outcome;
+    const { replyCode, failureCode, aboutTheMessage } = outcome;
     if (replyCode === null) {
       throw new Error(`SMTP server could not be reached (${failureCode})`);
     }
-    if (replyCode >= FIRST_PERMANENT_REPLY && replyCode <= LAST_PERMANENT_REPLY) {
+    if (
+      aboutTheMessage &&
+      replyCode >= FIRST_PERMANENT_REPLY &&
+      replyCode <= LAST_PERMANENT_REPLY
+    ) {
       throw new PermanentSendError(
         DeliveryReason.PROVIDER_REJECTED,
         `SMTP server rejected the message with reply ${replyCode}`,
       );
     }
-    throw new Error(`SMTP server answered ${replyCode}`);
+    throw new Error(`SMTP server answered ${replyCode} (${failureCode})`);
   }
 }
+
+const CREDENTIAL_PAIRS: readonly (readonly [string, string])[] = [
+  ['SMTP_USER', 'SMTP_PASSWORD'],
+  ['SMTP_PASSWORD', 'SMTP_USER'],
+];
 
 const booleanFlag = z.enum(['true', 'false']).transform((value) => value === 'true');
 
@@ -114,6 +130,17 @@ export const smtpProvider: EmailProvider = {
   },
   required: ['SMTP_HOST', 'SMTP_PORT'],
   secrets: ['SMTP_PASSWORD'],
+  refine: (settings, context) => {
+    for (const [name, other] of CREDENTIAL_PAIRS) {
+      if (settings[name] === undefined && settings[other] !== undefined) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: `is required when ${other} is set`,
+        });
+      }
+    }
+  },
   create: (settings, context) =>
     new SmtpEmailSender(
       {

@@ -86,6 +86,7 @@ async function mailTo(address) {
     const [summary] = (await search.json()).messages;
     if (summary) {
       const message = await fetch(MAILBOX_URL + '/api/v1/message/' + summary.ID);
+      assert.equal(message.status, 200, 'the mailbox did not return the message');
       return message.json();
     }
     await new Promise((resolve) => setTimeout(resolve, 500));

@@ -62,14 +62,20 @@ export function describeEmailSenderContract(simulation: EmailSenderSimulation): 
     });
 
     it('bí mật của nhà cung cấp không lọt vào thông báo lỗi', async () => {
-      for (const fail of [simulation.rejectMessage, simulation.failTemporarily]) {
+      for (const fail of [
+        simulation.rejectMessage,
+        simulation.failTemporarily,
+        simulation.beUnreachable,
+      ]) {
         fail();
-        const error = (await simulation
+        const error: unknown = await simulation
           .sender()
           .send(EMAIL_MESSAGE)
-          .catch((caught: unknown) => caught)) as Error;
+          .catch((caught: unknown) => caught);
+        expect(error).toBeInstanceOf(Error);
+        const { message, cause, stack } = error as Error;
         for (const secret of simulation.secrets) {
-          expect(`${error.message} ${String(error.cause ?? '')}`).not.toContain(secret);
+          expect(`${message} ${String(cause ?? '')} ${stack ?? ''}`).not.toContain(secret);
         }
       }
     });

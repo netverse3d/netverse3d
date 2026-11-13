@@ -101,6 +101,24 @@ describe('sổ đăng ký nhà cung cấp email', () => {
     },
   );
 
+  it('SMTP khai tài khoản mà thiếu mật khẩu, hoặc ngược lại, thì không khởi động', () => {
+    expect(() => parseEnv(envFor('smtp', { SMTP_PASSWORD: undefined }))).toThrow('SMTP_PASSWORD');
+    expect(() => parseEnv(envFor('smtp', { SMTP_USER: undefined }))).toThrow('SMTP_USER');
+  });
+
+  it('SMTP không xác thực vẫn chạy, cho hộp thư giả lập ở dev', () => {
+    const source = envFor('smtp', { SMTP_USER: undefined, SMTP_PASSWORD: undefined });
+    expect(parseEnv(source).EMAIL_SETTINGS).toMatchObject({ SMTP_HOST: 'smtp.example.test' });
+  });
+
+  it('cấu hình thiếu nhà cung cấp hoặc người gửi không âm thầm tắt kênh email', () => {
+    const config = new AppConfig(parseEnv(envFor('resend')));
+    const broken = { ...config, email: { ...config.email, fromAddress: undefined } } as AppConfig;
+    expect(() => createEmailSender(broken)).toThrow('EMAIL_FROM_ADDRESS');
+    const unknown = { ...config, email: { ...config.email, provider: 'sendgrid' } } as AppConfig;
+    expect(() => createEmailSender(unknown)).toThrow('sendgrid');
+  });
+
   it('log và none không thuộc nhà cung cấp nào và vẫn dùng được', () => {
     expect(
       createEmailSender(new AppConfig(parseEnv({ ...BASE, EMAIL_PROVIDER: 'log' }))),

@@ -13,6 +13,7 @@ export interface EmailProvider {
   env: z.ZodRawShape;
   required: readonly string[];
   secrets: readonly string[];
+  refine?(settings: Record<string, unknown>, context: z.RefinementCtx): void;
   create(settings: Record<string, unknown>, context: EmailSenderContext): ChannelSender;
 }
 

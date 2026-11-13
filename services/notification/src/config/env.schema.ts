@@ -142,6 +142,7 @@ function settingsSchemaOf(provider: EmailProvider, production: boolean) {
         });
       }
     }
+    provider.refine?.(settings, context);
     if (production) {
       for (const name of sampleSecretNames(settings, provider.secrets)) {
         context.addIssue({

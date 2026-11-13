@@ -82,7 +82,9 @@ Mỗi kênh là một adapter của cổng `ChannelSender`. `IN_APP` luôn bật
 
 Chỉ biến của nhà cung cấp đang chọn được kiểm. Thiếu biến bắt buộc thì service không khởi động và nêu tên biến. Ở production, khoá và mật khẩu của nhà cung cấp không được là giá trị mẫu.
 
-Nhà cung cấp từ chối chính bức thư thì lần gửi vào `DEAD` với `PROVIDER_REJECTED`. Lỗi tạm thời, mất kết nối và khoá sai thì lần gửi được thử lại.
+Nhà cung cấp từ chối chính bức thư thì lần gửi vào `DEAD` với `PROVIDER_REJECTED`. Lỗi tạm thời, mất kết nối và khoá sai thì lần gửi được thử lại. Với SMTP, chỉ lời từ chối ở bước nhận người nhận hoặc nội dung mới tính là từ chối bức thư; sai mật khẩu hay người gửi không được nhận là lỗi cấu hình và được thử lại.
+
+SMTP có khai `SMTP_USER` thì phải có `SMTP_PASSWORD`, và kết nối bắt buộc mã hoá: `SMTP_SECURE=true` hoặc máy chủ phải hỗ trợ STARTTLS.
 
 ### Thêm một nhà cung cấp email
 

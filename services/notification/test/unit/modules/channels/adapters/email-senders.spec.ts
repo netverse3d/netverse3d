@@ -5,6 +5,7 @@ import {
   SmtpEmailSender,
   SmtpMail,
 } from '../../../../../src/modules/channels/adapters/smtp-email-sender';
+import { PermanentSendError } from '../../../../../src/modules/channels/ports/channel-sender';
 import {
   describeEmailSenderContract,
   EMAIL_MESSAGE,
@@ -17,6 +18,8 @@ const REFRESH_TOKEN = `unit-${'r'.repeat(20)}`;
 const SMTP_PASSWORD = `unit-${'p'.repeat(20)}`;
 
 type FetchCall = [string, RequestInit];
+
+const ECHOED_SECRETS = () => ({ echoed: [API_KEY, CLIENT_SECRET, REFRESH_TOKEN] });
 
 function respond(status: number, body: unknown = {}): jest.SpyInstance {
   return jest
@@ -36,8 +39,8 @@ describeEmailSenderContract({
   secrets: [API_KEY],
   sender: () => new BrevoEmailSender(API_KEY, SENDER_CONTEXT),
   accept: (messageId) => void respond(201, { messageId }),
-  rejectMessage: () => void respond(400),
-  failTemporarily: () => void respond(500),
+  rejectMessage: () => void respond(400, ECHOED_SECRETS()),
+  failTemporarily: () => void respond(500, ECHOED_SECRETS()),
   beUnreachable: () => void unreachable(),
 });
 
@@ -71,8 +74,8 @@ describeEmailSenderContract({
   secrets: [API_KEY],
   sender: () => new ResendEmailSender(API_KEY, SENDER_CONTEXT),
   accept: (id) => void respond(200, { id }),
-  rejectMessage: () => void respond(422),
-  failTemporarily: () => void respond(503),
+  rejectMessage: () => void respond(422, ECHOED_SECRETS()),
+  failTemporarily: () => void respond(503, ECHOED_SECRETS()),
   beUnreachable: () => void unreachable(),
 });
 
@@ -115,8 +118,12 @@ class FakeSmtp {
   }
 }
 
-const smtpReply = (responseCode: number) =>
-  Object.assign(new Error(`reply ${responseCode} for ${SMTP_PASSWORD}`), { responseCode });
+const smtpReply = (responseCode: number, command = 'RCPT TO', code = 'EENVELOPE') =>
+  Object.assign(new Error(`reply ${responseCode} for ${SMTP_PASSWORD}`), {
+    responseCode,
+    command,
+    code,
+  });
 const smtp = new FakeSmtp();
 const smtpSender = () =>
   new SmtpEmailSender(
@@ -157,6 +164,25 @@ describe('gửi email qua SMTP', () => {
     ]);
   });
 
+  it.each([
+    ['mật khẩu sai', smtpReply(535, 'AUTH PLAIN', 'EAUTH')],
+    ['máy chủ đòi xác thực hoặc không nhận người gửi', smtpReply(530, 'MAIL FROM')],
+    ['máy chủ từ chối ngay lúc chào', smtpReply(554, 'CONN', 'ECONNECTION')],
+  ])('%s là lỗi cấu hình, thư được thử lại chứ không bị chôn', async (_label, error) => {
+    smtp.outcome = error;
+    const attempt = smtpSender().send(EMAIL_MESSAGE);
+    await expect(attempt).rejects.toBeInstanceOf(Error);
+    await expect(attempt).rejects.not.toBeInstanceOf(PermanentSendError);
+  });
+
+  it.each([
+    ['người nhận không tồn tại', smtpReply(550, 'RCPT TO')],
+    ['nội dung bị từ chối', smtpReply(554, 'DATA', 'EMESSAGE')],
+  ])('%s là lỗi của chính bức thư, không thử lại', async (_label, error) => {
+    smtp.outcome = error;
+    await expect(smtpSender().send(EMAIL_MESSAGE)).rejects.toBeInstanceOf(PermanentSendError);
+  });
+
   it('nối tới máy chủ bằng đúng cấu hình và hạn chờ', () => {
     const factory = jest.fn(() => smtp);
     const settings = { host: 'mail.internal', port: 1025, secure: false };
@@ -188,8 +214,8 @@ describeEmailSenderContract({
   secrets: [CLIENT_SECRET, REFRESH_TOKEN],
   sender: () => new GmailApiEmailSender(gmailCredentials, SENDER_CONTEXT),
   accept: (id) => void gmail(200, { id }),
-  rejectMessage: () => void gmail(400),
-  failTemporarily: () => void gmail(503),
+  rejectMessage: () => void gmail(400, ECHOED_SECRETS()),
+  failTemporarily: () => void gmail(503, ECHOED_SECRETS()),
   beUnreachable: () => void unreachable(),
 });
 
@@ -224,6 +250,23 @@ describe('gửi email qua Gmail API', () => {
     await sender.send(EMAIL_MESSAGE);
     const tokenCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes('oauth2'));
     expect(tokenCalls).toHaveLength(1);
+  });
+
+  it('token hết hạn thì các lần gửi đồng thời chỉ xin token mới một lần', async () => {
+    const clock = jest.spyOn(Date, 'now');
+    const startedAt = 1_800_000_000_000;
+    clock.mockReturnValue(startedAt);
+    const fetchMock = gmail(200, { id: 'gmail-id' });
+    const sender = new GmailApiEmailSender(gmailCredentials, SENDER_CONTEXT);
+    await sender.send(EMAIL_MESSAGE);
+    clock.mockReturnValue(startedAt + 2 * 3600 * 1000);
+    await Promise.all([
+      sender.send(EMAIL_MESSAGE),
+      sender.send(EMAIL_MESSAGE),
+      sender.send(EMAIL_MESSAGE),
+    ]);
+    const tokenCalls = fetchMock.mock.calls.filter(([url]) => String(url).includes('oauth2'));
+    expect(tokenCalls).toHaveLength(2);
   });
 
   it('Google không cấp token thì là lỗi tạm thời và lần sau xin lại', async () => {
