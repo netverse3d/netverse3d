@@ -4,6 +4,7 @@ import {
   describeDatabaseTimezoneConformance,
   describeHttpStandardConformance,
   describeLimitsConformance,
+  describeServiceAccessConformance,
 } from '@netverse/nest-kit/testing';
 import { PUBLIC_PATHS, UNVERSIONED_PATHS } from './support/conformance.config';
 import { createTestApp } from './support/test-app';
@@ -19,3 +20,4 @@ describeAuditConformance(harness);
 describeDatabaseTimezoneConformance(harness);
 describeHttpStandardConformance(harness);
 describeLimitsConformance(harness);
+describeServiceAccessConformance(harness);

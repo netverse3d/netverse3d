@@ -1,11 +1,17 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
+export interface ServiceIdentity {
+  clientId: string;
+  permissions: readonly string[];
+}
+
 export interface Actor {
   subject: string;
   tenantId: string | null;
   roles: readonly string[];
   sessionId?: string;
   tokenVersion?: number;
+  service?: ServiceIdentity;
 }
 
 export interface RequestContext {
