@@ -106,6 +106,7 @@ describe('bộ nghe sự kiện từ Kafka', () => {
         topic: 'netverse.identity.events.v1.dlq',
         key: 'platform',
         value: Buffer.from('broken'),
+        eventId: 'event-bad',
         reason: 'missing tenant',
       },
     ]);

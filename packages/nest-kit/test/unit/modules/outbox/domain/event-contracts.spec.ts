@@ -37,6 +37,18 @@ describe('kiểm sự kiện theo hợp đồng trước lúc phát', () => {
     expect(() => contracts.assertValid(broken)).toThrow(InvalidEventError);
   });
 
+  it('service bắt buộc có hợp đồng mà chưa công bố thì không khởi động được', () => {
+    expect(() => EventContracts.forService('worker-jobs', { required: true })).toThrow(
+      'no event contract is published for worker-jobs',
+    );
+    expect(() => EventContracts.forService('identity', { required: true })).not.toThrow();
+  });
+
+  it('tên service sai dạng bị từ chối, không dùng để dò tệp', () => {
+    expect(() => EventContracts.forService('../openapi/v1/media')).toThrow('service name');
+    expect(() => EventContracts.forService('Identity')).toThrow('service name');
+  });
+
   it('service chưa công bố hợp đồng sự kiện thì chỉ kiểm vỏ chung', () => {
     const unpublished = EventContracts.forService('worker-jobs');
     expect(() =>

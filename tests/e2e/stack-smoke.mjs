@@ -76,6 +76,15 @@ async function eventsOn(topic, matches) {
   const kafka = new KafkaJS.Kafka({
     kafkaJS: { brokers: KAFKA_BROKERS, clientId: 'stack-smoke', logLevel: KafkaJS.logLevel.ERROR },
   });
+  const admin = kafka.admin();
+  await admin.connect();
+  try {
+    if (!(await admin.listTopics()).includes(topic)) {
+      await admin.createTopics({ topics: [{ topic }] });
+    }
+  } finally {
+    await admin.disconnect();
+  }
   const consumer = kafka.consumer({
     kafkaJS: { groupId: 'stack-smoke-' + RUN + '-' + topic, fromBeginning: true },
   });
@@ -84,7 +93,7 @@ async function eventsOn(topic, matches) {
   try {
     return await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('no matching event on ' + topic)), 60_000);
-      consumer.run({
+      const listening = consumer.run({
         eachMessage: async ({ message }) => {
           const event = JSON.parse(message.value.toString());
           if (matches(event)) {
@@ -93,6 +102,7 @@ async function eventsOn(topic, matches) {
           }
         },
       });
+      listening.catch(reject);
     });
   } finally {
     await consumer.disconnect();
@@ -344,7 +354,16 @@ try {
     (event) => event.type === 'notification.delivery.sent' && event.data.eventType === eventType,
   );
   assert.equal(delivered.key, tenantId);
-  assert.equal(JSON.stringify(delivered.event).includes(OWNER_EMAIL), false);
+  assert.deepEqual(Object.keys(delivered.event.data).sort(), [
+    'attempts',
+    'channel',
+    'deliveryId',
+    'eventType',
+    'notificationId',
+    'reason',
+    'status',
+    'tenantId',
+  ]);
   console.log('notification delivery events reach Kafka without the recipient address ok');
 
   console.log('STACK SMOKE PASSED');

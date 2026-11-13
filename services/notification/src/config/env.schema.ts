@@ -108,6 +108,13 @@ function refuseSampleValuesInProduction(env: BaseEnv, context: z.RefinementCtx):
   if (env.NODE_ENV !== 'production') {
     return;
   }
+  if (env.KAFKA_BROKERS.length === 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['KAFKA_BROKERS'],
+      message: 'is required in production',
+    });
+  }
   for (const name of sampleSecretNames(env, GUARDED_NAMES)) {
     context.addIssue({
       code: 'custom',

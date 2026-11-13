@@ -14,6 +14,7 @@ export interface DeadLetter {
   topic: string;
   key: string | null;
   value: Buffer;
+  eventId: string | null;
   reason: string;
 }
 
@@ -75,6 +76,7 @@ export class KafkaEventConsumer extends EventConsumer {
         topic: deadLetterTopicOf(message.topic),
         key: message.key,
         value,
+        eventId,
         reason: error.message,
       });
     }

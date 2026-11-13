@@ -793,12 +793,14 @@ describe('media', () => {
       expect(delivered).toHaveLength(1);
     });
 
-    it('gửi lỗi thì hẹn thử lại, quá số lần thì chuyển dead', async () => {
+    it('broker lỗi thì sự kiện được thử lại mãi, không bị chôn, và được phát lúc broker trở lại', async () => {
+      const relay = subject.app.get(OutboxRelayJob, { strict: false });
+      await relay.runOnce();
       const id = await activeMedia(await token('alice'));
+      const working = publisher.publish.bind(publisher);
       publisher.publish = async () => {
         throw new Error('broker down');
       };
-      const relay = subject.app.get(OutboxRelayJob, { strict: false });
       const load = () => prisma.outboxEvent.findFirstOrThrow({ where: { aggregateId: id } });
       const dueNow = async () =>
         prisma.outboxEvent.updateMany({
@@ -812,11 +814,51 @@ describe('media', () => {
         attempts: 1,
         lastError: 'broker down',
       });
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        await dueNow();
+        await relay.runOnce();
+      }
+      const stuck = await load();
+      expect(stuck).toMatchObject({ status: 'PENDING', attempts: 5 });
+      expect(stuck.nextAttemptAt.getTime()).toBeGreaterThan(Date.now());
+
+      publisher.publish = working;
       await dueNow();
       await relay.runOnce();
-      await dueNow();
+      expect(await load()).toMatchObject({ status: 'PUBLISHED', lastError: null });
+    });
+
+    it('sự kiện chưa gửi được thì sự kiện sau chờ, không vượt lên trước', async () => {
+      const relay = subject.app.get(OutboxRelayJob, { strict: false });
       await relay.runOnce();
-      expect(await load()).toMatchObject({ status: 'DEAD', attempts: 3 });
+      const first = await activeMedia(await token('alice'));
+      const second = await activeMedia(await token('alice'));
+      const working = publisher.publish.bind(publisher);
+      const sent: string[] = [];
+      let brokerUp = false;
+      publisher.publish = async (event) => {
+        if (!brokerUp) {
+          throw new Error('broker down');
+        }
+        sent.push(event.id);
+        return working(event);
+      };
+      const idOf = async (aggregateId: string) =>
+        (await prisma.outboxEvent.findFirstOrThrow({ where: { aggregateId } })).id;
+
+      await relay.runOnce();
+      expect(sent).toHaveLength(0);
+      const waiting = await prisma.outboxEvent.findFirstOrThrow({ where: { aggregateId: second } });
+      expect(waiting).toMatchObject({ status: 'PENDING', attempts: 0 });
+
+      brokerUp = true;
+      await prisma.outboxEvent.updateMany({
+        where: { aggregateId: first },
+        data: { nextAttemptAt: new Date(0) },
+      });
+      await relay.runOnce();
+      publisher.publish = working;
+      expect(sent).toEqual([await idOf(first), await idOf(second)]);
     });
   });
 

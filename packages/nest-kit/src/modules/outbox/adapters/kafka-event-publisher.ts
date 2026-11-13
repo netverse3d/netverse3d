@@ -6,6 +6,8 @@ import { EventPublisher } from '../ports/event-publisher';
 export const EVENT_ID_HEADER = 'event-id';
 export const EVENT_TYPE_HEADER = 'event-type';
 
+const BROKER_ANSWER_TIMEOUT_MS = 15_000;
+
 export interface ProducedMessage {
   topic: string;
   key: string;
@@ -20,25 +22,42 @@ export interface EventProducer {
 
 export type ProducerConnector = () => Promise<EventProducer>;
 
+function withinTime<T>(work: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`Kafka did not answer within ${timeoutMs} ms`)),
+      timeoutMs,
+    );
+  });
+  return Promise.race([work, expiry]).finally(() => clearTimeout(timer));
+}
+
 export class KafkaEventPublisher extends EventPublisher implements OnModuleDestroy {
   private producer: Promise<EventProducer> | null = null;
 
-  constructor(private readonly connect: ProducerConnector) {
+  constructor(
+    private readonly connect: ProducerConnector,
+    private readonly timeoutMs: number = BROKER_ANSWER_TIMEOUT_MS,
+  ) {
     super();
   }
 
   async publish(event: EventEnvelope): Promise<void> {
-    const producer = await this.connected();
+    const attempt = this.connected();
     try {
-      await producer.send({
-        topic: topicFor(event.source),
-        key: scopeKeyOf(event),
-        value: JSON.stringify(event),
-        headers: { [EVENT_ID_HEADER]: event.id, [EVENT_TYPE_HEADER]: event.type },
-      });
+      const producer = await withinTime(attempt, this.timeoutMs);
+      await withinTime(
+        producer.send({
+          topic: topicFor(event.source),
+          key: scopeKeyOf(event),
+          value: JSON.stringify(event),
+          headers: { [EVENT_ID_HEADER]: event.id, [EVENT_TYPE_HEADER]: event.type },
+        }),
+        this.timeoutMs,
+      );
     } catch (error) {
-      this.producer = null;
-      await producer.disconnect().catch(() => undefined);
+      this.discard(attempt);
       throw error;
     }
   }
@@ -53,15 +72,14 @@ export class KafkaEventPublisher extends EventPublisher implements OnModuleDestr
   }
 
   private connected(): Promise<EventProducer> {
-    if (!this.producer) {
-      const attempt = this.connect();
-      attempt.catch(() => {
-        if (this.producer === attempt) {
-          this.producer = null;
-        }
-      });
-      this.producer = attempt;
-    }
+    this.producer ??= this.connect();
     return this.producer;
+  }
+
+  private discard(attempt: Promise<EventProducer>): void {
+    if (this.producer === attempt) {
+      this.producer = null;
+    }
+    attempt.then((producer) => producer.disconnect()).catch(() => undefined);
   }
 }

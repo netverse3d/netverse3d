@@ -90,6 +90,35 @@ describe('bộ phát sự kiện lên Kafka', () => {
     expect(connect).toHaveBeenCalledTimes(2);
   });
 
+  it('broker không trả lời trong hạn thì coi là lỗi, không treo job chuyển outbox', async () => {
+    const stuck: EventProducer = {
+      send: () => new Promise<void>(() => undefined),
+      disconnect: () => Promise.resolve(),
+    };
+    const publisher = new KafkaEventPublisher(() => Promise.resolve(stuck), 50);
+    await expect(publisher.publish(event)).rejects.toThrow('did not answer within 50 ms');
+  });
+
+  it('nối tới broker quá hạn cũng là lỗi', async () => {
+    const publisher = new KafkaEventPublisher(
+      () => new Promise<EventProducer>(() => undefined),
+      50,
+    );
+    await expect(publisher.publish(event)).rejects.toThrow('did not answer within 50 ms');
+  });
+
+  it('lỗi của bộ gửi cũ không làm mất bộ gửi mới đã nối lại', async () => {
+    const { publisher, producers, connect } = subject();
+    await publisher.publish(event);
+    const first = producers[0] as FakeProducer;
+    first.failure = new Error('broker unavailable');
+    await Promise.allSettled([publisher.publish(event), publisher.publish(event)]);
+    await publisher.publish(event);
+    await publisher.publish(event);
+    expect(connect).toHaveBeenCalledTimes(2);
+    expect(producers[1]?.sent).toHaveLength(2);
+  });
+
   it('ngắt kết nối lúc ứng dụng dừng', async () => {
     const { publisher, producers } = subject();
     await publisher.publish(event);

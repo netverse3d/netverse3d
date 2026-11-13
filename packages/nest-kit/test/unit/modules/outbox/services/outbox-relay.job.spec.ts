@@ -10,13 +10,17 @@ import {
 import { OutboxRelayJob } from '../../../../../src/modules/outbox/services/outbox-relay.job';
 
 const PRINCIPAL = '7b1d6a52-0c4e-4b53-8f0a-9d2c1e3f4a5b';
+const FIRST = '11111111-2222-4333-8444-555555555555';
+const SECOND = '22222222-2222-4333-8444-555555555555';
+const THIRD = '33333333-2222-4333-8444-555555555555';
 
 function row(overrides: Partial<OutboxRow> = {}): OutboxRow {
   return {
-    id: '11111111-2222-4333-8444-555555555555',
+    id: FIRST,
     type: 'user.registered',
     tenantId: null,
     createdAt: new Date('2026-11-13T08:00:00.000Z'),
+    nextAttemptAt: new Date(Date.now() - 1_000),
     payload: { principalId: PRINCIPAL, email: 'a@example.test', status: 'ACTIVE' },
     attempts: 0,
     ...overrides,
@@ -25,24 +29,30 @@ function row(overrides: Partial<OutboxRow> = {}): OutboxRow {
 
 class RecordingPublisher extends EventPublisher {
   readonly published: EventEnvelope[] = [];
-  failure: Error | null = null;
+  failingIds = new Set<string>();
 
   publish(event: EventEnvelope): Promise<void> {
-    if (this.failure) {
-      return Promise.reject(this.failure);
+    if (this.failingIds.has(event.id)) {
+      return Promise.reject(new Error('broker unavailable'));
     }
     this.published.push(event);
     return Promise.resolve();
   }
 }
 
+interface Failure {
+  id: string;
+  attempts: number;
+  nextAttemptAt: Date | null;
+  error: string;
+}
+
 function subject(rows: OutboxRow[], maxAttempts = 3) {
   const publisher = new RecordingPublisher();
-  const failed: Array<{ id: string; attempts: number; nextAttemptAt: Date | null; error: string }> =
-    [];
+  const failed: Failure[] = [];
   const publishedIds: string[] = [];
   const repository = {
-    findDue: () => Promise.resolve(rows),
+    findPendingInOrder: () => Promise.resolve(rows),
     markPublished: (id: string) => {
       publishedIds.push(id);
       return Promise.resolve();
@@ -72,7 +82,7 @@ describe('job chuyển outbox', () => {
     const { relay, publisher, publishedIds } = subject([row()]);
     await relay();
     expect(publisher.published[0]).toMatchObject({ type: 'user.registered', source: 'identity' });
-    expect(publishedIds).toEqual(['11111111-2222-4333-8444-555555555555']);
+    expect(publishedIds).toEqual([FIRST]);
   });
 
   it('sự kiện sai hợp đồng không được phát và bị chôn ngay, không chờ thử lại', async () => {
@@ -85,25 +95,50 @@ describe('job chuyển outbox', () => {
     expect(failed[0]?.error).toContain('user.renamed is not declared');
   });
 
-  it('broker lỗi thì sự kiện được hẹn thử lại, chưa bị chôn', async () => {
-    const { relay, publisher, failed } = subject([row()]);
-    publisher.failure = new Error('broker unavailable');
+  it('sự kiện sai hợp đồng không chặn sự kiện đứng sau', async () => {
+    const { relay, publisher } = subject([row({ type: 'user.renamed' }), row({ id: SECOND })]);
     await relay();
-    expect(failed[0]).toMatchObject({ attempts: 1, error: 'broker unavailable' });
+    expect(publisher.published.map((event) => event.id)).toEqual([SECOND]);
+  });
+
+  it('broker lỗi thì sự kiện được hẹn thử lại và lượt chạy dừng, để sự kiện sau không vượt lên trước', async () => {
+    const { relay, publisher, failed, publishedIds } = subject([
+      row(),
+      row({ id: SECOND }),
+      row({ id: THIRD }),
+    ]);
+    publisher.failingIds = new Set([SECOND]);
+    await relay();
+    expect(publishedIds).toEqual([FIRST]);
+    expect(publisher.published.map((event) => event.id)).toEqual([FIRST]);
+    expect(failed).toHaveLength(1);
+    expect(failed[0]).toMatchObject({ id: SECOND, attempts: 1, error: 'broker unavailable' });
     expect(failed[0]?.nextAttemptAt).toBeInstanceOf(Date);
   });
 
-  it('hết số lần thử thì sự kiện bị chôn', async () => {
-    const { relay, publisher, failed } = subject([row({ attempts: 2 })], 3);
-    publisher.failure = new Error('broker unavailable');
-    await relay();
-    expect(failed[0]).toMatchObject({ attempts: 3, nextAttemptAt: null });
+  it('sự kiện đứng đầu chưa tới giờ thử lại thì cả hàng chờ, không phát sự kiện sau', async () => {
+    const waiting = row({ attempts: 2, nextAttemptAt: new Date(Date.now() + 60_000) });
+    const { relay, publisher, failed } = subject([waiting, row({ id: SECOND })]);
+    expect(await relay()).toBe(0);
+    expect(publisher.published).toHaveLength(0);
+    expect(failed).toHaveLength(0);
   });
 
-  it('một sự kiện hỏng không chặn sự kiện đứng sau', async () => {
-    const good = row({ id: '22222222-2222-4333-8444-555555555555' });
-    const { relay, publisher } = subject([row({ type: 'user.renamed' }), good]);
+  it('broker lỗi bao nhiêu lần sự kiện cũng không bị chôn, kể cả vượt số lần thử cấu hình', async () => {
+    const { relay, publisher, failed } = subject([row({ attempts: 40 })], 3);
+    publisher.failingIds = new Set([FIRST]);
     await relay();
-    expect(publisher.published.map((event) => event.id)).toEqual([good.id]);
+    expect(failed[0]?.attempts).toBe(41);
+    expect(failed[0]?.nextAttemptAt).toBeInstanceOf(Date);
+  });
+
+  it('khoảng chờ thử lại tăng dần nhưng không quá mười lăm phút', async () => {
+    const { relay, publisher, failed } = subject([row({ attempts: 40 })]);
+    publisher.failingIds = new Set([FIRST]);
+    const before = Date.now();
+    await relay();
+    const delay = (failed[0]?.nextAttemptAt as Date).getTime() - before;
+    expect(delay).toBeGreaterThan(14 * 60_000);
+    expect(delay).toBeLessThanOrEqual(15 * 60_000 + 1_000);
   });
 });

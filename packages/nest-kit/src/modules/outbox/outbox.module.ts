@@ -22,7 +22,10 @@ function createEventPublisher(config: KitConfig): EventPublisher {
     { provide: EventPublisher, useFactory: createEventPublisher, inject: [KitConfig] },
     {
       provide: EventContracts,
-      useFactory: (config: KitConfig) => EventContracts.forService(config.service.name),
+      useFactory: (config: KitConfig) =>
+        EventContracts.forService(config.service.name, {
+          required: config.service.environment === 'production',
+        }),
       inject: [KitConfig],
     },
   ],

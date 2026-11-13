@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import Ajv2020, { ErrorObject, ValidateFunction } from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import { EventEnvelope } from './event-envelope';
+import { isServiceName } from './event-topic';
 
 export class InvalidEventError extends Error {}
 
@@ -26,7 +27,10 @@ export class EventContracts {
     private readonly service: ServiceContract | null,
   ) {}
 
-  static forService(name: string): EventContracts {
+  static forService(name: string, options: { required?: boolean } = {}): EventContracts {
+    if (!isServiceName(name)) {
+      throw new Error(`Cannot look up an event contract for service name "${name}"`);
+    }
     const ajv = new Ajv2020({ strict: false, allErrors: true });
     addFormats(ajv);
     const validateEnvelope = ajv.compile(
@@ -40,10 +44,13 @@ export class EventContracts {
         validateData: ajv.compile(schema),
       });
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND') {
-        return new EventContracts(validateEnvelope, null);
+      if ((error as NodeJS.ErrnoException).code !== 'MODULE_NOT_FOUND') {
+        throw error;
       }
-      throw error;
+      if (options.required) {
+        throw new Error(`no event contract is published for ${name}`, { cause: error });
+      }
+      return new EventContracts(validateEnvelope, null);
     }
   }
 

@@ -73,22 +73,28 @@ export async function subscribeToTopics(
   settings: SubscriptionSettings,
   handler: MessageHandler,
 ): Promise<EventSubscription> {
+  await ensureTopics(settings, settings.topics);
   const kafka = await createKafka(settings);
   const consumer = kafka.consumer({
     kafkaJS: { groupId: settings.groupId, fromBeginning: true },
   });
   await consumer.connect();
   let connected = true;
-  await consumer.subscribe({ topics: settings.topics });
-  await consumer.run({
-    eachMessage: ({ topic, message }) =>
-      handler({
-        topic,
-        key: message.key?.toString() ?? null,
-        value: message.value,
-        eventId: headerText(message.headers, EVENT_ID_HEADER),
-      }),
-  });
+  try {
+    await consumer.subscribe({ topics: settings.topics });
+    await consumer.run({
+      eachMessage: ({ topic, message }) =>
+        handler({
+          topic,
+          key: message.key?.toString() ?? null,
+          value: message.value,
+          eventId: headerText(message.headers, EVENT_ID_HEADER),
+        }),
+    });
+  } catch (error) {
+    await consumer.disconnect().catch(() => undefined);
+    throw error;
+  }
   return {
     isConnected: () => connected,
     async stop(): Promise<void> {
@@ -104,6 +110,9 @@ export function deadLetterSinkOf(producer: EventProducer): DeadLetterSink {
       topic: letter.topic,
       key: letter.key ?? '',
       value: letter.value.toString(),
-      headers: { [DEAD_LETTER_REASON_HEADER]: letter.reason },
+      headers: {
+        [DEAD_LETTER_REASON_HEADER]: letter.reason,
+        ...(letter.eventId ? { [EVENT_ID_HEADER]: letter.eventId } : {}),
+      },
     });
 }

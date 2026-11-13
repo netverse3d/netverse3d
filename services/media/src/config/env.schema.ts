@@ -88,6 +88,13 @@ export const envSchema = z
   })
   .superRefine((env, context) => {
     if (env.NODE_ENV === 'production') {
+      if (env.KAFKA_BROKERS.length === 0) {
+        context.addIssue({
+          code: 'custom',
+          path: ['KAFKA_BROKERS'],
+          message: 'is required in production',
+        });
+      }
       for (const name of sampleSecretNames(env, ['DATABASE_URL', 'S3_SECRET_KEY'])) {
         context.addIssue({
           code: 'custom',
