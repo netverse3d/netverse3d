@@ -16,5 +16,7 @@ export const MAX_BRAND_VALUE_LENGTH = 4000;
 export const MAX_BLOCKED_ADDRESS_LENGTH = 512;
 export const MAX_BLOCK_REASON_LENGTH = 255;
 export const MAX_DELIVERY_DETAIL_LENGTH = 1000;
+export const MAX_RENDERED_SUBJECT_LENGTH = 1000;
+export const MAX_RENDERED_BODY_LENGTH = 500_000;
 
 export const ROLE_NOTIFICATION_SEND = 'notification:send';

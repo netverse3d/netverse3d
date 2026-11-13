@@ -22,6 +22,7 @@ const commaSeparated = z
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
 
 const MAX_JOB_RUN_MS = 240_000;
+const PROVIDER_CALLS_PER_SEND = 2;
 const ENVIRONMENT_ERROR_PREFIX = 'Invalid environment: ';
 const GUARDED_NAMES = ['DATABASE_URL', 'FIREBASE_PRIVATE_KEY'];
 
@@ -177,7 +178,9 @@ function refuseSampleValuesInProduction(env: BaseEnv, context: z.RefinementCtx):
 
 function refuseBatchesThatOutliveTheLease(env: BaseEnv, context: z.RefinementCtx): void {
   const worstCaseMs =
-    Math.ceil(env.DELIVERY_BATCH_SIZE / env.DELIVERY_CONCURRENCY) * env.PROVIDER_TIMEOUT_MS;
+    Math.ceil(env.DELIVERY_BATCH_SIZE / env.DELIVERY_CONCURRENCY) *
+    env.PROVIDER_TIMEOUT_MS *
+    PROVIDER_CALLS_PER_SEND;
   if (worstCaseMs >= Math.min(env.DELIVERY_LEASE_MS, MAX_JOB_RUN_MS)) {
     context.addIssue({
       code: 'custom',

@@ -4,6 +4,7 @@ import { parseEnv } from '../../../../../src/config/env.schema';
 import {
   OutboundMessage,
   PermanentSendError,
+  ProviderConfigurationError,
 } from '../../../../../src/modules/channels/ports/channel-sender';
 import { FirebasePushSender } from '../../../../../src/modules/channels/adapters/firebase-push-sender';
 
@@ -80,6 +81,18 @@ describe('gửi push qua Firebase', () => {
   it('coi token thiết bị không còn hiệu lực là lỗi vĩnh viễn', async () => {
     mockFirebase(404);
     await expect(sender.send(pushMessage)).rejects.toBeInstanceOf(PermanentSendError);
+  });
+
+  it('khoá bị từ chối là lỗi cấu hình: thử lại, và bỏ token đang giữ', async () => {
+    mockFirebase(200, { name: 'n' });
+    await sender.send(pushMessage);
+    jest.restoreAllMocks();
+    mockFirebase(401);
+    await expect(sender.send(pushMessage)).rejects.toBeInstanceOf(ProviderConfigurationError);
+    jest.restoreAllMocks();
+    const fetchMock = mockFirebase(200, { name: 'n' });
+    await Promise.all([sender.send(pushMessage), sender.send(pushMessage)]);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('oauth2'))).toHaveLength(1);
   });
 
   it('coi lỗi 503 là tạm thời', async () => {

@@ -5,6 +5,7 @@ import {
   ChannelSender,
   OutboundMessage,
   PermanentSendError,
+  ProviderConfigurationError,
   SendReceipt,
 } from '../ports/channel-sender';
 import { EmailProvider, EmailSenderContext, formatSender } from '../ports/email-provider';
@@ -12,6 +13,7 @@ import { EmailProvider, EmailSenderContext, formatSender } from '../ports/email-
 const FIRST_PERMANENT_REPLY = 500;
 const LAST_PERMANENT_REPLY = 599;
 const FAILURE_CODE = /^[A-Z_]+$/;
+const CREDENTIALS_REFUSED = 'EAUTH';
 const MESSAGE_STAGES: ReadonlySet<string> = new Set(['RCPT TO', 'DATA']);
 
 export interface SmtpSettings {
@@ -47,8 +49,8 @@ function connect(settings: SmtpSettings, timeoutMs: number): SmtpTransport {
     secure: settings.secure,
     requireTLS: !settings.secure && settings.user !== undefined,
     auth: settings.user ? { user: settings.user, pass: settings.password ?? '' } : undefined,
-    connectionTimeout: timeoutMs,
-    greetingTimeout: timeoutMs,
+    connectionTimeout: timeoutMs / 2,
+    greetingTimeout: timeoutMs / 2,
     socketTimeout: timeoutMs,
   });
 }
@@ -95,6 +97,9 @@ export class SmtpEmailSender extends ChannelSender {
       return { providerMessageId: outcome.messageId };
     }
     const { replyCode, failureCode, aboutTheMessage } = outcome;
+    if (failureCode === CREDENTIALS_REFUSED) {
+      throw new ProviderConfigurationError('SMTP server refused the credentials');
+    }
     if (replyCode === null) {
       throw new Error(`SMTP server could not be reached (${failureCode})`);
     }
