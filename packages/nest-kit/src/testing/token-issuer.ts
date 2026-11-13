@@ -9,6 +9,8 @@ export interface TokenClaims {
   subject?: string;
   tenantId?: string;
   roles?: string[];
+  clientId?: string;
+  permissions?: string[];
   issuer?: string;
   audience?: string;
   expiresIn?: string;
@@ -56,6 +58,8 @@ export class TokenIssuer {
     return new SignJWT({
       roles: claims.roles ?? [],
       ...(claims.tenantId ? { tenant_id: claims.tenantId } : {}),
+      ...(claims.clientId ? { client_id: claims.clientId } : {}),
+      ...(claims.permissions ? { permissions: claims.permissions } : {}),
     })
       .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
       .setSubject(claims.subject ?? 'user-1')

@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { createRemoteJWKSet, JWTPayload, jwtVerify } from 'jose';
+import { createRemoteJWKSet, errors as joseErrors, JWTPayload, jwtVerify } from 'jose';
 import type { Actor } from '../../common/context/request-context';
 import { KitConfig } from '../../config/kit-config';
+import { PLATFORM_SCOPE } from './platform-roles';
 
 const ACCEPTED_ALGORITHMS = ['RS256', 'ES256'];
+
+function stringsOf(claim: unknown): string[] {
+  return Array.isArray(claim) ? claim.filter((item) => typeof item === 'string') : [];
+}
 
 @Injectable()
 export class JwtVerifier {
@@ -29,12 +34,23 @@ export class JwtVerifier {
   }
 
   private toActor(payload: JWTPayload): Actor {
+    const subject = payload.sub as string;
+    if (typeof payload.client_id === 'string') {
+      return {
+        subject,
+        tenantId: null,
+        roles: [],
+        service: { clientId: payload.client_id, permissions: stringsOf(payload.permissions) },
+      };
+    }
     const tenant = payload[this.config.auth.tenantClaim];
-    const roles = payload[this.config.auth.rolesClaim];
+    if (tenant === PLATFORM_SCOPE) {
+      throw new joseErrors.JWTClaimValidationFailed('tenant claim uses a reserved scope', payload);
+    }
     return {
-      subject: payload.sub as string,
+      subject,
       tenantId: typeof tenant === 'string' ? tenant : null,
-      roles: Array.isArray(roles) ? roles.filter((role) => typeof role === 'string') : [],
+      roles: stringsOf(payload[this.config.auth.rolesClaim]),
       ...(typeof payload.sid === 'string' ? { sessionId: payload.sid } : {}),
       ...(typeof payload.ver === 'number' ? { tokenVersion: payload.ver } : {}),
     };

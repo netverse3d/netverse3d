@@ -36,6 +36,17 @@ Refresh token xoay vòng mỗi lần dùng. Dùng lại token cũ sau thời gia
 
 Khoá ký được mã hoá trong cơ sở dữ liệu bằng `KEY_ENCRYPTION_SECRET`, một chuỗi 64 ký tự hex. Mất khoá này thì mọi khoá ký không dùng được nữa. Quản trị nền tảng xoay khoá bằng `POST /v1/keys/rotate`; khoá cũ còn xác minh được trong thời gian chuyển.
 
+## Tài khoản của service
+
+Một service gọi service khác bằng token của chính nó, theo [ADR-0028](../../docs/decisions/ADR-0028-service-to-service-communication.md).
+
+- Quản trị nền tảng tạo tài khoản ở `POST /v1/admin/service-clients`, khai tên, các audience được phép và các quyền. Khoá bí mật chỉ hiện một lần trong câu trả lời và được lưu ở dạng băm.
+- Service đổi mã và khoá bí mật lấy token ở `POST /v1/auth/service-token`, nêu một audience. Token sống `SERVICE_TOKEN_TTL_SECONDS` giây, mặc định 300, không có refresh token, không gắn tenant, không mang vai trò.
+- `POST /v1/admin/service-clients/:id/rotate-secret` đổi khoá, khoá cũ hết dùng ngay. `POST /v1/admin/service-clients/:id/revoke` thu hồi tài khoản vĩnh viễn. Token đã cấp còn dùng được tới lúc hết hạn.
+- Audience chỉ nhận các tên có trong `TOKEN_AUDIENCES`.
+
+Token của service chỉ vào được route khai quyền bằng `@Permissions`; mọi route khác từ chối nó.
+
 ## Mã một lần
 
 Mã xác minh email và đặt lại mật khẩu gửi qua cổng `OtpSender`. `OTP_DELIVERY=log` ghi mã ra log và chỉ dùng lúc phát triển; ở production service từ chối khởi động với giá trị này. `OTP_DELIVERY=webhook` gửi mã tới `OTP_WEBHOOK_URL` kèm chữ ký HMAC.

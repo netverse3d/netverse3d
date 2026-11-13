@@ -2,6 +2,7 @@ import type { Actor } from '../../common/context/request-context';
 
 export const PLATFORM_ADMIN_ROLE = 'platform_admin';
 export const TENANT_ADMIN_ROLE = 'admin';
+export const PLATFORM_SCOPE = 'platform';
 
 export function rolesInScope(actor: Actor): string[] {
   const outOfScope = actor.tenantId === null ? TENANT_ADMIN_ROLE : PLATFORM_ADMIN_ROLE;

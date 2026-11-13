@@ -2,6 +2,7 @@ export * from './conformance/audit';
 export * from './conformance/database-timezone';
 export * from './conformance/http-standard';
 export * from './conformance/limits';
+export * from './conformance/service-access';
 export * from './conformance-probe.controller';
 export * from './export-openapi';
 export * from './harness';

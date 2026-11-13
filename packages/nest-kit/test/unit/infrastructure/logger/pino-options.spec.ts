@@ -51,6 +51,18 @@ describe('log có cấu trúc', () => {
     expect(output).not.toContain('sid=1');
   });
 
+  it('che khoá bí mật của tài khoản service và refresh token, ở gốc và lồng một cấp', () => {
+    const { logger, lines } = capturedLogger();
+    logger.info({
+      clientSecret: 'client-secret-value',
+      body: { clientSecret: 'nested-secret-value', refreshToken: 'refresh-value' },
+    });
+    const output = lines.join('');
+    expect(output).not.toContain('client-secret-value');
+    expect(output).not.toContain('nested-secret-value');
+    expect(output).not.toContain('refresh-value');
+  });
+
   it('gắn tên service vào mọi dòng log', () => {
     const { logger, lines } = capturedLogger();
     logger.info('hello');

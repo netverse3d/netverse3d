@@ -359,3 +359,11 @@ requirements:
     milestone: M3
     area: payment
     sources: [team-decision, mentor-backend-sample, mentor-architecture-full]
+  - id: REQ-046
+    title: Service gọi service bằng định danh riêng
+    description: Một service gọi service khác bằng token của chính nó do identity cấp, không dùng token của người dùng và không mượn quyền quản trị. Token của service ngắn hạn, mang quyền do nền tảng cấp, và chỉ dùng được ở những route khai quyền đó. Sự việc đi qua Kafka, mệnh lệnh đi qua gRPC, theo ADR-0028.
+    status: accepted
+    priority: must
+    milestone: M3
+    area: identity
+    sources: [team-decision]

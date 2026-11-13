@@ -4,6 +4,7 @@ export * from './bootstrap/setup-swagger';
 export * from './common/context/request-context.middleware';
 export * from './common/context/request-context';
 export * from './common/decorators/current-actor.decorator';
+export * from './common/decorators/permissions.decorator';
 export * from './common/decorators/public.decorator';
 export * from './common/decorators/raw-response.decorator';
 export * from './common/decorators/roles.decorator';
