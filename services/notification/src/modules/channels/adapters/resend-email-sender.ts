@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { ChannelSender, OutboundMessage, SendReceipt } from '../ports/channel-sender';
 import {
   assertAccepted,
-  EmailProvider,
-  EmailSenderContext,
-  formatSender,
-} from '../ports/email-provider';
+  ChannelSender,
+  OutboundMessage,
+  SendReceipt,
+} from '../ports/channel-sender';
+import { EmailProvider, EmailSenderContext, formatSender } from '../ports/email-provider';
 
 const RESEND_SEND_URL = 'https://api.resend.com/emails';
 const PERMANENT_STATUSES = new Set([400, 404, 422]);

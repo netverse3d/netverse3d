@@ -1,5 +1,5 @@
 import type { DeliveryChannelName } from '../../notifications/domain/channels';
-import type { DeliveryReasonCode } from '../../notifications/domain/delivery-reasons';
+import { DeliveryReason, DeliveryReasonCode } from '../../notifications/domain/delivery-reasons';
 
 export interface OutboundMessage {
   deliveryId: string;
@@ -21,6 +21,30 @@ export class PermanentSendError extends Error {
     message: string,
   ) {
     super(message);
+  }
+}
+
+export class ProviderConfigurationError extends Error {}
+
+const CREDENTIAL_STATUSES: ReadonlySet<number> = new Set([401, 403]);
+
+export function assertAccepted(
+  response: Response,
+  permanentStatuses: ReadonlySet<number>,
+  provider: string,
+  credentialStatuses: ReadonlySet<number> = CREDENTIAL_STATUSES,
+): void {
+  if (permanentStatuses.has(response.status)) {
+    throw new PermanentSendError(
+      DeliveryReason.PROVIDER_REJECTED,
+      `${provider} rejected the message with status ${response.status}`,
+    );
+  }
+  if (credentialStatuses.has(response.status)) {
+    throw new ProviderConfigurationError(`${provider} answered ${response.status}`);
+  }
+  if (!response.ok) {
+    throw new Error(`${provider} answered ${response.status}`);
   }
 }
 

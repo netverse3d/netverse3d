@@ -4,6 +4,7 @@ import { parseEnv } from '../../../../../src/config/env.schema';
 import {
   OutboundMessage,
   PermanentSendError,
+  ProviderConfigurationError,
 } from '../../../../../src/modules/channels/ports/channel-sender';
 import { FirebasePushSender } from '../../../../../src/modules/channels/adapters/firebase-push-sender';
 
@@ -27,31 +28,38 @@ const message: OutboundMessage = {
 
 describe('gửi push qua Firebase', () => {
   let sender: FirebasePushSender;
+  let config: AppConfig;
 
   beforeAll(async () => {
     const { privateKey } = await generateKeyPair('RS256', { extractable: true });
-    sender = new FirebasePushSender(
-      new AppConfig(
-        parseEnv({
-          ...BASE_ENV,
-          PUSH_PROVIDER: 'firebase',
-          FIREBASE_PROJECT_ID: 'project-1',
-          FIREBASE_CLIENT_EMAIL: 'svc@project-1.test',
-          FIREBASE_PRIVATE_KEY: (await exportPKCS8(privateKey)).replace(/\n/g, '\\n'),
-        }),
-      ),
+    config = new AppConfig(
+      parseEnv({
+        ...BASE_ENV,
+        PUSH_PROVIDER: 'firebase',
+        FIREBASE_PROJECT_ID: 'project-1',
+        FIREBASE_CLIENT_EMAIL: 'svc@project-1.test',
+        FIREBASE_PRIVATE_KEY: (await exportPKCS8(privateKey)).replace(/\n/g, '\\n'),
+      }),
     );
+    sender = new FirebasePushSender(config);
   });
 
   afterEach(() => jest.restoreAllMocks());
 
-  function mockFirebase(sendStatus: number, sendBody: unknown = {}): jest.SpyInstance {
+  function mockFirebase(
+    sendStatus: number,
+    sendBody: unknown = {},
+    tokenStatus = 200,
+  ): jest.SpyInstance {
     return jest
       .spyOn(global, 'fetch')
       .mockImplementation((input) =>
         Promise.resolve(
           String(input).includes('oauth2')
-            ? new Response(JSON.stringify({ access_token: 'access-token-value', expires_in: 3600 }))
+            ? new Response(
+                JSON.stringify({ access_token: 'access-token-value', expires_in: 3600 }),
+                { status: tokenStatus },
+              )
             : new Response(JSON.stringify(sendBody), { status: sendStatus }),
         ),
       );
@@ -80,6 +88,31 @@ describe('gửi push qua Firebase', () => {
   it('coi token thiết bị không còn hiệu lực là lỗi vĩnh viễn', async () => {
     mockFirebase(404);
     await expect(sender.send(pushMessage)).rejects.toBeInstanceOf(PermanentSendError);
+  });
+
+  it('khoá bị từ chối là lỗi cấu hình: thử lại, và bỏ token đang giữ', async () => {
+    mockFirebase(200, { name: 'n' });
+    await sender.send(pushMessage);
+    jest.restoreAllMocks();
+    mockFirebase(401);
+    await expect(sender.send(pushMessage)).rejects.toBeInstanceOf(ProviderConfigurationError);
+    jest.restoreAllMocks();
+    const fetchMock = mockFirebase(200, { name: 'n' });
+    await Promise.all([sender.send(pushMessage), sender.send(pushMessage)]);
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('oauth2'))).toHaveLength(1);
+  });
+
+  it('Google không cấp token vì khoá service account sai là lỗi cấu hình', async () => {
+    const fresh = new FirebasePushSender(config);
+    mockFirebase(200, {}, 401);
+    await expect(fresh.send(pushMessage)).rejects.toBeInstanceOf(ProviderConfigurationError);
+  });
+
+  it('lỗi 403 lúc gửi có thể do riêng thiết bị, nên là lỗi thường chứ không báo sai cấu hình', async () => {
+    mockFirebase(403);
+    const attempt = sender.send(pushMessage);
+    await expect(attempt).rejects.not.toBeInstanceOf(ProviderConfigurationError);
+    await expect(attempt).rejects.not.toBeInstanceOf(PermanentSendError);
   });
 
   it('coi lỗi 503 là tạm thời', async () => {

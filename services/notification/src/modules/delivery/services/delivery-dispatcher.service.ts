@@ -1,9 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AppConfig } from '../../../config/app-config';
 import { BrandingService } from '../../branding/services/branding.service';
-import { OutboundMessage, PermanentSendError } from '../../channels/ports/channel-sender';
+import {
+  OutboundMessage,
+  PermanentSendError,
+  ProviderConfigurationError,
+} from '../../channels/ports/channel-sender';
 import { ChannelRegistry } from '../../channels/services/channel-registry';
 import { DeliveryReason } from '../../notifications/domain/delivery-reasons';
+import {
+  MAX_RENDERED_BODY_LENGTH,
+  MAX_RENDERED_SUBJECT_LENGTH,
+} from '../../notifications/domain/limits';
 import { PreferencesService } from '../../preferences/services/preferences.service';
 import { renderTemplate, TemplateRenderError } from '../../templates/domain/template-engine';
 import { TemplatesService } from '../../templates/services/templates.service';
@@ -12,6 +20,12 @@ import {
   DeliveryOutcome,
   DeliveryRepository,
 } from '../repositories/delivery.repository';
+
+const SETTLE_ATTEMPTS = 3;
+const SETTLE_RETRY_MS = 100;
+const MAX_UNRECORDED_OUTCOMES = 10_000;
+const MISCONFIGURED_RETRY_FACTOR = 10;
+const MISCONFIGURED_GIVE_UP_MS = 24 * 60 * 60 * 1000;
 
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -24,6 +38,7 @@ export function deliveryRetryDelayMs(attempts: number, baseMs: number, maxMs: nu
 @Injectable()
 export class DeliveryDispatcherService {
   private readonly logger = new Logger(DeliveryDispatcherService.name);
+  private readonly unrecorded = new Map<string, DeliveryOutcome>();
 
   constructor(
     private readonly config: AppConfig,
@@ -46,13 +61,50 @@ export class DeliveryDispatcherService {
   }
 
   private async process(delivery: ClaimedDelivery): Promise<void> {
+    const outcome = this.unrecorded.get(delivery.id) ?? (await this.outcomeOf(delivery));
+    if (outcome) {
+      await this.record(delivery, outcome);
+    }
+  }
+
+  private async outcomeOf(delivery: ClaimedDelivery): Promise<DeliveryOutcome | null> {
     try {
-      const outcome = await this.attempt(delivery);
-      await this.repository.settle(delivery, outcome);
+      return await this.attempt(delivery);
     } catch (error) {
       await this.retryOrBury(delivery, error).catch((failure: unknown) =>
         this.logger.error(`delivery ${delivery.id} could not be updated: ${errorText(failure)}`),
       );
+      return null;
+    }
+  }
+
+  private async record(delivery: ClaimedDelivery, outcome: DeliveryOutcome): Promise<void> {
+    for (let attempt = 1; attempt <= SETTLE_ATTEMPTS; attempt += 1) {
+      try {
+        await this.repository.settle(delivery, outcome);
+        this.unrecorded.delete(delivery.id);
+        return;
+      } catch (error) {
+        if (attempt === SETTLE_ATTEMPTS) {
+          this.remember(delivery.id, outcome);
+          this.logger.error(
+            `delivery ${delivery.id} ended as ${outcome.status} but the result could not be recorded: ${errorText(error)}`,
+          );
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, SETTLE_RETRY_MS * attempt));
+      }
+    }
+  }
+
+  private remember(deliveryId: string, outcome: DeliveryOutcome): void {
+    this.unrecorded.delete(deliveryId);
+    this.unrecorded.set(deliveryId, outcome);
+    for (const oldest of this.unrecorded.keys()) {
+      if (this.unrecorded.size <= MAX_UNRECORDED_OUTCOMES) {
+        return;
+      }
+      this.unrecorded.delete(oldest);
     }
   }
 
@@ -110,8 +162,14 @@ export class DeliveryDispatcherService {
         eventType: delivery.eventType,
         channel: delivery.channel,
         destination: delivery.destination,
-        subject: renderTemplate(template.subject, context, { escapeHtml: false }),
-        body: renderTemplate(template.body, context, { escapeHtml: delivery.channel === 'EMAIL' }),
+        subject: renderTemplate(template.subject, context, {
+          escapeHtml: false,
+          maxLength: MAX_RENDERED_SUBJECT_LENGTH,
+        }),
+        body: renderTemplate(template.body, context, {
+          escapeHtml: delivery.channel === 'EMAIL',
+          maxLength: MAX_RENDERED_BODY_LENGTH,
+        }),
       };
     } catch (error) {
       if (error instanceof TemplateRenderError) {
@@ -139,6 +197,10 @@ export class DeliveryDispatcherService {
   private async retryOrBury(delivery: ClaimedDelivery, error: unknown): Promise<void> {
     const { maxAttempts, retryBaseMs, retryMaxMs } = this.config.delivery;
     const detail = errorText(error);
+    if (error instanceof ProviderConfigurationError) {
+      await this.waitForConfiguration(delivery, detail);
+      return;
+    }
     if (delivery.attempts >= maxAttempts) {
       await this.repository.settle(
         delivery,
@@ -156,6 +218,28 @@ export class DeliveryDispatcherService {
       detail,
     );
     this.logger.warn(`delivery ${delivery.id} failed on attempt ${delivery.attempts}: ${detail}`);
+  }
+
+  private async waitForConfiguration(delivery: ClaimedDelivery, detail: string): Promise<void> {
+    const { retryBaseMs, retryMaxMs } = this.config.delivery;
+    this.logger.error(
+      `delivery ${delivery.id} was refused: ${detail}; check the ${delivery.channel} provider credentials`,
+    );
+    if (Date.now() - delivery.createdAt.getTime() >= MISCONFIGURED_GIVE_UP_MS) {
+      await this.repository.settle(
+        delivery,
+        this.dead(DeliveryReason.PROVIDER_MISCONFIGURED, detail),
+      );
+      return;
+    }
+    const delayMs = Math.min(retryBaseMs * MISCONFIGURED_RETRY_FACTOR, retryMaxMs);
+    await this.repository.scheduleRetry(
+      delivery,
+      new Date(Date.now() + delayMs),
+      DeliveryReason.PROVIDER_MISCONFIGURED,
+      detail,
+      false,
+    );
   }
 
   private dead(reason: string, detail: string): DeliveryOutcome {

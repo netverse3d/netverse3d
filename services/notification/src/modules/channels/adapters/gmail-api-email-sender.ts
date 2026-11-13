@@ -1,18 +1,20 @@
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { z } from 'zod';
-import { ChannelSender, OutboundMessage, SendReceipt } from '../ports/channel-sender';
 import {
   assertAccepted,
-  EmailProvider,
-  EmailSenderContext,
-  formatSender,
-} from '../ports/email-provider';
+  ChannelSender,
+  OutboundMessage,
+  ProviderConfigurationError,
+  SendReceipt,
+} from '../ports/channel-sender';
+import { AccessToken, AccessTokenCache, accessTokenFrom } from './access-token-cache';
+import { EmailProvider, EmailSenderContext, formatSender } from '../ports/email-provider';
 
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const SEND_URL = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
 const PERMANENT_STATUSES = new Set([400]);
-const TOKEN_REFRESH_MARGIN_MS = 60_000;
-const DEFAULT_TOKEN_LIFETIME_SECONDS = 3_000;
+const CREDENTIAL_STATUSES = new Set([401]);
+const REVOKED_GRANT_STATUSES = new Set([400, 401]);
 
 export interface GmailCredentials {
   clientId: string;
@@ -20,14 +22,8 @@ export interface GmailCredentials {
   refreshToken: string;
 }
 
-interface AccessToken {
-  value: string;
-  expiresAt: number;
-}
-
 export class GmailApiEmailSender extends ChannelSender {
-  private token: AccessToken | null = null;
-  private refreshing: Promise<AccessToken> | null = null;
+  private readonly tokens = new AccessTokenCache(() => this.refresh());
 
   constructor(
     private readonly credentials: GmailCredentials,
@@ -45,7 +41,7 @@ export class GmailApiEmailSender extends ChannelSender {
     })
       .compile()
       .build();
-    const accessToken = await this.accessToken();
+    const accessToken = await this.tokens.get();
     const response = await fetch(SEND_URL, {
       method: 'POST',
       headers: {
@@ -55,30 +51,12 @@ export class GmailApiEmailSender extends ChannelSender {
       body: JSON.stringify({ raw: raw.toString('base64url') }),
       signal: AbortSignal.timeout(this.context.timeoutMs),
     });
-    if (response.status === 401 && this.token?.value === accessToken) {
-      this.token = null;
+    if (response.status === 401) {
+      this.tokens.discard(accessToken);
     }
-    assertAccepted(response, PERMANENT_STATUSES, 'Gmail');
+    assertAccepted(response, PERMANENT_STATUSES, 'Gmail', CREDENTIAL_STATUSES);
     const { id } = (await response.json()) as { id?: string };
     return { providerMessageId: id };
-  }
-
-  private async accessToken(): Promise<string> {
-    if (this.token && this.token.expiresAt - TOKEN_REFRESH_MARGIN_MS > Date.now()) {
-      return this.token.value;
-    }
-    this.refreshing ??= this.refresh().then(
-      (token) => {
-        this.token = token;
-        this.refreshing = null;
-        return token;
-      },
-      (error: unknown) => {
-        this.refreshing = null;
-        throw error;
-      },
-    );
-    return (await this.refreshing).value;
   }
 
   private async refresh(): Promise<AccessToken> {
@@ -94,17 +72,12 @@ export class GmailApiEmailSender extends ChannelSender {
       signal: AbortSignal.timeout(this.context.timeoutMs),
     });
     if (!response.ok) {
-      throw new Error(`Google did not issue an access token, it answered ${response.status}`);
+      const message = `Google did not issue an access token, it answered ${response.status}`;
+      throw REVOKED_GRANT_STATUSES.has(response.status)
+        ? new ProviderConfigurationError(message)
+        : new Error(message);
     }
-    const body = (await response.json()) as { access_token?: string; expires_in?: number };
-    if (!body.access_token) {
-      throw new Error('Google answered without an access token');
-    }
-    const lifetimeSeconds =
-      typeof body.expires_in === 'number' && body.expires_in > 0
-        ? body.expires_in
-        : DEFAULT_TOKEN_LIFETIME_SECONDS;
-    return { value: body.access_token, expiresAt: Date.now() + lifetimeSeconds * 1000 };
+    return accessTokenFrom((await response.json()) as { access_token?: string });
   }
 }
 

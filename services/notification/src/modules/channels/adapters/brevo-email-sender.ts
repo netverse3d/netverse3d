@@ -1,6 +1,11 @@
 import { z } from 'zod';
-import { ChannelSender, OutboundMessage, SendReceipt } from '../ports/channel-sender';
-import { assertAccepted, EmailProvider, EmailSenderContext } from '../ports/email-provider';
+import {
+  assertAccepted,
+  ChannelSender,
+  OutboundMessage,
+  SendReceipt,
+} from '../ports/channel-sender';
+import { EmailProvider, EmailSenderContext } from '../ports/email-provider';
 
 const BREVO_SEND_URL = 'https://api.brevo.com/v3/smtp/email';
 const PERMANENT_STATUSES = new Set([400, 404, 422]);
