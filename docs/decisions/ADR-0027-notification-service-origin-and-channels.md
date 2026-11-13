@@ -24,16 +24,18 @@ Service đó gửi thông báo qua ba kênh: email, push và hộp thư trong �
 ### Kênh thông báo
 
 5. REQ-008 được chốt với ba kênh: email, hộp thư trong ứng dụng và push.
-6. Vai trò theo [ADR-0025](./ADR-0025-media-access-by-tenant-model.md): quản lý template, thương hiệu và danh sách chặn của một tiệm là việc của quản trị tiệm đó; quản trị nền tảng làm được với mọi tiệm.
+6. Vai trò theo [ADR-0025](./ADR-0025-media-access-by-tenant-model.md): quản lý template, thương hiệu và danh sách chặn của một tiệm là việc của quản trị tiệm đó.
+7. Mọi dữ liệu của service gắn với một tenant, và token không gắn tenant bị từ chối. Đợt này giữ nguyên điều đó.
 
 ### Thứ tự làm
 
-7. Đợt này nhập service và cho nó chạy trên `packages/nest-kit`, nhận yêu cầu gửi qua HTTP. Bộ nghe RabbitMQ không được nhập; cổng nghe sự kiện được giữ lại, ở trạng thái tắt.
-8. Đợt kế tiếp chuẩn hoá một lần cho mọi service: sự kiện thật lên Kafka, lời gọi giữa các service qua gRPC kèm định danh riêng của service, và cách cắm nhiều nhà cung cấp email gồm SMTP, Resend và Gmail API bên cạnh Brevo đã có.
+8. Đợt này nhập service và cho nó chạy trên `packages/nest-kit`, nhận yêu cầu gửi qua HTTP. Bộ nghe RabbitMQ không được nhập; cổng nghe sự kiện được giữ lại, ở trạng thái tắt.
+9. Đợt kế tiếp chuẩn hoá một lần cho mọi service: sự kiện thật lên Kafka, lời gọi giữa các service qua gRPC kèm định danh riêng của service, và cách cắm nhiều nhà cung cấp email gồm SMTP, Resend và Gmail API bên cạnh Brevo đã có.
 
 ## Hệ quả
 
 - Sau đợt này notification chạy được và có test, nhưng chưa service nào gọi nó: identity vẫn gửi mã xác minh email qua webhook cho tới đợt chuẩn hoá.
+- Người chơi dùng token không gắn tenant nên chưa có hộp thư, và email cho tài khoản chưa thuộc tiệm nào, như mã xác minh lúc đăng ký, chưa gửi được qua service này. Quản trị nền tảng cũng chưa quản lý được template của một tiệm. Thông báo cấp nền tảng thuộc về đâu là câu hỏi mở, phải quyết trong đợt chuẩn hoá.
 - Push cần tài khoản Firebase mới gửi thật được. Ở dev kênh push và kênh email ghi ra log.
 - Ở production service từ chối khởi động nếu kênh email hoặc push đặt ở chế độ ghi log.
 - Mã đã công khai thì không thu hồi được, nên bước quét secret và đọc lại thay đổi trước lúc đẩy là bắt buộc.

@@ -42,7 +42,7 @@ Giữ lại `README.md` và cập nhật `component.yaml` của thành phần tr
 
 ## 5. Khớp với monorepo
 
-Làm theo thứ tự trên một nhánh; cả việc nhập là một PR. `services/media` và `services/identity` là hai ví dụ đã đi hết các bước này.
+Làm theo thứ tự trên một nhánh; cả việc nhập là một PR. `services/media`, `services/identity` và `services/notification` là ba ví dụ đã đi hết các bước này.
 
 ### 5.1. Bỏ cấu hình công cụ riêng
 

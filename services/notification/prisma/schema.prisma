@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+}
+
+model AuditLog {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt   DateTime     @default(now()) @map("occurred_at") @db.Timestamptz
+  requestId    String?      @map("request_id") @db.VarChar(128)
+  tenantId     String?      @map("tenant_id") @db.VarChar(128)
+  actorSubject String?      @map("actor_subject") @db.VarChar(255)
+  actorRoles   String[]     @default([]) @map("actor_roles")
+  ip           String?      @db.VarChar(64)
+  userAgent    String?      @map("user_agent") @db.VarChar(512)
+  action       String       @db.VarChar(128)
+  resourceType String       @map("resource_type") @db.VarChar(64)
+  resourceId   String?      @map("resource_id") @db.VarChar(255)
+  outcome      AuditOutcome
+  errorCode    String?      @map("error_code") @db.VarChar(128)
+  metadata     Json         @default("{}")
+
+  @@index([tenantId, occurredAt])
+  @@index([resourceType, resourceId])
+  @@index([actorSubject, occurredAt])
+  @@map("audit_logs")
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHED
+  DEAD
+}
+
+model OutboxEvent {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type          String       @db.VarChar(128)
+  aggregateId   String       @map("aggregate_id") @db.Uuid
+  tenantId      String?      @map("tenant_id") @db.VarChar(128)
+  payload       Json
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  nextAttemptAt DateTime     @default(now()) @map("next_attempt_at") @db.Timestamptz
+  lastError     String?      @map("last_error")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  publishedAt   DateTime?    @map("published_at") @db.Timestamptz
+
+  @@index([status, nextAttemptAt])
+  @@map("outbox_events")
+}
+
+enum DeliveryChannel {
+  EMAIL
+  PUSH
+  IN_APP
+}
+
+enum DeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  SKIPPED
+  DEAD
+}
+
+enum NotificationSource {
+  API
+  EVENT
+}
+
+model NotificationTemplate {
+  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String          @map("tenant_id") @db.VarChar(128)
+  eventType String          @map("event_type") @db.VarChar(128)
+  channel   DeliveryChannel
+  locale    String          @db.VarChar(16)
+  subject   String          @db.VarChar(1000)
+  body      String
+  version   Int             @default(1)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([tenantId, eventType, channel, locale])
+  @@index([tenantId, createdAt])
+  @@map("notification_templates")
+}
+
+model BrandingEntry {
+  tenantId  String   @map("tenant_id") @db.VarChar(128)
+  key       String   @db.VarChar(64)
+  value     String   @db.VarChar(4000)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@id([tenantId, key])
+  @@map("branding_entries")
+}
+
+model Notification {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String             @map("tenant_id") @db.VarChar(128)
+  source           NotificationSource
+  idempotencyKey   String?            @map("idempotency_key") @db.VarChar(128)
+  requestHash      Bytes?             @map("request_hash")
+  eventType        String             @map("event_type") @db.VarChar(128)
+  locale           String             @db.VarChar(16)
+  variables        Json               @default("{}")
+  recipientSubject String?            @map("recipient_subject") @db.VarChar(255)
+  recipientEmail   String?            @map("recipient_email") @db.VarChar(320)
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
+
+  deliveries NotificationDelivery[]
+
+  @@unique([tenantId, source, idempotencyKey])
+  @@index([tenantId, createdAt])
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  notificationId    String          @map("notification_id") @db.Uuid
+  tenantId          String          @map("tenant_id") @db.VarChar(128)
+  eventType         String          @map("event_type") @db.VarChar(128)
+  channel           DeliveryChannel
+  destination       String?         @db.VarChar(512)
+  status            DeliveryStatus  @default(PENDING)
+  attempts          Int             @default(0)
+  nextAttemptAt     DateTime        @default(now()) @map("next_attempt_at") @db.Timestamptz
+  lockedUntil       DateTime?       @map("locked_until") @db.Timestamptz
+  reason            String?         @db.VarChar(64)
+  detail            String?         @db.VarChar(1000)
+  templateId        String?         @map("template_id") @db.Uuid
+  templateVersion   Int?            @map("template_version")
+  providerMessageId String?         @map("provider_message_id") @db.VarChar(255)
+  sentAt            DateTime?       @map("sent_at") @db.Timestamptz
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, eventType, createdAt])
+  @@index([notificationId])
+  @@map("notification_deliveries")
+}
+
+model InboxItem {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @map("tenant_id") @db.VarChar(128)
+  subject    String    @db.VarChar(255)
+  deliveryId String    @unique @map("delivery_id") @db.Uuid
+  eventType  String    @map("event_type") @db.VarChar(128)
+  title      String    @db.VarChar(1000)
+  body       String
+  readAt     DateTime? @map("read_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([tenantId, subject, createdAt])
+  @@index([tenantId, subject, readAt])
+  @@map("inbox_items")
+}
+
+model RecipientOptOut {
+  tenantId  String          @map("tenant_id") @db.VarChar(128)
+  subject   String          @db.VarChar(255)
+  channel   DeliveryChannel
+  eventType String          @map("event_type") @db.VarChar(128)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz
+
+  @@id([tenantId, subject, channel, eventType])
+  @@map("recipient_opt_outs")
+}
+
+model BlockedAddress {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.VarChar(128)
+  address   String   @db.VarChar(512)
+  reason    String?  @db.VarChar(255)
+  createdBy String   @map("created_by") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([tenantId, address])
+  @@index([tenantId, createdAt])
+  @@map("blocked_addresses")
+}

@@ -146,9 +146,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: >-
-        Register with email and password; the answer never reveals whether the
-        email exists
+      summary: Register with email and password; the answer never reveals whether the email exists
       tags:
         - auth
       security: []
@@ -497,9 +495,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: >-
-        Send a password reset code; the answer never reveals whether the email
-        exists
+      summary: Send a password reset code; the answer never reveals whether the email exists
       tags:
         - auth
       security: []
@@ -2211,9 +2207,7 @@ components:
       properties:
         credential:
           type: string
-          description: >-
-            ID token, access token or authorization code, depending on the
-            provider
+          description: ID token, access token or authorization code, depending on the provider
         redirectUri:
           type: string
           description: Required when the provider exchanged a code

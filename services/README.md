@@ -12,5 +12,5 @@ Trang này được sinh từ `docs/catalog.yaml`. Muốn đổi thì sửa ở 
 | [`media`](./media/README.md) | service | NestJS, Prisma, PostgreSQL, object storage chuẩn S3 | Asset 3D, ảnh, âm thanh, metadata, object storage chuẩn S3, CDN | M2 |
 | [`payment`](./payment/README.md) | service | NestJS, Prisma | PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn | M3 |
 | [`ai-chat`](./ai-chat/README.md) | service | Python | Chatbot LLM chạy local và TTS tiếng Việt | M7 |
-| [`notification`](./notification/README.md) | service | NestJS, Prisma | Thông báo realtime, email, trong ứng dụng | M3 |
+| [`notification`](./notification/README.md) | service | NestJS, Prisma, PostgreSQL | Thông báo qua email, push và hộp thư trong ứng dụng | M3 |
 | [`game`](./game/README.md) | service | Go theo bản mẫu của mentor, chưa nhận mã | Game Gateway và Authoritative Room Server | M5 |

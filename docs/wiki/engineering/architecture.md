@@ -67,7 +67,7 @@ Mỗi thư mục trên có `README.md` sinh từ `docs/catalog.yaml`. Thêm thư
 
 ## Đối chiếu với bản mẫu của mentor
 
-`services/identity` và `services/media` đã có mã, chạy trên `packages/nest-kit`. `identity` cấp token, `media` kiểm token bằng khoá công khai của `identity`. Hai service chạy được cùng nhau trong `infra/compose`, theo [kịch bản chạy thử](../../runbooks/stack-smoke.md). Các service còn lại đang giữ chỗ.
+`services/identity`, `services/media` và `services/notification` đã có mã, chạy trên `packages/nest-kit`. `identity` cấp token; `media` và `notification` kiểm token bằng khoá công khai của `identity`. Ba service chạy được cùng nhau trong `infra/compose`, theo [kịch bản chạy thử](../../runbooks/stack-smoke.md). Các service còn lại đang giữ chỗ.
 
 Mentor có một bản backend mẫu ở repo riêng, gồm bốn ứng dụng. Bảy service của nhóm chia nhỏ hơn; phần tương ứng của từng service ghi ở trường `maps_to` trong catalog và ở bảng trong [ADR-0020](../../decisions/ADR-0020-monorepo-layout-and-index.md). Game server của bản mẫu viết bằng Go, nói chuyện với client qua WebSocket bằng JSON. Nhận mã từ bản mẫu phải qua [quy trình nhận service](../../runbooks/import-service.md).
 

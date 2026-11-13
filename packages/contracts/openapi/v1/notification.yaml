@@ -1,0 +1,1880 @@
+openapi: 3.1.0
+paths:
+  /v1/audit-logs:
+    get:
+      operationId: AuditLogsController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: action
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceType
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: actorSubject
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: from
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+        - name: to
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/AuditLogResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List audit log entries, newest first
+      tags:
+        - audit-logs
+  /livez:
+    get:
+      operationId: HealthController_live
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the process is alive
+      tags:
+        - health
+      security: []
+  /healthz:
+    get:
+      operationId: HealthController_ready
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the service and its required dependencies are ready
+      tags:
+        - health
+      security: []
+  /v1/notifications:
+    post:
+      operationId: NotificationsController_send_v1
+      parameters:
+        - name: idempotency-key
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/AcceptedNotificationDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Accept a notification and queue its deliveries
+      tags:
+        - notifications
+  /v1/templates:
+    post:
+      operationId: TemplatesController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TemplateResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a template for an event, channel and locale
+      tags:
+        - templates
+    get:
+      operationId: TemplatesController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: eventType
+          required: false
+          in: query
+          schema:
+            maxLength: 128
+            type: string
+        - name: channel
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - EMAIL
+              - PUSH
+              - IN_APP
+        - name: locale
+          required: false
+          in: query
+          schema:
+            maxLength: 16
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/TemplateResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List templates
+      tags:
+        - templates
+  /v1/templates/{id}:
+    get:
+      operationId: TemplatesController_get_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TemplateResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Get one template
+      tags:
+        - templates
+    patch:
+      operationId: TemplatesController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemplateDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TemplateResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Update a template and bump its version
+      tags:
+        - templates
+    delete:
+      operationId: TemplatesController_remove_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Delete a template
+      tags:
+        - templates
+  /v1/branding:
+    get:
+      operationId: BrandingController_list_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/BrandingResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List the branding values of the tenant
+      tags:
+        - branding
+  /v1/branding/{key}:
+    put:
+      operationId: BrandingController_put_v1
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutBrandingEntryDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/BrandingEntryResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Set a branding value, available to templates as brand.<key>
+      tags:
+        - branding
+    delete:
+      operationId: BrandingController_remove_v1
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Remove a branding value
+      tags:
+        - branding
+  /v1/preferences/opt-outs:
+    get:
+      operationId: PreferencesController_list_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/OptOutListResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List the opt-outs of the signed-in user
+      tags:
+        - preferences
+    put:
+      operationId: PreferencesController_optOut_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptOutKeyDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/OptOutResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Opt the signed-in user out of one channel and event
+      tags:
+        - preferences
+    delete:
+      operationId: PreferencesController_optIn_v1
+      parameters:
+        - name: channel
+          required: true
+          in: query
+          schema:
+            type: string
+            enum:
+              - EMAIL
+              - PUSH
+              - IN_APP
+        - name: eventType
+          required: true
+          in: query
+          schema:
+            maxLength: 128
+            example: account.welcome
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Remove an opt-out of the signed-in user
+      tags:
+        - preferences
+  /v1/blocked-addresses:
+    post:
+      operationId: BlockedAddressesController_block_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockAddressDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/BlockedAddressResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Block an address for the tenant
+      tags:
+        - blocked-addresses
+    get:
+      operationId: BlockedAddressesController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/BlockedAddressResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List the blocked addresses of the tenant
+      tags:
+        - blocked-addresses
+  /v1/blocked-addresses/{id}:
+    delete:
+      operationId: BlockedAddressesController_unblock_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Unblock an address
+      tags:
+        - blocked-addresses
+  /v1/inbox:
+    get:
+      operationId: InboxController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: unreadOnly
+          required: false
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/InboxItemResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List the inbox of the signed-in user
+      tags:
+        - inbox
+  /v1/inbox/unread-count:
+    get:
+      operationId: InboxController_unreadCount_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/UnreadCountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Count unread inbox items of the signed-in user
+      tags:
+        - inbox
+  /v1/inbox/read-all:
+    post:
+      operationId: InboxController_markAllRead_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/MarkAllReadResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Mark every inbox item of the signed-in user as read
+      tags:
+        - inbox
+  /v1/inbox/{id}/read:
+    post:
+      operationId: InboxController_markRead_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/InboxItemResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Mark one inbox item as read
+      tags:
+        - inbox
+  /v1/deliveries:
+    get:
+      operationId: DeliveriesController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - PROCESSING
+              - SENT
+              - SKIPPED
+              - DEAD
+        - name: eventType
+          required: false
+          in: query
+          schema:
+            maxLength: 128
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/DeliveryLogEntryDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List the delivery log of the tenant
+      tags:
+        - deliveries
+info:
+  title: media
+  description: ''
+  version: 0.1.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+  schemas:
+    ApiResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SUCCESS
+        message:
+          type: string
+          nullable: true
+          example: null
+        result:
+          type: object
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - result
+        - requestId
+    PageResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: number
+          example: 1
+        size:
+          type: number
+          example: 20
+        totalElements:
+          type: number
+          example: 42
+        totalPages:
+          type: number
+          example: 3
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+    AuditLogResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          nullable: true
+        actorSubject:
+          type: string
+          nullable: true
+        actorRoles:
+          type: array
+          items:
+            type: string
+        ip:
+          type: string
+          nullable: true
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+        errorCode:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+      required:
+        - id
+        - occurredAt
+        - requestId
+        - tenantId
+        - actorSubject
+        - actorRoles
+        - ip
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+        - errorCode
+        - metadata
+    HealthResponseDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        version:
+          type: string
+          example: 0.1.0
+      required:
+        - status
+        - version
+    DeliveryStateDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        status:
+          type: string
+          enum:
+            - PENDING
+            - PROCESSING
+            - SENT
+            - SKIPPED
+            - DEAD
+        reason:
+          type: string
+          nullable: true
+      required:
+        - id
+        - channel
+        - status
+        - reason
+    AcceptedNotificationDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        locale:
+          type: string
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryStateDto'
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - eventType
+        - locale
+        - deliveries
+        - createdAt
+    RecipientDto:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          maxLength: 320
+        deviceTokens:
+          maxItems: 100
+          type: array
+          items:
+            type: string
+    SendNotificationDto:
+      type: object
+      properties:
+        eventType:
+          type: string
+          example: account.welcome
+          maxLength: 128
+        recipient:
+          $ref: '#/components/schemas/RecipientDto'
+        variables:
+          type: object
+          additionalProperties: true
+        locale:
+          type: string
+          example: en
+          maxLength: 16
+        channels:
+          type: array
+          items:
+            type: string
+            enum:
+              - EMAIL
+              - PUSH
+              - IN_APP
+      required:
+        - eventType
+        - recipient
+    TemplateResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        locale:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        version:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - eventType
+        - channel
+        - locale
+        - subject
+        - body
+        - version
+        - createdAt
+        - updatedAt
+    CreateTemplateDto:
+      type: object
+      properties:
+        eventType:
+          type: string
+          example: account.welcome
+          maxLength: 128
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        locale:
+          type: string
+          example: en
+          maxLength: 16
+        subject:
+          type: string
+          description: Handlebars source of the subject or title
+          maxLength: 1000
+        body:
+          type: string
+          description: Handlebars source of the body
+          maxLength: 100000
+      required:
+        - eventType
+        - channel
+        - locale
+        - subject
+        - body
+    UpdateTemplateDto:
+      type: object
+      properties:
+        subject:
+          type: string
+          maxLength: 1000
+        body:
+          type: string
+          maxLength: 100000
+    BrandingEntryResponseDto:
+      type: object
+      properties:
+        key:
+          type: string
+          example: logoUrl
+          maxLength: 64
+        value:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - key
+        - value
+        - updatedAt
+    BrandingResponseDto:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BrandingEntryResponseDto'
+      required:
+        - entries
+    PutBrandingEntryDto:
+      type: object
+      properties:
+        value:
+          type: string
+          maxLength: 4000
+      required:
+        - value
+    OptOutResponseDto:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        eventType:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - channel
+        - eventType
+        - createdAt
+    OptOutListResponseDto:
+      type: object
+      properties:
+        optOuts:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptOutResponseDto'
+      required:
+        - optOuts
+    OptOutKeyDto:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        eventType:
+          type: string
+          example: account.welcome
+          maxLength: 128
+      required:
+        - channel
+        - eventType
+    BlockedAddressResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        address:
+          type: string
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - address
+        - reason
+        - createdAt
+    BlockAddressDto:
+      type: object
+      properties:
+        address:
+          type: string
+          maxLength: 512
+        reason:
+          type: string
+          maxLength: 255
+      required:
+        - address
+    InboxItemResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - eventType
+        - title
+        - body
+        - readAt
+        - createdAt
+    UnreadCountResponseDto:
+      type: object
+      properties:
+        count:
+          type: number
+      required:
+        - count
+    MarkAllReadResponseDto:
+      type: object
+      properties:
+        updated:
+          type: number
+      required:
+        - updated
+    DeliveryLogEntryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        notificationId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+        channel:
+          type: string
+          enum:
+            - EMAIL
+            - PUSH
+            - IN_APP
+        destination:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - PENDING
+            - PROCESSING
+            - SENT
+            - SKIPPED
+            - DEAD
+        attempts:
+          type: number
+        reason:
+          type: string
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        templateVersion:
+          type: number
+          nullable: true
+        nextAttemptAt:
+          type: string
+          format: date-time
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - notificationId
+        - eventType
+        - channel
+        - destination
+        - status
+        - attempts
+        - reason
+        - detail
+        - templateVersion
+        - nextAttemptAt
+        - sentAt
+        - createdAt
+        - updatedAt
+    ApiErrorResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: COMMON.VALIDATION
+        message:
+          type: string
+          example: Request validation failed
+        details:
+          type: object
+          nullable: true
+        path:
+          type: string
+          example: /v1/examples
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - path
+        - timestamp
+        - requestId
+security:
+  - bearer: []

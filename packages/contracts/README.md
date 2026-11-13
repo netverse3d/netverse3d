@@ -23,17 +23,19 @@ Mỗi loại hợp đồng có thư mục phiên bản: `<loại>/v<N>/<tên>`, 
 
 ## Hợp đồng hiện có
 
-| Tệp                                 | Của ai      | Trạng thái |
-| ----------------------------------- | ----------- | ---------- |
-| `openapi/v1/health.yaml`            | mọi service | chính thức |
-| `openapi/v1/identity.yaml`          | identity    | chính thức |
-| `openapi/v1/media.yaml`             | media       | chính thức |
-| `events/v1/envelope.schema.json`    | mọi sự kiện | chính thức |
-| `events/v1/identity.schema.json`    | identity    | nháp       |
-| `events/v1/media.schema.json`       | media       | nháp       |
-| `realtime/v1/protocol.schema.json`  | game        | nháp       |
-| `world/v1/shop-look.schema.json`    | game-assets | nháp       |
-| `world/v1/street-block.schema.json` | game-assets | nháp       |
+| Tệp                                  | Của ai       | Trạng thái |
+| ------------------------------------ | ------------ | ---------- |
+| `openapi/v1/health.yaml`             | mọi service  | chính thức |
+| `openapi/v1/identity.yaml`           | identity     | chính thức |
+| `openapi/v1/media.yaml`              | media        | chính thức |
+| `openapi/v1/notification.yaml`       | notification | chính thức |
+| `events/v1/envelope.schema.json`     | mọi sự kiện  | chính thức |
+| `events/v1/identity.schema.json`     | identity     | nháp       |
+| `events/v1/media.schema.json`        | media        | nháp       |
+| `events/v1/notification.schema.json` | notification | nháp       |
+| `realtime/v1/protocol.schema.json`   | game         | nháp       |
+| `world/v1/shop-look.schema.json`     | game-assets  | nháp       |
+| `world/v1/street-block.schema.json`  | game-assets  | nháp       |
 
 ## Kiểm tra
 
