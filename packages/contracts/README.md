@@ -15,9 +15,10 @@ Mỗi loại hợp đồng có thư mục phiên bản: `<loại>/v<N>/<tên>`, 
 
 ## Đổi hợp đồng
 
-- Thêm trường tuỳ chọn thì sửa trực tiếp.
-- Xoá trường, đổi kiểu, thêm trường bắt buộc, xoá endpoint là thay đổi phá vỡ: tạo tệp trong thư mục phiên bản mới như `events/v2/envelope.schema.json`, giữ bản cũ cho tới khi không còn bên dùng.
-- CI so với nhánh đích và chặn thay đổi phá vỡ, trừ hợp đồng còn đánh dấu `x-status: draft`.
+- Hợp đồng được sửa trực tiếp, theo [ADR-0029](../../docs/decisions/ADR-0029-contract-checks-ensure-consistency.md). Đổi hợp đồng thì sửa luôn mọi bên dùng nó trong cùng PR.
+- `pnpm --filter @netverse/contracts check -- --base origin/staging` liệt kê thay đổi so với nhánh gốc: xoá trường, đổi kiểu, thêm trường bắt buộc, xoá endpoint, xoá tệp. Danh sách này để người duyệt PR đọc, không làm bước kiểm đỏ.
+- Bước kiểm chỉ đỏ lúc hợp đồng sai cú pháp, thiếu thông tin bắt buộc, đặt tên sai quy ước, hoặc một tệp `.proto` lấy số của field đã bỏ để đặt cho field khác kiểu.
+- Mở thư mục phiên bản mới như `events/v2` lúc cần hai bản chạy song song.
 
 `realtime/v1/protocol` hiện là nháp, chờ core của mentor. Xem [ADR-0004](../../docs/decisions/ADR-0004-game-core-boundary.md).
 
