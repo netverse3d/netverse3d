@@ -30,20 +30,20 @@ Nếu không truyền `channels`, service chọn các kênh vừa có địa ch�
 | `SKIPPED`    | Bỏ qua: `OPTED_OUT`, `ADDRESS_BLOCKED`                                                                                                                                      |
 | `DEAD`       | Không gửi được: `TEMPLATE_NOT_FOUND`, `TEMPLATE_INVALID`, `MISSING_VARIABLE`, `RECIPIENT_ADDRESS_MISSING`, `CHANNEL_DISABLED`, `PROVIDER_REJECTED`, `MAX_ATTEMPTS_EXCEEDED` |
 
-Lỗi tạm thời của nhà cung cấp được thử lại theo cấp số nhân tới `DELIVERY_MAX_ATTEMPTS`. Trong lúc chờ thử lại, lần gửi mang lý do `PROVIDER_ERROR`, hoặc `PROVIDER_MISCONFIGURED` khi nhà cung cấp từ chối khoá hay mật khẩu. Trường hợp sau service ghi log mức lỗi, vì thử lại không tự khỏi cho tới lúc cấu hình được sửa.
+Lỗi tạm thời của nhà cung cấp được thử lại theo cấp số nhân tới `DELIVERY_MAX_ATTEMPTS`. Trong lúc chờ thử lại, lần gửi mang lý do `PROVIDER_ERROR`, hoặc `PROVIDER_MISCONFIGURED` khi nhà cung cấp từ chối khoá hay mật khẩu. Trường hợp sau service ghi log mức lỗi và không tính vào số lần thử: lần gửi chờ cấu hình được sửa, thử lại mỗi 5 phút theo mặc định, tối đa một ngày kể từ lúc tạo rồi mới vào `DEAD` với đúng lý do đó.
 
 Service đảm bảo gửi ít nhất một lần:
 
-- Nhà cung cấp đã nhận thư mà bước ghi kết quả lỗi thì service ghi lại vài lần. Vẫn lỗi thì tiến trình giữ kết quả trong bộ nhớ, và lần nhận việc sau chỉ ghi kết quả chứ không gửi lại.
-- Tiến trình chết đúng lúc giữa việc gửi và ghi kết quả, hoặc một tiến trình khác nhận lại việc sau hạn giữ chỗ, thì thư có thể được gửi hai lần. Resend nhận ra thư lặp nhờ khoá chống trùng, SMTP nhờ mã thư cố định; Brevo, Gmail API và Firebase thì không.
+- Lần gửi đã có kết quả mà bước ghi kết quả lỗi thì service ghi lại vài lần. Vẫn lỗi thì tiến trình giữ kết quả trong bộ nhớ, và lần nhận việc sau chỉ ghi kết quả chứ không gửi lại.
+- Tiến trình chết đúng lúc giữa việc gửi và ghi kết quả, hoặc một tiến trình khác nhận lại việc sau hạn giữ chỗ, thì thư có thể được gửi hai lần. Resend nhận ra thư lặp nhờ khoá chống trùng. SMTP gửi cùng một mã thư ở mọi lần thử, máy chủ nhận có thể dùng để lọc thư lặp nhưng không bắt buộc. Brevo, Gmail API và Firebase không có cách nào.
 
 ## Template
 
 Khoá là `eventType + channel + locale`, cú pháp Handlebars. Thiếu template đúng ngôn ngữ thì dùng `DEFAULT_LOCALE`. Mỗi lần sửa tăng `version`.
 
-Lúc lưu, service từ chối template sai cú pháp, partial, decorator, helper ngoài `if`, `unless`, `each`, `with`, `lookup`, xuất thô `{{{x}}}` trong thân email, và vòng lặp `each` lồng sâu hơn 3 tầng.
+Lúc lưu, service từ chối template sai cú pháp, partial, decorator, helper ngoài `if`, `unless`, `each`, `with`, `lookup`, xuất thô `{{{x}}}` trong thân email, và vòng lặp lồng sâu hơn 3 tầng. Khối viết tắt `{{#items}}…{{/items}}` cũng được tính là vòng lặp, kể cả khi `items` là một đối tượng; nhánh `else` và khối phủ định `{{^items}}` thì không.
 
-Một lần render chạy tối đa 10.000 vòng lặp. Tiêu đề sau render dài tối đa 1.000 ký tự, nội dung 500.000 ký tự. Vượt mức thì lần gửi vào `DEAD` với `TEMPLATE_INVALID`, không làm nghẽn các lần gửi khác. Template đã biên dịch được giữ lại để dùng cho lần sau.
+Một lần render chạy tối đa 10.000 vòng lặp và đọc tối đa 500.000 ký tự từ các biến. Tiêu đề sau render dài tối đa 1.000 ký tự, nội dung 500.000 ký tự. Vượt mức thì lần gửi vào `DEAD` với `TEMPLATE_INVALID`, không làm nghẽn các lần gửi khác. Template đã biên dịch được giữ lại để dùng cho lần sau.
 
 Lúc render, biến thiếu hoặc `null` làm lần gửi vào `DEAD`, không gửi nội dung trống. Thân email được thoát HTML. Tiêu đề, push và hộp thư là văn bản thuần, không thoát; ứng dụng hiển thị phải coi chúng là văn bản.
 

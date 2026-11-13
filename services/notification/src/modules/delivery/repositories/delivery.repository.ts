@@ -106,11 +106,13 @@ export class DeliveryRepository {
     nextAttemptAt: Date,
     reason: string,
     detail: string,
+    countAttempt = true,
   ): Promise<void> {
     await this.prisma.notificationDelivery.updateMany({
       where: { id: delivery.id, status: 'PROCESSING', attempts: delivery.attempts },
       data: {
         status: 'PENDING',
+        attempts: countAttempt ? undefined : { decrement: 1 },
         nextAttemptAt,
         reason,
         detail: truncateDetail(detail),

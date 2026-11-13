@@ -23,6 +23,9 @@ import {
 
 const SETTLE_ATTEMPTS = 3;
 const SETTLE_RETRY_MS = 100;
+const MAX_UNRECORDED_OUTCOMES = 10_000;
+const MISCONFIGURED_RETRY_FACTOR = 10;
+const MISCONFIGURED_GIVE_UP_MS = 24 * 60 * 60 * 1000;
 
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -83,7 +86,7 @@ export class DeliveryDispatcherService {
         return;
       } catch (error) {
         if (attempt === SETTLE_ATTEMPTS) {
-          this.unrecorded.set(delivery.id, outcome);
+          this.remember(delivery.id, outcome);
           this.logger.error(
             `delivery ${delivery.id} ended as ${outcome.status} but the result could not be recorded: ${errorText(error)}`,
           );
@@ -91,6 +94,17 @@ export class DeliveryDispatcherService {
         }
         await new Promise((resolve) => setTimeout(resolve, SETTLE_RETRY_MS * attempt));
       }
+    }
+  }
+
+  private remember(deliveryId: string, outcome: DeliveryOutcome): void {
+    this.unrecorded.delete(deliveryId);
+    this.unrecorded.set(deliveryId, outcome);
+    for (const oldest of this.unrecorded.keys()) {
+      if (this.unrecorded.size <= MAX_UNRECORDED_OUTCOMES) {
+        return;
+      }
+      this.unrecorded.delete(oldest);
     }
   }
 
@@ -183,6 +197,10 @@ export class DeliveryDispatcherService {
   private async retryOrBury(delivery: ClaimedDelivery, error: unknown): Promise<void> {
     const { maxAttempts, retryBaseMs, retryMaxMs } = this.config.delivery;
     const detail = errorText(error);
+    if (error instanceof ProviderConfigurationError) {
+      await this.waitForConfiguration(delivery, detail);
+      return;
+    }
     if (delivery.attempts >= maxAttempts) {
       await this.repository.settle(
         delivery,
@@ -193,19 +211,35 @@ export class DeliveryDispatcherService {
     const nextAttemptAt = new Date(
       Date.now() + deliveryRetryDelayMs(delivery.attempts, retryBaseMs, retryMaxMs),
     );
-    const misconfigured = error instanceof ProviderConfigurationError;
     await this.repository.scheduleRetry(
       delivery,
       nextAttemptAt,
-      misconfigured ? DeliveryReason.PROVIDER_MISCONFIGURED : DeliveryReason.PROVIDER_ERROR,
+      DeliveryReason.PROVIDER_ERROR,
       detail,
     );
-    const summary = `delivery ${delivery.id} failed on attempt ${delivery.attempts}: ${detail}`;
-    if (misconfigured) {
-      this.logger.error(`${summary}; check the ${delivery.channel} provider credentials`);
-    } else {
-      this.logger.warn(summary);
+    this.logger.warn(`delivery ${delivery.id} failed on attempt ${delivery.attempts}: ${detail}`);
+  }
+
+  private async waitForConfiguration(delivery: ClaimedDelivery, detail: string): Promise<void> {
+    const { retryBaseMs, retryMaxMs } = this.config.delivery;
+    this.logger.error(
+      `delivery ${delivery.id} was refused: ${detail}; check the ${delivery.channel} provider credentials`,
+    );
+    if (Date.now() - delivery.createdAt.getTime() >= MISCONFIGURED_GIVE_UP_MS) {
+      await this.repository.settle(
+        delivery,
+        this.dead(DeliveryReason.PROVIDER_MISCONFIGURED, detail),
+      );
+      return;
     }
+    const delayMs = Math.min(retryBaseMs * MISCONFIGURED_RETRY_FACTOR, retryMaxMs);
+    await this.repository.scheduleRetry(
+      delivery,
+      new Date(Date.now() + delayMs),
+      DeliveryReason.PROVIDER_MISCONFIGURED,
+      detail,
+      false,
+    );
   }
 
   private dead(reason: string, detail: string): DeliveryOutcome {

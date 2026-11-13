@@ -13,7 +13,7 @@ import { DeliveryReason } from '../../../../src/modules/notifications/domain/del
 
 const DELIVERY_ID = 'delivery-1';
 
-function claimed(attempts: number): ClaimedDelivery {
+function claimed(attempts: number, createdAt: Date): ClaimedDelivery {
   return {
     id: DELIVERY_ID,
     tenantId: 'tenant-a',
@@ -22,19 +22,21 @@ function claimed(attempts: number): ClaimedDelivery {
     channel: 'EMAIL',
     destination: 'user@example.test',
     attempts,
+    createdAt,
     notification: { recipientSubject: null, locale: 'en', variables: { name: 'Lan' } },
   } as unknown as ClaimedDelivery;
 }
 
 class FakeRepository {
   readonly settled: DeliveryOutcome[] = [];
-  readonly retries: { reason: string; detail: string }[] = [];
+  readonly retries: { reason: string; detail: string; countAttempt: boolean }[] = [];
   settleFailures = 0;
-  private claims = 0;
+  createdAt = new Date();
+  claims = 0;
 
   claimDue(): Promise<ClaimedDelivery[]> {
     this.claims += 1;
-    return Promise.resolve([claimed(this.claims)]);
+    return Promise.resolve([claimed(this.claims, this.createdAt)]);
   }
 
   settle(_delivery: ClaimedDelivery, outcome: DeliveryOutcome): Promise<void> {
@@ -51,8 +53,9 @@ class FakeRepository {
     _nextAttemptAt: Date,
     reason: string,
     detail: string,
+    countAttempt = true,
   ): Promise<void> {
-    this.retries.push({ reason, detail });
+    this.retries.push({ reason, detail, countAttempt });
     return Promise.resolve();
   }
 }
@@ -140,8 +143,43 @@ describe('bộ phát lần gửi', () => {
     await dispatcher.dispatchBatch();
     expect(repository.settled).toEqual([]);
     expect(repository.retries).toEqual([
-      { reason: DeliveryReason.PROVIDER_ERROR, detail: 'Provider answered 503' },
+      {
+        reason: DeliveryReason.PROVIDER_ERROR,
+        detail: 'Provider answered 503',
+        countAttempt: true,
+      },
     ]);
+  });
+
+  it('lần thử cuối vẫn lỗi tạm thời thì chôn với lý do hết số lần thử', async () => {
+    sender.failure = new Error('Provider answered 503');
+    repository.claims = 5;
+    await dispatcher.dispatchBatch();
+    expect(repository.retries).toEqual([]);
+    expect(repository.settled).toMatchObject([
+      { status: 'DEAD', reason: DeliveryReason.MAX_ATTEMPTS_EXCEEDED },
+    ]);
+  });
+
+  it('cấu hình sai không ăn vào số lần thử: quá số lần thử vẫn chờ tiếp chứ không chôn', async () => {
+    sender.failure = new ProviderConfigurationError('Provider answered 401');
+    repository.claims = 5;
+    await dispatcher.dispatchBatch();
+    expect(repository.settled).toEqual([]);
+    expect(repository.retries).toMatchObject([
+      { reason: DeliveryReason.PROVIDER_MISCONFIGURED, countAttempt: false },
+    ]);
+  });
+
+  it('cấu hình sai kéo dài quá một ngày thì chôn, giữ đúng lý do cấu hình sai', async () => {
+    sender.failure = new ProviderConfigurationError('Provider answered 401');
+    repository.createdAt = new Date(Date.now() - 25 * 3_600_000);
+    await dispatcher.dispatchBatch();
+    expect(repository.retries).toEqual([]);
+    expect(repository.settled).toMatchObject([
+      { status: 'DEAD', reason: DeliveryReason.PROVIDER_MISCONFIGURED },
+    ]);
+    expect(errorLog).toHaveBeenCalled();
   });
 
   it('nhà cung cấp từ chối khoá thì vẫn thử lại, nhưng ghi lý do cấu hình sai và log mức lỗi', async () => {
@@ -149,7 +187,11 @@ describe('bộ phát lần gửi', () => {
     await dispatcher.dispatchBatch();
     expect(repository.settled).toEqual([]);
     expect(repository.retries).toEqual([
-      { reason: DeliveryReason.PROVIDER_MISCONFIGURED, detail: 'Provider answered 401' },
+      {
+        reason: DeliveryReason.PROVIDER_MISCONFIGURED,
+        detail: 'Provider answered 401',
+        countAttempt: false,
+      },
     ]);
     expect(errorLog).toHaveBeenCalled();
   });

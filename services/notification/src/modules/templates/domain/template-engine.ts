@@ -6,6 +6,7 @@ export const MAX_LOOP_DEPTH = 3;
 export const MAX_LOOP_ITERATIONS = 10_000;
 const MAX_COMPILED_TEMPLATES = 200;
 const LOOP_HELPER = 'each';
+const NEVER_LOOPING_BLOCKS: ReadonlySet<string> = new Set(['if', 'unless', 'with', 'lookup']);
 
 const engine = Handlebars.create();
 const BUILT_IN_HELPERS = new Set(['if', 'unless', LOOP_HELPER, 'with', 'lookup']);
@@ -25,7 +26,36 @@ export class TemplateRenderError extends Error {
 
 interface RenderBudget {
   iterationsLeft: number;
+  variableCharactersLeft: number;
   maxLength: number;
+}
+
+function metered<Target extends object>(
+  target: Target,
+  budget: RenderBudget,
+  known: WeakMap<object, object>,
+): Target {
+  const existing = known.get(target);
+  if (existing) {
+    return existing as Target;
+  }
+  const proxy = new Proxy(target, {
+    get(owner, key, receiver) {
+      const value: unknown = Reflect.get(owner, key, receiver);
+      if (typeof value === 'string') {
+        budget.variableCharactersLeft -= value.length;
+        if (budget.variableCharactersLeft < 0) {
+          throw new TemplateRenderError(
+            DeliveryReason.TEMPLATE_INVALID,
+            `Template reads more than ${MAX_RENDERED_BODY_LENGTH} characters of variables`,
+          );
+        }
+      }
+      return value !== null && typeof value === 'object' ? metered(value, budget, known) : value;
+    },
+  });
+  known.set(target, proxy);
+  return proxy;
 }
 
 function tooLong(maxLength: number): TemplateRenderError {
@@ -110,7 +140,8 @@ function inspectExpression(node: SyntaxNode, inspection: Inspection, loopDepth: 
 }
 
 function inspectBlock(node: SyntaxNode, inspection: Inspection, loopDepth: number): void {
-  const depth = nameOf(node) === LOOP_HELPER ? loopDepth + 1 : loopDepth;
+  const loops = Boolean(node.program) && !NEVER_LOOPING_BLOCKS.has(nameOf(node) ?? '');
+  const depth = loops ? loopDepth + 1 : loopDepth;
   if (depth > MAX_LOOP_DEPTH) {
     inspection.problems.push(`loops must not be nested deeper than ${MAX_LOOP_DEPTH}`);
     return;
@@ -120,7 +151,7 @@ function inspectBlock(node: SyntaxNode, inspection: Inspection, loopDepth: numbe
     collectProblems(node.program, inspection, depth);
   }
   if (node.inverse) {
-    collectProblems(node.inverse, inspection, depth);
+    collectProblems(node.inverse, inspection, loopDepth);
   }
 }
 
@@ -204,12 +235,15 @@ export function renderTemplate(
   options: { escapeHtml: boolean; maxLength?: number },
 ): string {
   const maxLength = options.maxLength ?? MAX_RENDERED_BODY_LENGTH;
-  const budget: RenderBudget = { iterationsLeft: MAX_LOOP_ITERATIONS, maxLength };
+  const budget: RenderBudget = {
+    iterationsLeft: MAX_LOOP_ITERATIONS,
+    variableCharactersLeft: MAX_RENDERED_BODY_LENGTH,
+    maxLength,
+  };
   let rendered: string;
   try {
-    rendered = compiledTemplateOf(source, options.escapeHtml)(withoutNulls(context), {
-      data: { budget },
-    });
+    const variables = metered(withoutNulls(context) as object, budget, new WeakMap());
+    rendered = compiledTemplateOf(source, options.escapeHtml)(variables, { data: { budget } });
   } catch (error) {
     if (error instanceof TemplateRenderError) {
       throw error;

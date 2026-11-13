@@ -4,6 +4,7 @@ import {
   assertAccepted,
   ChannelSender,
   OutboundMessage,
+  ProviderConfigurationError,
   SendReceipt,
 } from '../ports/channel-sender';
 import { AccessToken, AccessTokenCache, accessTokenFrom } from './access-token-cache';
@@ -11,6 +12,8 @@ import { AccessToken, AccessTokenCache, accessTokenFrom } from './access-token-c
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
 const PERMANENT_STATUSES = new Set([400, 404]);
+const CREDENTIAL_STATUSES = new Set([401]);
+const REFUSED_KEY_STATUSES = new Set([400, 401]);
 const PROVIDER = 'Push provider';
 
 export class FirebasePushSender extends ChannelSender {
@@ -43,7 +46,7 @@ export class FirebasePushSender extends ChannelSender {
     if (response.status === 401) {
       this.tokens.discard(accessToken);
     }
-    assertAccepted(response, PERMANENT_STATUSES, PROVIDER);
+    assertAccepted(response, PERMANENT_STATUSES, PROVIDER, CREDENTIAL_STATUSES);
     const { name } = (await response.json()) as { name?: string };
     return { providerMessageId: name };
   }
@@ -69,7 +72,10 @@ export class FirebasePushSender extends ChannelSender {
       signal: AbortSignal.timeout(this.config.providers.timeoutMs),
     });
     if (!response.ok) {
-      throw new Error(`${PROVIDER} token request answered ${response.status}`);
+      const message = `${PROVIDER} token request answered ${response.status}`;
+      throw REFUSED_KEY_STATUSES.has(response.status)
+        ? new ProviderConfigurationError(message)
+        : new Error(message);
     }
     return accessTokenFrom((await response.json()) as { access_token?: string });
   }
