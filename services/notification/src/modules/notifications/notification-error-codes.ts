@@ -2,11 +2,6 @@ import { HttpStatus } from '@nestjs/common';
 import { ErrorCodeDefinition } from '@netverse/nest-kit';
 
 export const NotificationErrorCode = {
-  TENANT_REQUIRED: {
-    code: 'NOTIFICATION.TENANT_REQUIRED',
-    httpStatus: HttpStatus.FORBIDDEN,
-    message: 'This operation requires a tenant in the access token',
-  },
   SCOPE_REQUIRED: {
     code: 'NOTIFICATION.SCOPE_REQUIRED',
     httpStatus: HttpStatus.BAD_REQUEST,

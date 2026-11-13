@@ -6,7 +6,7 @@ import { PageResponseDto } from '@netverse/nest-kit';
 import { resolveSort } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import type { DeliveryChannelName } from '../../notifications/domain/channels';
-import { requireTenant } from '../../notifications/domain/require-tenant';
+import { scopeOf } from '@netverse/nest-kit';
 import { NotificationErrorCode } from '../../notifications/notification-error-codes';
 import { findTemplateProblems } from '../domain/template-engine';
 import {
@@ -31,7 +31,7 @@ export class TemplatesService {
   ) {}
 
   async create(dto: CreateTemplateDto, actor: Actor): Promise<TemplateResponseDto> {
-    const tenantId = requireTenant(actor);
+    const tenantId = scopeOf(actor);
     this.assertCompiles(dto.channel, dto.subject, dto.body);
     try {
       return TemplateResponseDto.from(await this.repository.create({ tenantId, ...dto }));
@@ -44,13 +44,13 @@ export class TemplatesService {
   }
 
   async get(id: string, actor: Actor): Promise<TemplateResponseDto> {
-    return TemplateResponseDto.from(await this.requireOwned(id, requireTenant(actor)));
+    return TemplateResponseDto.from(await this.requireOwned(id, scopeOf(actor)));
   }
 
   async list(query: TemplateQueryDto, actor: Actor): Promise<PageResponseDto<TemplateResponseDto>> {
     const orderBy = resolveSort(query.sort, SORTABLE_FIELDS, { createdAt: 'desc' });
     const [rows, total] = await this.repository.findPage(
-      requireTenant(actor),
+      scopeOf(actor),
       { eventType: query.eventType, channel: query.channel, locale: query.locale },
       orderBy,
       query.skip,
@@ -60,7 +60,7 @@ export class TemplatesService {
   }
 
   async update(id: string, dto: UpdateTemplateDto, actor: Actor): Promise<TemplateResponseDto> {
-    const tenantId = requireTenant(actor);
+    const tenantId = scopeOf(actor);
     if (dto.subject === undefined && dto.body === undefined) {
       throw new AppException(ErrorCode.VALIDATION, {
         details: [{ field: 'body', errors: ['subject or body must be provided'] }],
@@ -80,7 +80,7 @@ export class TemplatesService {
   }
 
   async remove(id: string, actor: Actor): Promise<void> {
-    if (!(await this.repository.deleteOwned(id, requireTenant(actor)))) {
+    if (!(await this.repository.deleteOwned(id, scopeOf(actor)))) {
       throw new AppException(NotificationErrorCode.TEMPLATE_NOT_FOUND);
     }
   }

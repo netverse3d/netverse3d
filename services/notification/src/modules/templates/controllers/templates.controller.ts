@@ -18,7 +18,7 @@ import { Roles } from '@netverse/nest-kit';
 import { PageResponseDto } from '@netverse/nest-kit';
 import { ApiEnvelope, ApiPagedEnvelope } from '@netverse/nest-kit';
 import { Audit, AuditResourceInput } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE } from '@netverse/nest-kit';
+import { SCOPE_ADMIN_ROLES } from '@netverse/nest-kit';
 import {
   CreateTemplateDto,
   TemplateQueryDto,
@@ -32,7 +32,7 @@ const createdTemplateId = ({ result }: AuditResourceInput) =>
 const templateIdParam = ({ params }: AuditResourceInput) => params.id;
 
 @ApiTags('templates')
-@Roles(TENANT_ADMIN_ROLE)
+@Roles(...SCOPE_ADMIN_ROLES)
 @Controller('templates')
 export class TemplatesController {
   constructor(private readonly templates: TemplatesService) {}

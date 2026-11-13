@@ -93,8 +93,9 @@ export class NotificationCommands implements OnModuleInit {
   }
 
   private async send(request: SendRequest__Output, call: CommandCall): Promise<SendReply> {
-    const scopeIsReserved = request.scope.toLowerCase() === PLATFORM_SCOPE;
-    if (!SCOPE_PATTERN.test(request.scope) || scopeIsReserved) {
+    const imitatesPlatform =
+      request.scope !== PLATFORM_SCOPE && request.scope.toLowerCase() === PLATFORM_SCOPE;
+    if (!SCOPE_PATTERN.test(request.scope) || imitatesPlatform) {
       throw new AppException(NotificationErrorCode.SCOPE_REQUIRED);
     }
     const dto = plainToInstance(SendNotificationDto, {

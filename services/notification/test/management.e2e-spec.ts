@@ -488,20 +488,76 @@ describe('quản trị template, thương hiệu, chặn địa chỉ và nhật
         .expect(201);
     });
 
-    it('token không có tenant bị từ chối ở route theo tenant', async () => {
-      const token = await subject.tokens.sign({
-        subject: 'caller',
-        roles: ['admin', 'notification:send'],
-      });
-      const send = await scenario
+    it('token không gắn tiệm làm việc ở phạm vi nền tảng: người chơi có hộp thư, quản trị tiệm không có quyền gì', async () => {
+      const player = await subject.tokens.sign({ subject: `player-${randomUUID()}`, roles: [] });
+      const inbox = await scenario
+        .http()
+        .get('/v1/inbox')
+        .set('authorization', bearer(player))
+        .expect(200);
+      expect(inbox.body.result.content).toEqual([]);
+      await scenario.http().get('/v1/templates').set('authorization', bearer(player)).expect(403);
+
+      const shopAdminWithoutShop = await subject.tokens.sign({ subject: 'eve', roles: ['admin'] });
+      await scenario
         .http()
         .post('/v1/notifications')
-        .set('authorization', bearer(token))
+        .set('authorization', bearer(shopAdminWithoutShop))
         .send({ eventType: uniqueEvent(), recipient: { email: 'a@example.test' } })
         .expect(403);
-      expect(send.body.code).toBe('NOTIFICATION.TENANT_REQUIRED');
-      await scenario.http().get('/v1/templates').set('authorization', bearer(token)).expect(403);
-      await scenario.http().get('/v1/inbox').set('authorization', bearer(token)).expect(403);
+    });
+
+    it('quản trị nền tảng quản lý template của nền tảng, tách hẳn khỏi template của tiệm', async () => {
+      const platformAdmin = await subject.tokens.sign({
+        subject: 'root',
+        roles: ['platform_admin'],
+      });
+      const eventType = uniqueEvent();
+      const created = await scenario
+        .http()
+        .post('/v1/templates')
+        .set('authorization', bearer(platformAdmin))
+        .send({ eventType, channel: 'IN_APP', locale: 'en', subject: 'Hi', body: 'Platform' })
+        .expect(201);
+      const id = created.body.result.id as string;
+
+      const shopAdmin = await scenario.userToken('owner', ['admin']);
+      await scenario
+        .http()
+        .get(`/v1/templates/${id}`)
+        .set('authorization', bearer(shopAdmin))
+        .expect(404);
+      const ofShop = await scenario
+        .http()
+        .get('/v1/templates')
+        .query({ eventType })
+        .set('authorization', bearer(shopAdmin))
+        .expect(200);
+      expect(ofShop.body.result.content).toEqual([]);
+
+      const player = `player-${randomUUID()}`;
+      await scenario
+        .http()
+        .post('/v1/notifications')
+        .set('authorization', bearer(platformAdmin))
+        .send({ eventType, recipient: { subject: player } })
+        .expect(201);
+      await scenario.drain();
+      const playerToken = await subject.tokens.sign({ subject: player, roles: [] });
+      const inbox = await scenario
+        .http()
+        .get('/v1/inbox')
+        .set('authorization', bearer(playerToken))
+        .expect(200);
+      expect(inbox.body.result.content).toMatchObject([{ title: 'Hi', body: 'Platform' }]);
+
+      const sameSubjectInShop = await scenario.userToken(player, []);
+      const shopInbox = await scenario
+        .http()
+        .get('/v1/inbox')
+        .set('authorization', bearer(sameSubjectInShop))
+        .expect(200);
+      expect(shopInbox.body.result.content).toEqual([]);
     });
 
     it('người dùng thường quản lý được opt-out của chính mình', async () => {

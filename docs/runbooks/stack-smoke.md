@@ -58,13 +58,14 @@ Kịch bản làm lần lượt:
 10. Quản trị nền tảng duyệt tệp của tiệm và tệp của người chơi, cả hai đều được.
 11. Chủ tiệm tạo một template cho hộp thư trong ứng dụng ở `notification`, gửi một thông báo cho chính mình, rồi đọc thấy nó trong hộp thư với tiêu đề đã render.
 12. Chủ tiệm tạo một template email rồi gửi tới một địa chỉ. Kịch bản đọc hộp thư giả lập và phải thấy đúng tiêu đề, người gửi, và biến đã được thoát HTML.
-13. Người chơi gọi hộp thư bằng token không gắn tenant, phải nhận 403 với mã `NOTIFICATION.TENANT_REQUIRED`.
+13. Người chơi gọi hộp thư bằng token không gắn tenant và đọc được hộp thư của phạm vi nền tảng, nhưng không vào được phần quản trị.
 14. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
 15. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
 16. Đọc topic `netverse.identity.events.v1` trên Kafka, phải thấy sự kiện đăng ký của người chơi ở bước 2 với khoá `platform`, và sự kiện thêm thành viên của tiệm với khoá là mã tenant.
 17. Đọc topic `netverse.notification.events.v1`, phải thấy sự kiện gửi xong của thông báo ở bước 11, không chứa địa chỉ email.
 18. Một tài khoản service có quyền `notification:send` gọi lệnh gửi qua gRPC ở `127.0.0.1:53103`, nêu tiệm ở bước 5. Chủ tiệm đọc thấy thông báo trong hộp thư. Gọi lại cùng khoá chống trùng trả đúng thông báo cũ.
-19. Lệnh gRPC không có token, mang token của chủ tiệm, hoặc mang token của một tài khoản service không có quyền gửi đều bị từ chối.
+19. Quản trị nền tảng tạo một template ở phạm vi nền tảng, chủ tiệm không thấy template đó. Tài khoản service gửi lệnh với phạm vi nền tảng tới người chơi, và người chơi đọc được trong hộp thư của mình.
+20. Lệnh gRPC không có token, mang token của chủ tiệm, hoặc mang token của một tài khoản service không có quyền gửi đều bị từ chối.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 

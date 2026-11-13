@@ -3,7 +3,7 @@ import { Notification, NotificationDelivery, Prisma } from '../../../infrastruct
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import type { DeliveryStatusName } from '../../notifications/domain/channels';
 import { MAX_DELIVERY_DETAIL_LENGTH } from '../../notifications/domain/limits';
-import { OutboxRepository } from '@netverse/nest-kit';
+import { OutboxRepository, tenantOfScope } from '@netverse/nest-kit';
 
 export type DeliveryRow = NotificationDelivery;
 export type ClaimedDelivery = NotificationDelivery & { notification: Notification };
@@ -85,7 +85,7 @@ export class DeliveryRepository {
         {
           type: `notification.delivery.${outcome.status.toLowerCase()}`,
           aggregateId: delivery.id,
-          tenantId: delivery.tenantId,
+          tenantId: tenantOfScope(delivery.tenantId),
           payload: {
             deliveryId: delivery.id,
             notificationId: delivery.notificationId,

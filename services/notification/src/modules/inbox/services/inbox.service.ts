@@ -3,7 +3,7 @@ import type { Actor } from '@netverse/nest-kit';
 import { AppException } from '@netverse/nest-kit';
 import { PageResponseDto } from '@netverse/nest-kit';
 import { resolveSort } from '@netverse/nest-kit';
-import { requireTenant } from '../../notifications/domain/require-tenant';
+import { scopeOf } from '@netverse/nest-kit';
 import { NotificationErrorCode } from '../../notifications/notification-error-codes';
 import {
   InboxItemResponseDto,
@@ -22,7 +22,7 @@ export class InboxService {
   async list(query: InboxQueryDto, actor: Actor): Promise<PageResponseDto<InboxItemResponseDto>> {
     const orderBy = resolveSort(query.sort, SORTABLE_FIELDS, { createdAt: 'desc' });
     const [rows, total] = await this.repository.findPage(
-      requireTenant(actor),
+      scopeOf(actor),
       actor.subject,
       query.unreadOnly ?? false,
       orderBy,
@@ -33,11 +33,11 @@ export class InboxService {
   }
 
   async unreadCount(actor: Actor): Promise<UnreadCountResponseDto> {
-    return { count: await this.repository.countUnread(requireTenant(actor), actor.subject) };
+    return { count: await this.repository.countUnread(scopeOf(actor), actor.subject) };
   }
 
   async markRead(id: string, actor: Actor): Promise<InboxItemResponseDto> {
-    const row = await this.repository.markRead(id, requireTenant(actor), actor.subject);
+    const row = await this.repository.markRead(id, scopeOf(actor), actor.subject);
     if (!row) {
       throw new AppException(NotificationErrorCode.INBOX_ITEM_NOT_FOUND);
     }
@@ -45,6 +45,6 @@ export class InboxService {
   }
 
   async markAllRead(actor: Actor): Promise<MarkAllReadResponseDto> {
-    return { updated: await this.repository.markAllRead(requireTenant(actor), actor.subject) };
+    return { updated: await this.repository.markAllRead(scopeOf(actor), actor.subject) };
   }
 }
