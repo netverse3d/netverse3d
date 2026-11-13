@@ -1,5 +1,11 @@
 import { parseEnvWith, sampleSecretNames } from '@netverse/nest-kit';
 import { z } from 'zod';
+import {
+  EMAIL_PROVIDER_LOG,
+  emailProviderChoices,
+  findEmailProvider,
+} from '../modules/channels/email-providers';
+import type { EmailProvider } from '../modules/channels/ports/email-provider';
 
 const booleanFlag = z.enum(['true', 'false']).transform((value) => value === 'true');
 
@@ -16,7 +22,8 @@ const commaSeparated = z
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
 
 const MAX_JOB_RUN_MS = 240_000;
-const GUARDED_NAMES = ['DATABASE_URL', 'BREVO_API_KEY', 'FIREBASE_PRIVATE_KEY'];
+const ENVIRONMENT_ERROR_PREFIX = 'Invalid environment: ';
+const GUARDED_NAMES = ['DATABASE_URL', 'FIREBASE_PRIVATE_KEY'];
 
 const baseSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -40,10 +47,9 @@ const baseSchema = z.object({
   AUTH_TENANT_CLAIM: z.string().min(1).default('tenant_id'),
 
   DEFAULT_LOCALE: z.string().min(2).max(16).default('en'),
-  EMAIL_PROVIDER: z.enum(['none', 'log', 'brevo']).default('log'),
+  EMAIL_PROVIDER: z.string().min(1).default(EMAIL_PROVIDER_LOG),
   EMAIL_FROM_ADDRESS: z.email().optional(),
   EMAIL_FROM_NAME: z.string().min(1).optional(),
-  BREVO_API_KEY: z.string().min(1).optional(),
   PUSH_PROVIDER: z.enum(['none', 'log', 'firebase']).default('log'),
   FIREBASE_PROJECT_ID: z.string().min(1).optional(),
   FIREBASE_CLIENT_EMAIL: z.string().min(1).optional(),
@@ -89,7 +95,7 @@ function refuseLogProvidersInProduction(env: BaseEnv, context: z.RefinementCtx):
   if (env.NODE_ENV !== 'production') {
     return;
   }
-  if (env.EMAIL_PROVIDER === 'log') {
+  if (env.EMAIL_PROVIDER === EMAIL_PROVIDER_LOG) {
     context.addIssue({
       code: 'custom',
       path: ['EMAIL_PROVIDER'],
@@ -103,6 +109,50 @@ function refuseLogProvidersInProduction(env: BaseEnv, context: z.RefinementCtx):
       message: 'must not be log in production',
     });
   }
+}
+
+function requireEmailProviderSettings(env: BaseEnv, context: z.RefinementCtx): void {
+  const choices = emailProviderChoices();
+  if (!choices.includes(env.EMAIL_PROVIDER)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['EMAIL_PROVIDER'],
+      message: `must be one of ${choices.join(', ')}`,
+    });
+    return;
+  }
+  const provider = findEmailProvider(env.EMAIL_PROVIDER);
+  if (provider && env.EMAIL_FROM_ADDRESS === undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: ['EMAIL_FROM_ADDRESS'],
+      message: `is required when EMAIL_PROVIDER is ${provider.name}`,
+    });
+  }
+}
+
+function settingsSchemaOf(provider: EmailProvider, production: boolean) {
+  return z.object(provider.env).superRefine((settings, context) => {
+    for (const name of provider.required) {
+      if (settings[name] === undefined) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: `is required when EMAIL_PROVIDER is ${provider.name}`,
+        });
+      }
+    }
+    provider.refine?.(settings, context);
+    if (production) {
+      for (const name of sampleSecretNames(settings, provider.secrets)) {
+        context.addIssue({
+          code: 'custom',
+          path: [name],
+          message: 'sample value is not allowed in production',
+        });
+      }
+    }
+  });
 }
 
 function refuseSampleValuesInProduction(env: BaseEnv, context: z.RefinementCtx): void {
@@ -141,13 +191,7 @@ function refuseBatchesThatOutliveTheLease(env: BaseEnv, context: z.RefinementCtx
 export const envSchema = baseSchema.superRefine((env, context) => {
   refuseLogProvidersInProduction(env, context);
   refuseSampleValuesInProduction(env, context);
-  requireWhen(
-    env,
-    context,
-    env.EMAIL_PROVIDER === 'brevo',
-    ['BREVO_API_KEY', 'EMAIL_FROM_ADDRESS'],
-    'when EMAIL_PROVIDER is brevo',
-  );
+  requireEmailProviderSettings(env, context);
   requireWhen(
     env,
     context,
@@ -158,8 +202,33 @@ export const envSchema = baseSchema.superRefine((env, context) => {
   refuseBatchesThatOutliveTheLease(env, context);
 });
 
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof envSchema> & { EMAIL_SETTINGS: Record<string, unknown> };
+
+function problemsOf(parse: () => void): string[] {
+  try {
+    parse();
+    return [];
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return [message.replace(ENVIRONMENT_ERROR_PREFIX, '')];
+  }
+}
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
-  return parseEnvWith(envSchema, source);
+  const provider = findEmailProvider(source.EMAIL_PROVIDER ?? '');
+  const production = source.NODE_ENV === 'production';
+  let env: z.infer<typeof envSchema> | undefined;
+  let settings: Record<string, unknown> = {};
+  const problems = [
+    ...problemsOf(() => {
+      env = parseEnvWith(envSchema, source);
+    }),
+    ...problemsOf(() => {
+      settings = provider ? parseEnvWith(settingsSchemaOf(provider, production), source) : {};
+    }),
+  ];
+  if (!env || problems.length > 0) {
+    throw new Error(`${ENVIRONMENT_ERROR_PREFIX}${problems.join('; ')}`);
+  }
+  return { ...env, EMAIL_SETTINGS: settings };
 }

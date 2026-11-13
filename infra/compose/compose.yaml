@@ -73,6 +73,19 @@ services:
     volumes:
       - object-store-data:/data
 
+  mailbox:
+    image: axllent/mailpit:v1.33.1
+    environment:
+      MP_MAX_MESSAGES: 500
+    ports:
+      - 127.0.0.1:${MAILBOX_SMTP_PORT:-51025}:1025
+      - 127.0.0.1:${MAILBOX_HTTP_PORT:-58025}:8025
+    healthcheck:
+      test: [CMD, /mailpit, readyz]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   identity-migrate:
     profiles: [apps]
     build:
@@ -204,7 +217,11 @@ services:
       AUTH_AUDIENCE: notification
       KAFKA_BROKERS: kafka:19092
       GRPC_PORT: 50051
-      EMAIL_PROVIDER: log
+      EMAIL_PROVIDER: smtp
+      EMAIL_FROM_ADDRESS: no-reply@netverse.test
+      EMAIL_FROM_NAME: Netverse
+      SMTP_HOST: mailbox
+      SMTP_PORT: 1025
       PUSH_PROVIDER: log
     ports:
       - 127.0.0.1:${NOTIFICATION_PORT:-53003}:3000
@@ -218,6 +235,8 @@ services:
       notification-migrate:
         condition: service_completed_successfully
       identity:
+        condition: service_healthy
+      mailbox:
         condition: service_healthy
 
   otel-collector:

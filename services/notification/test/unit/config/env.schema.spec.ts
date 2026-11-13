@@ -58,9 +58,9 @@ describe('cấu hình kênh gửi và sự kiện', () => {
   const production = { ...valid, NODE_ENV: 'production', PUSH_PROVIDER: 'none' };
 
   it('coi biến trống như chưa khai', () => {
-    const env = parseEnv({ ...valid, EMAIL_PROVIDER: '', BREVO_API_KEY: '' });
+    const env = parseEnv({ ...valid, EMAIL_PROVIDER: '', FIREBASE_PROJECT_ID: '' });
     expect(env.EMAIL_PROVIDER).toBe('log');
-    expect(env.BREVO_API_KEY).toBeUndefined();
+    expect(env.FIREBASE_PROJECT_ID).toBeUndefined();
   });
 
   it('từ chối boot ở production khi email cấu hình là log, kể cả mặc định', () => {

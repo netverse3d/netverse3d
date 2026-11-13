@@ -14,7 +14,7 @@ COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml --
 pnpm infra:up
 ```
 
-Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:58333/healthz` trả 200. Kafka nghe ở `127.0.0.1:59092`.
+Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:58333/healthz` trả 200. Kafka nghe ở `127.0.0.1:59092`, hộp thư giả lập ở `http://127.0.0.1:58025`.
 
 ## 2. Dựng và chạy các service
 
@@ -57,13 +57,14 @@ Kịch bản làm lần lượt:
 9. Chủ tiệm tự duyệt tệp của tiệm mình, phải nhận 403.
 10. Quản trị nền tảng duyệt tệp của tiệm và tệp của người chơi, cả hai đều được.
 11. Chủ tiệm tạo một template cho hộp thư trong ứng dụng ở `notification`, gửi một thông báo cho chính mình, rồi đọc thấy nó trong hộp thư với tiêu đề đã render.
-12. Người chơi gọi hộp thư bằng token không gắn tenant, phải nhận 403 với mã `NOTIFICATION.TENANT_REQUIRED`.
-13. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
-14. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
-15. Đọc topic `netverse.identity.events.v1` trên Kafka, phải thấy sự kiện đăng ký của người chơi ở bước 2 với khoá `platform`, và sự kiện thêm thành viên của tiệm với khoá là mã tenant.
-16. Đọc topic `netverse.notification.events.v1`, phải thấy sự kiện gửi xong của thông báo ở bước 11, không chứa địa chỉ email.
-17. Một tài khoản service có quyền `notification:send` gọi lệnh gửi qua gRPC ở `127.0.0.1:53103`, nêu tiệm ở bước 5. Chủ tiệm đọc thấy thông báo trong hộp thư. Gọi lại cùng khoá chống trùng trả đúng thông báo cũ.
-18. Lệnh gRPC không có token, mang token của chủ tiệm, hoặc mang token của một tài khoản service không có quyền gửi đều bị từ chối.
+12. Chủ tiệm tạo một template email rồi gửi tới một địa chỉ. Kịch bản đọc hộp thư giả lập và phải thấy đúng tiêu đề, người gửi, và biến đã được thoát HTML.
+13. Người chơi gọi hộp thư bằng token không gắn tenant, phải nhận 403 với mã `NOTIFICATION.TENANT_REQUIRED`.
+14. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
+15. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
+16. Đọc topic `netverse.identity.events.v1` trên Kafka, phải thấy sự kiện đăng ký của người chơi ở bước 2 với khoá `platform`, và sự kiện thêm thành viên của tiệm với khoá là mã tenant.
+17. Đọc topic `netverse.notification.events.v1`, phải thấy sự kiện gửi xong của thông báo ở bước 11, không chứa địa chỉ email.
+18. Một tài khoản service có quyền `notification:send` gọi lệnh gửi qua gRPC ở `127.0.0.1:53103`, nêu tiệm ở bước 5. Chủ tiệm đọc thấy thông báo trong hộp thư. Gọi lại cùng khoá chống trùng trả đúng thông báo cũ.
+19. Lệnh gRPC không có token, mang token của chủ tiệm, hoặc mang token của một tài khoản service không có quyền gửi đều bị từ chối.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 
@@ -83,7 +84,7 @@ Hai lệnh này dừng và xoá container, giữ lại dữ liệu trong volume.
 - Compose chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu; ở production service từ chối khởi động với các giá trị này. Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `IDENTITY_OTP_WEBHOOK_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
 - URL ký sẵn trong Compose trỏ tới `localhost:58333`, dùng được từ máy dev nhưng không dùng được từ một container khác trong mạng Docker. Client chạy trong mạng Docker thì đặt `MEDIA_S3_PUBLIC_ENDPOINT=object-store` và `MEDIA_S3_PUBLIC_PORT=8333` trước lúc chạy `media`.
 - Mã xác minh email ở đây đi qua webhook tới chính kịch bản thử. `identity` chưa gửi qua `notification`; việc này thuộc đợt chuẩn hoá ghi ở ADR-0027.
-- Kênh email và push của `notification` trong Compose ghi ra log, không gửi thật.
+- Email của `notification` trong Compose đi qua SMTP tới hộp thư giả lập, xem được ở `http://127.0.0.1:58025`; không có thư nào ra ngoài. Kênh push ghi ra log.
 
 ## Chạy riêng media với bộ phát token mẫu
 
