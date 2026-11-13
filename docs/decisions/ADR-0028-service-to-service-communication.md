@@ -37,7 +37,7 @@ Bốn thứ này dựa vào cùng một câu hỏi: service này là ai lúc g�
 ### Mệnh lệnh qua gRPC
 
 12. Việc bên gọi cần biết kết quả ngay, hoặc việc mang dữ liệu không được nằm lại trong log, đi qua gRPC. Ví dụ đầu tiên là identity nhờ notification gửi mã xác minh.
-13. Hợp đồng gRPC nằm ở `packages/contracts/grpc/v1`; bước kiểm contracts chặn thay đổi phá vỡ.
+13. Hợp đồng gRPC nằm ở `packages/contracts/grpc/v1`. Kiểu dùng trong mã được sinh từ hợp đồng, và bước kiểm contracts liệt kê thay đổi theo [ADR-0029](./ADR-0029-contract-checks-ensure-consistency.md).
 14. Máy chủ gRPC kiểm token của service gọi tới bằng khoá công khai của identity. Mọi mệnh lệnh có hạn chờ và khoá chống trùng.
 15. Client vẫn gọi service qua HTTP.
 

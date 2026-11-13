@@ -11,6 +11,7 @@ export default [
       '**/.turbo/**',
       '**/coverage/**',
       'services/*/generated/**',
+      'services/*/src/generated/**',
       'docs/.vitepress/dist/**',
       'docs/.vitepress/cache/**',
       'apps/admin/**',

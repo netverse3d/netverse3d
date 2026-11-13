@@ -49,6 +49,7 @@ const baseSchema = z.object({
   FIREBASE_CLIENT_EMAIL: z.string().min(1).optional(),
   FIREBASE_PRIVATE_KEY: z.string().min(1).optional(),
   PROVIDER_TIMEOUT_MS: positiveInt(10_000),
+  GRPC_PORT: z.coerce.number().int().min(0).max(65535).optional(),
 
   EVENT_TRANSPORT: z.enum(['none']).default('none'),
 

@@ -18,3 +18,4 @@ infra/README.md
 scripts/README.md
 tests/README.md
 services/*/generated
+services/*/src/generated

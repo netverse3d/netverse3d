@@ -42,3 +42,4 @@ apps/web-3d/next-env.d.ts
 Thumbs.db
 packages/game-assets/pipeline/showcase-plan.json
 services/*/generated/
+services/*/src/generated/

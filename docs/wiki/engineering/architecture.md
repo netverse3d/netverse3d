@@ -92,6 +92,8 @@ Service viết bằng Go hoặc Python tự viết phần khung của mình và 
 
 Sự kiện đi từ bảng outbox của service lên Kafka. Mỗi service phát vào một topic `netverse.<service>.events.v1`, khoá thông điệp là mã tenant của sự kiện hoặc `platform`, nên sự kiện của một tiệm giữ đúng thứ tự. Sự kiện được kiểm theo hợp đồng trong `packages/contracts` trước lúc phát; sự kiện sai hợp đồng bị gác lại ở outbox. Một sự kiện chưa gửi được thì các sự kiện sau của service đó chờ, và broker lỗi không làm mất sự kiện. Bên nghe đưa sự kiện không xử lý được vào topic cùng tên thêm đuôi `.dlq`. Chi tiết ở [ADR-0028](../../decisions/ADR-0028-service-to-service-communication.md).
 
+Mệnh lệnh giữa các service đi qua gRPC. Hợp đồng nằm ở `packages/contracts/grpc/v1`, kiểu dùng trong mã được sinh từ hợp đồng. Bên gọi mang token của tài khoản service, nêu hạn chờ và khoá chống trùng; bên nhận kiểm token và quyền của từng mệnh lệnh. `notification` là service đầu tiên nhận mệnh lệnh, với lệnh gửi thông báo.
+
 ## Quy tắc kiến trúc
 
 - Mỗi service sở hữu cơ sở dữ liệu của mình. Không đọc thẳng bảng của service khác.

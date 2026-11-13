@@ -24,10 +24,20 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: printf '%s\n' "$PR_TITLE" | pnpm exec commitlint
-      - name: Check breaking contract changes
+      - name: Check contracts and list what changed
         env:
           BASE_REF: ${{ github.base_ref }}
-        run: node packages/contracts/check.mjs --base "origin/$BASE_REF"
+        run: |
+          status=0
+          node packages/contracts/check.mjs --base "origin/$BASE_REF" > contracts-report.txt 2>&1 || status=$?
+          cat contracts-report.txt
+          {
+            echo '### Contract changes'
+            echo '```'
+            cat contracts-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
       - name: Check traceability and branch flow
         env:
           PR_BODY: ${{ github.event.pull_request.body }}

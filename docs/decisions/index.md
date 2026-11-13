@@ -32,3 +32,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0026](./ADR-0026-public-shop-media-and-tenant-creation.md) | Tệp công khai của tiệm mở cho mọi tài khoản, và service shop tạo tenant lúc mở tiệm | Đã chốt |
 | [ADR-0027](./ADR-0027-notification-service-origin-and-channels.md) | Nguồn gốc mã của notification service và ba kênh thông báo | Đã chốt |
 | [ADR-0028](./ADR-0028-service-to-service-communication.md) | Giao tiếp giữa các service: định danh service, Kafka cho sự việc, gRPC cho mệnh lệnh | Đã chốt |
+| [ADR-0029](./ADR-0029-contract-checks-ensure-consistency.md) | Bước kiểm hợp đồng bảo đảm nhất quán, không chặn thay đổi | Đã chốt |

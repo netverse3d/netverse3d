@@ -74,6 +74,7 @@ enum DeliveryStatus {
 enum NotificationSource {
   API
   EVENT
+  SERVICE
 }
 
 model NotificationTemplate {

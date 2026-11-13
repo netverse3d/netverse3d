@@ -26,13 +26,13 @@ Lệnh dựng image từ gốc repo, chạy migration của từng service vào 
 
 Kết quả mong đợi:
 
-| Kiểm                                                                 | Kết quả                              |
-| -------------------------------------------------------------------- | ------------------------------------ |
-| `curl http://127.0.0.1:53002/healthz`                                | 200                                  |
-| `curl http://127.0.0.1:53002/.well-known/jwks.json`                  | 200, có ít nhất một khoá             |
-| `curl http://127.0.0.1:53001/healthz`                                | 200, tức đã nối được database và kho |
-| `curl http://127.0.0.1:53003/healthz`                                | 200                                  |
-| `$COMPOSE ps -a identity-migrate media-migrate notification-migrate` | cả ba `Exited (0)`                   |
+| Kiểm                                                                 | Kết quả                                             |
+| -------------------------------------------------------------------- | --------------------------------------------------- |
+| `curl http://127.0.0.1:53002/healthz`                                | 200                                                 |
+| `curl http://127.0.0.1:53002/.well-known/jwks.json`                  | 200, có ít nhất một khoá                            |
+| `curl http://127.0.0.1:53001/healthz`                                | 200, tức đã nối được database và kho                |
+| `curl http://127.0.0.1:53003/healthz`                                | 200, tức cả máy chủ gRPC của notification đang nghe |
+| `$COMPOSE ps -a identity-migrate media-migrate notification-migrate` | cả ba `Exited (0)`                                  |
 
 Một service không lên thì xem `$COMPOSE logs` kèm tên service đó.
 
@@ -62,6 +62,8 @@ Kịch bản làm lần lượt:
 14. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
 15. Đọc topic `netverse.identity.events.v1` trên Kafka, phải thấy sự kiện đăng ký của người chơi ở bước 2 với khoá `platform`, và sự kiện thêm thành viên của tiệm với khoá là mã tenant.
 16. Đọc topic `netverse.notification.events.v1`, phải thấy sự kiện gửi xong của thông báo ở bước 11, không chứa địa chỉ email.
+17. Một tài khoản service có quyền `notification:send` gọi lệnh gửi qua gRPC ở `127.0.0.1:53103`, nêu tiệm ở bước 5. Chủ tiệm đọc thấy thông báo trong hộp thư. Gọi lại cùng khoá chống trùng trả đúng thông báo cũ.
+18. Lệnh gRPC không có token, mang token của chủ tiệm, hoặc mang token của một tài khoản service không có quyền gửi đều bị từ chối.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 

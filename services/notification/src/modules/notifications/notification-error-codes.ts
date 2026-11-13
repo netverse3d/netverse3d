@@ -7,6 +7,11 @@ export const NotificationErrorCode = {
     httpStatus: HttpStatus.FORBIDDEN,
     message: 'This operation requires a tenant in the access token',
   },
+  SCOPE_REQUIRED: {
+    code: 'NOTIFICATION.SCOPE_REQUIRED',
+    httpStatus: HttpStatus.BAD_REQUEST,
+    message: 'The command must name the shop it acts for',
+  },
   TEMPLATE_INVALID: {
     code: 'NOTIFICATION.TEMPLATE_INVALID',
     httpStatus: HttpStatus.BAD_REQUEST,

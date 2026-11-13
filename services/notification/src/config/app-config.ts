@@ -35,6 +35,7 @@ export class AppConfig extends KitConfig {
     firebasePrivateKey?: string;
   };
   readonly providers: { timeoutMs: number };
+  override readonly grpc?: { port: number };
   readonly events: { transport: Env['EVENT_TRANSPORT']; brokers: string[] };
   readonly delivery: {
     pollIntervalMs: number;
@@ -86,6 +87,7 @@ export class AppConfig extends KitConfig {
       firebasePrivateKey: env.FIREBASE_PRIVATE_KEY,
     };
     this.providers = { timeoutMs: env.PROVIDER_TIMEOUT_MS };
+    this.grpc = env.GRPC_PORT === undefined ? undefined : { port: env.GRPC_PORT };
     this.events = { transport: env.EVENT_TRANSPORT, brokers: env.KAFKA_BROKERS };
     this.delivery = {
       pollIntervalMs: env.DELIVERY_POLL_INTERVAL_MS,

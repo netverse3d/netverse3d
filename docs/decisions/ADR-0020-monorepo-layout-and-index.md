@@ -9,7 +9,7 @@
 Ngày 2026-11-07 mentor đưa lên repo riêng một bản backend mẫu chạy được ở local, tóm tắt ở nguồn `mentor-backend-sample` trong [nguồn của yêu cầu](../sources/README.md). Bản đó khác monorepo của nhóm ở ba điểm:
 
 - Bốn ứng dụng thay vì bảy service: một ứng dụng nghiệp vụ gộp tài khoản, tiệm, máy, bố cục thế giới và asset; một ứng dụng thanh toán; game server viết bằng Go; một ứng dụng AI viết bằng Python.
-- Hợp đồng đặt phiên bản theo thư mục, có một cổng vào duy nhất, có thư mục test chạy trên cả hệ và script vận hành.
+- Hợp đồng đặt phiên bản theo thư mục, có một cổng vào duy nhất, có thư mục test chạy trên cả hệ và script vận hành. Luật về thay đổi phá vỡ ở dòng này đã được thay bằng [ADR-0029](./ADR-0029-contract-checks-ensure-consistency.md).
 - Các ứng dụng dùng chung một cơ sở dữ liệu và một khoá ký token; tài liệu của bản mẫu tự ghi đây là nợ phải trả trước khi chạy thật.
 
 Phía nhóm, `docs/catalog.yaml` mới chỉ khai `apps`, `services`, `workers`, `packages`. Các thư mục `infra`, `scripts`, `docs` không có trong chỉ mục nào, và repo chưa có chỗ cho test xuyên thành phần hay cổng vào. Nhóm cũng đã chuẩn bị sẵn một số service NestJS ở repo riêng theo [quy trình nhận service](../runbooks/import-service.md), mỗi service tự mang một bản chép của cùng phần mã khung.

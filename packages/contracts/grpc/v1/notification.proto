@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package netverse.notification.v1;
+
+service NotificationCommands {
+  rpc Send (SendRequest) returns (SendReply);
+}
+
+enum Channel {
+  CHANNEL_UNSPECIFIED = 0;
+  CHANNEL_EMAIL = 1;
+  CHANNEL_PUSH = 2;
+  CHANNEL_IN_APP = 3;
+}
+
+message Recipient {
+  string subject = 1;
+  string email = 2;
+  repeated string device_tokens = 3;
+}
+
+message SendRequest {
+  string scope = 1;
+  string event_type = 2;
+  Recipient recipient = 3;
+  string variables_json = 4;
+  string locale = 5;
+  repeated Channel channels = 6;
+}
+
+message Delivery {
+  string id = 1;
+  Channel channel = 2;
+  string status = 3;
+}
+
+message SendReply {
+  string notification_id = 1;
+  repeated Delivery deliveries = 2;
+}

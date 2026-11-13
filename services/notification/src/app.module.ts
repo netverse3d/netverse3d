@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { EventConsumer, HealthModule } from '@netverse/nest-kit';
+import { EventConsumer, GrpcModule, GrpcServer, HealthModule } from '@netverse/nest-kit';
 import { CoreModule } from './common/core.module';
 import { BrandingModule } from './modules/branding/branding.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
@@ -13,9 +13,13 @@ import { TemplatesModule } from './modules/templates/templates.module';
   imports: [
     CoreModule,
     HealthModule.withProbes({
-      imports: [EventsModule],
-      inject: [EventConsumer],
-      useFactory: (events: EventConsumer) => [
+      imports: [EventsModule, GrpcModule],
+      inject: [EventConsumer, GrpcServer],
+      useFactory: (events: EventConsumer, grpc: GrpcServer) => [
+        () =>
+          grpc.isServing()
+            ? Promise.resolve()
+            : Promise.reject(new Error('The gRPC server is not listening')),
         () =>
           events.isHealthy()
             ? Promise.resolve()

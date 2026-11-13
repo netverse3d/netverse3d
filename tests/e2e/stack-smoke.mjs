@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? 'http://127.0.0.1:53002';
 const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
 const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? 'http://127.0.0.1:53003';
 const KAFKA_BROKERS = (process.env.SMOKE_KAFKA_BROKERS ?? '127.0.0.1:59092').split(',');
+const NOTIFICATION_GRPC = process.env.SMOKE_NOTIFICATION_GRPC ?? '127.0.0.1:53103';
+const GRPC_PERMISSION_DENIED = 7;
+const GRPC_UNAUTHENTICATED = 16;
 const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
 const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
@@ -59,15 +63,48 @@ const media = (method, path, body, bearer) => call(MEDIA_URL, method, path, body
 const notification = (method, path, body, bearer) =>
   call(NOTIFICATION_URL, method, path, body, bearer);
 
-async function inboxOf(bearer, eventType) {
+async function inboxOf(bearer, eventType, title) {
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const inbox = await notification('GET', '/v1/inbox', undefined, bearer);
     assert.equal(inbox.status, 200, JSON.stringify(inbox.body));
-    const item = inbox.body.result.content.find((entry) => entry.eventType === eventType);
+    const item = inbox.body.result.content.find(
+      (entry) => entry.eventType === eventType && (!title || entry.title === title),
+    );
     if (item) return item;
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(`no inbox item arrived for ${eventType}`);
+}
+
+function notificationCommands() {
+  const kit = createRequire(new URL('../../packages/nest-kit/package.json', import.meta.url));
+  const grpc = kit('@grpc/grpc-js');
+  const loader = kit('@grpc/proto-loader');
+  const contract = grpc.loadPackageDefinition(
+    loader.loadSync(
+      fileURLToPath(
+        new URL('../../packages/contracts/grpc/v1/notification.proto', import.meta.url),
+      ),
+      { keepCase: false, longs: String, enums: String, defaults: true, oneofs: true },
+    ),
+  );
+  const client = new contract.netverse.notification.v1.NotificationCommands(
+    NOTIFICATION_GRPC,
+    grpc.credentials.createInsecure(),
+  );
+  return {
+    send(request, token, idempotencyKey) {
+      const metadata = new grpc.Metadata();
+      if (token) metadata.set('authorization', 'Bearer ' + token);
+      metadata.set('idempotency-key', idempotencyKey);
+      return new Promise((resolve) => {
+        client.send(request, metadata, { deadline: Date.now() + 10_000 }, (error, reply) =>
+          resolve({ code: error ? error.code : 0, reply, detail: error ? error.details : '' }),
+        );
+      });
+    },
+    close: () => client.close(),
+  };
 }
 
 async function eventsOn(topic, matches) {
@@ -335,6 +372,68 @@ try {
   });
   assert.equal(elsewhere.status, 403, JSON.stringify(elsewhere.body));
   console.log('a service token is refused on user routes and for audiences it was not given ok');
+
+  const sender = await identity(
+    'POST',
+    '/v1/admin/service-clients',
+    { name: 'sender-' + RUN, audiences: ['notification'], permissions: ['notification:send'] },
+    adminToken,
+  );
+  assert.equal(sender.status, 201, JSON.stringify(sender.body));
+  const senderToken = await identity('POST', '/v1/auth/service-token', {
+    clientId: sender.body.result.id,
+    clientSecret: sender.body.result.clientSecret,
+    audience: 'notification',
+  });
+  assert.equal(senderToken.status, 200, JSON.stringify(senderToken.body));
+  const commands = notificationCommands();
+  try {
+    const command = {
+      scope: tenantId,
+      eventType,
+      recipient: { subject: claims(ownerToken).sub },
+      variablesJson: JSON.stringify({ name: 'Service', hour: '10' }),
+      channels: ['CHANNEL_IN_APP'],
+    };
+    const key = 'smoke-' + RUN;
+    const accepted = await commands.send(command, senderToken.body.result.accessToken, key);
+    assert.equal(accepted.code, 0, accepted.detail);
+    const again = await commands.send(command, senderToken.body.result.accessToken, key);
+    assert.equal(again.code, 0, again.detail);
+    assert.equal(again.reply.notificationId, accepted.reply.notificationId);
+    const delivered = await inboxOf(ownerToken, eventType, 'Notice for Service');
+    assert.equal(delivered.title, 'Notice for Service');
+    console.log('a service account sends a notification over gRPC, once per idempotency key ok');
+
+    const anonymous = await commands.send(command, null, key + '-a');
+    assert.equal(anonymous.code, GRPC_UNAUTHENTICATED, anonymous.detail);
+    const asOwner = await commands.send(command, ownerToken, key + '-b');
+    assert.equal(asOwner.code, GRPC_PERMISSION_DENIED, asOwner.detail);
+    const reader = await identity(
+      'POST',
+      '/v1/admin/service-clients',
+      { name: 'reader-' + RUN, audiences: ['notification'], permissions: ['media:read'] },
+      adminToken,
+    );
+    assert.equal(reader.status, 201, JSON.stringify(reader.body));
+    const readerToken = await identity('POST', '/v1/auth/service-token', {
+      clientId: reader.body.result.id,
+      clientSecret: reader.body.result.clientSecret,
+      audience: 'notification',
+    });
+    assert.equal(readerToken.status, 200, JSON.stringify(readerToken.body));
+    const unpermitted = await commands.send(
+      command,
+      readerToken.body.result.accessToken,
+      key + '-c',
+    );
+    assert.equal(unpermitted.code, GRPC_PERMISSION_DENIED, unpermitted.detail);
+    console.log(
+      'gRPC refuses a missing token, a user token and a service without the permission ok',
+    );
+  } finally {
+    commands.close();
+  }
 
   const registered = await eventsOn(
     'netverse.identity.events.v1',

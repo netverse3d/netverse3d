@@ -21,6 +21,7 @@ export abstract class KitConfig {
     jwksCooldownMs?: number;
   };
   abstract readonly events: { brokers: string[] };
+  readonly grpc?: { port: number };
   abstract readonly jobs: {
     enabled: boolean;
     outboxRelayIntervalMs: number;
