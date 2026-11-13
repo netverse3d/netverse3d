@@ -20,6 +20,7 @@ export abstract class KitConfig {
     tenantClaim: string;
     jwksCooldownMs?: number;
   };
+  abstract readonly events: { brokers: string[] };
   abstract readonly jobs: {
     enabled: boolean;
     outboxRelayIntervalMs: number;

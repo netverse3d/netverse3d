@@ -14,7 +14,7 @@ COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml --
 pnpm infra:up
 ```
 
-Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:58333/healthz` trả 200.
+Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:58333/healthz` trả 200. Kafka nghe ở `127.0.0.1:59092`.
 
 ## 2. Dựng và chạy các service
 
@@ -60,6 +60,8 @@ Kịch bản làm lần lượt:
 12. Người chơi gọi hộp thư bằng token không gắn tenant, phải nhận 403 với mã `NOTIFICATION.TENANT_REQUIRED`.
 13. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
 14. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.
+15. Đọc topic `netverse.identity.events.v1` trên Kafka, phải thấy sự kiện đăng ký của người chơi ở bước 2 với khoá `platform`, và sự kiện thêm thành viên của tiệm với khoá là mã tenant.
+16. Đọc topic `netverse.notification.events.v1`, phải thấy sự kiện gửi xong của thông báo ở bước 11, không chứa địa chỉ email.
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 

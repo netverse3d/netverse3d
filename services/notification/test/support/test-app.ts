@@ -10,8 +10,12 @@ import {
   PUSH_SENDER,
   SendReceipt,
 } from '../../src/modules/channels/ports/channel-sender';
-import { EventConsumer, EventPayloadHandler } from '../../src/modules/events/ports/event-consumer';
-import { EventEnvelope, EventPublisher } from '@netverse/nest-kit';
+import {
+  EventConsumer,
+  EventEnvelope,
+  EventPayloadHandler,
+  EventPublisher,
+} from '@netverse/nest-kit';
 import { ConformanceProbeController } from '@netverse/nest-kit/testing';
 import { TEST_AUDIENCE, TEST_ISSUER, TokenIssuer } from '@netverse/nest-kit/testing';
 

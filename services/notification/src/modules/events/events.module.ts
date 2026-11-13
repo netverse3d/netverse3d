@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
+import { EventConsumer, NoneEventConsumer } from '@netverse/nest-kit';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { NoneEventConsumer } from './adapters/none-event-consumer';
-import { EventConsumer } from './ports/event-consumer';
 import { EventIntakeService } from './services/event-intake.service';
 
 @Module({

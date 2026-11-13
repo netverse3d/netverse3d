@@ -52,6 +52,7 @@ const baseSchema = z.object({
 
   EVENT_TRANSPORT: z.enum(['none']).default('none'),
 
+  KAFKA_BROKERS: commaSeparated,
   JOBS_ENABLED: booleanFlag.default(true),
   DELIVERY_POLL_INTERVAL_MS: positiveInt(2_000),
   DELIVERY_BATCH_SIZE: positiveInt(50),
@@ -106,6 +107,13 @@ function refuseLogProvidersInProduction(env: BaseEnv, context: z.RefinementCtx):
 function refuseSampleValuesInProduction(env: BaseEnv, context: z.RefinementCtx): void {
   if (env.NODE_ENV !== 'production') {
     return;
+  }
+  if (env.KAFKA_BROKERS.length === 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['KAFKA_BROKERS'],
+      message: 'is required in production',
+    });
   }
   for (const name of sampleSecretNames(env, GUARDED_NAMES)) {
     context.addIssue({

@@ -93,6 +93,7 @@ export const envSchema = z
     BOOTSTRAP_ADMIN_EMAIL: z.email().optional(),
     BOOTSTRAP_ADMIN_PASSWORD: z.string().min(12).max(72).optional(),
 
+    KAFKA_BROKERS: commaSeparated,
     JOBS_ENABLED: booleanFlag.default(true),
     CLEANUP_INTERVAL_SECONDS: positiveInt(3_600),
     OUTBOX_RELAY_INTERVAL_MS: positiveInt(5_000),
@@ -102,6 +103,13 @@ export const envSchema = z
     const missing = (path: string, message: string) =>
       context.addIssue({ code: 'custom', path: [path], message });
     if (env.NODE_ENV === 'production') {
+      if (env.KAFKA_BROKERS.length === 0) {
+        context.addIssue({
+          code: 'custom',
+          path: ['KAFKA_BROKERS'],
+          message: 'is required in production',
+        });
+      }
       for (const name of sampleSecretNames(env, GUARDED_NAMES)) {
         context.addIssue({
           code: 'custom',

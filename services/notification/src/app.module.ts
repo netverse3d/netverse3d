@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { HealthModule } from '@netverse/nest-kit';
+import { EventConsumer, HealthModule } from '@netverse/nest-kit';
 import { CoreModule } from './common/core.module';
 import { BrandingModule } from './modules/branding/branding.module';
 import { DeliveryModule } from './modules/delivery/delivery.module';
 import { EventsModule } from './modules/events/events.module';
-import { EventConsumer } from './modules/events/ports/event-consumer';
 import { InboxModule } from './modules/inbox/inbox.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PreferencesModule } from './modules/preferences/preferences.module';

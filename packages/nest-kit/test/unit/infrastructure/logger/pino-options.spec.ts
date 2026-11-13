@@ -30,6 +30,7 @@ function capturedLogger() {
       rolesClaim: 'roles',
       tenantClaim: 'tenant_id',
     },
+    events: { brokers: [] },
     jobs: { enabled: false, outboxRelayIntervalMs: 5_000, outboxMaxAttempts: 12 },
   };
   const { redact, base, level } = buildPinoHttpOptions(config);

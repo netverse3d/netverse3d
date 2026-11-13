@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { InvalidEventError } from '../src/modules/events/ports/event-consumer';
+import { InvalidEventError } from '@netverse/nest-kit';
 import { Scenario, uniqueEvent } from './support/scenario';
 import { createTestApp, TestApp } from './support/test-app';
 

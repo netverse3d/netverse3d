@@ -80,11 +80,15 @@ jobs:
           done
           echo "The database did not become ready" >&2
           exit 1
+      - name: Start Kafka for end-to-end tests
+        if: matrix.unit.e2e
+        run: docker compose --env-file .env.example -f infra/compose/compose.yaml up -d --wait kafka
       - name: Run end-to-end tests
         if: matrix.unit.e2e
         env:
           UNIT_PACKAGE: ${{ matrix.unit.package }}
           DATABASE_URL: postgresql://postgres:e2e@127.0.0.1:5432/e2e
+          KAFKA_TEST_BROKERS: 127.0.0.1:59092
         run: pnpm exec turbo run test:e2e --filter="$UNIT_PACKAGE"
 
   verify:

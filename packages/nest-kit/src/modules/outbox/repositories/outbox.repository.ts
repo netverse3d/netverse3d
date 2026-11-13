@@ -23,10 +23,10 @@ export class OutboxRepository {
     await transaction.outboxEvent.create({ data: event });
   }
 
-  async findDue(limit: number): Promise<OutboxRow[]> {
+  async findPendingInOrder(limit: number): Promise<OutboxRow[]> {
     return this.database.outboxEvent.findMany({
-      where: { status: 'PENDING', nextAttemptAt: { lte: new Date() } },
-      orderBy: { createdAt: 'asc' },
+      where: { status: 'PENDING' },
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       take: limit,
     });
   }

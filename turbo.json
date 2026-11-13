@@ -16,7 +16,7 @@
     },
     "test:e2e": {
       "dependsOn": ["^build"],
-      "env": ["DATABASE_URL"],
+      "env": ["DATABASE_URL", "KAFKA_TEST_BROKERS"],
       "cache": false
     }
   }

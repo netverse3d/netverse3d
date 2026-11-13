@@ -2,6 +2,7 @@ import { AppConfig } from '../../../src/config/app-config';
 import { parseEnv } from '../../../src/config/env.schema';
 
 const valid = {
+  KAFKA_BROKERS: 'kafka:9092',
   SERVICE_NAME: 'svc',
   DATABASE_URL: 'postgresql://user:hunter2@localhost/db',
   AUTH_JWKS_URL: 'http://localhost:4000/jwks.json',
@@ -101,5 +102,23 @@ describe('cấu hình kênh gửi và sự kiện', () => {
     expect(() =>
       parseEnv({ ...valid, DELIVERY_BATCH_SIZE: '1000', DELIVERY_CONCURRENCY: '1' }),
     ).toThrow('DELIVERY_BATCH_SIZE');
+  });
+});
+
+describe('Kafka ở production', () => {
+  it('production thiếu KAFKA_BROKERS thì không khởi động, vì sự kiện sẽ không rời khỏi service', () => {
+    const source = { ...valid, NODE_ENV: 'production', KAFKA_BROKERS: '' };
+    expect(() => parseEnv(source)).toThrow('KAFKA_BROKERS: is required in production');
+  });
+
+  it('development không khai KAFKA_BROKERS vẫn chạy, sự kiện chỉ ghi log', () => {
+    expect(parseEnv({ ...valid, KAFKA_BROKERS: '' }).KAFKA_BROKERS).toEqual([]);
+  });
+
+  it('nhận nhiều broker cách nhau bằng dấu phẩy', () => {
+    expect(parseEnv({ ...valid, KAFKA_BROKERS: 'a:9092, b:9092' }).KAFKA_BROKERS).toEqual([
+      'a:9092',
+      'b:9092',
+    ]);
   });
 });
