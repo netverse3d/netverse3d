@@ -78,7 +78,8 @@ export class ServiceClientService {
 
   async issueToken(dto: ServiceTokenRequestDto): Promise<ServiceTokenDto> {
     const client = await this.authenticate(dto.clientId, dto.clientSecret);
-    if (!client.audiences.includes(dto.audience)) {
+    const stillIssued = this.config.tokens.audiences.includes(dto.audience);
+    if (!stillIssued || !client.audiences.includes(dto.audience)) {
       throw new AppException(IdentityErrorCode.AUDIENCE_NOT_ALLOWED);
     }
     const ttlSeconds = this.config.tokens.serviceTtlSeconds;

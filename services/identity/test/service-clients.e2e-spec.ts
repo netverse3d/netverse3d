@@ -102,12 +102,66 @@ describe('tài khoản của service', () => {
         .expect(400);
     });
 
-    it('người không phải quản trị nền tảng không tạo, không liệt kê được', async () => {
+    it('chỉ quản trị nền tảng gọi được bốn route quản trị', async () => {
       const client = await createClient();
       const issued = await tokenFor(client.id, client.clientSecret, TEST_AUDIENCE).expect(200);
-      const serviceToken = issued.body.result.accessToken as string;
-      await http().get('/v1/admin/service-clients').set(bearer(serviceToken)).expect(403);
+      const outsiders = [
+        issued.body.result.accessToken as string,
+        await subject.tokens.sign({
+          subject: 'tenant-admin',
+          tenantId: 'tenant-a',
+          roles: ['admin'],
+        }),
+        await subject.tokens.sign({ subject: 'player' }),
+        await subject.tokens.sign({
+          subject: 'forged',
+          tenantId: 'tenant-a',
+          roles: ['platform_admin'],
+        }),
+      ];
+      const body = { name: clientName(), audiences: ['media'], permissions: [] };
+      for (const outsider of outsiders) {
+        await http().get('/v1/admin/service-clients').set(bearer(outsider)).expect(403);
+        await http().post('/v1/admin/service-clients').set(bearer(outsider)).send(body).expect(403);
+        await http()
+          .post(`/v1/admin/service-clients/${client.id}/rotate-secret`)
+          .set(bearer(outsider))
+          .expect(403);
+        await http()
+          .post(`/v1/admin/service-clients/${client.id}/revoke`)
+          .set(bearer(outsider))
+          .expect(403);
+      }
       await http().get('/v1/admin/service-clients').expect(401);
+      await tokenFor(client.id, client.clientSecret).expect(200);
+    });
+
+    it('tạo tài khoản không có audience nào bị từ chối', async () => {
+      await http()
+        .post('/v1/admin/service-clients')
+        .set(bearer(admin))
+        .send({ name: clientName(), audiences: [], permissions: [] })
+        .expect(400);
+    });
+
+    it('đổi khoá ghi audit nhưng không kèm khoá mới', async () => {
+      const client = await createClient();
+      const rotated = await http()
+        .post(`/v1/admin/service-clients/${client.id}/rotate-secret`)
+        .set(bearer(admin))
+        .expect(200);
+      const row = await prisma.auditLog.findFirstOrThrow({
+        where: { action: 'service-client.rotate-secret', resourceId: client.id },
+      });
+      expect(JSON.stringify(row)).not.toContain(rotated.body.result.clientSecret as string);
+    });
+
+    it('thu hồi lần hai trả 404', async () => {
+      const client = await createClient();
+      const revoke = () =>
+        http().post(`/v1/admin/service-clients/${client.id}/revoke`).set(bearer(admin));
+      await revoke().expect(204);
+      await revoke().expect(404);
     });
 
     it('ghi audit lúc tạo, không kèm khoá bí mật', async () => {
@@ -188,6 +242,27 @@ describe('tài khoản của service', () => {
         .get('/v1/me')
         .set(bearer(issued.body.result.accessToken as string))
         .expect(403);
+    });
+
+    it('audience identity không còn cấp thì tài khoản cũ cũng không xin được', async () => {
+      const client = await createClient({ audiences: ['media'] });
+      await prisma.serviceClient.update({
+        where: { id: client.id },
+        data: { audiences: ['media', 'retired-service'] },
+      });
+      const { body } = await tokenFor(client.id, client.clientSecret, 'retired-service').expect(
+        403,
+      );
+      expect(body.code).toBe('IDENTITY.AUDIENCE_NOT_ALLOWED');
+    });
+
+    it('token cấp cho service khác không dùng được ở identity', async () => {
+      const client = await createClient();
+      const issued = await tokenFor(client.id, client.clientSecret, 'media').expect(200);
+      await http()
+        .get('/v1/admin/service-clients')
+        .set(bearer(issued.body.result.accessToken as string))
+        .expect(401);
     });
 
     it('thiếu trường bắt buộc bị từ chối', async () => {

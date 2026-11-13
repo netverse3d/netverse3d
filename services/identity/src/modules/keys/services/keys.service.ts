@@ -11,7 +11,7 @@ import {
 
 const SIGNING_ALGORITHM = 'RS256';
 
-export interface TokenScope {
+interface TokenScope {
   audience?: string;
   ttlSeconds?: number;
 }
