@@ -93,7 +93,7 @@ describe('cấu hình kênh gửi và sự kiện', () => {
     expect(() => parseEnv({ ...valid, ...partial })).toThrow(missing);
   });
 
-  it('mặc định không bật RabbitMQ', () => {
+  it('mặc định không nghe sự kiện vào', () => {
     expect(parseEnv(valid).EVENT_TRANSPORT).toBe('none');
   });
 
