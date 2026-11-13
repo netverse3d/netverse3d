@@ -5,6 +5,7 @@ packages:
   - packages/*
   - docs
 allowBuilds:
+  '@confluentinc/kafka-javascript': true
   bcrypt: true
   esbuild: true
   '@parcel/watcher': false
