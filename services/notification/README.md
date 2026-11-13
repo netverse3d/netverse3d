@@ -58,10 +58,10 @@ Service khác gửi thông báo bằng lệnh `Send` của `netverse.notificatio
 
 - Bên gọi mang token của một tài khoản service có quyền `notification:send`. Token của người dùng bị từ chối.
 - `scope` là mã tenant của tiệm mà lệnh làm thay. Lệnh thiếu `scope` bị từ chối; phạm vi nền tảng chưa được hỗ trợ.
-- Metadata `idempotency-key` là bắt buộc. Khoá của service nằm riêng, không đụng khoá cùng tên gửi qua HTTP.
+- Metadata `idempotency-key` là bắt buộc, dài tối đa 128 ký tự. Khoá được tách theo từng tài khoản service, nên hai service dùng cùng một khoá không đụng nhau, và cũng không đụng khoá gửi qua HTTP.
 - Nội dung được kiểm theo cùng luật với `POST /v1/notifications` rồi đi vào cùng đường xử lý.
 
-Kiểu TypeScript của hợp đồng được sinh vào `src/generated/grpc` lúc cài đặt và không commit, bằng `pnpm --filter @netverse/notification grpc:generate`. Đổi tệp `.proto` mà chưa sửa mã thì service không biên dịch được.
+Kiểu TypeScript của hợp đồng được sinh vào `src/generated/grpc` lúc cài đặt và trước mỗi lần `lint` hay `build`, không commit; sinh tay bằng `pnpm --filter @netverse/notification grpc:generate`. Đổi tệp `.proto` mà chưa sửa mã thì service không biên dịch được.
 
 ## Kênh gửi
 

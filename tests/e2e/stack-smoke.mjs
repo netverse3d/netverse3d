@@ -399,6 +399,7 @@ try {
     const accepted = await commands.send(command, senderToken.body.result.accessToken, key);
     assert.equal(accepted.code, 0, accepted.detail);
     const again = await commands.send(command, senderToken.body.result.accessToken, key);
+    assert.equal(again.code, 0, again.detail);
     assert.equal(again.reply.notificationId, accepted.reply.notificationId);
     const delivered = await inboxOf(ownerToken, eventType, 'Notice for Service');
     assert.equal(delivered.title, 'Notice for Service');
@@ -414,11 +415,13 @@ try {
       { name: 'reader-' + RUN, audiences: ['notification'], permissions: ['media:read'] },
       adminToken,
     );
+    assert.equal(reader.status, 201, JSON.stringify(reader.body));
     const readerToken = await identity('POST', '/v1/auth/service-token', {
       clientId: reader.body.result.id,
       clientSecret: reader.body.result.clientSecret,
       audience: 'notification',
     });
+    assert.equal(readerToken.status, 200, JSON.stringify(readerToken.body));
     const unpermitted = await commands.send(
       command,
       readerToken.body.result.accessToken,

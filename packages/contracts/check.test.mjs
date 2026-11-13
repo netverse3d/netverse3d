@@ -204,6 +204,35 @@ test('đổi tên field mà giữ số và kiểu thì được liệt kê, khô
   );
 });
 
+test('đổi enum và đổi field thường thành map trong proto được liệt kê', () => {
+  const withEnum = proto(
+    SERVICE,
+    'enum Channel { CHANNEL_UNSPECIFIED = 0; CHANNEL_EMAIL = 1; CHANNEL_PUSH = 2; }',
+    'message SendRequest { string scope = 1; string labels = 2; }',
+    'message SendReply { string notification_id = 1; }',
+  );
+  const cwd = createRepository({ [PROTO_FILE]: withEnum });
+  writeFileSync(
+    join(cwd, PROTO_FILE),
+    withEnum
+      .replace('CHANNEL_PUSH = 2;', 'CHANNEL_IN_APP = 2;')
+      .replace('string labels = 2;', 'map<string, string> labels = 2;'),
+  );
+  const result = check(cwd);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(result.stdout.includes('enum value Channel.CHANNEL_PUSH was removed'), result.stdout);
+  assert.ok(result.stdout.includes('enum value Channel.CHANNEL_IN_APP was added'), result.stdout);
+  assert.ok(result.stdout.includes('SendRequest.labels changed type'), result.stdout);
+});
+
+test('bản cũ của proto không đọc được thì được ghi nhận, bước kiểm không sập', () => {
+  const cwd = createRepository({ [PROTO_FILE]: 'message {' });
+  writeFileSync(join(cwd, PROTO_FILE), SEND);
+  const result = check(cwd);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(result.stdout.includes('the previous version could not be read'), result.stdout);
+});
+
 test('thêm và xoá rpc được liệt kê', () => {
   const cwd = createRepository({ [PROTO_FILE]: SEND });
   writeFileSync(join(cwd, PROTO_FILE), SEND.replace('rpc Send (', 'rpc Dispatch ('));

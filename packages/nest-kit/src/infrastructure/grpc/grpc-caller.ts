@@ -3,6 +3,7 @@ import { GrpcContract, serviceClientOf } from './grpc-contract';
 import {
   AUTHORIZATION_METADATA,
   ERROR_CODE_METADATA,
+  ERROR_DETAILS_METADATA,
   IDEMPOTENCY_KEY_METADATA,
   REQUEST_ID_METADATA,
 } from './grpc-server';
@@ -19,6 +20,7 @@ export class GrpcCallError extends Error {
     readonly status: GrpcStatus,
     message: string,
     readonly errorCode: string | null,
+    readonly details: unknown = undefined,
   ) {
     super(message);
   }
@@ -36,8 +38,16 @@ export interface CommandClient {
   close(): void;
 }
 
-function methodNameOf(command: string): string {
-  return command.charAt(0).toLowerCase() + command.slice(1);
+function detailsOf(error: ServiceError): unknown {
+  const [raw] = error.metadata?.get(ERROR_DETAILS_METADATA) ?? [];
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 function toCallError(error: ServiceError): GrpcCallError {
@@ -46,6 +56,7 @@ function toCallError(error: ServiceError): GrpcCallError {
     error.code,
     error.details || error.message,
     typeof errorCode === 'string' ? errorCode : null,
+    detailsOf(error),
   );
 }
 
@@ -61,9 +72,9 @@ export function connectCommands(
       if (!(options.timeoutMs > 0)) {
         return Promise.reject(new Error('timeoutMs must be a positive number of milliseconds'));
       }
-      const invoke = (client as unknown as Record<string, UnaryMethod | undefined>)[
-        methodNameOf(method)
-      ];
+      const invoke = Object.hasOwn(ServiceClient.service, method)
+        ? (client as unknown as Record<string, UnaryMethod | undefined>)[method]
+        : undefined;
       if (!invoke) {
         return Promise.reject(new Error(`${servicePath} has no command ${method}`));
       }

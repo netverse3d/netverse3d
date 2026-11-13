@@ -186,6 +186,18 @@ describe('máy chủ gRPC của nest-kit', () => {
     expect(error.message).toContain('timeoutMs');
   });
 
+  it('gọi một lệnh không có trong hợp đồng bị từ chối ở bên gọi, kể cả tên trùng hàm của client', async () => {
+    for (const method of ['Missing', 'close', 'Close']) {
+      const error = await failure(call(method, {}));
+      expect(error.message).toContain('has no command');
+    }
+  });
+
+  it('khoá chống trùng dài quá giới hạn bị từ chối', async () => {
+    const error = await failure(call('Echo', { text: 'x' }, { idempotencyKey: 'k'.repeat(129) }));
+    expect(error.status).toBe(GrpcStatus.INVALID_ARGUMENT);
+  });
+
   it('báo đang phục vụ sau lúc khởi động', () => {
     expect(server.isServing()).toBe(true);
   });

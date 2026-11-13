@@ -17,36 +17,70 @@ function expectedPackage(file) {
   return match ? `netverse.${match[2].replaceAll('-', '_')}.${match[1]}` : null;
 }
 
+function typeOfField(field) {
+  if (field instanceof protobuf.MapField) return `map<${field.keyType}, ${field.type}>`;
+  return `${field.repeated ? 'repeated ' : ''}${field.type}`;
+}
+
 export function describeProto(text) {
   const parsed = protobuf.parse(text, { keepCase: true });
+  const prefix = parsed.package ? `.${parsed.package}.` : '.';
+  const nameOf = (item) =>
+    item.fullName.startsWith(prefix) ? item.fullName.slice(prefix.length) : item.name;
   const messages = new Map();
   const methods = new Map();
+  const enums = new Map();
   const names = { messages: [], services: [], enums: [], fields: [], methods: [], values: [] };
   walk(parsed.root, (item) => {
+    const name = nameOf(item);
     if (item instanceof protobuf.Type) {
-      names.messages.push(item.name);
+      names.messages.push(name);
       const fields = item.fieldsArray.map((field) => ({
         name: field.name,
         number: field.id,
-        type: `${field.repeated ? 'repeated ' : ''}${field.type}`,
+        type: typeOfField(field),
       }));
-      names.fields.push(...fields.map((field) => `${item.name}.${field.name}`));
-      messages.set(item.name, fields);
+      names.fields.push(...fields.map((field) => `${name}.${field.name}`));
+      messages.set(name, fields);
     } else if (item instanceof protobuf.Service) {
-      names.services.push(item.name);
+      names.services.push(name);
       for (const method of item.methodsArray) {
-        names.methods.push(`${item.name}.${method.name}`);
-        methods.set(
-          `${item.name}.${method.name}`,
-          `${method.requestType} -> ${method.responseType}`,
-        );
+        names.methods.push(`${name}.${method.name}`);
+        methods.set(`${name}.${method.name}`, `${method.requestType} -> ${method.responseType}`);
       }
     } else if (item instanceof protobuf.Enum) {
-      names.enums.push(item.name);
-      names.values.push(...Object.keys(item.values).map((value) => `${item.name}.${value}`));
+      names.enums.push(name);
+      names.values.push(...Object.keys(item.values).map((value) => `${name}.${value}`));
+      enums.set(name, new Map(Object.entries(item.values)));
     }
   });
-  return { package: parsed.package ?? '', messages, methods, names };
+  return { package: parsed.package ?? '', messages, methods, enums, names };
+}
+
+function compareEnums(previous, current) {
+  const changes = [];
+  for (const [name, before] of previous) {
+    const after = current.get(name);
+    if (!after) {
+      changes.push(`enum ${name} was removed`);
+      continue;
+    }
+    for (const [value, number] of before) {
+      if (!after.has(value)) changes.push(`enum value ${name}.${value} was removed`);
+      else if (after.get(value) !== number) {
+        changes.push(
+          `enum value ${name}.${value} changed number from ${number} to ${after.get(value)}`,
+        );
+      }
+    }
+    for (const value of after.keys()) {
+      if (!before.has(value)) changes.push(`enum value ${name}.${value} was added`);
+    }
+  }
+  for (const name of current.keys()) {
+    if (!previous.has(name)) changes.push(`enum ${name} was added`);
+  }
+  return changes;
 }
 
 function misnamed(items, pattern, kind) {
@@ -135,5 +169,6 @@ export function compareProto(previousText, currentText) {
   for (const method of current.methods.keys()) {
     if (!previous.methods.has(method)) changes.push(`rpc ${method} was added`);
   }
+  changes.push(...compareEnums(previous.enums, current.enums));
   return { changes, reused };
 }

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
   AppException,
@@ -21,6 +22,11 @@ import { NotificationsService } from '../services/notifications.service';
 
 const CONTRACT = 'notification';
 const SERVICE = 'netverse.notification.v1.NotificationCommands';
+const SCOPE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
+
+function keyOwnedBy(clientId: string, idempotencyKey: string): string {
+  return createHash('sha256').update(`${clientId}\n${idempotencyKey}`).digest('hex');
+}
 
 const CHANNEL_NAMES: Partial<Record<Channel__Output, DeliveryChannelName>> = {
   CHANNEL_EMAIL: 'EMAIL',
@@ -87,7 +93,8 @@ export class NotificationCommands implements OnModuleInit {
   }
 
   private async send(request: SendRequest__Output, call: CommandCall): Promise<SendReply> {
-    if (request.scope === '' || request.scope === PLATFORM_SCOPE) {
+    const scopeIsReserved = request.scope.toLowerCase() === PLATFORM_SCOPE;
+    if (!SCOPE_PATTERN.test(request.scope) || scopeIsReserved) {
       throw new AppException(NotificationErrorCode.SCOPE_REQUIRED);
     }
     const dto = plainToInstance(SendNotificationDto, {
@@ -112,7 +119,10 @@ export class NotificationCommands implements OnModuleInit {
     const accepted = await this.notifications.accept({
       tenantId: request.scope,
       source: 'SERVICE',
-      idempotencyKey: call.idempotencyKey,
+      idempotencyKey: keyOwnedBy(
+        call.caller.service?.clientId ?? call.caller.subject,
+        call.idempotencyKey,
+      ),
       eventType: dto.eventType,
       locale: dto.locale,
       channels: dto.channels,

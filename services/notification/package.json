@@ -11,11 +11,11 @@
   ],
   "scripts": {
     "postinstall": "prisma generate && pnpm grpc:generate",
-    "build": "nest build -p tsconfig.build.json",
+    "build": "pnpm grpc:generate && nest build -p tsconfig.build.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-    "lint": "tsc --noEmit --incremental false",
+    "lint": "pnpm grpc:generate && tsc --noEmit --incremental false",
     "test": "jest",
     "test:e2e": "prisma migrate deploy && jest --config test/jest-e2e.json --runInBand",
     "openapi:export": "ts-node scripts/export-openapi.ts",

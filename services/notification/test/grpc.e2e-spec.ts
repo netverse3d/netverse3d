@@ -143,6 +143,32 @@ describe('lệnh gửi thông báo qua gRPC', () => {
     expect(error.errorCode).toBe('NOTIFICATION.SCOPE_REQUIRED');
   });
 
+  it.each([['x'.repeat(129)], ['tenant with space'], [' platform'], ['Platform']])(
+    'phạm vi %s sai dạng bị từ chối là lỗi của bên gọi, không phải lỗi nội bộ',
+    async (scope) => {
+      const error = await failure(send(request({ scope })));
+      expect(error.status).toBe(GrpcStatus.INVALID_ARGUMENT);
+      expect(error.errorCode).toBe('NOTIFICATION.SCOPE_REQUIRED');
+    },
+  );
+
+  it('hai tài khoản service dùng cùng khoá chống trùng không đụng nhau', async () => {
+    const key = randomUUID();
+    const other = await subject.tokens.sign({
+      subject: 'service:payment',
+      clientId: 'payment',
+      permissions: [PERMISSION],
+    });
+    const first = await send(request(), key);
+    const second = await send(request({ recipient: { subject: 'user-2' } }), key, other);
+    expect(second.notificationId).not.toBe(first.notificationId);
+  });
+
+  it('lỗi nội dung trả kèm danh sách trường sai cho bên gọi', async () => {
+    const error = await failure(send(request({ eventType: 'Not An Event' })));
+    expect(JSON.stringify(error.details)).toContain('eventType');
+  });
+
   it('nội dung sai dạng bị từ chối theo cùng luật với HTTP', async () => {
     const error = await failure(send(request({ eventType: 'Not An Event' })));
     expect(error.status).toBe(GrpcStatus.INVALID_ARGUMENT);

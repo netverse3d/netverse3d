@@ -19,9 +19,12 @@ export const AUTHORIZATION_METADATA = 'authorization';
 export const IDEMPOTENCY_KEY_METADATA = 'idempotency-key';
 export const REQUEST_ID_METADATA = 'x-request-id';
 export const ERROR_CODE_METADATA = 'error-code';
+export const ERROR_DETAILS_METADATA = 'error-details';
 
 const BEARER_PREFIX = 'Bearer ';
-const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
+const MAX_IDEMPOTENCY_KEY_LENGTH = 128;
+const MAX_ERROR_DETAILS_LENGTH = 4_000;
+const SHUTDOWN_GRACE_MS = 5_000;
 
 export interface CommandCall {
   caller: Actor;
@@ -136,8 +139,12 @@ export class GrpcServer implements OnApplicationBootstrap, OnModuleDestroy {
     }
     this.boundPort = null;
     await new Promise<void>((resolve) => {
-      this.server.tryShutdown(() => {
+      const timer = setTimeout(() => {
         this.server.forceShutdown();
+        resolve();
+      }, SHUTDOWN_GRACE_MS);
+      this.server.tryShutdown(() => {
+        clearTimeout(timer);
         resolve();
       });
     });
@@ -199,6 +206,12 @@ export class GrpcServer implements OnApplicationBootstrap, OnModuleDestroy {
       this.logger.error(error instanceof Error ? error : String(error));
     }
     metadata.set(ERROR_CODE_METADATA, resolved.code);
+    if (resolved.details !== undefined) {
+      const details = JSON.stringify(resolved.details);
+      if (details.length <= MAX_ERROR_DETAILS_LENGTH) {
+        metadata.set(ERROR_DETAILS_METADATA, details);
+      }
+    }
     return { code: grpcStatusFor(resolved.status), details: resolved.message, metadata };
   }
 }

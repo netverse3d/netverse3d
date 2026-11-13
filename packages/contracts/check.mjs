@@ -70,11 +70,19 @@ function validate(file, text) {
 function compare(file, text, baseRef, previousFile = file) {
   const previousText = readAtRef(baseRef, previousFile);
   if (previousText === null) return { changes: [], errors: [] };
-  if (isProto(file)) {
-    const { changes, reused } = compareProto(previousText, text);
-    return { changes, errors: reused };
+  let previous;
+  try {
+    if (isProto(file)) {
+      const { changes, reused } = compareProto(previousText, text);
+      return { changes, errors: reused };
+    }
+    previous = parseContract(file, previousText);
+  } catch {
+    return {
+      changes: ['the previous version could not be read, so changes are not listed'],
+      errors: [],
+    };
   }
-  const previous = parseContract(file, previousText);
   const contract = parseContract(file, text);
   const changes = file.startsWith('openapi/')
     ? findOpenApiBreakingChanges(previous, contract)
@@ -106,7 +114,9 @@ if (baseRef) {
     const movedTo = versionedPath(file);
     if (movedTo && files.includes(movedTo)) {
       const text = readFileSync(join(ROOT, movedTo), 'utf8');
-      record(movedTo, compare(movedTo, text, baseRef, file));
+      if (validate(movedTo, text).length === 0) {
+        record(movedTo, compare(movedTo, text, baseRef, file));
+      }
       continue;
     }
     changes.push(`${file}: the file was removed`);
