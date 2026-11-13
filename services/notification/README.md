@@ -52,6 +52,17 @@ Thương hiệu quản lý ở `/v1/branding/:key`, dùng trong template qua `{{
 
 Mọi dữ liệu giới hạn trong tenant lấy từ token. Token không gắn tenant bị từ chối bằng `NOTIFICATION.TENANT_REQUIRED`, nên hiện người chơi chưa có hộp thư và quản trị nền tảng chưa quản lý được template của tiệm; xem ADR-0027. Không có quyền với một tài nguyên thì trả `404`.
 
+## Mệnh lệnh qua gRPC
+
+Service khác gửi thông báo bằng lệnh `Send` của `netverse.notification.v1.NotificationCommands`, hợp đồng ở `packages/contracts/grpc/v1/notification.proto`. Khai `GRPC_PORT` thì máy chủ gRPC nghe ở cổng đó; không khai thì không mở.
+
+- Bên gọi mang token của một tài khoản service có quyền `notification:send`. Token của người dùng bị từ chối.
+- `scope` là mã tenant của tiệm mà lệnh làm thay. Lệnh thiếu `scope` bị từ chối; phạm vi nền tảng chưa được hỗ trợ.
+- Metadata `idempotency-key` là bắt buộc. Khoá của service nằm riêng, không đụng khoá cùng tên gửi qua HTTP.
+- Nội dung được kiểm theo cùng luật với `POST /v1/notifications` rồi đi vào cùng đường xử lý.
+
+Kiểu TypeScript của hợp đồng được sinh vào `src/generated/grpc` lúc cài đặt và không commit, bằng `pnpm --filter @netverse/notification grpc:generate`. Đổi tệp `.proto` mà chưa sửa mã thì service không biên dịch được.
+
 ## Kênh gửi
 
 Mỗi kênh là một adapter của cổng `ChannelSender`.

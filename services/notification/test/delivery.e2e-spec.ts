@@ -629,7 +629,10 @@ describe('đường gửi thông báo', () => {
 
   describe('sự kiện kết quả qua outbox', () => {
     async function relay(): Promise<void> {
-      await subject.app.get(OutboxRelayJob).runOnce();
+      const job = subject.app.get(OutboxRelayJob);
+      while ((await job.runOnce()) > 0) {
+        await Promise.resolve();
+      }
     }
 
     it('phát sự kiện khi gửi xong, không chứa địa chỉ người nhận', async () => {

@@ -10,7 +10,7 @@
     "prisma.config.ts"
   ],
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && pnpm grpc:generate",
     "build": "nest build -p tsconfig.build.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -21,7 +21,8 @@
     "openapi:export": "ts-node scripts/export-openapi.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
-    "prisma:migrate:deploy": "prisma migrate deploy"
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "grpc:generate": "proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=src/generated/grpc ../../packages/contracts/grpc/v1/notification.proto"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.8",
@@ -50,6 +51,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@grpc/grpc-js": "1.14.7",
+    "@grpc/proto-loader": "0.8.1",
     "@nestjs/cli": "^11.0.17",
     "@nestjs/schematics": "^11.0.10",
     "@nestjs/testing": "^11.2.8",

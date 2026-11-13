@@ -203,10 +203,12 @@ services:
       AUTH_ISSUER: http://identity:3000
       AUTH_AUDIENCE: notification
       KAFKA_BROKERS: kafka:19092
+      GRPC_PORT: 50051
       EMAIL_PROVIDER: log
       PUSH_PROVIDER: log
     ports:
       - 127.0.0.1:${NOTIFICATION_PORT:-53003}:3000
+      - 127.0.0.1:${NOTIFICATION_GRPC_PORT:-53103}:50051
     healthcheck:
       test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/healthz || exit 1]
       interval: 5s

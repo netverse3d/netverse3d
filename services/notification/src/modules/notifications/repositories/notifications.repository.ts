@@ -5,7 +5,7 @@ import type { DeliveryChannelName } from '../domain/channels';
 
 export type NotificationWithDeliveries = Notification & { deliveries: NotificationDelivery[] };
 
-export type NotificationSourceName = 'API' | 'EVENT';
+export type NotificationSourceName = 'API' | 'EVENT' | 'SERVICE';
 
 export interface NewDelivery {
   channel: DeliveryChannelName;

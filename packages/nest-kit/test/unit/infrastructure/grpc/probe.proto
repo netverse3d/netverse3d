@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package netverse.probe.v1;
+
+service ProbeCommands {
+  rpc Echo (EchoRequest) returns (EchoReply);
+  rpc Fail (FailRequest) returns (EchoReply);
+  rpc Slow (EchoRequest) returns (EchoReply);
+}
+
+message EchoRequest {
+  string text = 1;
+}
+
+message FailRequest {
+  string kind = 1;
+}
+
+message EchoReply {
+  string text = 1;
+  string caller = 2;
+  string idempotency_key = 3;
+  repeated string permissions = 4;
+}
