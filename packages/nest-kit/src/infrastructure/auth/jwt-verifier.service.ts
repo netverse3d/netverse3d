@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { createRemoteJWKSet, errors as joseErrors, JWTPayload, jwtVerify } from 'jose';
+import { createRemoteJWKSet, JWTPayload, jwtVerify } from 'jose';
 import type { Actor } from '../../common/context/request-context';
 import { KitConfig } from '../../config/kit-config';
-import { PLATFORM_SCOPE } from './platform-roles';
+import { tenantOfClaim } from './platform-roles';
 
 const ACCEPTED_ALGORITHMS = ['RS256', 'ES256'];
 
@@ -43,13 +43,10 @@ export class JwtVerifier {
         service: { clientId: payload.client_id, permissions: stringsOf(payload.permissions) },
       };
     }
-    const tenant = payload[this.config.auth.tenantClaim];
-    if (tenant === PLATFORM_SCOPE) {
-      throw new joseErrors.JWTClaimValidationFailed('tenant claim uses a reserved scope', payload);
-    }
+    const tenantId = tenantOfClaim(payload[this.config.auth.tenantClaim]);
     return {
       subject,
-      tenantId: typeof tenant === 'string' ? tenant : null,
+      tenantId,
       roles: stringsOf(payload[this.config.auth.rolesClaim]),
       ...(typeof payload.sid === 'string' ? { sessionId: payload.sid } : {}),
       ...(typeof payload.ver === 'number' ? { tokenVersion: payload.ver } : {}),

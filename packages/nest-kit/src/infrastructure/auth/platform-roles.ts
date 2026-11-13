@@ -1,3 +1,4 @@
+import { errors as joseErrors } from 'jose';
 import type { Actor } from '../../common/context/request-context';
 import { AppException } from '../../common/errors/app.exception';
 import { ErrorCode } from '../../common/errors/error-code';
@@ -12,6 +13,21 @@ export function scopeOf(actor: Actor): string {
     throw new AppException(ErrorCode.FORBIDDEN);
   }
   return actor.tenantId ?? PLATFORM_SCOPE;
+}
+
+export function tenantOfClaim(claim: unknown): string | null {
+  if (typeof claim !== 'string') {
+    return null;
+  }
+  const normalized = claim.trim().toLowerCase();
+  if (normalized === '' || normalized === PLATFORM_SCOPE) {
+    throw new joseErrors.JWTClaimValidationFailed(
+      'tenant claim is empty or uses a reserved scope',
+      {},
+      'tenant',
+    );
+  }
+  return claim;
 }
 
 export function tenantOfScope(scope: string): string | null {

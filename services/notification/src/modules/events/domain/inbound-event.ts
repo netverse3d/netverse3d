@@ -11,13 +11,12 @@ import {
   MAX_LOCALE_LENGTH,
   MAX_SUBJECT_ID_LENGTH,
 } from '../../notifications/domain/limits';
+import { isScope } from '../../notifications/domain/scope';
 import { InvalidEventError } from '@netverse/nest-kit';
-
-const MAX_TENANT_ID_LENGTH = 128;
 
 const inboundEventSchema = z.object({
   id: z.string().min(1).max(MAX_IDEMPOTENCY_KEY_LENGTH),
-  tenantId: z.string().min(1).max(MAX_TENANT_ID_LENGTH),
+  tenantId: z.string().refine(isScope, 'must be a tenant id or the platform scope'),
   eventType: z.string().max(MAX_EVENT_TYPE_LENGTH).regex(EVENT_TYPE_PATTERN),
   locale: z.string().max(MAX_LOCALE_LENGTH).regex(LOCALE_PATTERN).optional(),
   channels: z.array(z.enum(DELIVERY_CHANNELS)).min(1).optional(),

@@ -651,6 +651,29 @@ describe('đường gửi thông báo', () => {
       expect(JSON.stringify(event)).not.toContain(EMAIL);
     });
 
+    it('sự kiện của phạm vi nền tảng được phát ra và không mang mã tiệm', async () => {
+      const eventType = uniqueEvent();
+      const platformAdmin = await subject.tokens.sign({
+        subject: 'root',
+        roles: ['platform_admin'],
+      });
+      const accepted = await scenario
+        .http()
+        .post('/v1/notifications')
+        .set('authorization', `Bearer ${platformAdmin}`)
+        .send({ eventType, recipient: { subject: 'player-1' } })
+        .expect(201);
+      await scenario.drain();
+      await relay();
+      const event = subject.publisher.events.find(
+        (item) => item.data.notificationId === accepted.body.result.id,
+      );
+      expect(event).toMatchObject({
+        type: 'notification.delivery.dead',
+        data: { eventType, tenantId: null },
+      });
+    });
+
     it('phát sự kiện dead và skipped kèm lý do', async () => {
       const deadEvent = uniqueEvent();
       await scenario.send({ eventType: deadEvent, recipient: { email: 'other@example.test' } });
