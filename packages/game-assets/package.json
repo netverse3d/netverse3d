@@ -18,6 +18,6 @@
     "ajv": "^8.20.0"
   },
   "devDependencies": {
-    "three": "0.170.0"
+    "three": "0.187.0"
   }
 }
