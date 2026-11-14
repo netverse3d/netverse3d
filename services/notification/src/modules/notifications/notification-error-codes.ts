@@ -42,10 +42,10 @@ export const NotificationErrorCode = {
     httpStatus: HttpStatus.TOO_MANY_REQUESTS,
     message: 'The shop reached its email limit for the last 24 hours',
   },
-  EXPIRES_AT_PAST: {
-    code: 'NOTIFICATION.EXPIRES_AT_PAST',
+  EXPIRES_AT_INVALID: {
+    code: 'NOTIFICATION.EXPIRES_AT_INVALID',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
-    message: 'The expiry must be in the future',
+    message: 'The expiry must be in the future and at most 30 days ahead',
   },
   INVALID_CHARACTERS: {
     code: 'NOTIFICATION.INVALID_CHARACTERS',

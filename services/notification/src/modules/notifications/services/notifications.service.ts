@@ -5,7 +5,7 @@ import { AppException } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import { TemplatesService } from '../../templates/services/templates.service';
 import type { DeliveryChannelName } from '../domain/channels';
-import { MAX_IDEMPOTENCY_KEY_LENGTH } from '../domain/limits';
+import { MAX_EXPIRY_MS, MAX_IDEMPOTENCY_KEY_LENGTH } from '../domain/limits';
 import { scopeOf } from '@netverse/nest-kit';
 import { PLATFORM_SCOPE } from '@netverse/nest-kit';
 import { AcceptedNotificationDto, SendNotificationDto } from '../dto/notification.dto';
@@ -107,6 +107,7 @@ export class NotificationsService {
         return replay;
       }
     }
+    this.assertNotExpired(command);
     const channels = await this.planChannels(command);
     await this.assertSendable(command, channels);
     try {
@@ -142,14 +143,21 @@ export class NotificationsService {
     ) {
       throw new AppException(NotificationErrorCode.RECIPIENT_REQUIRED);
     }
-    if (command.expiresAt && command.expiresAt.getTime() <= Date.now()) {
-      throw new AppException(NotificationErrorCode.EXPIRES_AT_PAST);
-    }
     if (command.idempotencyKey && command.idempotencyKey.length > MAX_IDEMPOTENCY_KEY_LENGTH) {
       throw new AppException(NotificationErrorCode.IDEMPOTENCY_KEY_INVALID);
     }
     if (containsNullCharacter(command)) {
       throw new AppException(NotificationErrorCode.INVALID_CHARACTERS);
+    }
+  }
+
+  private assertNotExpired(command: IntakeCommand): void {
+    if (!command.expiresAt) {
+      return;
+    }
+    const remainingMs = command.expiresAt.getTime() - Date.now();
+    if (!(remainingMs > 0 && remainingMs <= MAX_EXPIRY_MS)) {
+      throw new AppException(NotificationErrorCode.EXPIRES_AT_INVALID);
     }
   }
 

@@ -57,6 +57,8 @@ export class NotificationsRepository {
       where: {
         tenantId,
         channel: 'EMAIL',
+        destination: { not: null },
+        status: { in: ['PENDING', 'PROCESSING', 'SENT'] },
         createdAt: { gte: since },
         notification: { source: 'API' },
       },

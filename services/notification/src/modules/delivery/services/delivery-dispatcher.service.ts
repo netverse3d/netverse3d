@@ -29,7 +29,7 @@ const MISCONFIGURED_RETRY_FACTOR = 10;
 const MISCONFIGURED_GIVE_UP_MS = 24 * 60 * 60 * 1000;
 
 const MAX_SENDER_NAME_LENGTH = 64;
-const HEADER_BREAKING_CHARACTERS = /[\r\n"<>]/g;
+const HEADER_BREAKING_CHARACTERS = /[\p{Cc}\p{Cf}"<>]/gu;
 
 function hasExpired(delivery: ClaimedDelivery): boolean {
   const { expiresAt } = delivery.notification;
@@ -40,10 +40,9 @@ function senderNameOf(scope: string, brandName: string | undefined): string | un
   if (scope === PLATFORM_SCOPE || brandName === undefined) {
     return undefined;
   }
-  const name = brandName
-    .replace(HEADER_BREAKING_CHARACTERS, '')
-    .trim()
-    .slice(0, MAX_SENDER_NAME_LENGTH);
+  const name = Array.from(brandName.replace(HEADER_BREAKING_CHARACTERS, '').trim())
+    .slice(0, MAX_SENDER_NAME_LENGTH)
+    .join('');
   return name.length > 0 ? name : undefined;
 }
 

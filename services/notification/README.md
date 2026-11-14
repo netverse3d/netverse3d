@@ -54,10 +54,10 @@ Thương hiệu quản lý ở `/v1/branding/:key`, dùng trong template qua `{{
 Theo [ADR-0030](../../docs/decisions/ADR-0030-notification-sending-rules.md).
 
 - Mỗi template mang một loại. `TRANSACTIONAL` luôn được gửi, không xét lựa chọn tắt nhận, và chỉ tạo được ở phạm vi nền tảng. `OPTIONAL` là mặc định, và là loại duy nhất của tiệm.
-- Thư loại `OPTIONAL` bắt buộc có mã người nhận. Lệnh chỉ có địa chỉ hoặc token thiết bị bị từ chối với `NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED`.
-- Mỗi tiệm gửi tối đa `TENANT_DAILY_EMAIL_LIMIT` email qua HTTP trong 24 giờ, mặc định 500. Vượt mức thì nhận 429 với `NOTIFICATION.EMAIL_QUOTA_EXCEEDED`. Phạm vi nền tảng và lệnh từ service không bị giới hạn.
+- Thư loại `OPTIONAL` bắt buộc có mã người nhận. Lệnh chỉ có địa chỉ hoặc token thiết bị bị từ chối với `NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED`. Service tin mã người nhận mà bên gọi đưa, không đối chiếu được mã đó với địa chỉ; bên gọi đưa mã sai thì lựa chọn tắt nhận của chủ địa chỉ không được xét. Hạn mức email là giới hạn còn lại cho trường hợp đó.
+- Mỗi tiệm gửi tối đa `TENANT_DAILY_EMAIL_LIMIT` email qua HTTP trong 24 giờ, mặc định 500. Lần gửi bị bỏ qua hoặc bị loại không tính. Vượt mức thì nhận 429 với `NOTIFICATION.EMAIL_QUOTA_EXCEEDED`. Phạm vi nền tảng và lệnh từ service không bị giới hạn.
 - Email của tiệm mang tên người gửi là mục thương hiệu `name` của tiệm. Tiệm chưa đặt thì dùng `EMAIL_FROM_NAME`.
-- Lệnh gửi có thể kèm `expiresAt`. Quá thời điểm đó lần gửi vào `DEAD` với `EXPIRED` thay vì gửi muộn. Trường này không nằm trong phép so khoá chống trùng.
+- Lệnh gửi có thể kèm `expiresAt`, viết theo RFC 3339 có múi giờ, tối đa 30 ngày tới. Quá thời điểm đó lần gửi vào `DEAD` với `EXPIRED` thay vì gửi muộn. Trường này không nằm trong phép so khoá chống trùng: gửi lại cùng khoá, kể cả sau lúc hết hạn, nhận lại đúng kết quả lần đầu.
 
 ## Quyền
 

@@ -638,9 +638,7 @@ describe('đường gửi thông báo', () => {
     it('thư tuỳ chọn chỉ có địa chỉ bị từ chối, có mã người nhận thì được nhận', async () => {
       const eventType = uniqueEvent();
       await scenario.createTemplate({ eventType, body: 'mail', category: 'OPTIONAL' });
-      const refused = await scenario
-        .send({ eventType, recipient: { email: EMAIL } })
-        .then((response) => response);
+      const refused = await scenario.send({ eventType, recipient: { email: EMAIL } });
       expect(refused.status).toBe(422);
       expect(refused.body.code).toBe('NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED');
 
@@ -676,19 +674,133 @@ describe('đường gửi thông báo', () => {
         expiresAt: new Date(Date.now() - 1_000).toISOString(),
       });
       expect(past.status).toBe(422);
-      expect(past.body.code).toBe('NOTIFICATION.EXPIRES_AT_PAST');
-
-      await scenario.send({
+      expect(past.body.code).toBe('NOTIFICATION.EXPIRES_AT_INVALID');
+      const tooFar = await scenario.send({
         eventType,
         recipient: { email: EMAIL },
-        expiresAt: new Date(Date.now() + 300).toISOString(),
+        expiresAt: new Date(Date.now() + 40 * 24 * 3_600_000).toISOString(),
       });
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      expect(tooFar.body.code).toBe('NOTIFICATION.EXPIRES_AT_INVALID');
+
+      const accepted = await scenario.send({
+        eventType,
+        recipient: { email: EMAIL },
+        expiresAt: new Date(Date.now() + 1_500).toISOString(),
+      });
+      expect(accepted.status).toBe(201);
+      await new Promise((resolve) => setTimeout(resolve, 1_700));
       await scenario.drain();
       expect(subject.email.forEvent(eventType)).toHaveLength(0);
       expect(await scenario.deliveriesOf(eventType)).toMatchObject([
         { status: 'DEAD', reason: 'EXPIRED' },
       ]);
+    });
+
+    it.each([
+      ['tuần ISO', '2026-W46-1'],
+      ['ngày thứ tự trong năm', '2026-320'],
+      ['thiếu múi giờ', '2030-01-01T10:00:00'],
+      ['chỉ có ngày', '2030-01-01'],
+      ['dạng gọn', '20300101T100000Z'],
+    ])('hạn viết theo %s bị từ chối là lỗi của bên gọi, không thành lỗi nội bộ', async (_n, at) => {
+      const response = await scenario.send({
+        eventType: uniqueEvent(),
+        recipient: { email: EMAIL },
+        expiresAt: at,
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it('hạn có múi giờ lệch được nhận', async () => {
+      const eventType = uniqueEvent();
+      const response = await scenario.send({
+        eventType,
+        recipient: { subject: 'u-zone' },
+        expiresAt: '2099-01-01T10:00:00+07:00',
+      });
+      expect(response.status).toBe(422);
+      const soon = new Date(Date.now() + 3_600_000).toISOString().replace('Z', '+00:00');
+      const ok = await scenario.send({
+        eventType,
+        recipient: { subject: 'u-zone' },
+        expiresAt: soon,
+      });
+      expect(ok.status).toBe(201);
+    });
+
+    it('gửi lại cùng khoá chống trùng sau lúc hết hạn vẫn nhận lại kết quả cũ', async () => {
+      const eventType = uniqueEvent();
+      await scenario.createTemplate({ eventType, body: 'mail' });
+      const body = {
+        eventType,
+        recipient: { email: EMAIL },
+        expiresAt: new Date(Date.now() + 1_000).toISOString(),
+      };
+      const key = `replay-${eventType}`;
+      const first = await scenario.send(body, key);
+      expect(first.status).toBe(201);
+      await new Promise((resolve) => setTimeout(resolve, 1_200));
+      const again = await scenario.send(body, key);
+      expect(again.body.result.id).toBe(first.body.result.id);
+    });
+
+    it('thư giao dịch của nền tảng gửi được tới một địa chỉ chưa có tài khoản', async () => {
+      const eventType = uniqueEvent();
+      const platformAdmin = await subject.tokens.sign({
+        subject: 'root',
+        roles: ['platform_admin'],
+      });
+      await scenario
+        .http()
+        .post('/v1/templates')
+        .set('authorization', `Bearer ${platformAdmin}`)
+        .send({
+          eventType,
+          channel: 'EMAIL',
+          locale: 'en',
+          subject: 'Code',
+          body: 'code',
+          category: 'TRANSACTIONAL',
+        })
+        .expect(201);
+      await scenario
+        .http()
+        .post('/v1/notifications')
+        .set('authorization', `Bearer ${platformAdmin}`)
+        .send({ eventType, recipient: { email: EMAIL } })
+        .expect(201);
+      await scenario.drain();
+      expect(subject.email.forEvent(eventType)).toMatchObject([{ tenantId: 'platform' }]);
+      expect(subject.email.forEvent(eventType)[0]?.senderName).toBeUndefined();
+    });
+
+    it('lần gửi bị bỏ qua không tính vào hạn mức email của tiệm', async () => {
+      const limits = subject.app.get(AppConfig).notification as { tenantDailyEmailLimit: number };
+      const original = limits.tenantDailyEmailLimit;
+      const quota = await Scenario.start(subject);
+      const eventType = uniqueEvent();
+      await quota.createTemplate({ eventType, body: 'mail' });
+      await quota
+        .http()
+        .post('/v1/blocked-addresses')
+        .set('authorization', `Bearer ${quota.admin}`)
+        .send({ address: EMAIL })
+        .expect(201);
+      limits.tenantDailyEmailLimit = 1;
+      try {
+        const send = (email: string) =>
+          quota
+            .http()
+            .post('/v1/notifications')
+            .set('authorization', `Bearer ${quota.admin}`)
+            .send({ eventType, recipient: { email } });
+        expect((await send(EMAIL)).status).toBe(201);
+        await quota.drain();
+        expect((await send('other@example.test')).status).toBe(201);
+        expect((await send('third@example.test')).status).toBe(429);
+      } finally {
+        limits.tenantDailyEmailLimit = original;
+      }
     });
 
     it('tiệm vượt hạn mức email trong ngày thì bị từ chối với 429', async () => {

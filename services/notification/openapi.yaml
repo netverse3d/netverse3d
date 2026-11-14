@@ -1550,7 +1550,7 @@ components:
         expiresAt:
           type: string
           format: date-time
-          description: After this moment the notification is dropped instead of sent late
+          description: RFC 3339 moment with a time zone, at most 30 days ahead; after it the notification is dropped instead of sent late
         channels:
           type: array
           items:

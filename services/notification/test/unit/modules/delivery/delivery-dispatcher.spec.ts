@@ -266,10 +266,10 @@ describe('bộ phát lần gửi', () => {
 
   it('khoá bị từ chối mà thông báo đã quá hạn thì loại với lý do quá hạn', async () => {
     sender.failure = new ProviderConfigurationError('Provider answered 401');
-    world.expiresAt = new Date(Date.now() + 40);
+    world.expiresAt = new Date(Date.now() + 60_000);
     await dispatcher.dispatchBatch();
     expect(repository.retries).toHaveLength(1);
-    await new Promise((resolve) => setTimeout(resolve, 60));
+    world.expiresAt = new Date(Date.now() - 1);
     await dispatcher.dispatchBatch();
     expect(repository.settled).toMatchObject([{ status: 'DEAD', reason: DeliveryReason.EXPIRED }]);
   });
@@ -278,6 +278,16 @@ describe('bộ phát lần gửi', () => {
     world.brand = { name: 'Lan "Net" <x>\r\nBcc: a@b.test' };
     await dispatcher.dispatchBatch();
     expect(sender.last?.senderName).toBe('Lan Net xBcc: a@b.test');
+  });
+
+  it('tên thương hiệu bị cắt theo ký tự trọn vẹn và bỏ ký tự điều khiển', async () => {
+    world.brand = { name: `${'a'.repeat(63)}\u{1F600}b` };
+    await dispatcher.dispatchBatch();
+    expect(sender.last?.senderName).toBe(`${'a'.repeat(63)}\u{1F600}`);
+
+    world.brand = { name: 'Lan\u202eNet\t\u0000' };
+    await dispatcher.dispatchBatch();
+    expect(sender.last?.senderName).toBe('LanNet');
   });
 
   it('tiệm chưa đặt tên và phạm vi nền tảng dùng tên chung của hệ thống', async () => {

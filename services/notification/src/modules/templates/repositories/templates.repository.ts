@@ -3,10 +3,10 @@ import { NotificationTemplate, Prisma } from '../../../infrastructure/prisma/cli
 import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
 import type { DeliveryChannelName } from '../../notifications/domain/channels';
 
+import type { TemplateCategoryName } from '../domain/template-category';
+
 export type TemplateRow = NotificationTemplate;
 export type TemplateOrderBy = Prisma.NotificationTemplateOrderByWithRelationInput;
-
-import type { TemplateCategoryName } from '../domain/template-category';
 
 export interface NewTemplate {
   tenantId: string;

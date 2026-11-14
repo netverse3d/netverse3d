@@ -7,7 +7,6 @@ import {
   IsArray,
   IsEmail,
   IsEnum,
-  IsISO8601,
   IsObject,
   IsOptional,
   IsString,
@@ -24,6 +23,7 @@ import {
 } from '../domain/channels';
 import {
   EVENT_TYPE_PATTERN,
+  EXPIRES_AT_PATTERN,
   LOCALE_PATTERN,
   MAX_DEVICE_TOKENS,
   MAX_DEVICE_TOKEN_LENGTH,
@@ -84,10 +84,11 @@ export class SendNotificationDto {
 
   @ApiPropertyOptional({
     format: 'date-time',
-    description: 'After this moment the notification is dropped instead of sent late',
+    description:
+      'RFC 3339 moment with a time zone, at most 30 days ahead; after it the notification is dropped instead of sent late',
   })
   @IsOptional()
-  @IsISO8601({ strict: true })
+  @Matches(EXPIRES_AT_PATTERN)
   expiresAt?: string;
 
   @ApiPropertyOptional({ enum: DELIVERY_CHANNELS, isArray: true })

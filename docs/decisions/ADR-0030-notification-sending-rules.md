@@ -29,12 +29,14 @@ Bản soát mã của notification để lại ba điểm cần quyết về ngh
 
 ### Hạn của thông báo
 
-8. Bên gọi có thể đưa kèm thời điểm hết hạn. Quá hạn thì lần gửi bị loại với lý do `EXPIRED`, không gửi muộn.
-9. Thời điểm hết hạn không nằm trong phép so khoá chống trùng, để bên gọi gửi lại cùng một lệnh với hạn mới mà không bị coi là lệnh khác.
+8. Bên gọi có thể đưa kèm thời điểm hết hạn, viết theo RFC 3339 có múi giờ và không quá 30 ngày tới. Quá hạn thì lần gửi bị loại với lý do `EXPIRED`, không gửi muộn.
+9. Thời điểm hết hạn không nằm trong phép so khoá chống trùng, để bên gọi gửi lại cùng một lệnh với hạn mới mà không bị coi là lệnh khác. Lệnh gửi lại nhận đúng kết quả lần đầu, kể cả sau lúc hết hạn; hạn của lần đầu được giữ.
 10. Lần gửi đang chờ vì nhà cung cấp từ chối khoá thì chờ tới hạn của thông báo, và không quá một ngày kể từ lúc tạo.
 
 ## Hệ quả
 
+- Notification tin mã người nhận mà bên gọi đưa và không đối chiếu được mã đó với địa chỉ. Một quản trị tiệm cố ý đưa mã sai kèm địa chỉ của người khác thì lựa chọn tắt nhận của người đó không được xét. Luật ở điểm 3 chặn việc gửi thiếu mã, không chặn được việc gửi sai mã; hạn mức ở điểm 6 là giới hạn cho trường hợp này. Chặn hẳn cần notification hỏi identity địa chỉ của người nhận, để sau.
+- Hạn mức chỉ đếm lần gửi đang chờ hoặc đã gửi; lần bị bỏ qua hoặc bị loại không tính.
 - Tiệm muốn gửi thư tới người chưa có tài khoản thì chưa làm được. Việc này cần tắt nhận theo địa chỉ và link huỷ đăng ký, để sau.
 - Hạn mức đếm theo số lần gửi đã ghi, nên các lệnh tới cùng lúc có thể vượt hạn mức một ít.
 - Tên thương hiệu do tiệm tự đặt, nên một tiệm vẫn có thể đặt tên gây nhầm lẫn. Địa chỉ gửi vẫn là địa chỉ chung; tên miền gửi riêng cho từng tiệm để sau.
