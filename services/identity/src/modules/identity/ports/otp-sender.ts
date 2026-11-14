@@ -3,6 +3,7 @@ export interface OtpMessage {
   purpose: 'EMAIL_VERIFICATION' | 'PASSWORD_RESET';
   code: string;
   expiresInMinutes: number;
+  expiresAt: Date;
 }
 
 export abstract class OtpSender {

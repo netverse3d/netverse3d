@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'node:crypto';
 import { AppConfig } from '../../../config/app-config';
+import { KeysService } from '../../keys/services/keys.service';
 import { OtpMessage, OtpSender } from '../ports/otp-sender';
+import { createNotificationOtpSender } from './notification-otp-sender';
 
 const WEBHOOK_TIMEOUT_MS = 5_000;
 
@@ -38,6 +40,13 @@ export class WebhookOtpSender extends OtpSender {
   }
 }
 
-export function createOtpSender(config: AppConfig): OtpSender {
-  return config.otp.delivery === 'webhook' ? new WebhookOtpSender(config) : new LogOtpSender();
+export function createOtpSender(config: AppConfig, keys: KeysService): OtpSender {
+  switch (config.otp.delivery) {
+    case 'notification':
+      return createNotificationOtpSender(config, keys);
+    case 'webhook':
+      return new WebhookOtpSender(config);
+    case 'log':
+      return new LogOtpSender();
+  }
 }

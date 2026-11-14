@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { AppConfig } from '../../config/app-config';
 import { KeysModule } from '../keys/keys.module';
+import { KeysService } from '../keys/services/keys.service';
 import { OutboxModule } from '@netverse/nest-kit';
 import { createOtpSender } from './adapters/otp-senders';
 import { AuthController } from './controllers/auth.controller';
@@ -43,7 +44,7 @@ import { SocialProviderRegistry } from './social/social-provider.registry';
     GithubProvider,
     SessionStateGuard,
     IdentityCleanupJob,
-    { provide: OtpSender, useFactory: createOtpSender, inject: [AppConfig] },
+    { provide: OtpSender, useFactory: createOtpSender, inject: [AppConfig, KeysService] },
   ],
   exports: [
     SessionStateGuard,
