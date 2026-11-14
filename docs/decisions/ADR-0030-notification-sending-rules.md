@@ -45,5 +45,6 @@ Bản soát mã của notification để lại ba điểm cần quyết về ngh
 - Hạn mức đếm theo số lần gửi đã ghi, nên các lệnh tới cùng lúc có thể vượt hạn mức một ít.
 - Tên thương hiệu do tiệm tự đặt, nên một tiệm vẫn có thể đặt tên gây nhầm lẫn. Địa chỉ gửi vẫn là địa chỉ chung; tên miền gửi riêng cho từng tiệm để sau.
 - Identity đặt hạn của thông báo bằng hạn của mã xác minh lúc chuyển sang gửi qua notification.
+- Bản băm của yêu cầu, dùng cho khoá chống trùng, vẫn được giữ và được tính từ cả phần biến. Với mã ngắn như mã sáu chữ số, người đọc được cơ sở dữ liệu có thể dò ra mã từ bản băm trong lúc mã còn hiệu lực. Muốn đóng hẳn thì băm yêu cầu bằng một khoá bí mật của notification, để sau.
 - Sau lúc gửi xong không còn xem lại được biến của một thông báo. Nhật ký gửi vẫn giữ loại sự kiện, kênh, trạng thái và lý do.
 - Mã một lần vẫn nằm ở dạng đọc được trong cơ sở dữ liệu của notification từ lúc nhận lệnh tới lúc gửi xong, và đi qua kênh gRPC chưa mã hoá. Mã hoá kênh giữa các service làm lúc triển khai thật.
