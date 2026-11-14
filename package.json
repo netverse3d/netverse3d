@@ -41,10 +41,10 @@
     "@eslint/js": "^10.0.1",
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.0",
     "turbo": "^2.11.10",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "8.72.1",
+    "typescript": "~7.0.2",
+    "typescript-eslint": "8.72.2",
     "yaml": "^2.9.1"
   }
 }
