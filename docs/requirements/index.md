@@ -14,7 +14,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-001 | Đăng ký và đăng nhập bằng tài khoản | Đã chốt | Bắt buộc | `identity` |
-| REQ-002 | Phân quyền theo vai trò người chơi, chủ tiệm, quản trị | Đã chốt | Bắt buộc | `identity` |
+| REQ-002 | Phân quyền theo vai trò người chơi, chủ tiệm, quản trị | Đã làm | Bắt buộc | `identity` |
 | REQ-003 | Tạo và chỉnh nhân vật | Nháp | Bắt buộc | `web-3d` |
 | REQ-004 | Web 3D chạy trên máy tính và điện thoại | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
