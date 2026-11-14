@@ -1,13 +1,19 @@
 import { Injectable, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
-import { AppException } from '@netverse/nest-kit';
+import { AppException, EventConsumer, EventContracts, InvalidEventError } from '@netverse/nest-kit';
 import { NotificationsService } from '../../notifications/services/notifications.service';
-import { parseInboundEvent } from '../domain/inbound-event';
-import { EventConsumer, InvalidEventError } from '@netverse/nest-kit';
+import { listenedSources, reactionTo, readEnvelope } from '../domain/event-reactions';
 
 const SERVER_ERROR_STATUS = 500;
 
 @Injectable()
 export class EventIntakeService implements OnApplicationBootstrap, OnModuleDestroy {
+  private readonly contracts = new Map(
+    listenedSources().map((source) => [
+      source,
+      EventContracts.forService(source, { required: true }),
+    ]),
+  );
+
   constructor(
     private readonly consumer: EventConsumer,
     private readonly notifications: NotificationsService,
@@ -22,18 +28,24 @@ export class EventIntakeService implements OnApplicationBootstrap, OnModuleDestr
   }
 
   async handle(payload: Buffer): Promise<void> {
-    const event = parseInboundEvent(payload);
+    const event = readEnvelope(payload);
+    const contract = this.contracts.get(event.source);
+    if (!contract) {
+      throw new InvalidEventError(`events from ${event.source} are not listened to`);
+    }
+    contract.assertValid(event);
+    const order = reactionTo(event);
+    if (!order) {
+      return;
+    }
     try {
       await this.notifications.accept({
-        tenantId: event.tenantId,
+        tenantId: order.scope,
         source: 'EVENT',
         idempotencyKey: event.id,
-        eventType: event.eventType,
-        locale: event.locale,
-        channels: event.channels,
-        recipient: event.recipient,
-        variables: event.variables,
-        expiresAt: event.expiresAt ? new Date(event.expiresAt) : undefined,
+        eventType: order.eventType,
+        recipient: order.recipient,
+        variables: order.variables,
       });
     } catch (error) {
       if (error instanceof AppException && error.definition.httpStatus < SERVER_ERROR_STATUS) {
