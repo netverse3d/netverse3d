@@ -26,6 +26,7 @@ message SendRequest {
   string variables_json = 4;
   string locale = 5;
   repeated Channel channels = 6;
+  string expires_at = 7;
 }
 
 message Delivery {

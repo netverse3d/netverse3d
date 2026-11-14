@@ -16,6 +16,13 @@ export interface EmailProvider {
   create(settings: Record<string, unknown>, context: EmailSenderContext): ChannelSender;
 }
 
-export function formatSender(context: EmailSenderContext): string {
-  return context.fromName ? `${context.fromName} <${context.fromAddress}>` : context.fromAddress;
+const PLAIN_NAME = /^[\w .'-]+$/;
+
+export function formatSender(context: EmailSenderContext, senderName?: string): string {
+  const name = senderName ?? context.fromName;
+  if (!name) {
+    return context.fromAddress;
+  }
+  const display = PLAIN_NAME.test(name) ? name : `"${name.replace(/["\\]/g, '')}"`;
+  return `${display} <${context.fromAddress}>`;
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DELIVERY_CHANNELS, type DeliveryChannelName } from '../../notifications/domain/channels';
+import { TEMPLATE_CATEGORIES, type TemplateCategoryName } from '../domain/template-category';
 import type { TemplateRow } from '../repositories/templates.repository';
 
 export class TemplateResponseDto {
@@ -21,6 +22,9 @@ export class TemplateResponseDto {
   @ApiProperty()
   body: string;
 
+  @ApiProperty({ enum: TEMPLATE_CATEGORIES })
+  category: TemplateCategoryName;
+
   @ApiProperty()
   version: number;
 
@@ -38,6 +42,7 @@ export class TemplateResponseDto {
       locale: row.locale,
       subject: row.subject,
       body: row.body,
+      category: row.category,
       version: row.version,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

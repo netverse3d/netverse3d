@@ -21,7 +21,7 @@ export class AppConfig extends KitConfig {
     rolesClaim: string;
     tenantClaim: string;
   };
-  readonly notification: { defaultLocale: string };
+  readonly notification: { defaultLocale: string; tenantDailyEmailLimit: number };
   readonly email: {
     provider: string;
     fromAddress?: string;
@@ -73,7 +73,10 @@ export class AppConfig extends KitConfig {
       rolesClaim: env.AUTH_ROLES_CLAIM,
       tenantClaim: env.AUTH_TENANT_CLAIM,
     };
-    this.notification = { defaultLocale: env.DEFAULT_LOCALE };
+    this.notification = {
+      defaultLocale: env.DEFAULT_LOCALE,
+      tenantDailyEmailLimit: env.TENANT_DAILY_EMAIL_LIMIT,
+    };
     this.email = {
       provider: env.EMAIL_PROVIDER,
       fromAddress: env.EMAIL_FROM_ADDRESS,

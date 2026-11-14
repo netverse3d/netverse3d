@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { DELIVERY_CHANNELS } from '../../notifications/domain/channels';
 import {
   EVENT_TYPE_PATTERN,
+  EXPIRES_AT_PATTERN,
   LOCALE_PATTERN,
   MAX_DEVICE_TOKEN_LENGTH,
   MAX_DEVICE_TOKENS,
@@ -29,6 +30,7 @@ const inboundEventSchema = z.object({
       .optional(),
   }),
   variables: z.record(z.string(), z.unknown()).default({}),
+  expiresAt: z.string().regex(EXPIRES_AT_PATTERN).optional(),
 });
 
 export type InboundEvent = z.infer<typeof inboundEventSchema>;

@@ -27,6 +27,26 @@ export const NotificationErrorCode = {
     httpStatus: HttpStatus.BAD_REQUEST,
     message: 'Recipient must include a subject, an email or device tokens',
   },
+  RECIPIENT_SUBJECT_REQUIRED: {
+    code: 'NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+    message: 'Optional notifications need a recipient subject so opt-outs can be honoured',
+  },
+  TRANSACTIONAL_TEMPLATE_FORBIDDEN: {
+    code: 'NOTIFICATION.TRANSACTIONAL_TEMPLATE_FORBIDDEN',
+    httpStatus: HttpStatus.FORBIDDEN,
+    message: 'Transactional templates exist only in the platform scope',
+  },
+  EMAIL_QUOTA_EXCEEDED: {
+    code: 'NOTIFICATION.EMAIL_QUOTA_EXCEEDED',
+    httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+    message: 'The shop reached its email limit for the last 24 hours',
+  },
+  EXPIRES_AT_INVALID: {
+    code: 'NOTIFICATION.EXPIRES_AT_INVALID',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+    message: 'The expiry must be in the future and at most 30 days ahead',
+  },
   INVALID_CHARACTERS: {
     code: 'NOTIFICATION.INVALID_CHARACTERS',
     httpStatus: HttpStatus.BAD_REQUEST,

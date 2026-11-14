@@ -373,12 +373,23 @@ try {
   );
   assert.equal(mailTemplate.status, 201, JSON.stringify(mailTemplate.body));
   const customer = `customer-${RUN}@example.test`;
+  const branded = await notification('PUT', '/v1/branding/name', { value: 'Lan Net' }, ownerToken);
+  assert.equal(branded.status, 200, JSON.stringify(branded.body));
+  const addressOnly = await notification(
+    'POST',
+    '/v1/notifications',
+    { eventType: mailEvent, recipient: { email: customer }, channels: ['EMAIL'] },
+    ownerToken,
+  );
+  assert.equal(addressOnly.status, 422, JSON.stringify(addressOnly.body));
+  assert.equal(addressOnly.body.code, 'NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED');
   const mailed = await notification(
     'POST',
     '/v1/notifications',
     {
       eventType: mailEvent,
-      recipient: { email: customer },
+      recipient: { subject: playerId, email: customer },
+      expiresAt: new Date(Date.now() + 600_000).toISOString(),
       variables: { name: 'Lan', total: '<b>50</b>' },
       channels: ['EMAIL'],
     },
@@ -388,9 +399,12 @@ try {
   const mail = await mailTo(customer);
   assert.equal(mail.Subject, 'Receipt for Lan');
   assert.equal(mail.From.Address, 'no-reply@netverse.test');
+  assert.equal(mail.From.Name, 'Lan Net');
   assert.ok(mail.HTML.includes('Total &lt;b&gt;50&lt;/b&gt;'), mail.HTML);
   assert.ok(mail.MessageID.includes('@netverse.test'), mail.MessageID);
-  console.log('an email goes out over SMTP and arrives with escaped variables ok');
+  console.log(
+    'a shop email needs a recipient account, carries the shop name and arrives with escaped variables ok',
+  );
 
   const platformInbox = await notification('GET', '/v1/inbox', undefined, playerToken);
   assert.equal(platformInbox.status, 200, JSON.stringify(platformInbox.body));

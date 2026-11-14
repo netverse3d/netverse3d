@@ -7,6 +7,8 @@ import { resolveSort } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import type { DeliveryChannelName } from '../../notifications/domain/channels';
 import { scopeOf } from '@netverse/nest-kit';
+import { PLATFORM_SCOPE } from '@netverse/nest-kit';
+import type { TemplateCategoryName } from '../domain/template-category';
 import { NotificationErrorCode } from '../../notifications/notification-error-codes';
 import { findTemplateProblems } from '../domain/template-engine';
 import {
@@ -33,8 +35,9 @@ export class TemplatesService {
   async create(dto: CreateTemplateDto, actor: Actor): Promise<TemplateResponseDto> {
     const tenantId = scopeOf(actor);
     this.assertCompiles(dto.channel, dto.subject, dto.body);
+    const category = this.categoryIn(tenantId, dto.category) ?? 'OPTIONAL';
     try {
-      return TemplateResponseDto.from(await this.repository.create({ tenantId, ...dto }));
+      return TemplateResponseDto.from(await this.repository.create({ tenantId, ...dto, category }));
     } catch (error) {
       if (isTemplateKeyConflict(error)) {
         throw new AppException(NotificationErrorCode.TEMPLATE_KEY_TAKEN);
@@ -61,11 +64,12 @@ export class TemplatesService {
 
   async update(id: string, dto: UpdateTemplateDto, actor: Actor): Promise<TemplateResponseDto> {
     const tenantId = scopeOf(actor);
-    if (dto.subject === undefined && dto.body === undefined) {
+    if (dto.subject === undefined && dto.body === undefined && dto.category === undefined) {
       throw new AppException(ErrorCode.VALIDATION, {
-        details: [{ field: 'body', errors: ['subject or body must be provided'] }],
+        details: [{ field: 'body', errors: ['subject, body or category must be provided'] }],
       });
     }
+    this.categoryIn(tenantId, dto.category);
     const existing = await this.requireOwned(id, tenantId);
     this.assertCompiles(
       existing.channel,
@@ -100,6 +104,16 @@ export class TemplatesService {
 
   channelsWithTemplate(tenantId: string, eventType: string): Promise<DeliveryChannelName[]> {
     return this.repository.channelsWithTemplate(tenantId, eventType);
+  }
+
+  private categoryIn(
+    scope: string,
+    category: TemplateCategoryName | undefined,
+  ): TemplateCategoryName | undefined {
+    if (category === 'TRANSACTIONAL' && scope !== PLATFORM_SCOPE) {
+      throw new AppException(NotificationErrorCode.TRANSACTIONAL_TEMPLATE_FORBIDDEN);
+    }
+    return category;
   }
 
   private async requireOwned(id: string, tenantId: string): Promise<TemplateRow> {

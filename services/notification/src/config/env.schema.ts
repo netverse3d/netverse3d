@@ -48,6 +48,7 @@ const baseSchema = z.object({
   AUTH_TENANT_CLAIM: z.string().min(1).default('tenant_id'),
 
   DEFAULT_LOCALE: z.string().min(2).max(16).default('en'),
+  TENANT_DAILY_EMAIL_LIMIT: positiveInt(500),
   EMAIL_PROVIDER: z.string().min(1).default(EMAIL_PROVIDER_LOG),
   EMAIL_FROM_ADDRESS: z.email().optional(),
   EMAIL_FROM_NAME: z.string().min(1).optional(),

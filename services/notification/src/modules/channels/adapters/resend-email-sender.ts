@@ -27,7 +27,7 @@ export class ResendEmailSender extends ChannelSender {
         'idempotency-key': message.deliveryId,
       },
       body: JSON.stringify({
-        from: formatSender(this.context),
+        from: formatSender(this.context, message.senderName),
         to: [message.destination],
         subject: message.subject,
         html: message.body,

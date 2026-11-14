@@ -33,6 +33,7 @@ export class EventIntakeService implements OnApplicationBootstrap, OnModuleDestr
         channels: event.channels,
         recipient: event.recipient,
         variables: event.variables,
+        expiresAt: event.expiresAt ? new Date(event.expiresAt) : undefined,
       });
     } catch (error) {
       if (error instanceof AppException && error.definition.httpStatus < SERVER_ERROR_STATUS) {

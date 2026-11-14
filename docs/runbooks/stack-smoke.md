@@ -57,7 +57,7 @@ Kịch bản làm lần lượt:
 9. Chủ tiệm tự duyệt tệp của tiệm mình, phải nhận 403.
 10. Quản trị nền tảng duyệt tệp của tiệm và tệp của người chơi, cả hai đều được.
 11. Chủ tiệm tạo một template cho hộp thư trong ứng dụng ở `notification`, gửi một thông báo cho chính mình, rồi đọc thấy nó trong hộp thư với tiêu đề đã render.
-12. Chủ tiệm tạo một template email rồi gửi tới một địa chỉ. Kịch bản đọc hộp thư giả lập và phải thấy đúng tiêu đề, người gửi, và biến đã được thoát HTML.
+12. Chủ tiệm đặt tên thương hiệu, tạo một template email rồi gửi. Lệnh chỉ có địa chỉ bị từ chối với `NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED`; lệnh có mã người nhận thì đi. Kịch bản đọc hộp thư giả lập và phải thấy đúng tiêu đề, tên người gửi là tên tiệm, và biến đã được thoát HTML.
 13. Người chơi gọi hộp thư bằng token không gắn tenant và đọc được hộp thư của phạm vi nền tảng, nhưng không vào được phần quản trị.
 14. Quản trị nền tảng tạo một tài khoản service ở `identity`; tài khoản đó đổi mã và khoá bí mật lấy token cho `media`. Token không gắn tenant và chỉ có audience `media`.
 15. Token của service gọi một route của người dùng ở `media`, phải nhận 403. Tài khoản đó xin token cho `notification`, là audience nó không được cấp, cũng phải nhận 403.

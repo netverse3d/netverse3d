@@ -10,6 +10,7 @@ import {
   MAX_TEMPLATE_BODY_LENGTH,
   MAX_TEMPLATE_SUBJECT_LENGTH,
 } from '../../notifications/domain/limits';
+import { TEMPLATE_CATEGORIES, type TemplateCategoryName } from '../domain/template-category';
 
 export class CreateTemplateDto {
   @ApiProperty({ example: 'account.welcome', maxLength: MAX_EVENT_TYPE_LENGTH })
@@ -45,6 +46,14 @@ export class CreateTemplateDto {
   @IsNotEmpty()
   @MaxLength(MAX_TEMPLATE_BODY_LENGTH)
   body: string;
+
+  @ApiPropertyOptional({
+    enum: TEMPLATE_CATEGORIES,
+    description: 'TRANSACTIONAL is always sent and exists only in the platform scope',
+  })
+  @IsOptional()
+  @IsEnum(TEMPLATE_CATEGORIES)
+  category?: TemplateCategoryName;
 }
 
 export class UpdateTemplateDto {
@@ -61,6 +70,14 @@ export class UpdateTemplateDto {
   @IsNotEmpty()
   @MaxLength(MAX_TEMPLATE_BODY_LENGTH)
   body?: string;
+
+  @ApiPropertyOptional({
+    enum: TEMPLATE_CATEGORIES,
+    description: 'TRANSACTIONAL is always sent and exists only in the platform scope',
+  })
+  @IsOptional()
+  @IsEnum(TEMPLATE_CATEGORIES)
+  category?: TemplateCategoryName;
 }
 
 export class TemplateQueryDto extends PaginationQueryDto {

@@ -23,6 +23,7 @@ import {
 } from '../domain/channels';
 import {
   EVENT_TYPE_PATTERN,
+  EXPIRES_AT_PATTERN,
   LOCALE_PATTERN,
   MAX_DEVICE_TOKENS,
   MAX_DEVICE_TOKEN_LENGTH,
@@ -80,6 +81,15 @@ export class SendNotificationDto {
   @MaxLength(MAX_LOCALE_LENGTH)
   @Matches(LOCALE_PATTERN)
   locale?: string;
+
+  @ApiPropertyOptional({
+    format: 'date-time',
+    description:
+      'RFC 3339 moment with a time zone, at most 30 days ahead; after it the notification is dropped instead of sent late',
+  })
+  @IsOptional()
+  @Matches(EXPIRES_AT_PATTERN)
+  expiresAt?: string;
 
   @ApiPropertyOptional({ enum: DELIVERY_CHANNELS, isArray: true })
   @IsOptional()
