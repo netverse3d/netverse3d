@@ -9,8 +9,11 @@ import {
   EventProducer,
   ProducedMessage,
 } from '../../modules/outbox/adapters/kafka-event-publisher';
+import { ConnectionMonitor } from './connection-monitor';
 
 const DEAD_LETTER_REASON_HEADER = 'dead-letter-reason';
+const BROKER_PROBE_INTERVAL_MS = 10_000;
+const BROKER_PROBE_TIMEOUT_MS = 3_000;
 
 export interface KafkaSettings {
   brokers: string[];
@@ -79,8 +82,13 @@ export async function subscribeToTopics(
     kafkaJS: { groupId: settings.groupId, fromBeginning: true },
   });
   await consumer.connect();
-  let connected = true;
+  const admin = kafka.admin();
+  const monitor = new ConnectionMonitor(
+    () => admin.listTopics({ timeout: BROKER_PROBE_TIMEOUT_MS }),
+    BROKER_PROBE_INTERVAL_MS,
+  );
   try {
+    await admin.connect();
     await consumer.subscribe({ topics: settings.topics });
     await consumer.run({
       eachMessage: ({ topic, message }) =>
@@ -92,13 +100,16 @@ export async function subscribeToTopics(
         }),
     });
   } catch (error) {
+    await admin.disconnect().catch(() => undefined);
     await consumer.disconnect().catch(() => undefined);
     throw error;
   }
+  monitor.start();
   return {
-    isConnected: () => connected,
+    isConnected: () => monitor.isConnected(),
     async stop(): Promise<void> {
-      connected = false;
+      monitor.stop();
+      await admin.disconnect().catch(() => undefined);
       await consumer.disconnect();
     },
   };

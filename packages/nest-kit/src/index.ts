@@ -33,6 +33,7 @@ export * from './infrastructure/grpc/grpc-contract';
 export * from './infrastructure/grpc/grpc-server';
 export * from './infrastructure/grpc/grpc.module';
 export * from './infrastructure/jobs/locked-job';
+export * from './infrastructure/kafka/connection-monitor';
 export * from './infrastructure/kafka/kafka-client';
 export * from './infrastructure/logger/app-logger.module';
 export * from './infrastructure/logger/pino-options';
