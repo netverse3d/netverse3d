@@ -19,7 +19,7 @@ Bốn thứ này dựa vào cùng một câu hỏi: service này là ai lúc g�
 
 ### Định danh service
 
-1. Identity quản lý tài khoản của service. Mỗi tài khoản có mã, khoá bí mật chỉ hiện một lần lúc tạo và được lưu ở dạng băm, danh sách audience được phép và danh sách quyền. Chỉ quản trị nền tảng tạo, đổi khoá và thu hồi được.
+1. Identity quản lý tài khoản của service. Mỗi tài khoản có mã, khoá bí mật chỉ hiện một lần lúc tạo và được lưu ở dạng băm, danh sách audience được phép và danh sách quyền. Chỉ quản trị nền tảng tạo, đổi khoá, thu hồi và mở lại được. Mở lại một tài khoản đã thu hồi không khôi phục khoá cũ. Identity tự có một tài khoản service mang tên `identity`, tạo lúc khởi động và chịu cùng các thao tác đó; tên này được giữ riêng.
 2. Service đổi mã và khoá bí mật lấy token. Token ngắn hạn, không có refresh token, không gắn tenant, không mang vai trò, mang danh sách quyền và chỉ có audience mà service được cấp.
 3. Quyền của service do nền tảng cấp, không do tenant đặt. Tenant không tạo được quyền này bằng vai trò hay permission của mình.
 4. `packages/nest-kit` phân biệt token của người dùng và token của service, và có guard theo quyền. Route không khai quyền thì từ chối token của service, để service không đóng vai người dùng.

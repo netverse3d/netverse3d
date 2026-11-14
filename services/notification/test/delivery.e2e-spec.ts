@@ -849,6 +849,59 @@ describe('đường gửi thông báo', () => {
     });
   });
 
+  describe('giữ dữ liệu của thông báo ngắn nhất có thể', () => {
+    const variablesOf = async (eventType: string) =>
+      (await scenario.prisma.notification.findFirstOrThrow({ where: { eventType } })).variables;
+
+    it('biến được giữ lúc còn chờ thử lại, và bị xoá khi lần gửi có kết quả cuối', async () => {
+      const eventType = uniqueEvent();
+      await scenario.createTemplate({ eventType });
+      subject.email.failure = new Error('provider is down');
+      await scenario.send({
+        eventType,
+        recipient: { email: EMAIL },
+        variables: { name: 'Lan', code: '123456' },
+      });
+      await scenario.drain();
+      expect(await variablesOf(eventType)).toEqual({ name: 'Lan', code: '123456' });
+
+      subject.email.failure = null;
+      await scenario.makeDue(eventType);
+      await scenario.drain();
+      expect(subject.email.forEvent(eventType)).toHaveLength(1);
+      expect(await variablesOf(eventType)).toEqual({});
+    });
+
+    it('thông báo đi nhiều kênh cùng lúc vẫn bị xoá biến sau lần gửi cuối', async () => {
+      const eventType = uniqueEvent();
+      await scenario.createTemplate({ eventType });
+      await scenario.createTemplate({ eventType, channel: 'IN_APP', subject: 'T', body: 'app' });
+      await scenario.send({
+        eventType,
+        recipient: { subject: 'u-purge', email: EMAIL },
+        variables: { name: 'Lan', code: '654321' },
+      });
+      await scenario.drain();
+      expect(await scenario.deliveriesOf(eventType)).toMatchObject([
+        { status: 'SENT' },
+        { status: 'SENT' },
+      ]);
+      expect(await variablesOf(eventType)).toEqual({});
+    });
+
+    it('lần gửi bị loại cũng xoá biến', async () => {
+      const eventType = uniqueEvent();
+      await scenario.send({
+        eventType,
+        recipient: { email: EMAIL },
+        variables: { code: '111222' },
+      });
+      await scenario.drain();
+      expect(await scenario.deliveriesOf(eventType)).toMatchObject([{ status: 'DEAD' }]);
+      expect(await variablesOf(eventType)).toEqual({});
+    });
+  });
+
   describe('sự kiện kết quả qua outbox', () => {
     async function relay(): Promise<void> {
       const job = subject.app.get(OutboxRelayJob);

@@ -25,6 +25,14 @@ const GUARDED_NAMES = [
 ];
 
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
+const MAX_PORT = 65_535;
+
+function hasUsablePort(address: string): boolean {
+  const port = Number(address.slice(address.lastIndexOf(':') + 1));
+  return port >= 1 && port <= MAX_PORT;
+}
+
+const HOST_AND_PORT = /^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?:\d{1,5}$/;
 
 export const envSchema = z
   .object({
@@ -70,7 +78,13 @@ export const envSchema = z
     OTP_MAX_ATTEMPTS: positiveInt(5),
     OTP_RESEND_COOLDOWN_SECONDS: positiveInt(60),
     OTP_HASH_SECRET: z.string().min(32),
-    OTP_DELIVERY: z.enum(['log', 'webhook']).default('log'),
+    OTP_DELIVERY: z.enum(['log', 'webhook', 'notification']).default('log'),
+    OTP_NOTIFICATION_ADDRESS: z
+      .string()
+      .regex(HOST_AND_PORT, 'must be a host name followed by a port, like notification:50051')
+      .refine(hasUsablePort, 'port must be between 1 and 65535')
+      .optional(),
+    OTP_NOTIFICATION_AUDIENCE: z.string().min(1).default('notification'),
     OTP_WEBHOOK_URL: z.url().optional(),
     OTP_WEBHOOK_SECRET: z.string().min(32).optional(),
 
@@ -120,6 +134,15 @@ export const envSchema = z
     }
     if (env.NODE_ENV === 'production' && env.OTP_DELIVERY === 'log') {
       missing('OTP_DELIVERY', 'log delivery would write one-time codes to logs in production');
+    }
+    if (env.OTP_DELIVERY === 'notification' && !env.OTP_NOTIFICATION_ADDRESS) {
+      missing('OTP_NOTIFICATION_ADDRESS', 'required when OTP_DELIVERY is notification');
+    }
+    if (
+      env.OTP_DELIVERY === 'notification' &&
+      ![env.AUTH_AUDIENCE, ...env.TOKEN_AUDIENCES].includes(env.OTP_NOTIFICATION_AUDIENCE)
+    ) {
+      missing('OTP_NOTIFICATION_AUDIENCE', 'must be one of the audiences in TOKEN_AUDIENCES');
     }
     if (env.OTP_DELIVERY === 'webhook' && !env.OTP_WEBHOOK_URL) {
       missing('OTP_WEBHOOK_URL', 'required when OTP_DELIVERY is webhook');

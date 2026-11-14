@@ -65,6 +65,9 @@ export class DeliveryRepository {
 
   async settle(delivery: ClaimedDelivery, outcome: DeliveryOutcome): Promise<void> {
     await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT id FROM notifications WHERE id = ${delivery.notificationId}::uuid FOR UPDATE
+      `;
       const { count } = await transaction.notificationDelivery.updateMany({
         where: { id: delivery.id, status: 'PROCESSING', attempts: delivery.attempts },
         data: {
@@ -98,6 +101,18 @@ export class DeliveryRepository {
         },
         transaction,
       );
+      const unfinished = await transaction.notificationDelivery.count({
+        where: {
+          notificationId: delivery.notificationId,
+          status: { in: ['PENDING', 'PROCESSING'] },
+        },
+      });
+      if (unfinished === 0) {
+        await transaction.notification.update({
+          where: { id: delivery.notificationId },
+          data: { variables: {} },
+        });
+      }
     });
   }
 

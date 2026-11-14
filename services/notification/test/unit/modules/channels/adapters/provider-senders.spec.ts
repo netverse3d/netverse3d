@@ -8,6 +8,8 @@ import {
 } from '../../../../../src/modules/channels/ports/channel-sender';
 import { FirebasePushSender } from '../../../../../src/modules/channels/adapters/firebase-push-sender';
 
+const KEY_GENERATION_TIMEOUT_MS = 60_000;
+
 const BASE_ENV = {
   SERVICE_NAME: 'svc',
   DATABASE_URL: 'postgresql://localhost/unused',
@@ -42,7 +44,7 @@ describe('gửi push qua Firebase', () => {
       }),
     );
     sender = new FirebasePushSender(config);
-  });
+  }, KEY_GENERATION_TIMEOUT_MS);
 
   afterEach(() => jest.restoreAllMocks());
 

@@ -1189,6 +1189,320 @@ paths:
       summary: Create a new active key and keep the old one for verification
       tags:
         - keys
+  /v1/admin/service-clients:
+    post:
+      operationId: ServiceClientsAdminController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceClientDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/CreatedServiceClientDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a service account; the secret is shown once
+      tags:
+        - service-clients
+    get:
+      operationId: ServiceClientsAdminController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/ServiceClientDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List service accounts
+      tags:
+        - service-clients
+  /v1/admin/service-clients/{id}/rotate-secret:
+    post:
+      operationId: ServiceClientsAdminController_rotateSecret_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RotatedSecretDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Replace the secret; the old one stops working at once
+      tags:
+        - service-clients
+  /v1/admin/service-clients/{id}/revoke:
+    post:
+      operationId: ServiceClientsAdminController_revoke_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Revoke a service account; it stops getting tokens at once
+      tags:
+        - service-clients
+  /v1/admin/service-clients/{id}/activate:
+    post:
+      operationId: ServiceClientsAdminController_activate_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '204':
+          description: ''
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Reopen a revoked service account; its old secret stays dead until one is rotated in
+      tags:
+        - service-clients
+  /v1/auth/service-token:
+    post:
+      operationId: ServiceTokenController_issue_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceTokenRequestDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ServiceTokenDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Exchange a service account id and secret for a short-lived token
+      tags:
+        - auth
+      security: []
   /livez:
     get:
       operationId: HealthController_live
@@ -1997,275 +2311,6 @@ paths:
       summary: Reactivate an account
       tags:
         - principals
-  /v1/admin/service-clients:
-    post:
-      operationId: ServiceClientsAdminController_create_v1
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateServiceClientDto'
-      responses:
-        '201':
-          description: ''
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/ApiResponseDto'
-                  - properties:
-                      result:
-                        $ref: '#/components/schemas/CreatedServiceClientDto'
-        '400':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '401':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '403':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '429':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '500':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: Create a service account; the secret is shown once
-      tags:
-        - service-clients
-    get:
-      operationId: ServiceClientsAdminController_list_v1
-      parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            minimum: 1
-            default: 1
-            type: number
-        - name: size
-          required: false
-          in: query
-          schema:
-            minimum: 1
-            maximum: 100
-            default: 20
-            type: number
-        - name: sort
-          required: false
-          in: query
-          schema:
-            example: createdAt,desc
-            type: string
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/ApiResponseDto'
-                  - properties:
-                      result:
-                        allOf:
-                          - $ref: '#/components/schemas/PageResponseDto'
-                          - properties:
-                              content:
-                                type: array
-                                items:
-                                  $ref: '#/components/schemas/ServiceClientDto'
-        '400':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '401':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '403':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '429':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '500':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: List service accounts
-      tags:
-        - service-clients
-  /v1/admin/service-clients/{id}/rotate-secret:
-    post:
-      operationId: ServiceClientsAdminController_rotateSecret_v1
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/ApiResponseDto'
-                  - properties:
-                      result:
-                        $ref: '#/components/schemas/RotatedSecretDto'
-        '400':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '401':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '403':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '429':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '500':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: Replace the secret; the old one stops working at once
-      tags:
-        - service-clients
-  /v1/admin/service-clients/{id}/revoke:
-    post:
-      operationId: ServiceClientsAdminController_revoke_v1
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '204':
-          description: ''
-        '400':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '401':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '403':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '429':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '500':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: Revoke a service account for good
-      tags:
-        - service-clients
-  /v1/auth/service-token:
-    post:
-      operationId: ServiceTokenController_issue_v1
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ServiceTokenRequestDto'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/ApiResponseDto'
-                  - properties:
-                      result:
-                        $ref: '#/components/schemas/ServiceTokenDto'
-        '400':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '429':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-        '500':
-          description: Standard error envelope
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponseDto'
-      summary: Exchange a service account id and secret for a short-lived token
-      tags:
-        - auth
-      security: []
 info:
   title: identity
   description: ''
@@ -2699,6 +2744,141 @@ components:
       required:
         - activeKid
         - retiringKid
+    CreatedServiceClientDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        audiences:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - REVOKED
+        secretRotatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        clientSecret:
+          type: string
+          description: Shown once; store it now
+      required:
+        - id
+        - name
+        - audiences
+        - permissions
+        - status
+        - secretRotatedAt
+        - createdAt
+        - clientSecret
+    CreateServiceClientDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: shop
+          maxLength: 64
+        audiences:
+          example:
+            - notification
+          type: array
+          items:
+            type: string
+        permissions:
+          example:
+            - notification:send
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - audiences
+        - permissions
+    ServiceClientDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        audiences:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - REVOKED
+        secretRotatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - audiences
+        - permissions
+        - status
+        - secretRotatedAt
+        - createdAt
+    RotatedSecretDto:
+      type: object
+      properties:
+        clientSecret:
+          type: string
+          description: Shown once; store it now
+      required:
+        - clientSecret
+    ServiceTokenDto:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: number
+          description: Lifetime in seconds
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+    ServiceTokenRequestDto:
+      type: object
+      properties:
+        clientId:
+          type: string
+          format: uuid
+        clientSecret:
+          type: string
+        audience:
+          type: string
+          example: notification
+      required:
+        - clientId
+        - clientSecret
+        - audience
     HealthResponseDto:
       type: object
       properties:
@@ -2848,141 +3028,6 @@ components:
             type: string
       required:
         - roles
-    CreatedServiceClientDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        audiences:
-          type: array
-          items:
-            type: string
-        permissions:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-          enum:
-            - ACTIVE
-            - REVOKED
-        secretRotatedAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-        clientSecret:
-          type: string
-          description: Shown once; store it now
-      required:
-        - id
-        - name
-        - audiences
-        - permissions
-        - status
-        - secretRotatedAt
-        - createdAt
-        - clientSecret
-    CreateServiceClientDto:
-      type: object
-      properties:
-        name:
-          type: string
-          example: shop
-          maxLength: 64
-        audiences:
-          example:
-            - notification
-          type: array
-          items:
-            type: string
-        permissions:
-          example:
-            - notification:send
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - audiences
-        - permissions
-    ServiceClientDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        audiences:
-          type: array
-          items:
-            type: string
-        permissions:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-          enum:
-            - ACTIVE
-            - REVOKED
-        secretRotatedAt:
-          type: string
-          format: date-time
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - audiences
-        - permissions
-        - status
-        - secretRotatedAt
-        - createdAt
-    RotatedSecretDto:
-      type: object
-      properties:
-        clientSecret:
-          type: string
-          description: Shown once; store it now
-      required:
-        - clientSecret
-    ServiceTokenDto:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        tokenType:
-          type: string
-          example: Bearer
-        expiresIn:
-          type: number
-          description: Lifetime in seconds
-      required:
-        - accessToken
-        - tokenType
-        - expiresIn
-    ServiceTokenRequestDto:
-      type: object
-      properties:
-        clientId:
-          type: string
-          format: uuid
-        clientSecret:
-          type: string
-        audience:
-          type: string
-          example: notification
-      required:
-        - clientId
-        - clientSecret
-        - audience
     ApiErrorResponseDto:
       type: object
       properties:

@@ -33,6 +33,10 @@ Bản soát mã của notification để lại ba điểm cần quyết về ngh
 9. Thời điểm hết hạn không nằm trong phép so khoá chống trùng, để bên gọi gửi lại cùng một lệnh với hạn mới mà không bị coi là lệnh khác. Lệnh gửi lại nhận đúng kết quả lần đầu, kể cả sau lúc hết hạn; hạn của lần đầu được giữ.
 10. Lần gửi đang chờ vì nhà cung cấp từ chối khoá thì chờ tới hạn của thông báo, và không quá một ngày kể từ lúc tạo.
 
+### Thời gian giữ dữ liệu
+
+11. Biến của một thông báo bị xoá ngay lúc mọi lần gửi của nó có kết quả cuối. Notification chỉ giữ biến trong lúc còn phải render, để dữ liệu nhạy cảm như mã một lần không nằm lại trong cơ sở dữ liệu.
+
 ## Hệ quả
 
 - Notification tin mã người nhận mà bên gọi đưa và không đối chiếu được mã đó với địa chỉ. Một quản trị tiệm cố ý đưa mã sai kèm địa chỉ của người khác thì lựa chọn tắt nhận của người đó không được xét. Luật ở điểm 3 chặn việc gửi thiếu mã, không chặn được việc gửi sai mã; hạn mức ở điểm 6 là giới hạn cho trường hợp này. Chặn hẳn cần notification hỏi identity địa chỉ của người nhận, để sau.
@@ -41,3 +45,6 @@ Bản soát mã của notification để lại ba điểm cần quyết về ngh
 - Hạn mức đếm theo số lần gửi đã ghi, nên các lệnh tới cùng lúc có thể vượt hạn mức một ít.
 - Tên thương hiệu do tiệm tự đặt, nên một tiệm vẫn có thể đặt tên gây nhầm lẫn. Địa chỉ gửi vẫn là địa chỉ chung; tên miền gửi riêng cho từng tiệm để sau.
 - Identity đặt hạn của thông báo bằng hạn của mã xác minh lúc chuyển sang gửi qua notification.
+- Bản băm của yêu cầu, dùng cho khoá chống trùng, vẫn được giữ và được tính từ cả phần biến. Với mã ngắn như mã sáu chữ số, người đọc được cơ sở dữ liệu có thể dò ra mã từ bản băm trong lúc mã còn hiệu lực. Muốn đóng hẳn thì băm yêu cầu bằng một khoá bí mật của notification, để sau.
+- Sau lúc gửi xong không còn xem lại được biến của một thông báo. Nhật ký gửi vẫn giữ loại sự kiện, kênh, trạng thái và lý do.
+- Mã một lần vẫn nằm ở dạng đọc được trong cơ sở dữ liệu của notification từ lúc nhận lệnh tới lúc gửi xong, và đi qua kênh gRPC chưa mã hoá. Mã hoá kênh giữa các service làm lúc triển khai thật.

@@ -51,17 +51,20 @@ Token của service chỉ vào được route khai quyền bằng `@Permissions`
 
 Mã xác minh email và đặt lại mật khẩu gửi qua cổng `OtpSender`. `OTP_DELIVERY=log` ghi mã ra log và chỉ dùng lúc phát triển; ở production service từ chối khởi động với giá trị này. `OTP_DELIVERY=webhook` gửi mã tới `OTP_WEBHOOK_URL` kèm chữ ký HMAC.
 
+`OTP_DELIVERY=notification` gửi mã qua lệnh gRPC của notification ở `OTP_NOTIFICATION_ADDRESS`, viết dạng `máy-chủ:cổng` với tên máy chủ hoặc địa chỉ IPv4, theo ADR-0028. Token mang audience `OTP_NOTIFICATION_AUDIENCE`, mặc định `notification`, và phải trùng `AUTH_AUDIENCE` của notification. Lúc khởi động identity tự tạo một tài khoản service tên `identity` với quyền `notification:send` nếu chưa có, rồi ký token từ đúng tài khoản đó. Quản trị nền tảng thấy tài khoản này trong danh sách và thu hồi được; thu hồi thì identity ngừng gửi mã, chậm nhất sau thời gian sống của token service (`SERVICE_TOKEN_TTL_SECONDS`, mặc định 5 phút), và khởi động lại không tự mở lại. Quản trị mở lại bằng `POST /v1/admin/service-clients/:id/activate`. Mỗi lần khởi động identity đặt lại audience và quyền của tài khoản này theo cấu hình hiện tại. Tên `identity` được giữ riêng. Identity gọi lệnh ở phạm vi nền tảng, chỉ qua email, và đặt hạn của thông báo bằng hạn của mã để mã quá hạn không bị gửi muộn. Loại sự kiện là `identity.otp.email_verification` và `identity.otp.password_reset`, biến là `code` và `expiresInMinutes`. Quản trị nền tảng phải tạo sẵn template email loại `TRANSACTIONAL` cho hai loại sự kiện này ở notification; thiếu template thì mã không tới được người dùng. Notification không nhận được lệnh thì identity ghi log lỗi, người dùng xin gửi lại mã.
+
 ## Cấu hình tuỳ chọn
 
 Các biến này không có trong `.env.example`, chỉ khai lúc dùng tới:
 
-| Biến                                                | Dùng cho                       |
-| --------------------------------------------------- | ------------------------------ |
-| `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`            | Đăng nhập Facebook             |
-| `ZALO_APP_SECRET`                                   | Đăng nhập Zalo                 |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`          | Đăng nhập GitHub               |
-| `OTP_WEBHOOK_URL`, `OTP_WEBHOOK_SECRET`             | Gửi mã một lần qua webhook     |
-| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Tạo quản trị nền tảng đầu tiên |
+| Biến                                                    | Dùng cho                        |
+| ------------------------------------------------------- | ------------------------------- |
+| `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`                | Đăng nhập Facebook              |
+| `ZALO_APP_SECRET`                                       | Đăng nhập Zalo                  |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`              | Đăng nhập GitHub                |
+| `OTP_WEBHOOK_URL`, `OTP_WEBHOOK_SECRET`                 | Gửi mã một lần qua webhook      |
+| `OTP_NOTIFICATION_ADDRESS`, `OTP_NOTIFICATION_AUDIENCE` | Gửi mã một lần qua notification |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`     | Tạo quản trị nền tảng đầu tiên  |
 
 ## Sự kiện
 

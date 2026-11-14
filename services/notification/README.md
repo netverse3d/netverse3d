@@ -59,6 +59,10 @@ Theo [ADR-0030](../../docs/decisions/ADR-0030-notification-sending-rules.md).
 - Email của tiệm mang tên người gửi là mục thương hiệu `name` của tiệm. Tiệm chưa đặt thì dùng `EMAIL_FROM_NAME`.
 - Lệnh gửi có thể kèm `expiresAt`, viết theo RFC 3339 có múi giờ, tối đa 30 ngày tới. Quá thời điểm đó lần gửi vào `DEAD` với `EXPIRED` thay vì gửi muộn. Trường này không nằm trong phép so khoá chống trùng: gửi lại cùng khoá, kể cả sau lúc hết hạn, nhận lại đúng kết quả lần đầu.
 
+## Thời gian giữ dữ liệu
+
+Biến của một thông báo bị xoá ngay lúc mọi lần gửi của nó có kết quả cuối, gồm cả lần bị bỏ qua và bị loại. Trong lúc còn chờ thử lại thì biến được giữ để render. Nhờ vậy dữ liệu nhạy cảm bên gọi đưa vào, như mã một lần, không nằm lại trong cơ sở dữ liệu. Nhật ký gửi vẫn giữ loại sự kiện, kênh, trạng thái và lý do.
+
 ## Quyền
 
 | Route                                                                      | Ai gọi được                                                         |

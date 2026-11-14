@@ -78,9 +78,24 @@ export class ServiceClientsAdminController {
     resourceType: RESOURCE_TYPE,
     resourceId: clientIdParam,
   })
-  @ApiOperation({ summary: 'Revoke a service account for good' })
+  @ApiOperation({ summary: 'Revoke a service account; it stops getting tokens at once' })
   @ApiNoContentResponse()
   revoke(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.clients.revoke(id);
+  }
+
+  @Post(':id/activate')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Audit({
+    action: 'service-client.activate',
+    resourceType: RESOURCE_TYPE,
+    resourceId: clientIdParam,
+  })
+  @ApiOperation({
+    summary: 'Reopen a revoked service account; its old secret stays dead until one is rotated in',
+  })
+  @ApiNoContentResponse()
+  activate(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.clients.activate(id);
   }
 }

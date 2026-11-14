@@ -24,6 +24,7 @@ import {
 
 const UNIQUE_VIOLATION = 'P2002';
 const UNUSABLE_HASH = hashClientSecret(newClientSecret());
+export const OWN_SERVICE_NAME = 'identity';
 
 @Injectable()
 export class ServiceClientService {
@@ -39,6 +40,9 @@ export class ServiceClientService {
     );
     if (unknown.length > 0) {
       throw new AppException(IdentityErrorCode.AUDIENCE_UNKNOWN, { details: { unknown } });
+    }
+    if (dto.name === OWN_SERVICE_NAME) {
+      throw new AppException(IdentityErrorCode.SERVICE_CLIENT_NAME_TAKEN);
     }
     const clientSecret = newClientSecret();
     try {
@@ -76,17 +80,54 @@ export class ServiceClientService {
     }
   }
 
+  async activate(id: string): Promise<void> {
+    const unknownSecret = hashClientSecret(newClientSecret());
+    if ((await this.repository.activateRevoked(id, unknownSecret)) === 0) {
+      throw new AppException(IdentityErrorCode.SERVICE_CLIENT_NOT_FOUND);
+    }
+  }
+
   async issueToken(dto: ServiceTokenRequestDto): Promise<ServiceTokenDto> {
-    const client = await this.authenticate(dto.clientId, dto.clientSecret);
-    const stillIssued = this.config.tokens.audiences.includes(dto.audience);
-    if (!stillIssued || !client.audiences.includes(dto.audience)) {
+    return this.signFor(await this.authenticate(dto.clientId, dto.clientSecret), dto.audience);
+  }
+
+  async ensureOwnAccount(audience: string, permissions: string[]): Promise<void> {
+    if (await this.repository.findByName(OWN_SERVICE_NAME)) {
+      await this.repository.replaceGrantsOfActive(OWN_SERVICE_NAME, [audience], permissions);
+      return;
+    }
+    try {
+      await this.repository.create({
+        name: OWN_SERVICE_NAME,
+        secretHash: hashClientSecret(newClientSecret()),
+        audiences: [audience],
+        permissions,
+      });
+    } catch (error) {
+      if (databaseErrorCode(error) !== UNIQUE_VIOLATION) {
+        throw error;
+      }
+    }
+  }
+
+  async issueOwnToken(audience: string): Promise<ServiceTokenDto> {
+    const client = await this.repository.findByName(OWN_SERVICE_NAME);
+    if (!client || client.status !== 'ACTIVE') {
+      throw new AppException(IdentityErrorCode.SERVICE_CLIENT_INVALID);
+    }
+    return this.signFor(client, audience);
+  }
+
+  private async signFor(client: ServiceClientRow, audience: string): Promise<ServiceTokenDto> {
+    const stillIssued = this.config.tokens.audiences.includes(audience);
+    if (!stillIssued || !client.audiences.includes(audience)) {
       throw new AppException(IdentityErrorCode.AUDIENCE_NOT_ALLOWED);
     }
     const ttlSeconds = this.config.tokens.serviceTtlSeconds;
     const accessToken = await this.keys.sign(
       { client_id: client.id, permissions: client.permissions },
       `service:${client.name}`,
-      { audience: dto.audience, ttlSeconds },
+      { audience, ttlSeconds },
     );
     return ServiceTokenDto.of(accessToken, ttlSeconds);
   }

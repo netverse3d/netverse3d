@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -12,8 +11,6 @@ const NOTIFICATION_GRPC = process.env.SMOKE_NOTIFICATION_GRPC ?? '127.0.0.1:5310
 const MAILBOX_URL = process.env.SMOKE_MAILBOX_URL ?? 'http://127.0.0.1:58025';
 const GRPC_PERMISSION_DENIED = 7;
 const GRPC_UNAUTHENTICATED = 16;
-const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
-const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? 'change-me-admin-password';
 const RUN = Date.now();
@@ -24,27 +21,13 @@ const PASSWORD = 'smoke-password-123';
 const CONTENT = Buffer.from('stack smoke payload');
 const CONTENT_TYPE = 'image/png';
 
-const codes = new Map();
-const waiters = new Map();
+const CODE_IN_MAIL = /\b(\d{6})\b/;
 
-const otpSink = createServer((request, response) => {
-  let body = '';
-  request.on('data', (chunk) => (body += chunk));
-  request.on('end', () => {
-    const message = JSON.parse(body);
-    codes.set(message.email, message.code);
-    waiters.get(message.email)?.(message.code);
-    response.end('{}');
-  });
-});
-await new Promise((resolve) => otpSink.listen(OTP_PORT, OTP_HOST, resolve));
-
-function waitForCode(email) {
-  if (codes.has(email)) return Promise.resolve(codes.get(email));
-  return new Promise((resolve, reject) => {
-    waiters.set(email, resolve);
-    setTimeout(() => reject(new Error(`no one-time code arrived for ${email}`)), 15_000);
-  });
+async function waitForCode(email) {
+  const mail = await mailTo(email);
+  const [, code] = CODE_IN_MAIL.exec(mail.HTML) ?? [];
+  assert.ok(code, 'the email for ' + email + ' carries no one-time code');
+  return code;
 }
 
 async function call(base, method, path, body, bearer) {
@@ -225,361 +208,378 @@ async function downloadAs(bearer, id) {
   assert.deepEqual(Buffer.from(await file.arrayBuffer()), CONTENT);
 }
 
-try {
-  const anonymous = await media('GET', '/v1/media?size=1');
-  assert.equal(anonymous.status, 401, JSON.stringify(anonymous.body));
-  console.log('media rejects a request without a token ok');
+const anonymous = await media('GET', '/v1/media?size=1');
+assert.equal(anonymous.status, 401, JSON.stringify(anonymous.body));
+console.log('media rejects a request without a token ok');
 
-  await registerAndVerify(PLAYER_EMAIL);
-  const playerToken = await login(PLAYER_EMAIL, PASSWORD);
-  assert.equal(claims(playerToken).tenant_id, undefined);
-  console.log('player registers, verifies and logs in at identity ok');
-
-  const playerId = claims(playerToken).sub;
-  const playerFile = await uploadAs(playerToken, playerId, 'INTERNAL');
-  await downloadAs(playerToken, playerFile);
-  console.log('player uploads and downloads at media with the identity token ok');
-
-  await registerAndVerify(RIVAL_EMAIL);
-  const rivalToken = await login(RIVAL_EMAIL, PASSWORD);
-  const peeked = await media('GET', `/v1/media/${playerFile}`, undefined, rivalToken);
-  assert.equal(peeked.status, 404, JSON.stringify(peeked.body));
-  const listed = await media(
-    'GET',
-    `/v1/media?ownerType=avatar&ownerId=${playerId}`,
-    undefined,
-    rivalToken,
-  );
-  assert.equal(listed.body.result.totalElements, 0, JSON.stringify(listed.body));
-  const spoofed = await media(
+const adminToken = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
+for (const purpose of ['email_verification', 'password_reset']) {
+  const eventType = 'identity.otp.' + purpose;
+  const content = {
+    subject: 'Your code',
+    body: '<p>Your code is {{code}}, valid for {{expiresInMinutes}} minutes</p>',
+    category: 'TRANSACTIONAL',
+  };
+  const codeTemplate = await notification(
     'POST',
-    '/v1/media/issue-upload-url',
-    {
-      contentType: CONTENT_TYPE,
-      declaredSizeBytes: CONTENT.length,
-      ownerType: 'avatar',
-      ownerId: playerId,
-    },
-    rivalToken,
-  );
-  assert.equal(spoofed.status, 403, JSON.stringify(spoofed.body));
-  console.log('one player cannot see or overwrite another player file ok');
-
-  await registerAndVerify(OWNER_EMAIL);
-  const adminToken = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
-  const tenant = await identity(
-    'POST',
-    '/v1/tenants',
-    { slug: `shop-${RUN}`, name: 'Smoke Shop' },
+    '/v1/templates',
+    { eventType, channel: 'EMAIL', locale: 'en', ...content },
     adminToken,
   );
-  assert.equal(tenant.status, 201, JSON.stringify(tenant.body));
-  const tenantId = tenant.body.result.id;
-  const role = await identity(
-    'PUT',
-    `/v1/tenants/${tenantId}/roles`,
-    { name: 'admin', permissions: ['shop:manage'] },
-    adminToken,
-  );
-  assert.equal(role.status, 200, JSON.stringify(role.body));
-  const member = await identity(
-    'POST',
-    `/v1/tenants/${tenantId}/members`,
-    { email: OWNER_EMAIL, roles: ['admin'] },
-    adminToken,
-  );
-  assert.equal(member.status, 201, JSON.stringify(member.body));
-  const ownerToken = await login(OWNER_EMAIL, PASSWORD, tenantId);
-  assert.equal(claims(ownerToken).tenant_id, tenantId);
-  assert.deepEqual(claims(ownerToken).roles, ['admin']);
-  console.log('shop tenant, owner role and tenant-scoped token ok');
-
-  const shopFile = await uploadAs(ownerToken, 'shop-sign', 'INTERNAL');
-  await downloadAs(ownerToken, shopFile);
-  console.log('owner uploads and downloads inside the shop tenant ok');
-
-  const outsider = await media('GET', `/v1/media/${shopFile}`, undefined, playerToken);
-  assert.equal(outsider.status, 404, JSON.stringify(outsider.body));
-  console.log('a token outside the shop tenant cannot see the shop file ok');
-
-  const shopPhoto = await uploadAs(ownerToken, 'shop-photo', 'PUBLIC');
-  const seen = await media('GET', `/v1/media/${shopPhoto}`, undefined, playerToken);
-  assert.equal(seen.status, 200, JSON.stringify(seen.body));
-  await downloadAs(playerToken, shopPhoto);
-  const removed = await media('DELETE', `/v1/media/${shopPhoto}`, undefined, playerToken);
-  assert.equal(removed.status, 404, JSON.stringify(removed.body));
-  console.log('a player reads and downloads a public shop file but cannot delete it ok');
-
-  const decision = { decision: 'APPROVED' };
-  const selfApproved = await media(
-    'POST',
-    `/v1/media/${shopFile}/moderation`,
-    decision,
-    ownerToken,
-  );
-  assert.equal(selfApproved.status, 403, JSON.stringify(selfApproved.body));
-  console.log('a shop admin cannot moderate the shop own content ok');
-
-  for (const file of [shopFile, playerFile]) {
-    const approved = await media('POST', `/v1/media/${file}/moderation`, decision, adminToken);
-    assert.equal(approved.status, 200, JSON.stringify(approved.body));
-    assert.equal(approved.body.result.moderationStatus, 'APPROVED');
+  if (codeTemplate.status === 409) {
+    const existing = await notification(
+      'GET',
+      '/v1/templates?channel=EMAIL&locale=en&eventType=' + encodeURIComponent(eventType),
+      undefined,
+      adminToken,
+    );
+    assert.equal(existing.status, 200, JSON.stringify(existing.body));
+    const [found] = existing.body.result.content;
+    assert.ok(found, 'the code template that caused the conflict is not listed');
+    const updated = await notification('PATCH', '/v1/templates/' + found.id, content, adminToken);
+    assert.equal(updated.status, 200, JSON.stringify(updated.body));
+  } else {
+    assert.equal(codeTemplate.status, 201, JSON.stringify(codeTemplate.body));
   }
-  console.log('the platform admin moderates shop and player content ok');
+}
+console.log('the platform admin provides the templates for one-time codes ok');
 
-  const eventType = `shop.notice-${RUN}`;
-  const platformEvent = `account.notice-${RUN}`;
-  const template = await notification(
+await registerAndVerify(PLAYER_EMAIL);
+const playerToken = await login(PLAYER_EMAIL, PASSWORD);
+assert.equal(claims(playerToken).tenant_id, undefined);
+console.log(
+  'player registers, gets the code by email through notification, verifies and logs in ok',
+);
+
+const playerId = claims(playerToken).sub;
+const playerFile = await uploadAs(playerToken, playerId, 'INTERNAL');
+await downloadAs(playerToken, playerFile);
+console.log('player uploads and downloads at media with the identity token ok');
+
+await registerAndVerify(RIVAL_EMAIL);
+const rivalToken = await login(RIVAL_EMAIL, PASSWORD);
+const peeked = await media('GET', `/v1/media/${playerFile}`, undefined, rivalToken);
+assert.equal(peeked.status, 404, JSON.stringify(peeked.body));
+const listed = await media(
+  'GET',
+  `/v1/media?ownerType=avatar&ownerId=${playerId}`,
+  undefined,
+  rivalToken,
+);
+assert.equal(listed.body.result.totalElements, 0, JSON.stringify(listed.body));
+const spoofed = await media(
+  'POST',
+  '/v1/media/issue-upload-url',
+  {
+    contentType: CONTENT_TYPE,
+    declaredSizeBytes: CONTENT.length,
+    ownerType: 'avatar',
+    ownerId: playerId,
+  },
+  rivalToken,
+);
+assert.equal(spoofed.status, 403, JSON.stringify(spoofed.body));
+console.log('one player cannot see or overwrite another player file ok');
+
+await registerAndVerify(OWNER_EMAIL);
+const tenant = await identity(
+  'POST',
+  '/v1/tenants',
+  { slug: `shop-${RUN}`, name: 'Smoke Shop' },
+  adminToken,
+);
+assert.equal(tenant.status, 201, JSON.stringify(tenant.body));
+const tenantId = tenant.body.result.id;
+const role = await identity(
+  'PUT',
+  `/v1/tenants/${tenantId}/roles`,
+  { name: 'admin', permissions: ['shop:manage'] },
+  adminToken,
+);
+assert.equal(role.status, 200, JSON.stringify(role.body));
+const member = await identity(
+  'POST',
+  `/v1/tenants/${tenantId}/members`,
+  { email: OWNER_EMAIL, roles: ['admin'] },
+  adminToken,
+);
+assert.equal(member.status, 201, JSON.stringify(member.body));
+const ownerToken = await login(OWNER_EMAIL, PASSWORD, tenantId);
+assert.equal(claims(ownerToken).tenant_id, tenantId);
+assert.deepEqual(claims(ownerToken).roles, ['admin']);
+console.log('shop tenant, owner role and tenant-scoped token ok');
+
+const shopFile = await uploadAs(ownerToken, 'shop-sign', 'INTERNAL');
+await downloadAs(ownerToken, shopFile);
+console.log('owner uploads and downloads inside the shop tenant ok');
+
+const outsider = await media('GET', `/v1/media/${shopFile}`, undefined, playerToken);
+assert.equal(outsider.status, 404, JSON.stringify(outsider.body));
+console.log('a token outside the shop tenant cannot see the shop file ok');
+
+const shopPhoto = await uploadAs(ownerToken, 'shop-photo', 'PUBLIC');
+const seen = await media('GET', `/v1/media/${shopPhoto}`, undefined, playerToken);
+assert.equal(seen.status, 200, JSON.stringify(seen.body));
+await downloadAs(playerToken, shopPhoto);
+const removed = await media('DELETE', `/v1/media/${shopPhoto}`, undefined, playerToken);
+assert.equal(removed.status, 404, JSON.stringify(removed.body));
+console.log('a player reads and downloads a public shop file but cannot delete it ok');
+
+const decision = { decision: 'APPROVED' };
+const selfApproved = await media('POST', `/v1/media/${shopFile}/moderation`, decision, ownerToken);
+assert.equal(selfApproved.status, 403, JSON.stringify(selfApproved.body));
+console.log('a shop admin cannot moderate the shop own content ok');
+
+for (const file of [shopFile, playerFile]) {
+  const approved = await media('POST', `/v1/media/${file}/moderation`, decision, adminToken);
+  assert.equal(approved.status, 200, JSON.stringify(approved.body));
+  assert.equal(approved.body.result.moderationStatus, 'APPROVED');
+}
+console.log('the platform admin moderates shop and player content ok');
+
+const eventType = `shop.notice-${RUN}`;
+const platformEvent = `account.notice-${RUN}`;
+const template = await notification(
+  'POST',
+  '/v1/templates',
+  {
+    eventType,
+    channel: 'IN_APP',
+    locale: 'en',
+    subject: 'Notice for {{name}}',
+    body: 'Open at {{hour}}',
+  },
+  ownerToken,
+);
+assert.equal(template.status, 201, JSON.stringify(template.body));
+const sent = await notification(
+  'POST',
+  '/v1/notifications',
+  {
+    eventType,
+    recipient: { subject: claims(ownerToken).sub },
+    variables: { name: 'Owner', hour: '9' },
+    channels: ['IN_APP'],
+  },
+  ownerToken,
+);
+assert.ok([200, 201, 202].includes(sent.status), JSON.stringify(sent.body));
+const item = await inboxOf(ownerToken, eventType);
+assert.equal(item.title, 'Notice for Owner');
+console.log('a shop admin sends an in-app notification and reads it in the inbox ok');
+
+const mailEvent = `shop.receipt-${RUN}`;
+const mailTemplate = await notification(
+  'POST',
+  '/v1/templates',
+  {
+    eventType: mailEvent,
+    channel: 'EMAIL',
+    locale: 'en',
+    subject: 'Receipt for {{name}}',
+    body: '<p>Total {{total}}</p>',
+  },
+  ownerToken,
+);
+assert.equal(mailTemplate.status, 201, JSON.stringify(mailTemplate.body));
+const customer = `customer-${RUN}@example.test`;
+const branded = await notification('PUT', '/v1/branding/name', { value: 'Lan Net' }, ownerToken);
+assert.equal(branded.status, 200, JSON.stringify(branded.body));
+const addressOnly = await notification(
+  'POST',
+  '/v1/notifications',
+  { eventType: mailEvent, recipient: { email: customer }, channels: ['EMAIL'] },
+  ownerToken,
+);
+assert.equal(addressOnly.status, 422, JSON.stringify(addressOnly.body));
+assert.equal(addressOnly.body.code, 'NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED');
+const mailed = await notification(
+  'POST',
+  '/v1/notifications',
+  {
+    eventType: mailEvent,
+    recipient: { subject: playerId, email: customer },
+    expiresAt: new Date(Date.now() + 600_000).toISOString(),
+    variables: { name: 'Lan', total: '<b>50</b>' },
+    channels: ['EMAIL'],
+  },
+  ownerToken,
+);
+assert.ok([200, 201, 202].includes(mailed.status), JSON.stringify(mailed.body));
+const mail = await mailTo(customer);
+assert.equal(mail.Subject, 'Receipt for Lan');
+assert.equal(mail.From.Address, 'no-reply@netverse.test');
+assert.equal(mail.From.Name, 'Lan Net');
+assert.ok(mail.HTML.includes('Total &lt;b&gt;50&lt;/b&gt;'), mail.HTML);
+assert.ok(mail.MessageID.includes('@netverse.test'), mail.MessageID);
+console.log(
+  'a shop email needs a recipient account, carries the shop name and arrives with escaped variables ok',
+);
+
+const platformInbox = await notification('GET', '/v1/inbox', undefined, playerToken);
+assert.equal(platformInbox.status, 200, JSON.stringify(platformInbox.body));
+const playerTemplates = await notification('GET', '/v1/templates', undefined, playerToken);
+assert.equal(playerTemplates.status, 403, JSON.stringify(playerTemplates.body));
+console.log('a player without a shop has a platform inbox and no admin rights ok');
+
+const client = await identity(
+  'POST',
+  '/v1/admin/service-clients',
+  { name: 'smoke-' + RUN, audiences: ['media'], permissions: ['media:read'] },
+  adminToken,
+);
+assert.equal(client.status, 201, JSON.stringify(client.body));
+const { id: clientId, clientSecret } = client.body.result;
+const issued = await identity('POST', '/v1/auth/service-token', {
+  clientId,
+  clientSecret,
+  audience: 'media',
+});
+assert.equal(issued.status, 200, JSON.stringify(issued.body));
+const serviceClaims = claims(issued.body.result.accessToken);
+assert.equal(serviceClaims.client_id, clientId);
+assert.equal(serviceClaims.aud, 'media');
+assert.equal(serviceClaims.tenant_id, undefined);
+console.log('the platform admin creates a service account and it gets a token ok');
+
+const asUser = await media('GET', '/v1/media?size=1', undefined, issued.body.result.accessToken);
+assert.equal(asUser.status, 403, JSON.stringify(asUser.body));
+const elsewhere = await identity('POST', '/v1/auth/service-token', {
+  clientId,
+  clientSecret,
+  audience: 'notification',
+});
+assert.equal(elsewhere.status, 403, JSON.stringify(elsewhere.body));
+console.log('a service token is refused on user routes and for audiences it was not given ok');
+
+const sender = await identity(
+  'POST',
+  '/v1/admin/service-clients',
+  { name: 'sender-' + RUN, audiences: ['notification'], permissions: ['notification:send'] },
+  adminToken,
+);
+assert.equal(sender.status, 201, JSON.stringify(sender.body));
+const senderToken = await identity('POST', '/v1/auth/service-token', {
+  clientId: sender.body.result.id,
+  clientSecret: sender.body.result.clientSecret,
+  audience: 'notification',
+});
+assert.equal(senderToken.status, 200, JSON.stringify(senderToken.body));
+const commands = notificationCommands();
+try {
+  const command = {
+    scope: tenantId,
+    eventType,
+    recipient: { subject: claims(ownerToken).sub },
+    variablesJson: JSON.stringify({ name: 'Service', hour: '10' }),
+    channels: ['CHANNEL_IN_APP'],
+  };
+  const key = 'smoke-' + RUN;
+  const accepted = await commands.send(command, senderToken.body.result.accessToken, key);
+  assert.equal(accepted.code, 0, accepted.detail);
+  const again = await commands.send(command, senderToken.body.result.accessToken, key);
+  assert.equal(again.code, 0, again.detail);
+  assert.equal(again.reply.notificationId, accepted.reply.notificationId);
+  const delivered = await inboxOf(ownerToken, eventType, 'Notice for Service');
+  assert.equal(delivered.title, 'Notice for Service');
+  console.log('a service account sends a notification over gRPC, once per idempotency key ok');
+
+  const platformTemplate = await notification(
     'POST',
     '/v1/templates',
     {
-      eventType,
+      eventType: platformEvent,
       channel: 'IN_APP',
       locale: 'en',
-      subject: 'Notice for {{name}}',
-      body: 'Open at {{hour}}',
+      subject: 'Welcome {{name}}',
+      body: 'From the platform',
     },
-    ownerToken,
-  );
-  assert.equal(template.status, 201, JSON.stringify(template.body));
-  const sent = await notification(
-    'POST',
-    '/v1/notifications',
-    {
-      eventType,
-      recipient: { subject: claims(ownerToken).sub },
-      variables: { name: 'Owner', hour: '9' },
-      channels: ['IN_APP'],
-    },
-    ownerToken,
-  );
-  assert.ok([200, 201, 202].includes(sent.status), JSON.stringify(sent.body));
-  const item = await inboxOf(ownerToken, eventType);
-  assert.equal(item.title, 'Notice for Owner');
-  console.log('a shop admin sends an in-app notification and reads it in the inbox ok');
-
-  const mailEvent = `shop.receipt-${RUN}`;
-  const mailTemplate = await notification(
-    'POST',
-    '/v1/templates',
-    {
-      eventType: mailEvent,
-      channel: 'EMAIL',
-      locale: 'en',
-      subject: 'Receipt for {{name}}',
-      body: '<p>Total {{total}}</p>',
-    },
-    ownerToken,
-  );
-  assert.equal(mailTemplate.status, 201, JSON.stringify(mailTemplate.body));
-  const customer = `customer-${RUN}@example.test`;
-  const branded = await notification('PUT', '/v1/branding/name', { value: 'Lan Net' }, ownerToken);
-  assert.equal(branded.status, 200, JSON.stringify(branded.body));
-  const addressOnly = await notification(
-    'POST',
-    '/v1/notifications',
-    { eventType: mailEvent, recipient: { email: customer }, channels: ['EMAIL'] },
-    ownerToken,
-  );
-  assert.equal(addressOnly.status, 422, JSON.stringify(addressOnly.body));
-  assert.equal(addressOnly.body.code, 'NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED');
-  const mailed = await notification(
-    'POST',
-    '/v1/notifications',
-    {
-      eventType: mailEvent,
-      recipient: { subject: playerId, email: customer },
-      expiresAt: new Date(Date.now() + 600_000).toISOString(),
-      variables: { name: 'Lan', total: '<b>50</b>' },
-      channels: ['EMAIL'],
-    },
-    ownerToken,
-  );
-  assert.ok([200, 201, 202].includes(mailed.status), JSON.stringify(mailed.body));
-  const mail = await mailTo(customer);
-  assert.equal(mail.Subject, 'Receipt for Lan');
-  assert.equal(mail.From.Address, 'no-reply@netverse.test');
-  assert.equal(mail.From.Name, 'Lan Net');
-  assert.ok(mail.HTML.includes('Total &lt;b&gt;50&lt;/b&gt;'), mail.HTML);
-  assert.ok(mail.MessageID.includes('@netverse.test'), mail.MessageID);
-  console.log(
-    'a shop email needs a recipient account, carries the shop name and arrives with escaped variables ok',
-  );
-
-  const platformInbox = await notification('GET', '/v1/inbox', undefined, playerToken);
-  assert.equal(platformInbox.status, 200, JSON.stringify(platformInbox.body));
-  const playerTemplates = await notification('GET', '/v1/templates', undefined, playerToken);
-  assert.equal(playerTemplates.status, 403, JSON.stringify(playerTemplates.body));
-  console.log('a player without a shop has a platform inbox and no admin rights ok');
-
-  const client = await identity(
-    'POST',
-    '/v1/admin/service-clients',
-    { name: 'smoke-' + RUN, audiences: ['media'], permissions: ['media:read'] },
     adminToken,
   );
-  assert.equal(client.status, 201, JSON.stringify(client.body));
-  const { id: clientId, clientSecret } = client.body.result;
-  const issued = await identity('POST', '/v1/auth/service-token', {
-    clientId,
-    clientSecret,
-    audience: 'media',
-  });
-  assert.equal(issued.status, 200, JSON.stringify(issued.body));
-  const serviceClaims = claims(issued.body.result.accessToken);
-  assert.equal(serviceClaims.client_id, clientId);
-  assert.equal(serviceClaims.aud, 'media');
-  assert.equal(serviceClaims.tenant_id, undefined);
-  console.log('the platform admin creates a service account and it gets a token ok');
-
-  const asUser = await media('GET', '/v1/media?size=1', undefined, issued.body.result.accessToken);
-  assert.equal(asUser.status, 403, JSON.stringify(asUser.body));
-  const elsewhere = await identity('POST', '/v1/auth/service-token', {
-    clientId,
-    clientSecret,
-    audience: 'notification',
-  });
-  assert.equal(elsewhere.status, 403, JSON.stringify(elsewhere.body));
-  console.log('a service token is refused on user routes and for audiences it was not given ok');
-
-  const sender = await identity(
-    'POST',
-    '/v1/admin/service-clients',
-    { name: 'sender-' + RUN, audiences: ['notification'], permissions: ['notification:send'] },
-    adminToken,
+  assert.equal(platformTemplate.status, 201, JSON.stringify(platformTemplate.body));
+  const hiddenFromShop = await notification(
+    'GET',
+    '/v1/templates/' + platformTemplate.body.result.id,
+    undefined,
+    ownerToken,
   );
-  assert.equal(sender.status, 201, JSON.stringify(sender.body));
-  const senderToken = await identity('POST', '/v1/auth/service-token', {
-    clientId: sender.body.result.id,
-    clientSecret: sender.body.result.clientSecret,
-    audience: 'notification',
-  });
-  assert.equal(senderToken.status, 200, JSON.stringify(senderToken.body));
-  const commands = notificationCommands();
-  try {
-    const command = {
-      scope: tenantId,
-      eventType,
-      recipient: { subject: claims(ownerToken).sub },
-      variablesJson: JSON.stringify({ name: 'Service', hour: '10' }),
+  assert.equal(hiddenFromShop.status, 404, JSON.stringify(hiddenFromShop.body));
+  const toPlayer = await commands.send(
+    {
+      scope: 'platform',
+      eventType: platformEvent,
+      recipient: { subject: playerId },
+      variablesJson: JSON.stringify({ name: 'Lan' }),
       channels: ['CHANNEL_IN_APP'],
-    };
-    const key = 'smoke-' + RUN;
-    const accepted = await commands.send(command, senderToken.body.result.accessToken, key);
-    assert.equal(accepted.code, 0, accepted.detail);
-    const again = await commands.send(command, senderToken.body.result.accessToken, key);
-    assert.equal(again.code, 0, again.detail);
-    assert.equal(again.reply.notificationId, accepted.reply.notificationId);
-    const delivered = await inboxOf(ownerToken, eventType, 'Notice for Service');
-    assert.equal(delivered.title, 'Notice for Service');
-    console.log('a service account sends a notification over gRPC, once per idempotency key ok');
-
-    const platformTemplate = await notification(
-      'POST',
-      '/v1/templates',
-      {
-        eventType: platformEvent,
-        channel: 'IN_APP',
-        locale: 'en',
-        subject: 'Welcome {{name}}',
-        body: 'From the platform',
-      },
-      adminToken,
-    );
-    assert.equal(platformTemplate.status, 201, JSON.stringify(platformTemplate.body));
-    const hiddenFromShop = await notification(
-      'GET',
-      '/v1/templates/' + platformTemplate.body.result.id,
-      undefined,
-      ownerToken,
-    );
-    assert.equal(hiddenFromShop.status, 404, JSON.stringify(hiddenFromShop.body));
-    const toPlayer = await commands.send(
-      {
-        scope: 'platform',
-        eventType: platformEvent,
-        recipient: { subject: playerId },
-        variablesJson: JSON.stringify({ name: 'Lan' }),
-        channels: ['CHANNEL_IN_APP'],
-      },
-      senderToken.body.result.accessToken,
-      'smoke-platform-' + RUN,
-    );
-    assert.equal(toPlayer.code, 0, toPlayer.detail);
-    const welcomed = await inboxOf(playerToken, platformEvent, 'Welcome Lan');
-    assert.equal(welcomed.title, 'Welcome Lan');
-    console.log('a service sends in the platform scope and the player reads it ok');
-
-    const anonymous = await commands.send(command, null, key + '-a');
-    assert.equal(anonymous.code, GRPC_UNAUTHENTICATED, anonymous.detail);
-    const asOwner = await commands.send(command, ownerToken, key + '-b');
-    assert.equal(asOwner.code, GRPC_PERMISSION_DENIED, asOwner.detail);
-    const reader = await identity(
-      'POST',
-      '/v1/admin/service-clients',
-      { name: 'reader-' + RUN, audiences: ['notification'], permissions: ['media:read'] },
-      adminToken,
-    );
-    assert.equal(reader.status, 201, JSON.stringify(reader.body));
-    const readerToken = await identity('POST', '/v1/auth/service-token', {
-      clientId: reader.body.result.id,
-      clientSecret: reader.body.result.clientSecret,
-      audience: 'notification',
-    });
-    assert.equal(readerToken.status, 200, JSON.stringify(readerToken.body));
-    const unpermitted = await commands.send(
-      command,
-      readerToken.body.result.accessToken,
-      key + '-c',
-    );
-    assert.equal(unpermitted.code, GRPC_PERMISSION_DENIED, unpermitted.detail);
-    console.log(
-      'gRPC refuses a missing token, a user token and a service without the permission ok',
-    );
-  } finally {
-    commands.close();
-  }
-
-  const registered = await eventsOn(
-    'netverse.identity.events.v1',
-    (event) => event.type === 'user.registered' && event.data.principalId === playerId,
+    },
+    senderToken.body.result.accessToken,
+    'smoke-platform-' + RUN,
   );
-  assert.equal(registered.event.source, 'identity');
-  assert.equal(registered.key, 'platform');
-  const joined = await eventsOn(
-    'netverse.identity.events.v1',
-    (event) => event.type === 'membership.added' && event.data.tenantId === tenantId,
-  );
-  assert.equal(joined.key, tenantId);
-  console.log('identity events reach Kafka, keyed by platform or by shop ok');
+  assert.equal(toPlayer.code, 0, toPlayer.detail);
+  const welcomed = await inboxOf(playerToken, platformEvent, 'Welcome Lan');
+  assert.equal(welcomed.title, 'Welcome Lan');
+  console.log('a service sends in the platform scope and the player reads it ok');
 
-  const delivered = await eventsOn(
-    'netverse.notification.events.v1',
-    (event) => event.type === 'notification.delivery.sent' && event.data.eventType === eventType,
+  const anonymous = await commands.send(command, null, key + '-a');
+  assert.equal(anonymous.code, GRPC_UNAUTHENTICATED, anonymous.detail);
+  const asOwner = await commands.send(command, ownerToken, key + '-b');
+  assert.equal(asOwner.code, GRPC_PERMISSION_DENIED, asOwner.detail);
+  const reader = await identity(
+    'POST',
+    '/v1/admin/service-clients',
+    { name: 'reader-' + RUN, audiences: ['notification'], permissions: ['media:read'] },
+    adminToken,
   );
-  assert.equal(delivered.key, tenantId);
-  const platformDelivery = await eventsOn(
-    'netverse.notification.events.v1',
-    (event) =>
-      event.type === 'notification.delivery.sent' && event.data.eventType === platformEvent,
-  );
-  assert.equal(platformDelivery.key, 'platform');
-  assert.equal(platformDelivery.event.data.tenantId, null);
-  assert.deepEqual(Object.keys(delivered.event.data).sort(), [
-    'attempts',
-    'channel',
-    'deliveryId',
-    'eventType',
-    'notificationId',
-    'reason',
-    'status',
-    'tenantId',
-  ]);
-  console.log(
-    'notification delivery events reach Kafka without the recipient address, platform ones without a shop ok',
-  );
-
-  console.log('STACK SMOKE PASSED');
+  assert.equal(reader.status, 201, JSON.stringify(reader.body));
+  const readerToken = await identity('POST', '/v1/auth/service-token', {
+    clientId: reader.body.result.id,
+    clientSecret: reader.body.result.clientSecret,
+    audience: 'notification',
+  });
+  assert.equal(readerToken.status, 200, JSON.stringify(readerToken.body));
+  const unpermitted = await commands.send(command, readerToken.body.result.accessToken, key + '-c');
+  assert.equal(unpermitted.code, GRPC_PERMISSION_DENIED, unpermitted.detail);
+  console.log('gRPC refuses a missing token, a user token and a service without the permission ok');
 } finally {
-  otpSink.close();
+  commands.close();
 }
+
+const registered = await eventsOn(
+  'netverse.identity.events.v1',
+  (event) => event.type === 'user.registered' && event.data.principalId === playerId,
+);
+assert.equal(registered.event.source, 'identity');
+assert.equal(registered.key, 'platform');
+const joined = await eventsOn(
+  'netverse.identity.events.v1',
+  (event) => event.type === 'membership.added' && event.data.tenantId === tenantId,
+);
+assert.equal(joined.key, tenantId);
+console.log('identity events reach Kafka, keyed by platform or by shop ok');
+
+const delivered = await eventsOn(
+  'netverse.notification.events.v1',
+  (event) => event.type === 'notification.delivery.sent' && event.data.eventType === eventType,
+);
+assert.equal(delivered.key, tenantId);
+const platformDelivery = await eventsOn(
+  'netverse.notification.events.v1',
+  (event) => event.type === 'notification.delivery.sent' && event.data.eventType === platformEvent,
+);
+assert.equal(platformDelivery.key, 'platform');
+assert.equal(platformDelivery.event.data.tenantId, null);
+assert.deepEqual(Object.keys(delivered.event.data).sort(), [
+  'attempts',
+  'channel',
+  'deliveryId',
+  'eventType',
+  'notificationId',
+  'reason',
+  'status',
+  'tenantId',
+]);
+console.log(
+  'notification delivery events reach Kafka without the recipient address, platform ones without a shop ok',
+);
+
+console.log('STACK SMOKE PASSED');

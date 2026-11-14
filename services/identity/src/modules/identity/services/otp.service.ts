@@ -33,6 +33,7 @@ export class OtpService {
         purpose,
         code,
         expiresInMinutes: this.config.otp.ttlMinutes,
+        expiresAt,
       });
     } catch (error) {
       this.logger.error(error instanceof Error ? error : String(error));
