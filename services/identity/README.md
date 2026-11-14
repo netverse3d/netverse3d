@@ -68,7 +68,7 @@ Các biến này không có trong `.env.example`, chỉ khai lúc dùng tới:
 
 ## Sự kiện
 
-Ghi vào `outbox_events` cùng giao dịch: `user.registered`, `user.email-verified`, `user.deactivated`, `user.reactivated`, `membership.added`, `membership.revoked`, `role.changed`. Sự kiện gửi ra theo vỏ chung của hệ thống, phần `data` theo `packages/contracts/events/v1/identity.schema.json`; khai `KAFKA_BROKERS` thì sự kiện lên topic `netverse.identity.events.v1`, để trống thì chỉ ghi log.
+Ghi vào `outbox_events` cùng giao dịch: `user.registered`, `user.email-verified`, `user.deactivated`, `user.reactivated`, `membership.added`, `membership.revoked`, `role.changed`. Sự kiện gửi ra theo vỏ chung của hệ thống, phần `data` theo `packages/contracts/events/v1/identity.schema.json`; khai `KAFKA_BROKERS` thì sự kiện lên topic `netverse.identity.events.v1`, để trống thì chỉ ghi log. Sự kiện `user.email-verified` không mang email; notification dùng mã tài khoản để gửi lời chào trong hộp thư ứng dụng.
 
 ## Hợp đồng HTTP
 

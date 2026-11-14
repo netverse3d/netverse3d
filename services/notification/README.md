@@ -127,7 +127,7 @@ Cấu hình, phép kiểm biến môi trường và phép chặn giá trị mẫ
 
 Service ghi vào `outbox_events`: `notification.delivery.sent`, `notification.delivery.skipped`, `notification.delivery.dead`. Sự kiện gửi ra theo vỏ chung của hệ thống, phần `data` theo `packages/contracts/events/v1/notification.schema.json` và không chứa địa chỉ người nhận. Khai `KAFKA_BROKERS` thì sự kiện lên topic `netverse.notification.events.v1`, để trống thì chỉ ghi log.
 
-Cổng nghe sự kiện vào `EventConsumer` nay nằm ở `packages/nest-kit`, cùng bộ nghe Kafka. Service chưa bật bộ nghe; việc phản ứng với sự kiện của service khác thuộc đợt chuẩn hoá notification, theo ADR-0028.
+Khai `EVENT_TRANSPORT=kafka` để nghe topic `netverse.identity.events.v1` bằng consumer group `EVENT_CONSUMER_GROUP`. Sự kiện được kiểm theo `packages/contracts/events/v1/identity.schema.json` và lưu mã đã xử lý để không gửi lại thông báo khi Kafka phát lại. `user.email-verified` tạo thông báo `account.welcome` ở hộp thư nền tảng; quản trị nền tảng cần tạo template `IN_APP` cho loại này trước khi bật luồng. Compose dev cấu hình sẵn consumer và template được tạo trong kịch bản chạy thử.
 
 ## Giới hạn của một lô gửi
 

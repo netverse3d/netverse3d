@@ -220,6 +220,8 @@ services:
       SMTP_HOST: mailbox
       SMTP_PORT: 1025
       PUSH_PROVIDER: log
+      EVENT_TRANSPORT: kafka
+      EVENT_CONSUMER_GROUP: notification
     ports:
       - 127.0.0.1:${NOTIFICATION_PORT:-53003}:3000
       - 127.0.0.1:${NOTIFICATION_GRPC_PORT:-53103}:50051

@@ -244,12 +244,47 @@ for (const purpose of ['email_verification', 'password_reset']) {
 }
 console.log('the platform admin provides the templates for one-time codes ok');
 
+const welcomeTemplate = {
+  eventType: 'account.welcome',
+  channel: 'IN_APP',
+  locale: 'en',
+  subject: 'Welcome to Netverse',
+  body: 'Your account is ready',
+};
+const createdWelcomeTemplate = await notification(
+  'POST',
+  '/v1/templates',
+  welcomeTemplate,
+  adminToken,
+);
+if (createdWelcomeTemplate.status === 409) {
+  const existing = await notification(
+    'GET',
+    '/v1/templates?channel=IN_APP&locale=en&eventType=account.welcome',
+    undefined,
+    adminToken,
+  );
+  assert.equal(existing.status, 200, JSON.stringify(existing.body));
+  const [found] = existing.body.result.content;
+  assert.ok(found, 'the welcome template that caused the conflict is not listed');
+  const updated = await notification(
+    'PATCH',
+    '/v1/templates/' + found.id,
+    { subject: welcomeTemplate.subject, body: welcomeTemplate.body },
+    adminToken,
+  );
+  assert.equal(updated.status, 200, JSON.stringify(updated.body));
+} else {
+  assert.equal(createdWelcomeTemplate.status, 201, JSON.stringify(createdWelcomeTemplate.body));
+}
+console.log('the platform admin provides the welcome template ok');
+
 await registerAndVerify(PLAYER_EMAIL);
 const playerToken = await login(PLAYER_EMAIL, PASSWORD);
 assert.equal(claims(playerToken).tenant_id, undefined);
-console.log(
-  'player registers, gets the code by email through notification, verifies and logs in ok',
-);
+const welcome = await inboxOf(playerToken, 'account.welcome', 'Welcome to Netverse');
+assert.equal(welcome.body, 'Your account is ready');
+console.log('player verifies an email and receives a welcome notification in the inbox ok');
 
 const playerId = claims(playerToken).sub;
 const playerFile = await uploadAs(playerToken, playerId, 'INTERNAL');

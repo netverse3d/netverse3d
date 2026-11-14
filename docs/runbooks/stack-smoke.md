@@ -22,7 +22,7 @@ Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:
 $COMPOSE up -d --build --wait identity media notification
 ```
 
-Lệnh dựng image từ gốc repo, chạy migration của từng service vào database riêng, chạy `identity` rồi tới `media` và `notification`. Hai service sau chỉ khởi động sau lúc `identity` khoẻ, vì chúng lấy khoá công khai từ `identity` để kiểm token.
+Lệnh dựng image từ gốc repo, chạy migration của từng service vào database riêng, chạy `identity` rồi tới `media` và `notification`. Hai service sau chỉ khởi động sau lúc `identity` khoẻ, vì chúng lấy khoá công khai từ `identity` để kiểm token. `notification` chạy consumer group `notification` trên Kafka để nhận sự kiện xác minh email từ `identity`.
 
 Kết quả mong đợi:
 
@@ -47,7 +47,7 @@ Kịch bản `tests/e2e/stack-smoke.mjs` chạy trên máy thật, như một cl
 Kịch bản làm lần lượt:
 
 1. Gọi `media` không có token, phải bị từ chối.
-2. Quản trị nền tảng tạo hai template giao dịch cho mã một lần ở `notification`. Rồi đăng ký một người chơi ở `identity`, đọc mã xác minh từ email mà `notification` gửi tới hộp thư giả lập, xác minh email, đăng nhập. Token không gắn tenant.
+2. Quản trị nền tảng tạo hai template giao dịch cho mã một lần và template hộp thư `account.welcome` ở `notification`. Rồi đăng ký một người chơi ở `identity`, đọc mã xác minh từ email mà `notification` gửi tới hộp thư giả lập, xác minh email và đăng nhập. Sự kiện `user.email-verified` đi qua Kafka; người chơi phải thấy lời chào trong hộp thư nền tảng. Token không gắn tenant.
 3. Dùng token đó tải một tệp lên `media`, báo hoàn tất, tải về và so nội dung.
 4. Một người chơi thứ hai xin tệp của người chơi đầu, tìm nó trong danh sách, rồi thử tải lên dưới mã chủ sở hữu của người chơi đầu. Cả ba đều phải bị từ chối.
 5. Quản trị nền tảng tạo tenant cho một tiệm, tạo vai trò `admin` của tiệm và thêm một tài khoản làm thành viên.
