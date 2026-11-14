@@ -15,10 +15,10 @@
   ],
   "type": "object",
   "required": ["principalId", "tenantId"],
+  "additionalProperties": false,
   "properties": {
     "principalId": { "type": "string", "format": "uuid" },
     "tenantId": { "type": ["string", "null"] },
-    "email": { "type": ["string", "null"] },
     "status": { "type": "string" },
     "roles": { "type": "array", "items": { "type": "string" } }
   }

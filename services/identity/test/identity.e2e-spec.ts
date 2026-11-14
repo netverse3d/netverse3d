@@ -143,6 +143,18 @@ describe('identity', () => {
       ).toBe(1);
     });
 
+    it('sự kiện của tài khoản chỉ mang mã tài khoản và trạng thái, không mang email', async () => {
+      const address = email();
+      await register(address);
+      const { id } = await principalOf(address);
+      const events = await prisma.outboxEvent.findMany({ where: { aggregateId: id } });
+      expect(events.length).toBeGreaterThan(0);
+      for (const event of events) {
+        expect(Object.keys(event.payload as object).sort()).toEqual(['principalId', 'status']);
+        expect(JSON.stringify(event.payload)).not.toContain(address);
+      }
+    });
+
     it('không lưu mã OTP dạng rõ', async () => {
       const address = email();
       await register(address);

@@ -18,7 +18,7 @@ const stored = (type: string, tenantId: string | null, payload: Record<string, u
   createdAt: new Date('2026-11-12T08:00:00.000Z'),
   payload,
 });
-const account = { principalId: PRINCIPAL, email: 'a@example.test', status: 'ACTIVE' };
+const account = { principalId: PRINCIPAL, status: 'ACTIVE' };
 
 const samples = [
   stored('user.registered', null, account),
@@ -48,6 +48,13 @@ describe('sự kiện của identity', () => {
     expect(samples.map((sample) => sample.type).sort()).toEqual(
       [...identitySchema['x-event-types']].sort(),
     );
+  });
+
+  it('hợp đồng không nhận email hay trường lạ, để dữ liệu cá nhân không lên Kafka', () => {
+    const [first] = samples;
+    const data = toEnvelope(first as never, 'identity').data;
+    expect(validateIdentityData({ ...data, email: 'a@example.test' })).toBe(false);
+    expect(validateIdentityData({ ...data, phone: '0900000000' })).toBe(false);
   });
 
   it('sự kiện không gắn tenant mang tenantId là null', () => {

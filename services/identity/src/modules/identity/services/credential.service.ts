@@ -224,7 +224,7 @@ export class CredentialService implements OnApplicationBootstrap {
         type,
         aggregateId: principal.id,
         tenantId: null,
-        payload: { principalId: principal.id, email: principal.email, status: principal.status },
+        payload: { principalId: principal.id, status: principal.status },
       },
       transaction,
     );
