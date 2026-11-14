@@ -208,7 +208,7 @@ async function downloadAs(bearer, id) {
   assert.deepEqual(Buffer.from(await file.arrayBuffer()), CONTENT);
 }
 
-try {
+{
   const anonymous = await media('GET', '/v1/media?size=1');
   assert.equal(anonymous.status, 401, JSON.stringify(anonymous.body));
   console.log('media rejects a request without a token ok');
@@ -583,5 +583,4 @@ try {
   );
 
   console.log('STACK SMOKE PASSED');
-} finally {
 }
