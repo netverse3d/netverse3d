@@ -6,7 +6,6 @@ export const REQUIREMENT_STATUSES = ['draft', 'accepted', 'implemented', 'deprec
 export const REQUIREMENT_PRIORITIES = ['must', 'should', 'could'];
 export const DECISION_STATUSES = ['proposed', 'accepted', 'superseded'];
 
-const DEPENDENCY_BOT = 'dependabot[bot]';
 const REQUIREMENT_ID = /^REQ-\d{3}$/;
 const REFERENCE = /\b(?:REQ-\d{3}|ADR-\d{4})\b/g;
 const CLOSING_REFERENCE = /(?:^|\s)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#\d+/i;
@@ -104,10 +103,8 @@ export function evaluateReferences(references, requirements, decisions) {
   return { errors, warnings };
 }
 
-export function isTraceExempt({ base, head, isFork = false, author }) {
-  if (isFork) return false;
-  if (base === 'main' && head === 'staging') return true;
-  return author === DEPENDENCY_BOT && head.startsWith('dependabot/');
+export function isTraceExempt({ base, head, isFork = false }) {
+  return !isFork && base === 'main' && head === 'staging';
 }
 
 function warnSelfAdded(references, prefix, knownIds, baseIds) {

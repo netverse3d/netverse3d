@@ -137,22 +137,10 @@ test('đưa staging lên main không cần gắn lại yêu cầu', () => {
   assert.deepEqual(errors, []);
 });
 
-test('PR cập nhật thư viện của Dependabot không cần gắn yêu cầu', () => {
+test('PR cập nhật thư viện phải gắn yêu cầu như mọi PR khác, kể cả do bot tạo', () => {
   const pullRequest = { base: 'staging', head: 'dependabot/npm_and_yarn/all' };
-  assert.equal(isTraceExempt({ ...pullRequest, author: 'dependabot[bot]' }), true);
-});
-
-test('người thường đặt tên nhánh dependabot vẫn phải gắn yêu cầu', () => {
-  const pullRequest = { base: 'staging', head: 'dependabot/fake' };
-  assert.equal(isTraceExempt({ ...pullRequest, author: 'someone' }), false);
-  assert.equal(isTraceExempt(pullRequest), false);
-});
-
-test('Dependabot trên nhánh khác vẫn phải gắn yêu cầu', () => {
-  assert.equal(
-    isTraceExempt({ base: 'staging', head: 'feat/x', author: 'dependabot[bot]' }),
-    false,
-  );
+  assert.equal(isTraceExempt({ ...pullRequest, author: 'dependabot[bot]' }), false);
+  assert.equal(isTraceExempt({ base: 'staging', head: 'chore/bump-next' }), false);
 });
 
 test('cảnh báo khi PR tự thêm ADR rồi tự trích dẫn', () => {

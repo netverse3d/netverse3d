@@ -107,7 +107,7 @@ Issue tạo tự động từ sổ yêu cầu có thể chưa đủ chi tiết. 
 
 Không đóng issue bằng tay khi việc đã làm xong; để PR đóng. Chỉ đóng tay khi issue trùng hoặc không làm nữa: chọn `Close as not planned` và ghi lý do trong bình luận.
 
-PR đưa `staging` lên `main` và PR cập nhật thư viện của Dependabot không cần issue.
+PR đưa `staging` lên `main` không cần issue. Repo không dùng Dependabot; nâng thư viện là một việc có issue như mọi việc khác, theo ADR-0032.
 
 ## Ai chịu trách nhiệm gì
 

@@ -16,7 +16,6 @@ const root = process.cwd();
 const base = argument('base');
 const head = argument('head');
 const baseRef = argument('base-ref') ?? `origin/${base}`;
-const author = argument('author');
 const isFork = argument('head-repository') !== process.env.GITHUB_REPOSITORY;
 const body = readFileSync(argument('body-file'), 'utf8');
 const files = gitLines(['diff', '--name-only', `${baseRef}...HEAD`], root);
@@ -40,7 +39,7 @@ const result = evaluatePullRequest({
   files,
   requirements,
   decisions,
-  exempt: isTraceExempt({ base, head, isFork, author }),
+  exempt: isTraceExempt({ base, head, isFork }),
   baseRequirementIds: loadBaseRequirementIds(),
   baseDecisionIds: loadBaseDecisionIds(),
 });

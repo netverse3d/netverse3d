@@ -74,7 +74,7 @@ CI chỉ kiểm được việc có gắn yêu cầu, không biết mã có đú
 
 PR chỉ đổi tài liệu, công cụ, CI không bắt buộc có REQ nhưng vẫn phải đóng một issue. Nếu có nhắc REQ hoặc ADR thì mã đó vẫn phải tồn tại.
 
-PR đưa `staging` lên `main` và PR cập nhật thư viện do Dependabot tạo được miễn cả REQ lẫn issue.
+PR đưa `staging` lên `main` được miễn cả REQ lẫn issue. Repo không dùng Dependabot; nâng thư viện là một việc có issue, theo [ADR-0032](../../decisions/ADR-0032-no-dependabot.md).
 
 ## Người review cần để ý
 

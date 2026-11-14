@@ -35,3 +35,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0029](./ADR-0029-contract-checks-ensure-consistency.md) | Bước kiểm hợp đồng bảo đảm nhất quán, không chặn thay đổi | Đã chốt |
 | [ADR-0030](./ADR-0030-notification-sending-rules.md) | Luật gửi của notification: loại template, hạn mức của tiệm, hạn của thông báo | Đã chốt |
 | [ADR-0031](./ADR-0031-payment-service-code-provenance.md) | Nguồn gốc mã payment gateway | Đã chốt |
+| [ADR-0032](./ADR-0032-no-dependabot.md) | Không dùng Dependabot, nâng thư viện có chủ đích | Đã chốt |
