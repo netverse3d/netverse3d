@@ -6,6 +6,7 @@ import { currentRequestId } from '../context/request-context';
 import { ApiErrorResponseDto } from '../dto/api-response.dto';
 import { AppException } from '../errors/app.exception';
 import { ErrorCode, ErrorCodeDefinition, errorCodeForStatus } from '../errors/error-code';
+import { normalizeJsonValue } from '../utils/normalize-json-value';
 
 interface ResolvedError {
   status: number;
@@ -84,7 +85,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const body: ApiErrorResponseDto = {
       code: error.code,
       message: error.message,
-      ...(error.details === undefined ? {} : { details: error.details }),
+      ...(error.details === undefined ? {} : { details: normalizeJsonValue(error.details) }),
       path: request.originalUrl.split('?')[0] ?? '',
       timestamp: new Date().toISOString(),
       requestId: currentRequestId(),

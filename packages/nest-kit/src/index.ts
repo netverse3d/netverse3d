@@ -9,6 +9,7 @@ export * from './common/decorators/public.decorator';
 export * from './common/decorators/raw-response.decorator';
 export * from './common/decorators/roles.decorator';
 export * from './common/dto/api-response.dto';
+export * from './common/dto/raw-http-response';
 export * from './common/errors/app.exception';
 export * from './common/errors/error-code';
 export * from './common/filters/global-exception.filter';

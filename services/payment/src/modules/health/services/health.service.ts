@@ -1,0 +1,30 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { AppException } from '../../../common/errors/app.exception';
+import { ErrorCode } from '../../../common/errors/error-code';
+import { AppConfig } from '../../../config/app-config';
+import { PrismaService } from '../../../infrastructure/prisma/prisma.service';
+import { HealthResponseDto } from '../dto/health-response.dto';
+
+@Injectable()
+export class HealthService {
+  private readonly logger = new Logger(HealthService.name);
+
+  constructor(
+    private readonly config: AppConfig,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  live(): HealthResponseDto {
+    return { status: 'ok', version: this.config.service.version };
+  }
+
+  async ready(): Promise<HealthResponseDto> {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error : String(error));
+      throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+    }
+    return this.live();
+  }
+}

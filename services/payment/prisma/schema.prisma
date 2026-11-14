@@ -1,0 +1,418 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model tenants {
+  id                String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code              String                     @unique @db.VarChar(60)
+  name              String                     @db.VarChar(160)
+  status            tenant_status              @default(active)
+  default_currency  String                     @default("VND") @db.VarChar(3)
+  metadata_json     Json?
+  created_at        DateTime                   @default(now()) @db.Timestamp(6)
+  updated_at        DateTime                   @default(now()) @updatedAt @db.Timestamp(6)
+  api_keys          tenant_api_keys[]
+  webhook_endpoints tenant_webhook_endpoints[]
+  provider_accounts provider_accounts[]
+  customers         customers[]
+  payment_intents   payment_intents[]
+  payment_attempts  payment_attempts[]
+  webhook_events    payment_webhook_events[]
+  outbox_events     payment_outbox_events[]
+  refunds           refunds[]
+  idempotency_keys  idempotency_records[]
+}
+
+model tenant_api_keys {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id    String         @db.Uuid
+  key_prefix   String         @unique @db.VarChar(20)
+  secret_hash  String         @db.VarChar(255)
+  label        String         @db.VarChar(120)
+  status       api_key_status @default(active)
+  last_used_at DateTime?      @db.Timestamptz(6)
+  expires_at   DateTime?      @db.Timestamptz(6)
+  created_at   DateTime       @default(now()) @db.Timestamp(6)
+  updated_at   DateTime       @default(now()) @updatedAt @db.Timestamp(6)
+  tenants      tenants        @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@index([tenant_id, status])
+}
+
+model tenant_webhook_endpoints {
+  id                 String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id          String                      @db.Uuid
+  url                String                      @db.VarChar(500)
+  secret_ciphertext  String                      @db.Text
+  secret_iv          String                      @db.VarChar(32)
+  secret_tag         String                      @db.VarChar(32)
+  secret_key_version Int
+  status             webhook_endpoint_status     @default(active)
+  subscribed_events  String[]                    @default([])
+  last_success_at    DateTime?                   @db.Timestamptz(6)
+  last_failure_at    DateTime?                   @db.Timestamptz(6)
+  created_at         DateTime                    @default(now()) @db.Timestamp(6)
+  updated_at         DateTime                    @default(now()) @updatedAt @db.Timestamp(6)
+  tenants            tenants                     @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  outbox_deliveries  payment_outbox_deliveries[]
+
+  @@index([tenant_id, status])
+}
+
+model provider_accounts {
+  id                      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id               String                  @db.Uuid
+  provider_code           String                  @db.VarChar(40)
+  account_label           String                  @db.VarChar(120)
+  status                  provider_account_status @default(active)
+  credentials_json        Json
+  config_json             Json?
+  external_account_ref    String?                 @db.VarChar(120)
+  credentials_ciphertext  String?
+  credentials_iv          String?                 @db.VarChar(32)
+  credentials_tag         String?                 @db.VarChar(32)
+  credentials_key_version Int?
+  created_at              DateTime                @default(now()) @db.Timestamp(6)
+  updated_at              DateTime                @default(now()) @updatedAt @db.Timestamp(6)
+  tenants                 tenants                 @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  payment_attempts        payment_attempts[]
+
+  @@unique([tenant_id, provider_code, account_label])
+  @@unique([provider_code, external_account_ref])
+  @@index([tenant_id, provider_code, status])
+}
+
+model customers {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id       String            @db.Uuid
+  customer_ref    String            @db.VarChar(120)
+  email           String?           @db.VarChar(255)
+  full_name       String?           @db.VarChar(160)
+  phone           String?           @db.VarChar(40)
+  metadata_json   Json?
+  created_at      DateTime          @default(now()) @db.Timestamp(6)
+  updated_at      DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  tenants         tenants           @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  payment_intents payment_intents[]
+  refunds         refunds[]
+
+  @@unique([tenant_id, customer_ref])
+  @@index([tenant_id, email])
+}
+
+model payment_intents {
+  id                 String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id          String                   @db.Uuid
+  customer_id        String?                  @db.Uuid
+  public_id          String                   @unique @db.VarChar(40)
+  merchant_reference String?                  @db.VarChar(120)
+  target_type        String                   @db.VarChar(80)
+  target_ref         String                   @db.VarChar(120)
+  target_snapshot    Json
+  title              String                   @db.VarChar(255)
+  description        String?
+  currency           String                   @db.VarChar(3)
+  subtotal_minor     BigInt
+  discount_minor     BigInt                   @default(0)
+  fee_minor          BigInt                   @default(0)
+  tax_minor          BigInt                   @default(0)
+  total_minor        BigInt
+  status             payment_intent_status    @default(pending)
+  provider_lock      String?                  @db.VarChar(40)
+  metadata_json      Json?
+  paid_at            DateTime?                @db.Timestamptz(6)
+  canceled_at        DateTime?                @db.Timestamptz(6)
+  failed_at          DateTime?                @db.Timestamptz(6)
+  expired_at         DateTime?                @db.Timestamptz(6)
+  expires_at         DateTime?                @db.Timestamptz(6)
+  created_at         DateTime                 @default(now()) @db.Timestamp(6)
+  updated_at         DateTime                 @default(now()) @updatedAt @db.Timestamp(6)
+  tenants            tenants                  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  customers          customers?               @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+  attempts           payment_attempts[]
+  refunds            refunds[]
+  outbox_events      payment_outbox_events[]
+  webhook_events     payment_webhook_events[]
+
+  @@unique([tenant_id, merchant_reference])
+  @@index([tenant_id, status, created_at(sort: Desc)])
+  @@index([tenant_id, target_type, target_ref])
+  @@index([customer_id, created_at(sort: Desc)])
+}
+
+model payment_attempts {
+  id                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id           String                   @db.Uuid
+  payment_intent_id   String                   @db.Uuid
+  provider_account_id String?                  @db.Uuid
+  provider_code       String                   @db.VarChar(40)
+  provider_payment_id String?                  @db.VarChar(120)
+  provider_order_id   String?                  @db.VarChar(120)
+  payment_method_type payment_method_type
+  status              payment_attempt_status   @default(pending)
+  checkout_url        String?
+  order_number        BigInt                   @unique @default(autoincrement())
+  qr_payload          String?
+  request_payload     Json?
+  response_payload    Json?
+  failure_code        String?                  @db.VarChar(80)
+  failure_message     String?
+  started_at          DateTime                 @default(now()) @db.Timestamptz(6)
+  completed_at        DateTime?                @db.Timestamptz(6)
+  expires_at          DateTime?                @db.Timestamptz(6)
+  last_reconciled_at  DateTime?                @db.Timestamptz(6)
+  reconcile_count     Int                      @default(0)
+  created_at          DateTime                 @default(now()) @db.Timestamp(6)
+  updated_at          DateTime                 @default(now()) @updatedAt @db.Timestamp(6)
+  tenants             tenants                  @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  payment_intents     payment_intents          @relation(fields: [payment_intent_id], references: [id], onDelete: Cascade)
+  provider_accounts   provider_accounts?       @relation(fields: [provider_account_id], references: [id], onDelete: SetNull)
+  webhook_events      payment_webhook_events[]
+  refunds             refunds[]
+
+  @@index([tenant_id, status, created_at(sort: Desc)])
+  @@index([payment_intent_id, created_at(sort: Desc)])
+  @@index([provider_code, provider_payment_id])
+  @@index([provider_code, provider_order_id])
+  @@index([status, last_reconciled_at])
+}
+
+model payment_webhook_events {
+  id                 String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id          String?                @db.Uuid
+  payment_intent_id  String?                @db.Uuid
+  payment_attempt_id String?                @db.Uuid
+  provider_code      String                 @db.VarChar(40)
+  provider_event_id  String                 @db.VarChar(120)
+  event_type         String                 @db.VarChar(80)
+  signature          String?                @db.VarChar(255)
+  payload_json       Json
+  headers_json       Json?
+  status             payment_webhook_status @default(received)
+  processed_at       DateTime?              @db.Timestamptz(6)
+  error_message      String?
+  created_at         DateTime               @default(now()) @db.Timestamp(6)
+  tenants            tenants?               @relation(fields: [tenant_id], references: [id], onDelete: SetNull)
+  payment_intents    payment_intents?       @relation(fields: [payment_intent_id], references: [id], onDelete: SetNull)
+  payment_attempts   payment_attempts?      @relation(fields: [payment_attempt_id], references: [id], onDelete: SetNull)
+
+  @@unique([provider_code, provider_event_id])
+  @@index([tenant_id, created_at(sort: Desc)])
+  @@index([status, created_at(sort: Desc)])
+}
+
+model payment_outbox_events {
+  id                BigInt                      @id @default(autoincrement())
+  tenant_id         String                      @db.Uuid
+  payment_intent_id String?                     @db.Uuid
+  aggregate_type    String                      @db.VarChar(40)
+  aggregate_id      String                      @db.VarChar(120)
+  event_type        String                      @db.VarChar(80)
+  payload_json      Json
+  delivery_status   outbox_delivery_status      @default(pending)
+  available_at      DateTime                    @default(now()) @db.Timestamptz(6)
+  processed_at      DateTime?                   @db.Timestamptz(6)
+  fail_count        Int                         @default(0)
+  last_error        String?
+  fanned_out_at     DateTime?                   @db.Timestamptz(6)
+  created_at        DateTime                    @default(now()) @db.Timestamp(6)
+  tenants           tenants                     @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  payment_intents   payment_intents?            @relation(fields: [payment_intent_id], references: [id], onDelete: SetNull)
+  deliveries        payment_outbox_deliveries[]
+
+  @@index([tenant_id, delivery_status, available_at])
+  @@index([aggregate_type, aggregate_id, created_at(sort: Desc)])
+}
+
+model payment_outbox_deliveries {
+  id               String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  outbox_event_id  BigInt
+  endpoint_id      String                         @db.Uuid
+  tenant_id        String                         @db.Uuid
+  status           outbox_delivery_attempt_status @default(pending)
+  attempt_count    Int                            @default(0)
+  available_at     DateTime                       @default(now()) @db.Timestamptz(6)
+  locked_at        DateTime?                      @db.Timestamptz(6)
+  locked_by        String?                        @db.VarChar(80)
+  last_http_status Int?
+  last_error       String?
+  delivered_at     DateTime?                      @db.Timestamptz(6)
+  created_at       DateTime                       @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime                       @default(now()) @updatedAt @db.Timestamptz(6)
+  outbox_event     payment_outbox_events          @relation(fields: [outbox_event_id], references: [id], onDelete: Cascade)
+  endpoint         tenant_webhook_endpoints       @relation(fields: [endpoint_id], references: [id], onDelete: Cascade)
+
+  @@unique([outbox_event_id, endpoint_id])
+  @@index([status, available_at])
+  @@index([endpoint_id, status])
+}
+
+model refunds {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id          String            @db.Uuid
+  payment_intent_id  String            @db.Uuid
+  payment_attempt_id String?           @db.Uuid
+  customer_id        String?           @db.Uuid
+  public_id          String            @unique @db.VarChar(40)
+  amount_minor       BigInt
+  currency           String            @db.VarChar(3)
+  reason             String?           @db.VarChar(255)
+  status             refund_status     @default(pending)
+  provider_refund_id String?           @db.VarChar(120)
+  request_payload    Json?
+  response_payload   Json?
+  failed_at          DateTime?         @db.Timestamptz(6)
+  completed_at       DateTime?         @db.Timestamptz(6)
+  failure_reason     String?
+  last_reconciled_at DateTime?         @db.Timestamptz(6)
+  reconcile_count    Int               @default(0)
+  created_at         DateTime          @default(now()) @db.Timestamp(6)
+  updated_at         DateTime          @default(now()) @updatedAt @db.Timestamp(6)
+  tenants            tenants           @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  payment_intents    payment_intents   @relation(fields: [payment_intent_id], references: [id], onDelete: Cascade)
+  payment_attempts   payment_attempts? @relation(fields: [payment_attempt_id], references: [id], onDelete: SetNull)
+  customers          customers?        @relation(fields: [customer_id], references: [id], onDelete: SetNull)
+
+  @@index([tenant_id, status, created_at(sort: Desc)])
+  @@index([payment_intent_id, created_at(sort: Desc)])
+  @@index([status, last_reconciled_at])
+}
+
+model idempotency_records {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenant_id         String             @db.Uuid
+  scope             String             @db.VarChar(80)
+  idempotency_key   String             @db.VarChar(120)
+  request_hash      String             @db.VarChar(128)
+  resource_type     String?            @db.VarChar(40)
+  resource_id       String?            @db.VarChar(120)
+  response_json     Json?
+  status_code       Int?
+  processing_status idempotency_status @default(started)
+  expires_at        DateTime?          @db.Timestamptz(6)
+  locked_until      DateTime?          @db.Timestamptz(6)
+  created_at        DateTime           @default(now()) @db.Timestamp(6)
+  updated_at        DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  tenants           tenants            @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+
+  @@unique([tenant_id, scope, idempotency_key])
+  @@index([tenant_id, created_at(sort: Desc)])
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+}
+
+model AuditLog {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  occurredAt   DateTime     @default(now()) @map("occurred_at") @db.Timestamptz
+  requestId    String?      @map("request_id") @db.VarChar(128)
+  tenantId     String?      @map("tenant_id") @db.VarChar(128)
+  actorSubject String?      @map("actor_subject") @db.VarChar(255)
+  actorRoles   String[]     @default([]) @map("actor_roles")
+  ip           String?      @db.VarChar(64)
+  userAgent    String?      @map("user_agent") @db.VarChar(512)
+  action       String       @db.VarChar(128)
+  resourceType String       @map("resource_type") @db.VarChar(64)
+  resourceId   String?      @map("resource_id") @db.VarChar(255)
+  outcome      AuditOutcome
+  errorCode    String?      @map("error_code") @db.VarChar(128)
+  metadata     Json         @default("{}")
+
+  @@index([tenantId, occurredAt])
+  @@index([resourceType, resourceId])
+  @@index([actorSubject, occurredAt])
+  @@map("audit_logs")
+}
+
+enum tenant_status {
+  active
+  suspended
+  archived
+}
+
+enum api_key_status {
+  active
+  revoked
+  expired
+}
+
+enum webhook_endpoint_status {
+  active
+  paused
+  disabled
+}
+
+enum provider_account_status {
+  active
+  disabled
+}
+
+enum payment_intent_status {
+  pending
+  requires_action
+  processing
+  succeeded
+  failed
+  canceled
+  expired
+  partially_refunded
+  refunded
+}
+
+enum payment_attempt_status {
+  pending
+  requires_action
+  processing
+  succeeded
+  failed
+  canceled
+  expired
+}
+
+enum payment_method_type {
+  card
+  bank_transfer
+  ewallet
+  qr_code
+  manual
+}
+
+enum payment_webhook_status {
+  received
+  processed
+  ignored
+  failed
+}
+
+enum outbox_delivery_status {
+  pending
+  delivered
+  failed
+}
+
+enum outbox_delivery_attempt_status {
+  pending
+  delivered
+  dead
+}
+
+enum refund_status {
+  pending
+  processing
+  succeeded
+  failed
+  canceled
+}
+
+enum idempotency_status {
+  started
+  completed
+  failed
+}

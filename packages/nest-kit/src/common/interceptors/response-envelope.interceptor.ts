@@ -10,6 +10,8 @@ import { map, Observable } from 'rxjs';
 import { currentRequestId } from '../context/request-context';
 import { RAW_RESPONSE_METADATA } from '../decorators/raw-response.decorator';
 import { ApiResponseDto, SUCCESS_CODE } from '../dto/api-response.dto';
+import { RawHttpResponse } from '../dto/raw-http-response';
+import { normalizeJsonValue } from '../utils/normalize-json-value';
 
 @Injectable()
 export class ResponseEnvelopeInterceptor<T> implements NestInterceptor<T, ApiResponseDto<T> | T> {
@@ -25,15 +27,22 @@ export class ResponseEnvelopeInterceptor<T> implements NestInterceptor<T, ApiRes
     }
     return next.handle().pipe(
       map((result) =>
-        result instanceof StreamableFile
-          ? result
-          : {
-              code: SUCCESS_CODE,
-              message: null,
-              result: result ?? null,
-              requestId: currentRequestId(),
-            },
+        result instanceof RawHttpResponse
+          ? this.rawResponse(context, result)
+          : result instanceof StreamableFile
+            ? result
+            : {
+                code: SUCCESS_CODE,
+                message: null,
+                result: normalizeJsonValue(result ?? null) as T | null,
+                requestId: currentRequestId(),
+              },
       ),
     );
+  }
+
+  private rawResponse(context: ExecutionContext, result: RawHttpResponse): T {
+    context.switchToHttp().getResponse<{ status(code: number): unknown }>().status(result.status);
+    return normalizeJsonValue(result.body) as T;
   }
 }

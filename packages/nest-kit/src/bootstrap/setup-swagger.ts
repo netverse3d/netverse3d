@@ -44,6 +44,15 @@ export function buildOpenApiDocument(app: INestApplication, config: KitConfig): 
     .addBearerAuth()
     .addSecurityRequirements('bearer')
     .build();
+  for (const apiKey of config.swagger.apiKeys ?? []) {
+    options.components ??= {};
+    options.components.securitySchemes ??= {};
+    options.components.securitySchemes[apiKey.name] = {
+      type: 'apiKey',
+      in: 'header',
+      name: apiKey.header,
+    };
+  }
   return withStandardErrorResponses(
     SwaggerModule.createDocument(app, options, { extraModels: [ApiErrorResponseDto] }),
   );

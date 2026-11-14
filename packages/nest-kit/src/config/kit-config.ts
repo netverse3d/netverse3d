@@ -10,7 +10,10 @@ export abstract class KitConfig {
     requestTimeoutMs: number;
   };
   abstract readonly log: { level: string; pretty: boolean };
-  abstract readonly swagger: { enabled: boolean };
+  abstract readonly swagger: {
+    enabled: boolean;
+    apiKeys?: readonly { name: string; header: string }[];
+  };
   abstract readonly rateLimit: { ttlMs: number; max: number; authMax?: number };
   abstract readonly auth: {
     jwksUrl: string;

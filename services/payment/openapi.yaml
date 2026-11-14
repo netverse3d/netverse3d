@@ -1,0 +1,3212 @@
+openapi: 3.1.0
+paths:
+  /v1/audit-logs:
+    get:
+      operationId: AuditLogsController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: action
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceType
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: resourceId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: actorSubject
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: from
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+        - name: to
+          required: false
+          in: query
+          schema:
+            format: date-time
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/AuditLogResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List audit log entries, newest first
+      tags:
+        - audit-logs
+  /livez:
+    get:
+      operationId: HealthController_live
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the process is alive
+      tags:
+        - health
+      security: []
+  /healthz:
+    get:
+      operationId: HealthController_ready
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Report that the service and its required dependencies are ready
+      tags:
+        - health
+      security: []
+  /v1/internal/tenants:
+    get:
+      operationId: TenantAdminController_list_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/TenantResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List tenants
+      tags:
+        - Tenant Admin
+    post:
+      operationId: TenantAdminController_create_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create tenant
+      tags:
+        - Tenant Admin
+  /v1/internal/tenants/{id}:
+    put:
+      operationId: TenantAdminController_update_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Update tenant
+      tags:
+        - Tenant Admin
+  /v1/internal/tenants/{tenantId}/api-keys:
+    get:
+      operationId: TenantApiKeyAdminController_list_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/TenantApiKeyResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List API keys of a tenant
+      tags:
+        - Tenant API Keys
+    post:
+      operationId: TenantApiKeyAdminController_create_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantApiKeyDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/CreatedTenantApiKeyResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create tenant API key; the raw key is returned once
+      tags:
+        - Tenant API Keys
+  /v1/internal/tenants/{tenantId}/webhooks:
+    get:
+      operationId: TenantWebhookAdminController_list_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/TenantWebhookResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List tenant webhook endpoints without their secrets
+      tags:
+        - Tenant Webhooks
+    post:
+      operationId: TenantWebhookAdminController_create_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantWebhookDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantWebhookSecretResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create tenant webhook endpoint; the raw secret is returned once
+      tags:
+        - Tenant Webhooks
+  /v1/internal/tenants/{tenantId}/webhooks/{endpointId}:
+    patch:
+      operationId: TenantWebhookAdminController_update_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: endpointId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTenantWebhookDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantWebhookResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Update the URL, subscribed events or status of an endpoint
+      tags:
+        - Tenant Webhooks
+  /v1/internal/tenants/{tenantId}/webhooks/{endpointId}/rotate-secret:
+    post:
+      operationId: TenantWebhookAdminController_rotateSecret_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: endpointId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/TenantWebhookSecretResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Rotate the webhook signing secret; the raw secret is returned once
+      tags:
+        - Tenant Webhooks
+  /v1/internal/tenants/{tenantId}/provider-accounts:
+    get:
+      operationId: ProviderAccountAdminController_list_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/ProviderAccountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List provider accounts of a tenant; credentials are never returned
+      tags:
+        - Provider Accounts
+    post:
+      operationId: ProviderAccountAdminController_create_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderAccountDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProviderAccountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Create a provider account; credentials are encrypted and never returned
+      tags:
+        - Provider Accounts
+  /v1/internal/tenants/{tenantId}/provider-accounts/{accountId}:
+    patch:
+      operationId: ProviderAccountAdminController_update_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProviderAccountDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProviderAccountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Update the status, label or configuration of a provider account
+      tags:
+        - Provider Accounts
+  /v1/internal/tenants/{tenantId}/provider-accounts/{accountId}/credentials:
+    put:
+      operationId: ProviderAccountAdminController_replaceCredentials_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplaceProviderCredentialsDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProviderAccountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Replace credentials (re-encrypted, never returned)
+      tags:
+        - Provider Accounts
+  /v1/internal/tenants/{tenantId}/provider-accounts/{accountId}/encrypt-credentials:
+    post:
+      operationId: ProviderAccountAdminController_encryptCredentials_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: accountId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ProviderAccountResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: 'Backfill: encrypt legacy plaintext credentials and remove the plaintext copy'
+      tags:
+        - Provider Accounts
+  /v1/customers:
+    post:
+      operationId: CustomerController_resolveOrCreate_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/CustomerResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Resolve or create customer
+      tags:
+        - Customers
+  /v1/payment-intents:
+    post:
+      operationId: PaymentPublicController_create_v1
+      parameters:
+        - name: idempotency-key
+          required: true
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentIntentDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentIntentResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Create payment intent
+      tags:
+        - Payments
+  /v1/payment-intents/{publicId}:
+    get:
+      operationId: PaymentPublicController_findOne_v1
+      parameters:
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentIntentResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Get payment intent
+      tags:
+        - Payments
+  /v1/payment-intents/{publicId}/attempts:
+    post:
+      operationId: PaymentPublicController_createAttempt_v1
+      parameters:
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: idempotency-key
+          required: true
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentAttemptDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentAttemptResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Create payment attempt
+      tags:
+        - Payments
+  /v1/internal/payments/{tenantId}/intents/{publicId}:
+    get:
+      operationId: PaymentAdminController_getIntent_v1
+      parameters:
+        - name: tenantId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentIntentResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Get intent by tenant and public id
+      tags:
+        - Payments Admin
+  /v1/checkout-methods:
+    get:
+      operationId: CheckoutMethodsController_list_v1
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/CheckoutMethodsResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: 'List usable payment methods: enabled providers the tenant has an active account for'
+      tags:
+        - Payments
+  /v1/webhooks/{providerCode}:
+    post:
+      operationId: ProviderWebhookController_ingestPost_v1
+      parameters:
+        - name: providerCode
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/WebhookIngestResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Ingest a provider webhook (POST); the signature is verified before any write
+      tags:
+        - Provider Webhooks
+      security: []
+    get:
+      operationId: ProviderWebhookController_ingestGet_v1
+      parameters:
+        - name: providerCode
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/WebhookIngestResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Ingest a provider IPN (GET query string); the checksum is verified before any write
+      tags:
+        - Provider Webhooks
+      security: []
+  /v1/webhooks/{providerCode}/{accountRef}:
+    post:
+      operationId: ProviderWebhookController_ingestPostForAccount_v1
+      parameters:
+        - name: providerCode
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: accountRef
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/WebhookIngestResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Ingest a provider webhook (POST) routed by the merchant account in the path (payOS clientId, VietQR account number)
+      tags:
+        - Provider Webhooks
+      security: []
+    get:
+      operationId: ProviderWebhookController_ingestGetForAccount_v1
+      parameters:
+        - name: providerCode
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: accountRef
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/WebhookIngestResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Ingest a provider IPN (GET) routed by the merchant account in the path
+      tags:
+        - Provider Webhooks
+      security: []
+  /v1/payment-attempts/{attemptId}/confirm-transfer:
+    post:
+      operationId: OperatorConfirmController_confirmTransfer_v1
+      parameters:
+        - name: attemptId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmTransferDto'
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentIntentResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Operator confirms a received bank transfer (operatorConfirm providers such as VietQR); returns the intent
+      tags:
+        - Payments
+  /v1/internal/outbox/dispatch:
+    post:
+      operationId: OutboxAdminController_dispatch_v1
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DispatchOutboxDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/OutboxDispatchResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Run one outbox worker cycle now (fan-out and deliver what is due)
+      tags:
+        - Outbox Admin
+  /v1/internal/outbox/deliveries/dead:
+    get:
+      operationId: OutboxAdminController_listDead_v1
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            default: 1
+            type: number
+        - name: size
+          required: false
+          in: query
+          schema:
+            minimum: 1
+            maximum: 100
+            default: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          schema:
+            example: createdAt,desc
+            type: string
+        - name: tenantId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        allOf:
+                          - $ref: '#/components/schemas/PageResponseDto'
+                          - properties:
+                              content:
+                                type: array
+                                items:
+                                  $ref: '#/components/schemas/DeadDeliveryResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: List dead deliveries (retries exhausted or 4xx)
+      tags:
+        - Outbox Admin
+  /v1/internal/outbox/deliveries/{id}/retry:
+    post:
+      operationId: OutboxAdminController_retry_v1
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RetryDeliveryResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Manually retry a dead delivery (requeue it immediately)
+      tags:
+        - Outbox Admin
+  /v1/payment-intents/{publicId}/refunds:
+    post:
+      operationId: RefundController_create_v1
+      parameters:
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: idempotency-key
+          required: true
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRefundDto'
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RefundResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Refund a paid intent in full or in part (idempotency-key is required)
+      tags:
+        - Refunds
+  /v1/refunds/{publicId}:
+    get:
+      operationId: RefundController_findOne_v1
+      parameters:
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/RefundResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Get a refund
+      tags:
+        - Refunds
+  /v1/internal/reconciliation/run:
+    post:
+      operationId: ReconciliationAdminController_run_v1
+      parameters: []
+      responses:
+        '201':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/ReconciliationRunResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      summary: Run one reconciliation cycle now (queries providers for attempts without a result)
+      tags:
+        - Reconciliation Admin
+  /v1/payment-intents/{publicId}/refresh:
+    post:
+      operationId: PaymentRefreshController_refresh_v1
+      parameters:
+        - name: publicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponseDto'
+                  - properties:
+                      result:
+                        $ref: '#/components/schemas/PaymentIntentResponseDto'
+        '400':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '401':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '403':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '429':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+        '500':
+          description: Standard error envelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponseDto'
+      security:
+        - tenant-api-key: []
+      summary: Query the provider now for open attempts (rate limited per attempt) and return the intent
+      tags:
+        - Payments
+info:
+  title: payment-gateway-service
+  description: ''
+  version: 0.1.0
+  contact: {}
+tags: []
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+    tenant-api-key:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    ApiResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: SUCCESS
+        message:
+          type: string
+          nullable: true
+          example: null
+        result:
+          type: object
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - result
+        - requestId
+    PageResponseDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        page:
+          type: number
+          example: 1
+        size:
+          type: number
+          example: 20
+        totalElements:
+          type: number
+          example: 42
+        totalPages:
+          type: number
+          example: 3
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+    AuditLogResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        occurredAt:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          nullable: true
+        actorSubject:
+          type: string
+          nullable: true
+        actorRoles:
+          type: array
+          items:
+            type: string
+        ip:
+          type: string
+          nullable: true
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          enum:
+            - SUCCESS
+            - FAILURE
+        errorCode:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+      required:
+        - id
+        - occurredAt
+        - requestId
+        - tenantId
+        - actorSubject
+        - actorRoles
+        - ip
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+        - errorCode
+        - metadata
+    HealthResponseDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+        version:
+          type: string
+          example: 0.1.0
+      required:
+        - status
+        - version
+    TenantResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - archived
+        default_currency:
+          type: string
+          example: VND
+        metadata_json:
+          type: object
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - code
+        - name
+        - status
+        - default_currency
+        - created_at
+        - updated_at
+    CreateTenantDto:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        defaultCurrency:
+          type: string
+          default: VND
+        metadata:
+          type: object
+          additionalProperties: true
+      required:
+        - code
+        - name
+    UpdateTenantDto:
+      type: object
+      properties: {}
+    TenantApiKeyResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        key_prefix:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - revoked
+            - expired
+        last_used_at:
+          type: object
+          format: date-time
+          nullable: true
+        expires_at:
+          type: object
+          format: date-time
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - key_prefix
+        - label
+        - status
+        - created_at
+        - updated_at
+    CreatedTenantApiKeyResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        key_prefix:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - revoked
+            - expired
+        last_used_at:
+          type: object
+          format: date-time
+          nullable: true
+        expires_at:
+          type: object
+          format: date-time
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        raw_api_key:
+          type: string
+          description: Raw API key, returned only once
+      required:
+        - id
+        - tenant_id
+        - key_prefix
+        - label
+        - status
+        - created_at
+        - updated_at
+        - raw_api_key
+    CreateTenantApiKeyDto:
+      type: object
+      properties:
+        label:
+          type: string
+      required:
+        - label
+    TenantWebhookResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - paused
+            - disabled
+        subscribed_events:
+          type: array
+          items:
+            type: string
+        last_success_at:
+          type: object
+          format: date-time
+          nullable: true
+        last_failure_at:
+          type: object
+          format: date-time
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - url
+        - status
+        - subscribed_events
+        - created_at
+        - updated_at
+    TenantWebhookSecretResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - paused
+            - disabled
+        subscribed_events:
+          type: array
+          items:
+            type: string
+        last_success_at:
+          type: object
+          format: date-time
+          nullable: true
+        last_failure_at:
+          type: object
+          format: date-time
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        raw_secret:
+          type: string
+          description: Signing secret, returned only once
+      required:
+        - id
+        - tenant_id
+        - url
+        - status
+        - subscribed_events
+        - created_at
+        - updated_at
+        - raw_secret
+    CreateTenantWebhookDto:
+      type: object
+      properties:
+        url:
+          type: string
+        subscribedEvents:
+          type: array
+          items:
+            type: string
+            enum:
+              - payment.requires_action
+              - payment.processing
+              - payment.succeeded
+              - payment.failed
+              - payment.canceled
+              - payment.expired
+              - payment.refunded
+              - payment.partially_refunded
+              - payment.extra_capture
+              - payment.refund.processing
+              - payment.refund.failed
+      required:
+        - url
+        - subscribedEvents
+    UpdateTenantWebhookDto:
+      type: object
+      properties:
+        url:
+          type: string
+        subscribedEvents:
+          type: array
+          items:
+            type: string
+            enum:
+              - payment.requires_action
+              - payment.processing
+              - payment.succeeded
+              - payment.failed
+              - payment.canceled
+              - payment.expired
+              - payment.refunded
+              - payment.partially_refunded
+              - payment.extra_capture
+              - payment.refund.processing
+              - payment.refund.failed
+        status:
+          type: string
+          enum:
+            - active
+            - paused
+            - disabled
+    ProviderAccountCredentialsInfoDto:
+      type: object
+      properties:
+        storage:
+          type: string
+          enum:
+            - encrypted
+            - plaintext
+        key_version:
+          type: number
+          nullable: true
+        plaintext_keys:
+          type: array
+          items:
+            type: string
+      required:
+        - storage
+        - plaintext_keys
+    ProviderAccountResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        provider_code:
+          type: string
+        account_label:
+          type: string
+        external_account_ref:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - active
+            - disabled
+        config_json:
+          type: object
+          nullable: true
+        credentials:
+          $ref: '#/components/schemas/ProviderAccountCredentialsInfoDto'
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - provider_code
+        - account_label
+        - status
+        - credentials
+        - created_at
+        - updated_at
+    CreateProviderAccountDto:
+      type: object
+      properties:
+        providerCode:
+          type: string
+        accountLabel:
+          type: string
+        credentials:
+          type: object
+          additionalProperties: true
+        externalAccountRef:
+          type: string
+          example: DEMOV210
+        config:
+          type: object
+          additionalProperties: true
+      required:
+        - providerCode
+        - accountLabel
+        - credentials
+    UpdateProviderAccountDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - active
+            - disabled
+        accountLabel:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+    ReplaceProviderCredentialsDto:
+      type: object
+      properties:
+        credentials:
+          type: object
+          additionalProperties: true
+      required:
+        - credentials
+    CustomerResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        customer_ref:
+          type: string
+        email:
+          type: string
+          nullable: true
+        full_name:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        metadata_json:
+          type: object
+          nullable: true
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - customer_ref
+        - created_at
+        - updated_at
+    CreateCustomerDto:
+      type: object
+      properties:
+        customerRef:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+    PaymentAttemptResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        payment_intent_id:
+          type: string
+        provider_account_id:
+          type: string
+          nullable: true
+        provider_code:
+          type: string
+        provider_payment_id:
+          type: string
+          nullable: true
+        provider_order_id:
+          type: string
+          nullable: true
+        payment_method_type:
+          type: string
+          enum:
+            - card
+            - bank_transfer
+            - ewallet
+            - qr_code
+            - manual
+        status:
+          type: string
+          enum:
+            - pending
+            - requires_action
+            - processing
+            - succeeded
+            - failed
+            - canceled
+            - expired
+        checkout_url:
+          type: string
+          nullable: true
+        order_number:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        qr_payload:
+          type: string
+          nullable: true
+        request_payload:
+          type: object
+          nullable: true
+        response_payload:
+          type: object
+          nullable: true
+        failure_code:
+          type: string
+          nullable: true
+        failure_message:
+          type: string
+          nullable: true
+        started_at:
+          format: date-time
+          type: string
+        completed_at:
+          type: object
+          format: date-time
+          nullable: true
+        expires_at:
+          type: object
+          format: date-time
+          nullable: true
+        next_action:
+          type: object
+          nullable: true
+          description: 'Next step for the payer: redirect or QR'
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - payment_intent_id
+        - provider_code
+        - payment_method_type
+        - status
+        - order_number
+        - started_at
+        - created_at
+        - updated_at
+    PaymentIntentResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        customer_id:
+          type: string
+          nullable: true
+        public_id:
+          type: string
+        merchant_reference:
+          type: string
+          nullable: true
+        target_type:
+          type: string
+        target_ref:
+          type: string
+        target_snapshot:
+          type: object
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        currency:
+          type: string
+          example: VND
+        subtotal_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        discount_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        fee_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        tax_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        total_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        status:
+          type: string
+          enum:
+            - pending
+            - requires_action
+            - processing
+            - succeeded
+            - failed
+            - canceled
+            - expired
+            - partially_refunded
+            - refunded
+        metadata_json:
+          type: object
+          nullable: true
+        paid_at:
+          type: object
+          format: date-time
+          nullable: true
+        expires_at:
+          type: object
+          format: date-time
+          nullable: true
+        attempts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentAttemptResponseDto'
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - public_id
+        - target_type
+        - target_ref
+        - target_snapshot
+        - title
+        - currency
+        - subtotal_minor
+        - discount_minor
+        - fee_minor
+        - tax_minor
+        - total_minor
+        - status
+        - attempts
+        - created_at
+        - updated_at
+    CreatePaymentIntentDto:
+      type: object
+      properties:
+        customer:
+          $ref: '#/components/schemas/CreateCustomerDto'
+        merchantReference:
+          type: string
+        targetType:
+          type: string
+        targetRef:
+          type: string
+        targetSnapshot:
+          type: object
+          additionalProperties: true
+        title:
+          type: string
+        description:
+          type: string
+        currency:
+          type: string
+          default: VND
+        subtotalMinor:
+          type: number
+          minimum: 1
+          maximum: 9007199254740991
+        discountMinor:
+          type: number
+          minimum: 0
+          maximum: 9007199254740991
+        feeMinor:
+          type: number
+          minimum: 0
+          maximum: 9007199254740991
+        taxMinor:
+          type: number
+          minimum: 0
+          maximum: 9007199254740991
+        metadata:
+          type: object
+          additionalProperties: true
+      required:
+        - targetType
+        - targetRef
+        - targetSnapshot
+        - title
+        - subtotalMinor
+    CreatePaymentAttemptDto:
+      type: object
+      properties:
+        providerCode:
+          type: string
+        returnUrl:
+          type: string
+        cancelUrl:
+          type: string
+        clientIp:
+          type: string
+          description: Payer IP address, taken by the tenant from the real request
+        userAgent:
+          type: string
+        locale:
+          type: string
+          example: vi
+      required:
+        - providerCode
+    CheckoutMethodResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: vietqr
+        flow:
+          type: string
+          enum:
+            - redirect
+            - qr
+      required:
+        - code
+        - flow
+    CheckoutMethodsResponseDto:
+      type: object
+      properties:
+        methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutMethodResponseDto'
+      required:
+        - methods
+    WebhookIngestResponseDto:
+      type: object
+      properties:
+        duplicate:
+          type: boolean
+        webhookEventId:
+          type: string
+        skipped:
+          type: boolean
+        ignored:
+          type: boolean
+        reason:
+          type: string
+          nullable: true
+        previousStatus:
+          type: string
+          nullable: true
+        previousReason:
+          type: string
+          nullable: true
+        paymentIntentId:
+          type: string
+        publicId:
+          type: string
+        status:
+          type: string
+        outboxEventId:
+          type: string
+          nullable: true
+      required:
+        - duplicate
+        - webhookEventId
+    ConfirmTransferDto:
+      type: object
+      properties:
+        amountMinor:
+          type: number
+          example: 49000
+        currency:
+          type: string
+          example: VND
+        bankReference:
+          type: string
+          example: FT26291123456
+        operatorRef:
+          type: string
+          example: admin:user-123
+      required:
+        - amountMinor
+        - currency
+        - bankReference
+        - operatorRef
+    OutboxDispatchResponseDto:
+      type: object
+      properties:
+        fannedOut:
+          type: number
+        attempted:
+          type: number
+        delivered:
+          type: number
+        retrying:
+          type: number
+        dead:
+          type: number
+      required:
+        - fannedOut
+        - attempted
+        - delivered
+        - retrying
+        - dead
+    DispatchOutboxDto:
+      type: object
+      properties:
+        limit:
+          type: number
+          minimum: 1
+          maximum: 200
+          default: 50
+    DeadDeliveryEndpointDto:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        status:
+          type: string
+      required:
+        - id
+        - url
+        - status
+    DeadDeliveryResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        outbox_event_id:
+          type: integer
+        endpoint_id:
+          type: string
+        tenant_id:
+          type: string
+        status:
+          type: string
+        attempt_count:
+          type: number
+        last_http_status:
+          type: number
+          nullable: true
+        last_error:
+          type: string
+          nullable: true
+        endpoint:
+          $ref: '#/components/schemas/DeadDeliveryEndpointDto'
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - outbox_event_id
+        - endpoint_id
+        - tenant_id
+        - status
+        - attempt_count
+        - endpoint
+        - updated_at
+    RetryDeliveryResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        requeued:
+          type: boolean
+      required:
+        - id
+        - requeued
+    RefundIntentSummaryDto:
+      type: object
+      properties:
+        public_id:
+          type: string
+        status:
+          type: string
+        total_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+      required:
+        - public_id
+        - status
+        - total_minor
+    RefundResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+        tenant_id:
+          type: string
+        payment_intent_id:
+          type: string
+        payment_attempt_id:
+          type: string
+          nullable: true
+        customer_id:
+          type: string
+          nullable: true
+        public_id:
+          type: string
+        amount_minor:
+          type: integer
+          description: Amount in minor units; a string when it exceeds the safe integer range
+        currency:
+          type: string
+          example: VND
+        reason:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - succeeded
+            - failed
+            - canceled
+        provider_refund_id:
+          type: string
+          nullable: true
+        completed_at:
+          type: object
+          format: date-time
+          nullable: true
+        failed_at:
+          type: object
+          format: date-time
+          nullable: true
+        failure_reason:
+          type: string
+          nullable: true
+        payment_intents:
+          $ref: '#/components/schemas/RefundIntentSummaryDto'
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - tenant_id
+        - payment_intent_id
+        - public_id
+        - amount_minor
+        - currency
+        - status
+        - created_at
+        - updated_at
+    CreateRefundDto:
+      type: object
+      properties:
+        amountMinor:
+          type: number
+          example: 49000
+        reason:
+          type: string
+    ExpiredAttemptsSummaryDto:
+      type: object
+      properties:
+        checked:
+          type: number
+        applied:
+          type: number
+      required:
+        - checked
+        - applied
+    RefundReconcileSummaryDto:
+      type: object
+      properties:
+        checked:
+          type: number
+        applied:
+          type: number
+        errors:
+          type: number
+      required:
+        - checked
+        - applied
+        - errors
+    ReconciliationRunResponseDto:
+      type: object
+      properties:
+        checked:
+          type: number
+        unchanged:
+          type: number
+        applied:
+          type: number
+        ignored:
+          type: number
+        duplicate:
+          type: number
+        error:
+          type: number
+        expired:
+          $ref: '#/components/schemas/ExpiredAttemptsSummaryDto'
+        refunds:
+          $ref: '#/components/schemas/RefundReconcileSummaryDto'
+      required:
+        - checked
+        - unchanged
+        - applied
+        - ignored
+        - duplicate
+        - error
+        - expired
+        - refunds
+    ApiErrorResponseDto:
+      type: object
+      properties:
+        code:
+          type: string
+          example: COMMON.VALIDATION
+        message:
+          type: string
+          example: Request validation failed
+        details:
+          type: object
+          nullable: true
+        path:
+          type: string
+          example: /v1/examples
+        timestamp:
+          type: string
+          format: date-time
+        requestId:
+          type: string
+          nullable: true
+      required:
+        - code
+        - message
+        - path
+        - timestamp
+        - requestId
+security:
+  - bearer: []

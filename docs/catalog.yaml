@@ -43,9 +43,9 @@ components:
     path: services/payment
     kind: service
     stack: NestJS, Prisma
-    summary: PayOS, nạp Xèng, sổ cái số dư, webhook, hoá đơn
+    summary: Cổng PayOS, VietQR và VNPay, webhook, hoàn tiền và đối soát
     milestone: M3
-    maps_to: Ứng dụng thanh toán và tiến trình chuyển sự kiện thanh toán
+    maps_to: Cổng giao dịch cho các ứng dụng Netverse
   - id: ai-chat
     path: services/ai-chat
     kind: service
