@@ -1,6 +1,6 @@
 import { Client } from 'pg';
-import { PrismaService } from '../../src/infrastructure/prisma/prisma.service';
-import { createTestApp, TestApp } from '../support/test-app';
+import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
+import { createTestApp, TestApp } from '@test/support/test-app';
 
 async function setDatabaseZone(zone: string): Promise<void> {
   const client = new Client({ connectionString: process.env.DATABASE_URL });

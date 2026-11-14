@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { load } from 'js-yaml';
 import request from 'supertest';
-import { PUBLIC_PATHS, UNVERSIONED_PATHS } from '../support/conformance.config';
-import { INTERNAL_ERROR_DETAIL } from '../support/conformance-probe.controller';
-import { createTestApp, TestApp } from '../support/test-app';
+import { PUBLIC_PATHS, UNVERSIONED_PATHS } from '@test/support/conformance.config';
+import { INTERNAL_ERROR_DETAIL } from '@test/support/conformance-probe.controller';
+import { createTestApp, TestApp } from '@test/support/test-app';
 
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T/;
 
@@ -199,9 +199,10 @@ describe('chuẩn HTTP chung', () => {
     };
     const operations = () =>
       Object.entries(document.paths).flatMap(([path, item]) =>
-        httpMethods
-          .filter((method) => item[method])
-          .map((method) => ({ path, method, operation: item[method] })),
+        httpMethods.flatMap((method) => {
+          const operation = item[method];
+          return operation ? [{ path, method, operation }] : [];
+        }),
       );
 
     beforeAll(async () => {

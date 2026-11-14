@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
-import { PrismaService } from '../../src/infrastructure/prisma/prisma.service';
-import { createTestApp, TestApp } from '../support/test-app';
+import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
+import { createTestApp, TestApp } from '@test/support/test-app';
 
 describe('audit log', () => {
   let subject: TestApp;

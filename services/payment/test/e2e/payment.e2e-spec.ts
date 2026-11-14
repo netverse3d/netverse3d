@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
-import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
-import { createTestApp, TestApp } from './support/test-app';
+import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
+import { createTestApp, TestApp } from '@test/support/test-app';
 
 const ACCOUNT_NUMBER = '1900123456';
 const SEPAY_HMAC_SECRET = 'sepay-hmac-secret-value';

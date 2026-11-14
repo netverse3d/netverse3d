@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { createTestApp, TestApp } from '../support/test-app';
+import { createTestApp, TestApp } from '@test/support/test-app';
 
 describe('giới hạn của pipeline', () => {
   describe('rate limit', () => {
