@@ -10,7 +10,7 @@ const envelope = (overrides: Record<string, unknown> = {}) => ({
   source: 'identity',
   occurredAt: '2026-11-13T08:00:00.000Z',
   version: 1,
-  data: { principalId: PRINCIPAL, tenantId: null, email: 'a@example.test', status: 'ACTIVE' },
+  data: { principalId: PRINCIPAL, tenantId: null, status: 'ACTIVE' },
   ...overrides,
 });
 

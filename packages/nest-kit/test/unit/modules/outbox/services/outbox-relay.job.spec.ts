@@ -21,7 +21,7 @@ function row(overrides: Partial<OutboxRow> = {}): OutboxRow {
     tenantId: null,
     createdAt: new Date('2026-11-13T08:00:00.000Z'),
     nextAttemptAt: new Date(Date.now() - 1_000),
-    payload: { principalId: PRINCIPAL, email: 'a@example.test', status: 'ACTIVE' },
+    payload: { principalId: PRINCIPAL, status: 'ACTIVE' },
     attempts: 0,
     ...overrides,
   } as OutboxRow;
