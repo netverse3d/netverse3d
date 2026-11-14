@@ -15,6 +15,7 @@ export interface TemplateInput {
   locale?: string;
   subject?: string;
   body?: string;
+  category?: 'TRANSACTIONAL' | 'OPTIONAL';
 }
 
 export class Scenario {
@@ -48,7 +49,8 @@ export class Scenario {
   }
 
   async createTemplate(input: TemplateInput): Promise<Response> {
-    return this.http()
+    const { category = 'TRANSACTIONAL', ...template } = input;
+    const created = await this.http()
       .post('/v1/templates')
       .set('authorization', `Bearer ${this.admin}`)
       .send({
@@ -56,9 +58,20 @@ export class Scenario {
         locale: 'en',
         subject: 'Subject',
         body: '<p>Hello {{name}}</p>',
-        ...input,
+        ...template,
       })
       .expect(201);
+    if (category === 'TRANSACTIONAL') {
+      await this.seedAsTransactional(created.body.result.id as string);
+    }
+    return created;
+  }
+
+  async seedAsTransactional(templateId: string): Promise<void> {
+    await this.prisma.notificationTemplate.update({
+      where: { id: templateId },
+      data: { category: 'TRANSACTIONAL' },
+    });
   }
 
   async send(body: Record<string, unknown>, idempotencyKey?: string): Promise<Response> {

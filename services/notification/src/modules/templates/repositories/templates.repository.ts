@@ -6,6 +6,8 @@ import type { DeliveryChannelName } from '../../notifications/domain/channels';
 export type TemplateRow = NotificationTemplate;
 export type TemplateOrderBy = Prisma.NotificationTemplateOrderByWithRelationInput;
 
+import type { TemplateCategoryName } from '../domain/template-category';
+
 export interface NewTemplate {
   tenantId: string;
   eventType: string;
@@ -13,6 +15,7 @@ export interface NewTemplate {
   locale: string;
   subject: string;
   body: string;
+  category: TemplateCategoryName;
 }
 
 export interface TemplateFilter {
@@ -54,7 +57,7 @@ export class TemplatesRepository {
   async updateOwned(
     id: string,
     tenantId: string,
-    changes: { subject?: string; body?: string },
+    changes: { subject?: string; body?: string; category?: TemplateCategoryName },
   ): Promise<TemplateRow | null> {
     const { count } = await this.prisma.notificationTemplate.updateMany({
       where: { id, tenantId },

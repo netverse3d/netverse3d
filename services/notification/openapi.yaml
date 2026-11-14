@@ -1547,6 +1547,10 @@ components:
           type: string
           example: en
           maxLength: 16
+        expiresAt:
+          type: string
+          format: date-time
+          description: After this moment the notification is dropped instead of sent late
         channels:
           type: array
           items:
@@ -1578,6 +1582,11 @@ components:
           type: string
         body:
           type: string
+        category:
+          type: string
+          enum:
+            - TRANSACTIONAL
+            - OPTIONAL
         version:
           type: number
         createdAt:
@@ -1593,6 +1602,7 @@ components:
         - locale
         - subject
         - body
+        - category
         - version
         - createdAt
         - updatedAt
@@ -1621,6 +1631,12 @@ components:
           type: string
           description: Handlebars source of the body
           maxLength: 100000
+        category:
+          type: string
+          enum:
+            - TRANSACTIONAL
+            - OPTIONAL
+          description: TRANSACTIONAL is always sent and exists only in the platform scope
       required:
         - eventType
         - channel
@@ -1636,6 +1652,12 @@ components:
         body:
           type: string
           maxLength: 100000
+        category:
+          type: string
+          enum:
+            - TRANSACTIONAL
+            - OPTIONAL
+          description: TRANSACTIONAL is always sent and exists only in the platform scope
     BrandingEntryResponseDto:
       type: object
       properties:

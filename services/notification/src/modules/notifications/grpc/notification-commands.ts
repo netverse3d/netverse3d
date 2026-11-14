@@ -107,6 +107,7 @@ export class NotificationCommands implements OnModuleInit {
       variables: variablesOf(request.variablesJson),
       locale: textOrNone(request.locale),
       channels: channelsOf(request.channels),
+      expiresAt: textOrNone(request.expiresAt),
     });
     const violations = await validate(dto, { whitelist: true, forbidNonWhitelisted: true });
     if (violations.length > 0) {
@@ -117,6 +118,7 @@ export class NotificationCommands implements OnModuleInit {
     const accepted = await this.notifications.accept({
       tenantId: request.scope,
       source: 'SERVICE',
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       idempotencyKey: keyOwnedBy(
         call.caller.service?.clientId ?? call.caller.subject,
         call.idempotencyKey,

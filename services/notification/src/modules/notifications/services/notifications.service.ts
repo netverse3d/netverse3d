@@ -7,6 +7,7 @@ import { TemplatesService } from '../../templates/services/templates.service';
 import type { DeliveryChannelName } from '../domain/channels';
 import { MAX_IDEMPOTENCY_KEY_LENGTH } from '../domain/limits';
 import { scopeOf } from '@netverse/nest-kit';
+import { PLATFORM_SCOPE } from '@netverse/nest-kit';
 import { AcceptedNotificationDto, SendNotificationDto } from '../dto/notification.dto';
 import { NotificationErrorCode } from '../notification-error-codes';
 import {
@@ -32,7 +33,10 @@ export interface IntakeCommand {
   channels?: DeliveryChannelName[];
   recipient: RecipientInput;
   variables: Record<string, unknown>;
+  expiresAt?: Date;
 }
+
+const QUOTA_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) {
@@ -89,6 +93,7 @@ export class NotificationsService {
         channels: dto.channels,
         recipient: dto.recipient,
         variables: dto.variables ?? {},
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       }),
     );
   }
@@ -103,6 +108,7 @@ export class NotificationsService {
       }
     }
     const channels = await this.planChannels(command);
+    await this.assertSendable(command, channels);
     try {
       return await this.repository.create({
         tenantId: command.tenantId,
@@ -114,6 +120,7 @@ export class NotificationsService {
         variables: command.variables,
         recipientSubject: command.recipient.subject ?? null,
         recipientEmail: command.recipient.email ?? null,
+        expiresAt: command.expiresAt ?? null,
         deliveries: channels.flatMap((channel) => this.deliveriesFor(channel, command.recipient)),
       });
     } catch (error) {
@@ -135,11 +142,46 @@ export class NotificationsService {
     ) {
       throw new AppException(NotificationErrorCode.RECIPIENT_REQUIRED);
     }
+    if (command.expiresAt && command.expiresAt.getTime() <= Date.now()) {
+      throw new AppException(NotificationErrorCode.EXPIRES_AT_PAST);
+    }
     if (command.idempotencyKey && command.idempotencyKey.length > MAX_IDEMPOTENCY_KEY_LENGTH) {
       throw new AppException(NotificationErrorCode.IDEMPOTENCY_KEY_INVALID);
     }
     if (containsNullCharacter(command)) {
       throw new AppException(NotificationErrorCode.INVALID_CHARACTERS);
+    }
+  }
+
+  private async assertSendable(
+    command: IntakeCommand,
+    channels: DeliveryChannelName[],
+  ): Promise<void> {
+    if (!command.recipient.subject) {
+      const locale = command.locale ?? this.config.notification.defaultLocale;
+      const templates = await Promise.all(
+        channels.map((channel) =>
+          this.templates.resolve(command.tenantId, command.eventType, channel, locale),
+        ),
+      );
+      if (templates.some((template) => template?.category === 'OPTIONAL')) {
+        throw new AppException(NotificationErrorCode.RECIPIENT_SUBJECT_REQUIRED);
+      }
+    }
+    const metered =
+      command.source === 'API' &&
+      command.tenantId !== PLATFORM_SCOPE &&
+      channels.includes('EMAIL') &&
+      Boolean(command.recipient.email);
+    if (!metered) {
+      return;
+    }
+    const sent = await this.repository.countApiEmailsSince(
+      command.tenantId,
+      new Date(Date.now() - QUOTA_WINDOW_MS),
+    );
+    if (sent >= this.config.notification.tenantDailyEmailLimit) {
+      throw new AppException(NotificationErrorCode.EMAIL_QUOTA_EXCEEDED);
     }
   }
 

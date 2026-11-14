@@ -507,6 +507,46 @@ describe('quản trị template, thương hiệu, chặn địa chỉ và nhật
         .expect(403);
     });
 
+    it('chỉ phạm vi nền tảng có template giao dịch; template không khai loại là tuỳ chọn', async () => {
+      const eventType = uniqueEvent();
+      const shopAdmin = await scenario.userToken('owner', ['admin']);
+      const base = { eventType, channel: 'EMAIL', locale: 'en', subject: 'S', body: 'B' };
+      const refused = await scenario
+        .http()
+        .post('/v1/templates')
+        .set('authorization', bearer(shopAdmin))
+        .send({ ...base, category: 'TRANSACTIONAL' })
+        .expect(403);
+      expect(refused.body.code).toBe('NOTIFICATION.TRANSACTIONAL_TEMPLATE_FORBIDDEN');
+
+      const ofShop = await scenario
+        .http()
+        .post('/v1/templates')
+        .set('authorization', bearer(shopAdmin))
+        .send(base)
+        .expect(201);
+      expect(ofShop.body.result.category).toBe('OPTIONAL');
+      const promoted = await scenario
+        .http()
+        .patch(`/v1/templates/${ofShop.body.result.id}`)
+        .set('authorization', bearer(shopAdmin))
+        .send({ category: 'TRANSACTIONAL' })
+        .expect(403);
+      expect(promoted.body.code).toBe('NOTIFICATION.TRANSACTIONAL_TEMPLATE_FORBIDDEN');
+
+      const platformAdmin = await subject.tokens.sign({
+        subject: 'root',
+        roles: ['platform_admin'],
+      });
+      const ofPlatform = await scenario
+        .http()
+        .post('/v1/templates')
+        .set('authorization', bearer(platformAdmin))
+        .send({ ...base, category: 'TRANSACTIONAL' })
+        .expect(201);
+      expect(ofPlatform.body.result.category).toBe('TRANSACTIONAL');
+    });
+
     it('quản trị nền tảng quản lý template của nền tảng, tách hẳn khỏi template của tiệm', async () => {
       const platformAdmin = await subject.tokens.sign({
         subject: 'root',

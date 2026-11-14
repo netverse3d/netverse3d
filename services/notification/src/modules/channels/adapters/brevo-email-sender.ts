@@ -27,7 +27,10 @@ export class BrevoEmailSender extends ChannelSender {
         'api-key': this.apiKey,
       },
       body: JSON.stringify({
-        sender: { email: this.context.fromAddress, name: this.context.fromName },
+        sender: {
+          email: this.context.fromAddress,
+          name: message.senderName ?? this.context.fromName,
+        },
         to: [{ email: message.destination }],
         subject: message.subject,
         htmlContent: message.body,

@@ -77,6 +77,11 @@ enum NotificationSource {
   SERVICE
 }
 
+enum TemplateCategory {
+  TRANSACTIONAL
+  OPTIONAL
+}
+
 model NotificationTemplate {
   id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tenantId  String          @map("tenant_id") @db.VarChar(128)
@@ -85,6 +90,7 @@ model NotificationTemplate {
   locale    String          @db.VarChar(16)
   subject   String          @db.VarChar(1000)
   body      String
+  category  TemplateCategory @default(OPTIONAL)
   version   Int             @default(1)
   createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz
@@ -115,6 +121,7 @@ model Notification {
   variables        Json               @default("{}")
   recipientSubject String?            @map("recipient_subject") @db.VarChar(255)
   recipientEmail   String?            @map("recipient_email") @db.VarChar(320)
+  expiresAt        DateTime?          @map("expires_at") @db.Timestamptz
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
 
   deliveries NotificationDelivery[]

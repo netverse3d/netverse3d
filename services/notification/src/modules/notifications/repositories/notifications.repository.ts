@@ -22,6 +22,7 @@ export interface NewNotification {
   variables: Record<string, unknown>;
   recipientSubject: string | null;
   recipientEmail: string | null;
+  expiresAt: Date | null;
   deliveries: NewDelivery[];
 }
 
@@ -48,6 +49,17 @@ export class NotificationsRepository {
         },
       },
       include: { deliveries: { orderBy: { createdAt: 'asc' } } },
+    });
+  }
+
+  countApiEmailsSince(tenantId: string, since: Date): Promise<number> {
+    return this.prisma.notificationDelivery.count({
+      where: {
+        tenantId,
+        channel: 'EMAIL',
+        createdAt: { gte: since },
+        notification: { source: 'API' },
+      },
     });
   }
 

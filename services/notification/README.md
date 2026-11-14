@@ -22,15 +22,15 @@ Nếu không truyền `channels`, service chọn các kênh vừa có địa ch�
 
 ## Trạng thái gửi
 
-| Trạng thái   | Ý nghĩa                                                                                                                                                                     |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PENDING`    | Chờ gửi hoặc chờ thử lại theo `nextAttemptAt`                                                                                                                               |
-| `PROCESSING` | Một worker đang giữ, hết hạn giữ chỗ thì được nhận lại                                                                                                                      |
-| `SENT`       | Đã gửi                                                                                                                                                                      |
-| `SKIPPED`    | Bỏ qua: `OPTED_OUT`, `ADDRESS_BLOCKED`                                                                                                                                      |
-| `DEAD`       | Không gửi được: `TEMPLATE_NOT_FOUND`, `TEMPLATE_INVALID`, `MISSING_VARIABLE`, `RECIPIENT_ADDRESS_MISSING`, `CHANNEL_DISABLED`, `PROVIDER_REJECTED`, `MAX_ATTEMPTS_EXCEEDED` |
+| Trạng thái   | Ý nghĩa                                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PENDING`    | Chờ gửi hoặc chờ thử lại theo `nextAttemptAt`                                                                                                                                                                       |
+| `PROCESSING` | Một worker đang giữ, hết hạn giữ chỗ thì được nhận lại                                                                                                                                                              |
+| `SENT`       | Đã gửi                                                                                                                                                                                                              |
+| `SKIPPED`    | Bỏ qua: `OPTED_OUT`, `ADDRESS_BLOCKED`                                                                                                                                                                              |
+| `DEAD`       | Không gửi được: `TEMPLATE_NOT_FOUND`, `TEMPLATE_INVALID`, `MISSING_VARIABLE`, `RECIPIENT_ADDRESS_MISSING`, `RECIPIENT_SUBJECT_MISSING`, `EXPIRED`, `CHANNEL_DISABLED`, `PROVIDER_REJECTED`, `MAX_ATTEMPTS_EXCEEDED` |
 
-Lỗi tạm thời của nhà cung cấp được thử lại theo cấp số nhân tới `DELIVERY_MAX_ATTEMPTS`. Trong lúc chờ thử lại, lần gửi mang lý do `PROVIDER_ERROR`, hoặc `PROVIDER_MISCONFIGURED` khi nhà cung cấp từ chối khoá hay mật khẩu. Trường hợp sau service ghi log mức lỗi và không tính vào số lần thử: lần gửi chờ cấu hình được sửa, thử lại mỗi 5 phút theo mặc định, tối đa một ngày kể từ lúc tạo rồi mới vào `DEAD` với đúng lý do đó.
+Lỗi tạm thời của nhà cung cấp được thử lại theo cấp số nhân tới `DELIVERY_MAX_ATTEMPTS`. Trong lúc chờ thử lại, lần gửi mang lý do `PROVIDER_ERROR`, hoặc `PROVIDER_MISCONFIGURED` khi nhà cung cấp từ chối khoá hay mật khẩu. Trường hợp sau service ghi log mức lỗi và không tính vào số lần thử: lần gửi chờ cấu hình được sửa, thử lại mỗi 5 phút theo mặc định, tới hạn của thông báo và không quá một ngày kể từ lúc tạo, rồi mới vào `DEAD`.
 
 Service đảm bảo gửi ít nhất một lần:
 
@@ -48,6 +48,16 @@ Một lần render chạy tối đa 10.000 vòng lặp và đọc tối đa 500.
 Lúc render, biến thiếu hoặc `null` làm lần gửi vào `DEAD`, không gửi nội dung trống. Thân email được thoát HTML. Tiêu đề, push và hộp thư là văn bản thuần, không thoát; ứng dụng hiển thị phải coi chúng là văn bản.
 
 Thương hiệu quản lý ở `/v1/branding/:key`, dùng trong template qua `{{brand.key}}`. Biến của bên gọi không ghi đè được `brand`. Service không kèm sẵn template nào.
+
+## Luật gửi
+
+Theo [ADR-0030](../../docs/decisions/ADR-0030-notification-sending-rules.md).
+
+- Mỗi template mang một loại. `TRANSACTIONAL` luôn được gửi, không xét lựa chọn tắt nhận, và chỉ tạo được ở phạm vi nền tảng. `OPTIONAL` là mặc định, và là loại duy nhất của tiệm.
+- Thư loại `OPTIONAL` bắt buộc có mã người nhận. Lệnh chỉ có địa chỉ hoặc token thiết bị bị từ chối với `NOTIFICATION.RECIPIENT_SUBJECT_REQUIRED`.
+- Mỗi tiệm gửi tối đa `TENANT_DAILY_EMAIL_LIMIT` email qua HTTP trong 24 giờ, mặc định 500. Vượt mức thì nhận 429 với `NOTIFICATION.EMAIL_QUOTA_EXCEEDED`. Phạm vi nền tảng và lệnh từ service không bị giới hạn.
+- Email của tiệm mang tên người gửi là mục thương hiệu `name` của tiệm. Tiệm chưa đặt thì dùng `EMAIL_FROM_NAME`.
+- Lệnh gửi có thể kèm `expiresAt`. Quá thời điểm đó lần gửi vào `DEAD` với `EXPIRED` thay vì gửi muộn. Trường này không nằm trong phép so khoá chống trùng.
 
 ## Quyền
 

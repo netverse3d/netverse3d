@@ -61,6 +61,19 @@ describe('gửi email qua Brevo', () => {
     });
   });
 
+  it('tên người gửi của bức thư thay cho tên chung', async () => {
+    const fetchMock = respond(201, { messageId: 'id' });
+    await new BrevoEmailSender(API_KEY, SENDER_CONTEXT).send({
+      ...EMAIL_MESSAGE,
+      senderName: 'Lan Net',
+    });
+    const [, init] = fetchMock.mock.calls[0] as FetchCall;
+    expect(JSON.parse(init.body as string).sender).toEqual({
+      email: 'from@example.test',
+      name: 'Lan Net',
+    });
+  });
+
   it('lỗi 429 là tạm thời', async () => {
     respond(429);
     await expect(new BrevoEmailSender(API_KEY, SENDER_CONTEXT).send(EMAIL_MESSAGE)).rejects.toThrow(
@@ -96,6 +109,16 @@ describe('gửi email qua Resend', () => {
       subject: 'Subject',
       html: '<p>Body</p>',
     });
+  });
+
+  it('tên người gửi có ký tự đặc biệt được đặt trong ngoặc kép', async () => {
+    const fetchMock = respond(200, { id: 'id' });
+    await new ResendEmailSender(API_KEY, SENDER_CONTEXT).send({
+      ...EMAIL_MESSAGE,
+      senderName: 'Tiệm Net, Quận 1',
+    });
+    const [, init] = fetchMock.mock.calls[0] as FetchCall;
+    expect(JSON.parse(init.body as string).from).toBe('"Tiệm Net, Quận 1" <from@example.test>');
   });
 
   it('khoá sai là lỗi cấu hình, được coi là tạm thời để thư không bị bỏ', async () => {

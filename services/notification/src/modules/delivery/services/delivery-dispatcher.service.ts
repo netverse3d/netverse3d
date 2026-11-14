@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { PLATFORM_SCOPE } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import { BrandingService } from '../../branding/services/branding.service';
 import {
@@ -26,6 +27,25 @@ const SETTLE_RETRY_MS = 100;
 const MAX_UNRECORDED_OUTCOMES = 10_000;
 const MISCONFIGURED_RETRY_FACTOR = 10;
 const MISCONFIGURED_GIVE_UP_MS = 24 * 60 * 60 * 1000;
+
+const MAX_SENDER_NAME_LENGTH = 64;
+const HEADER_BREAKING_CHARACTERS = /[\r\n"<>]/g;
+
+function hasExpired(delivery: ClaimedDelivery): boolean {
+  const { expiresAt } = delivery.notification;
+  return expiresAt instanceof Date && expiresAt.getTime() <= Date.now();
+}
+
+function senderNameOf(scope: string, brandName: string | undefined): string | undefined {
+  if (scope === PLATFORM_SCOPE || brandName === undefined) {
+    return undefined;
+  }
+  const name = brandName
+    .replace(HEADER_BREAKING_CHARACTERS, '')
+    .trim()
+    .slice(0, MAX_SENDER_NAME_LENGTH);
+  return name.length > 0 ? name : undefined;
+}
 
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -115,6 +135,9 @@ export class DeliveryDispatcherService {
         'Delivery attempts were exhausted before completion',
       );
     }
+    if (hasExpired(delivery)) {
+      return this.dead(DeliveryReason.EXPIRED, 'Notification expired before it could be sent');
+    }
     if (!delivery.destination) {
       return this.dead(
         DeliveryReason.RECIPIENT_ADDRESS_MISSING,
@@ -124,8 +147,16 @@ export class DeliveryDispatcherService {
     if (await this.preferences.isBlocked(delivery.tenantId, delivery.destination)) {
       return this.skipped(DeliveryReason.ADDRESS_BLOCKED, 'Address is on the tenant block list');
     }
+    const template = await this.templates.resolve(
+      delivery.tenantId,
+      delivery.eventType,
+      delivery.channel,
+      delivery.notification.locale,
+    );
     const subject = delivery.notification.recipientSubject;
+    const optional = template?.category !== 'TRANSACTIONAL';
     if (
+      optional &&
       subject !== null &&
       (await this.preferences.isOptedOut(
         delivery.tenantId,
@@ -139,16 +170,16 @@ export class DeliveryDispatcherService {
         'Recipient opted out of this channel and event',
       );
     }
-    const template = await this.templates.resolve(
-      delivery.tenantId,
-      delivery.eventType,
-      delivery.channel,
-      delivery.notification.locale,
-    );
     if (!template) {
       return this.dead(
         DeliveryReason.TEMPLATE_NOT_FOUND,
         `No ${delivery.channel} template for event ${delivery.eventType} in locale ${delivery.notification.locale}`,
+      );
+    }
+    if (optional && subject === null) {
+      return this.dead(
+        DeliveryReason.RECIPIENT_SUBJECT_MISSING,
+        'Optional notifications need a recipient subject',
       );
     }
     const templateFields = { templateId: template.id, templateVersion: template.version };
@@ -162,6 +193,7 @@ export class DeliveryDispatcherService {
         eventType: delivery.eventType,
         channel: delivery.channel,
         destination: delivery.destination,
+        senderName: senderNameOf(delivery.tenantId, brand.name),
         subject: renderTemplate(template.subject, context, {
           escapeHtml: false,
           maxLength: MAX_RENDERED_SUBJECT_LENGTH,
@@ -225,6 +257,13 @@ export class DeliveryDispatcherService {
     this.logger.error(
       `delivery ${delivery.id} was refused: ${detail}; check the ${delivery.channel} provider credentials`,
     );
+    if (hasExpired(delivery)) {
+      await this.repository.settle(
+        delivery,
+        this.dead(DeliveryReason.EXPIRED, 'Notification expired while the provider refused it'),
+      );
+      return;
+    }
     if (Date.now() - delivery.createdAt.getTime() >= MISCONFIGURED_GIVE_UP_MS) {
       await this.repository.settle(
         delivery,

@@ -9,6 +9,7 @@ export interface OutboundMessage {
   destination: string;
   subject: string;
   body: string;
+  senderName?: string;
 }
 
 export interface SendReceipt {

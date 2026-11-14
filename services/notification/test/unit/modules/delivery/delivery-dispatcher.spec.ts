@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import {
   ChannelSender,
+  OutboundMessage,
   PermanentSendError,
   ProviderConfigurationError,
 } from '../../../../src/modules/channels/ports/channel-sender';
@@ -13,17 +14,31 @@ import { DeliveryReason } from '../../../../src/modules/notifications/domain/del
 
 const DELIVERY_ID = 'delivery-1';
 
+const world = {
+  tenantId: 'tenant-a',
+  recipientSubject: null as string | null,
+  expiresAt: null as Date | null,
+  category: 'TRANSACTIONAL',
+  brand: {} as Record<string, string>,
+  optedOut: false,
+};
+
 function claimed(attempts: number, createdAt: Date): ClaimedDelivery {
   return {
     id: DELIVERY_ID,
-    tenantId: 'tenant-a',
+    tenantId: world.tenantId,
     notificationId: 'notification-1',
     eventType: 'account.welcome',
     channel: 'EMAIL',
     destination: 'user@example.test',
     attempts,
     createdAt,
-    notification: { recipientSubject: null, locale: 'en', variables: { name: 'Lan' } },
+    notification: {
+      recipientSubject: world.recipientSubject,
+      expiresAt: world.expiresAt,
+      locale: 'en',
+      variables: { name: 'Lan' },
+    },
   } as unknown as ClaimedDelivery;
 }
 
@@ -63,9 +78,11 @@ class FakeRepository {
 class FakeSender extends ChannelSender {
   calls = 0;
   failure: Error | null = null;
+  last: OutboundMessage | null = null;
 
-  send(): Promise<{ providerMessageId: string }> {
+  send(message: OutboundMessage): Promise<{ providerMessageId: string }> {
     this.calls += 1;
+    this.last = message;
     return this.failure
       ? Promise.reject(this.failure)
       : Promise.resolve({ providerMessageId: `provider-${this.calls}` });
@@ -88,12 +105,18 @@ function dispatcherWith(repository: FakeRepository, sender: FakeSender) {
     { senderFor: () => sender } as never,
     {
       resolve: () =>
-        Promise.resolve({ id: 'template-1', version: 1, subject: 'Hi {{name}}', body: 'Body' }),
+        Promise.resolve({
+          id: 'template-1',
+          version: 1,
+          category: world.category,
+          subject: 'Hi {{name}}',
+          body: 'Body',
+        }),
     } as never,
-    { asVariables: () => Promise.resolve({}) } as never,
+    { asVariables: () => Promise.resolve(world.brand) } as never,
     {
       isBlocked: () => Promise.resolve(false),
-      isOptedOut: () => Promise.resolve(false),
+      isOptedOut: () => Promise.resolve(world.optedOut),
     } as never,
   );
 }
@@ -107,6 +130,14 @@ describe('bộ phát lần gửi', () => {
   beforeEach(() => {
     errorLog = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    Object.assign(world, {
+      tenantId: 'tenant-a',
+      recipientSubject: null,
+      expiresAt: null,
+      category: 'TRANSACTIONAL',
+      brand: {},
+      optedOut: false,
+    });
     repository = new FakeRepository();
     sender = new FakeSender();
     dispatcher = dispatcherWith(repository, sender);
@@ -194,6 +225,69 @@ describe('bộ phát lần gửi', () => {
       },
     ]);
     expect(errorLog).toHaveBeenCalled();
+  });
+
+  it('thư tuỳ chọn tôn trọng lựa chọn tắt nhận, thư giao dịch thì luôn gửi', async () => {
+    world.recipientSubject = 'user-1';
+    world.optedOut = true;
+    world.category = 'OPTIONAL';
+    await dispatcher.dispatchBatch();
+    expect(sender.calls).toBe(0);
+    expect(repository.settled).toMatchObject([
+      { status: 'SKIPPED', reason: DeliveryReason.OPTED_OUT },
+    ]);
+
+    world.category = 'TRANSACTIONAL';
+    await dispatcher.dispatchBatch();
+    expect(sender.calls).toBe(1);
+  });
+
+  it('thư tuỳ chọn không có mã người nhận thì bị loại, vì không xét được lựa chọn tắt nhận', async () => {
+    world.category = 'OPTIONAL';
+    await dispatcher.dispatchBatch();
+    expect(sender.calls).toBe(0);
+    expect(repository.settled).toMatchObject([
+      { status: 'DEAD', reason: DeliveryReason.RECIPIENT_SUBJECT_MISSING },
+    ]);
+  });
+
+  it('thông báo quá hạn thì bị loại chứ không gửi muộn', async () => {
+    world.expiresAt = new Date(Date.now() - 1_000);
+    await dispatcher.dispatchBatch();
+    expect(sender.calls).toBe(0);
+    expect(repository.settled).toMatchObject([{ status: 'DEAD', reason: DeliveryReason.EXPIRED }]);
+  });
+
+  it('thông báo còn hạn vẫn được gửi', async () => {
+    world.expiresAt = new Date(Date.now() + 60_000);
+    await dispatcher.dispatchBatch();
+    expect(sender.calls).toBe(1);
+  });
+
+  it('khoá bị từ chối mà thông báo đã quá hạn thì loại với lý do quá hạn', async () => {
+    sender.failure = new ProviderConfigurationError('Provider answered 401');
+    world.expiresAt = new Date(Date.now() + 40);
+    await dispatcher.dispatchBatch();
+    expect(repository.retries).toHaveLength(1);
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    await dispatcher.dispatchBatch();
+    expect(repository.settled).toMatchObject([{ status: 'DEAD', reason: DeliveryReason.EXPIRED }]);
+  });
+
+  it('email của tiệm mang tên thương hiệu của tiệm, đã bỏ ký tự phá header', async () => {
+    world.brand = { name: 'Lan "Net" <x>\r\nBcc: a@b.test' };
+    await dispatcher.dispatchBatch();
+    expect(sender.last?.senderName).toBe('Lan Net xBcc: a@b.test');
+  });
+
+  it('tiệm chưa đặt tên và phạm vi nền tảng dùng tên chung của hệ thống', async () => {
+    await dispatcher.dispatchBatch();
+    expect(sender.last?.senderName).toBeUndefined();
+
+    world.tenantId = 'platform';
+    world.brand = { name: 'Netverse Shop' };
+    await dispatcher.dispatchBatch();
+    expect(sender.last?.senderName).toBeUndefined();
   });
 
   it('nhà cung cấp từ chối chính bức thư thì chôn, không thử lại', async () => {

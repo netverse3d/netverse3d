@@ -86,7 +86,7 @@ export class SmtpEmailSender extends ChannelSender {
   async send(message: OutboundMessage): Promise<SendReceipt> {
     const outcome = await this.transport
       .sendMail({
-        from: formatSender(this.context),
+        from: formatSender(this.context, message.senderName),
         to: message.destination,
         subject: message.subject,
         html: message.body,

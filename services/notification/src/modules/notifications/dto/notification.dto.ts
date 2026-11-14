@@ -7,6 +7,7 @@ import {
   IsArray,
   IsEmail,
   IsEnum,
+  IsISO8601,
   IsObject,
   IsOptional,
   IsString,
@@ -80,6 +81,14 @@ export class SendNotificationDto {
   @MaxLength(MAX_LOCALE_LENGTH)
   @Matches(LOCALE_PATTERN)
   locale?: string;
+
+  @ApiPropertyOptional({
+    format: 'date-time',
+    description: 'After this moment the notification is dropped instead of sent late',
+  })
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  expiresAt?: string;
 
   @ApiPropertyOptional({ enum: DELIVERY_CHANNELS, isArray: true })
   @IsOptional()

@@ -29,6 +29,7 @@ const inboundEventSchema = z.object({
       .optional(),
   }),
   variables: z.record(z.string(), z.unknown()).default({}),
+  expiresAt: z.iso.datetime().optional(),
 });
 
 export type InboundEvent = z.infer<typeof inboundEventSchema>;
