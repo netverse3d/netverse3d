@@ -80,7 +80,7 @@ Hai lệnh này dừng và xoá container, giữ lại dữ liệu trong volume.
 
 ## Giới hạn đã biết
 
-- Compose chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu; ở production service từ chối khởi động với các giá trị này. Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `IDENTITY_OTP_WEBHOOK_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
+- Compose chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu; ở production service từ chối khởi động với các giá trị này. Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
 - URL ký sẵn trong Compose trỏ tới `localhost:58333`, dùng được từ máy dev nhưng không dùng được từ một container khác trong mạng Docker. Client chạy trong mạng Docker thì đặt `MEDIA_S3_PUBLIC_ENDPOINT=object-store` và `MEDIA_S3_PUBLIC_PORT=8333` trước lúc chạy `media`.
 - Mã xác minh email đi từ `identity` qua lệnh gRPC của `notification` rồi tới hộp thư giả lập. Quản trị nền tảng phải tạo template cho mã trước; kịch bản làm việc đó ở bước đầu. Ở môi trường thật đây là một bước cài đặt, ghi ở README của `identity`.
 - Email của `notification` trong Compose đi qua SMTP tới hộp thư giả lập, xem được ở `http://127.0.0.1:58025`; không có thư nào ra ngoài. Kênh push ghi ra log.
