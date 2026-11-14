@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -12,8 +11,6 @@ const NOTIFICATION_GRPC = process.env.SMOKE_NOTIFICATION_GRPC ?? '127.0.0.1:5310
 const MAILBOX_URL = process.env.SMOKE_MAILBOX_URL ?? 'http://127.0.0.1:58025';
 const GRPC_PERMISSION_DENIED = 7;
 const GRPC_UNAUTHENTICATED = 16;
-const OTP_PORT = Number(process.env.SMOKE_OTP_PORT ?? 4100);
-const OTP_HOST = process.env.SMOKE_OTP_HOST ?? '127.0.0.1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? 'change-me-admin-password';
 const RUN = Date.now();
@@ -24,27 +21,13 @@ const PASSWORD = 'smoke-password-123';
 const CONTENT = Buffer.from('stack smoke payload');
 const CONTENT_TYPE = 'image/png';
 
-const codes = new Map();
-const waiters = new Map();
+const CODE_IN_MAIL = /\b(\d{6})\b/;
 
-const otpSink = createServer((request, response) => {
-  let body = '';
-  request.on('data', (chunk) => (body += chunk));
-  request.on('end', () => {
-    const message = JSON.parse(body);
-    codes.set(message.email, message.code);
-    waiters.get(message.email)?.(message.code);
-    response.end('{}');
-  });
-});
-await new Promise((resolve) => otpSink.listen(OTP_PORT, OTP_HOST, resolve));
-
-function waitForCode(email) {
-  if (codes.has(email)) return Promise.resolve(codes.get(email));
-  return new Promise((resolve, reject) => {
-    waiters.set(email, resolve);
-    setTimeout(() => reject(new Error(`no one-time code arrived for ${email}`)), 15_000);
-  });
+async function waitForCode(email) {
+  const mail = await mailTo(email);
+  const [, code] = CODE_IN_MAIL.exec(mail.HTML) ?? [];
+  assert.ok(code, 'the email for ' + email + ' carries no one-time code');
+  return code;
 }
 
 async function call(base, method, path, body, bearer) {
@@ -230,10 +213,31 @@ try {
   assert.equal(anonymous.status, 401, JSON.stringify(anonymous.body));
   console.log('media rejects a request without a token ok');
 
+  const adminToken = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
+  for (const purpose of ['email_verification', 'password_reset']) {
+    const codeTemplate = await notification(
+      'POST',
+      '/v1/templates',
+      {
+        eventType: 'identity.otp.' + purpose,
+        channel: 'EMAIL',
+        locale: 'en',
+        subject: 'Your code',
+        body: '<p>Your code is {{code}}, valid for {{expiresInMinutes}} minutes</p>',
+        category: 'TRANSACTIONAL',
+      },
+      adminToken,
+    );
+    assert.ok([201, 409].includes(codeTemplate.status), JSON.stringify(codeTemplate.body));
+  }
+  console.log('the platform admin provides the templates for one-time codes ok');
+
   await registerAndVerify(PLAYER_EMAIL);
   const playerToken = await login(PLAYER_EMAIL, PASSWORD);
   assert.equal(claims(playerToken).tenant_id, undefined);
-  console.log('player registers, verifies and logs in at identity ok');
+  console.log(
+    'player registers, gets the code by email through notification, verifies and logs in ok',
+  );
 
   const playerId = claims(playerToken).sub;
   const playerFile = await uploadAs(playerToken, playerId, 'INTERNAL');
@@ -266,7 +270,6 @@ try {
   console.log('one player cannot see or overwrite another player file ok');
 
   await registerAndVerify(OWNER_EMAIL);
-  const adminToken = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
   const tenant = await identity(
     'POST',
     '/v1/tenants',
@@ -581,5 +584,4 @@ try {
 
   console.log('STACK SMOKE PASSED');
 } finally {
-  otpSink.close();
 }

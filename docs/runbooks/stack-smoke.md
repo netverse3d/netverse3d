@@ -42,12 +42,12 @@ Một service không lên thì xem `$COMPOSE logs` kèm tên service đó.
 pnpm smoke:stack
 ```
 
-Kịch bản `tests/e2e/stack-smoke.mjs` chạy trên máy thật, như một client ở ngoài mạng Docker. Nó mở cổng 4100 trên máy để nhận mã xác minh email mà `identity` gửi qua webhook, và tải tệp qua URL ký sẵn trỏ tới `localhost:58333`.
+Kịch bản `tests/e2e/stack-smoke.mjs` chạy trên máy thật, như một client ở ngoài mạng Docker. Nó đọc mã xác minh email từ hộp thư giả lập, nơi `notification` gửi mã thay cho `identity`, và tải tệp qua URL ký sẵn trỏ tới `localhost:58333`.
 
 Kịch bản làm lần lượt:
 
 1. Gọi `media` không có token, phải bị từ chối.
-2. Đăng ký một người chơi ở `identity`, nhận mã xác minh, xác minh email, đăng nhập. Token không gắn tenant.
+2. Quản trị nền tảng tạo hai template giao dịch cho mã một lần ở `notification`. Rồi đăng ký một người chơi ở `identity`, đọc mã xác minh từ email mà `notification` gửi tới hộp thư giả lập, xác minh email, đăng nhập. Token không gắn tenant.
 3. Dùng token đó tải một tệp lên `media`, báo hoàn tất, tải về và so nội dung.
 4. Một người chơi thứ hai xin tệp của người chơi đầu, tìm nó trong danh sách, rồi thử tải lên dưới mã chủ sở hữu của người chơi đầu. Cả ba đều phải bị từ chối.
 5. Quản trị nền tảng tạo tenant cho một tiệm, tạo vai trò `admin` của tiệm và thêm một tài khoản làm thành viên.
@@ -69,8 +69,6 @@ Kịch bản làm lần lượt:
 
 Kết quả mong đợi: dòng cuối là `STACK SMOKE PASSED`, mã thoát 0.
 
-Trên Linux không dùng Docker Desktop, container gọi về máy qua địa chỉ cầu nối chứ không qua loopback, nên chạy với `SMOKE_OTP_HOST=0.0.0.0 pnpm smoke:stack`.
-
 ## 4. Dọn
 
 ```
@@ -84,7 +82,7 @@ Hai lệnh này dừng và xoá container, giữ lại dữ liệu trong volume.
 
 - Compose chạy hai service ở chế độ development, là chế độ duy nhất nhận giá trị mẫu; ở production service từ chối khởi động với các giá trị này. Các khoá và mật khẩu mặc định trong `infra/compose/compose.yaml` chỉ dành cho local. Môi trường thật phải đặt `IDENTITY_KEY_ENCRYPTION_SECRET`, `IDENTITY_OTP_HASH_SECRET`, `IDENTITY_OTP_WEBHOOK_SECRET`, `BOOTSTRAP_ADMIN_PASSWORD` và khoá của kho bằng giá trị riêng.
 - URL ký sẵn trong Compose trỏ tới `localhost:58333`, dùng được từ máy dev nhưng không dùng được từ một container khác trong mạng Docker. Client chạy trong mạng Docker thì đặt `MEDIA_S3_PUBLIC_ENDPOINT=object-store` và `MEDIA_S3_PUBLIC_PORT=8333` trước lúc chạy `media`.
-- Mã xác minh email ở đây đi qua webhook tới chính kịch bản thử. `identity` chưa gửi qua `notification`; việc này thuộc đợt chuẩn hoá ghi ở ADR-0027.
+- Mã xác minh email đi từ `identity` qua lệnh gRPC của `notification` rồi tới hộp thư giả lập. Quản trị nền tảng phải tạo template cho mã trước; kịch bản làm việc đó ở bước đầu. Ở môi trường thật đây là một bước cài đặt, ghi ở README của `identity`.
 - Email của `notification` trong Compose đi qua SMTP tới hộp thư giả lập, xem được ở `http://127.0.0.1:58025`; không có thư nào ra ngoài. Kênh push ghi ra log.
 
 ## Chạy riêng media với bộ phát token mẫu

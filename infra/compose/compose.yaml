@@ -117,9 +117,8 @@ services:
       TOKEN_AUDIENCES: media,notification
       KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
       OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
-      OTP_DELIVERY: webhook
-      OTP_WEBHOOK_URL: ${IDENTITY_OTP_WEBHOOK_URL:-http://host.docker.internal:4100/otp}
-      OTP_WEBHOOK_SECRET: ${IDENTITY_OTP_WEBHOOK_SECRET:-local-development-webhook-secret-value}
+      OTP_DELIVERY: notification
+      OTP_NOTIFICATION_ADDRESS: notification:50051
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@example.test}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-admin-password}
     extra_hosts:

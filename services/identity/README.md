@@ -51,17 +51,20 @@ Token của service chỉ vào được route khai quyền bằng `@Permissions`
 
 Mã xác minh email và đặt lại mật khẩu gửi qua cổng `OtpSender`. `OTP_DELIVERY=log` ghi mã ra log và chỉ dùng lúc phát triển; ở production service từ chối khởi động với giá trị này. `OTP_DELIVERY=webhook` gửi mã tới `OTP_WEBHOOK_URL` kèm chữ ký HMAC.
 
+`OTP_DELIVERY=notification` gửi mã qua lệnh gRPC của notification ở `OTP_NOTIFICATION_ADDRESS`, theo ADR-0028. Identity tự ký một token service sống 5 phút với quyền `notification:send`, gọi lệnh ở phạm vi nền tảng, chỉ qua email, và đặt hạn của thông báo bằng hạn của mã để mã quá hạn không bị gửi muộn. Loại sự kiện là `identity.otp.email_verification` và `identity.otp.password_reset`, biến là `code` và `expiresInMinutes`. Quản trị nền tảng phải tạo sẵn template email loại `TRANSACTIONAL` cho hai loại sự kiện này ở notification; thiếu template thì mã không tới được người dùng. Notification không nhận được lệnh thì identity ghi log lỗi, người dùng xin gửi lại mã.
+
 ## Cấu hình tuỳ chọn
 
 Các biến này không có trong `.env.example`, chỉ khai lúc dùng tới:
 
-| Biến                                                | Dùng cho                       |
-| --------------------------------------------------- | ------------------------------ |
-| `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`            | Đăng nhập Facebook             |
-| `ZALO_APP_SECRET`                                   | Đăng nhập Zalo                 |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`          | Đăng nhập GitHub               |
-| `OTP_WEBHOOK_URL`, `OTP_WEBHOOK_SECRET`             | Gửi mã một lần qua webhook     |
-| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Tạo quản trị nền tảng đầu tiên |
+| Biến                                                | Dùng cho                        |
+| --------------------------------------------------- | ------------------------------- |
+| `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`            | Đăng nhập Facebook              |
+| `ZALO_APP_SECRET`                                   | Đăng nhập Zalo                  |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`          | Đăng nhập GitHub                |
+| `OTP_WEBHOOK_URL`, `OTP_WEBHOOK_SECRET`             | Gửi mã một lần qua webhook      |
+| `OTP_NOTIFICATION_ADDRESS`                          | Gửi mã một lần qua notification |
+| `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Tạo quản trị nền tảng đầu tiên  |
 
 ## Sự kiện
 
