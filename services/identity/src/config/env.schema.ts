@@ -25,6 +25,7 @@ const GUARDED_NAMES = [
 ];
 
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
+const HOST_AND_PORT = /^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?:\d{1,5}$/;
 
 export const envSchema = z
   .object({
@@ -71,7 +72,11 @@ export const envSchema = z
     OTP_RESEND_COOLDOWN_SECONDS: positiveInt(60),
     OTP_HASH_SECRET: z.string().min(32),
     OTP_DELIVERY: z.enum(['log', 'webhook', 'notification']).default('log'),
-    OTP_NOTIFICATION_ADDRESS: z.string().min(1).optional(),
+    OTP_NOTIFICATION_ADDRESS: z
+      .string()
+      .regex(HOST_AND_PORT, 'must be a host name followed by a port, like notification:50051')
+      .optional(),
+    OTP_NOTIFICATION_AUDIENCE: z.string().min(1).default('notification'),
     OTP_WEBHOOK_URL: z.url().optional(),
     OTP_WEBHOOK_SECRET: z.string().min(32).optional(),
 
@@ -124,6 +129,12 @@ export const envSchema = z
     }
     if (env.OTP_DELIVERY === 'notification' && !env.OTP_NOTIFICATION_ADDRESS) {
       missing('OTP_NOTIFICATION_ADDRESS', 'required when OTP_DELIVERY is notification');
+    }
+    if (
+      env.OTP_DELIVERY === 'notification' &&
+      ![env.AUTH_AUDIENCE, ...env.TOKEN_AUDIENCES].includes(env.OTP_NOTIFICATION_AUDIENCE)
+    ) {
+      missing('OTP_NOTIFICATION_AUDIENCE', 'must be one of the audiences in TOKEN_AUDIENCES');
     }
     if (env.OTP_DELIVERY === 'webhook' && !env.OTP_WEBHOOK_URL) {
       missing('OTP_WEBHOOK_URL', 'required when OTP_DELIVERY is webhook');

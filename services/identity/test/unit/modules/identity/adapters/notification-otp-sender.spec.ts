@@ -35,6 +35,7 @@ const message: OtpMessage = {
 describe('gửi mã một lần qua notification', () => {
   let now: number;
   let issued: number;
+  let ensured: number;
   let commands: FakeCommands;
   let sender: NotificationOtpSender;
 
@@ -43,9 +44,16 @@ describe('gửi mã một lần qua notification', () => {
     issued = 0;
     jest.spyOn(Date, 'now').mockImplementation(() => now);
     commands = new FakeCommands();
-    sender = new NotificationOtpSender(commands, () => {
-      issued += 1;
-      return Promise.resolve({ value: `token-${issued}`, expiresAt: now + 300_000 });
+    ensured = 0;
+    sender = new NotificationOtpSender(commands, {
+      ensure: () => {
+        ensured += 1;
+        return Promise.resolve();
+      },
+      issueToken: () => {
+        issued += 1;
+        return Promise.resolve({ value: `token-${issued}`, expiresAt: now + 300_000 });
+      },
     });
   });
 
@@ -91,6 +99,17 @@ describe('gửi mã một lần qua notification', () => {
     expect(commands.calls[2]?.options.token).toBe('token-2');
   });
 
+  it('lúc khởi động bảo đảm tài khoản service của identity có sẵn', async () => {
+    await sender.onApplicationBootstrap();
+    expect(ensured).toBe(1);
+  });
+
+  it('đóng kênh tới notification lúc service tắt', async () => {
+    await sender.send(message);
+    sender.onModuleDestroy();
+    expect(commands.calls).toHaveLength(0);
+  });
+
   it('notification từ chối thì báo lỗi ra ngoài, và mã không nằm trong thông báo lỗi', async () => {
     commands.failure = new Error('UNAVAILABLE');
     const failure = await sender.send(message).catch((error: unknown) => error as Error);
@@ -116,11 +135,32 @@ describe('cấu hình gửi mã qua notification', () => {
     );
   });
 
+  it.each([['notification'], ['http://notification:50051'], ['notification:port'], [':50051']])(
+    'địa chỉ %s không phải dạng máy chủ kèm cổng thì không khởi động',
+    (address) => {
+      expect(() =>
+        parseEnv({ ...base, OTP_DELIVERY: 'notification', OTP_NOTIFICATION_ADDRESS: address }),
+      ).toThrow('OTP_NOTIFICATION_ADDRESS');
+    },
+  );
+
+  it('audience của notification không nằm trong danh sách identity cấp thì không khởi động', () => {
+    expect(() =>
+      parseEnv({
+        ...base,
+        OTP_DELIVERY: 'notification',
+        OTP_NOTIFICATION_ADDRESS: 'notification:50051',
+        TOKEN_AUDIENCES: 'media',
+      }),
+    ).toThrow('OTP_NOTIFICATION_AUDIENCE');
+  });
+
   it('đủ địa chỉ thì nhận', () => {
     const env = parseEnv({
       ...base,
       OTP_DELIVERY: 'notification',
       OTP_NOTIFICATION_ADDRESS: 'notification:50051',
+      TOKEN_AUDIENCES: 'media,notification',
     });
     expect(env.OTP_NOTIFICATION_ADDRESS).toBe('notification:50051');
   });

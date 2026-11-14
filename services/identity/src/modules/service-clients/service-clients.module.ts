@@ -9,5 +9,6 @@ import { ServiceClientService } from './services/service-client.service';
   imports: [KeysModule],
   controllers: [ServiceClientsAdminController, ServiceTokenController],
   providers: [ServiceClientRepository, ServiceClientService],
+  exports: [ServiceClientService],
 })
 export class ServiceClientsModule {}

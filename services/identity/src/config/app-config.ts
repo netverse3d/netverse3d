@@ -43,6 +43,7 @@ export class AppConfig extends KitConfig {
     webhookUrl?: string;
     webhookSecret?: string;
     notificationAddress?: string;
+    notificationAudience: string;
   };
   readonly social: {
     google: { clientIds: string[]; jwksUrl: string; issuers: string[] };
@@ -113,6 +114,7 @@ export class AppConfig extends KitConfig {
       webhookUrl: env.OTP_WEBHOOK_URL,
       webhookSecret: env.OTP_WEBHOOK_SECRET,
       notificationAddress: env.OTP_NOTIFICATION_ADDRESS,
+      notificationAudience: env.OTP_NOTIFICATION_AUDIENCE,
     };
     this.social = {
       google: {

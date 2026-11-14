@@ -1,18 +1,16 @@
+import { OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { CommandClient, connectCommands, loadContract, PLATFORM_SCOPE } from '@netverse/nest-kit';
 import { AppConfig } from '../../../config/app-config';
 import type { SendReply } from '../../../generated/grpc/netverse/notification/v1/SendReply';
 import type { SendRequest } from '../../../generated/grpc/netverse/notification/v1/SendRequest';
-import { KeysService } from '../../keys/services/keys.service';
+import { ServiceClientService } from '../../service-clients/services/service-client.service';
 import { OtpMessage, OtpSender } from '../ports/otp-sender';
 
 const CONTRACT = 'notification';
 const COMMANDS = 'netverse.notification.v1.NotificationCommands';
-const AUDIENCE = 'notification';
 const SEND_PERMISSION = 'notification:send';
-const SERVICE_NAME = 'identity';
 const SEND_TIMEOUT_MS = 5_000;
-const TOKEN_TTL_SECONDS = 300;
 const TOKEN_REFRESH_MARGIN_MS = 30_000;
 
 export interface IssuedToken {
@@ -20,14 +18,30 @@ export interface IssuedToken {
   expiresAt: number;
 }
 
-export class NotificationOtpSender extends OtpSender {
+export interface OwnServiceAccount {
+  ensure(): Promise<void>;
+  issueToken(): Promise<IssuedToken>;
+}
+
+export class NotificationOtpSender
+  extends OtpSender
+  implements OnApplicationBootstrap, OnModuleDestroy
+{
   private token: IssuedToken | null = null;
 
   constructor(
     private readonly commands: CommandClient,
-    private readonly issueToken: () => Promise<IssuedToken>,
+    private readonly account: OwnServiceAccount,
   ) {
     super();
+  }
+
+  onApplicationBootstrap(): Promise<void> {
+    return this.account.ensure();
+  }
+
+  onModuleDestroy(): void {
+    this.commands.close();
   }
 
   async send(message: OtpMessage): Promise<void> {
@@ -51,22 +65,25 @@ export class NotificationOtpSender extends OtpSender {
 
   private async accessToken(): Promise<string> {
     if (!this.token || this.token.expiresAt - TOKEN_REFRESH_MARGIN_MS <= Date.now()) {
-      this.token = await this.issueToken();
+      this.token = await this.account.issueToken();
     }
     return this.token.value;
   }
 }
 
-export function createNotificationOtpSender(config: AppConfig, keys: KeysService): OtpSender {
+export function createNotificationOtpSender(
+  config: AppConfig,
+  serviceClients: ServiceClientService,
+): OtpSender {
+  const audience = config.otp.notificationAudience;
   return new NotificationOtpSender(
     connectCommands(loadContract(CONTRACT), COMMANDS, config.otp.notificationAddress as string),
-    async () => ({
-      value: await keys.sign(
-        { client_id: SERVICE_NAME, permissions: [SEND_PERMISSION] },
-        `service:${SERVICE_NAME}`,
-        { audience: AUDIENCE, ttlSeconds: TOKEN_TTL_SECONDS },
-      ),
-      expiresAt: Date.now() + TOKEN_TTL_SECONDS * 1000,
-    }),
+    {
+      ensure: () => serviceClients.ensureOwnAccount(audience, [SEND_PERMISSION]),
+      issueToken: async () => {
+        const issued = await serviceClients.issueOwnToken(audience);
+        return { value: issued.accessToken, expiresAt: Date.now() + issued.expiresIn * 1000 };
+      },
+    },
   );
 }

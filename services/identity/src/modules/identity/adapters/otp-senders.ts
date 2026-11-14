@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'node:crypto';
 import { AppConfig } from '../../../config/app-config';
-import { KeysService } from '../../keys/services/keys.service';
+import { ServiceClientService } from '../../service-clients/services/service-client.service';
 import { OtpMessage, OtpSender } from '../ports/otp-sender';
 import { createNotificationOtpSender } from './notification-otp-sender';
 
@@ -40,10 +40,13 @@ export class WebhookOtpSender extends OtpSender {
   }
 }
 
-export function createOtpSender(config: AppConfig, keys: KeysService): OtpSender {
+export function createOtpSender(
+  config: AppConfig,
+  serviceClients: ServiceClientService,
+): OtpSender {
   switch (config.otp.delivery) {
     case 'notification':
-      return createNotificationOtpSender(config, keys);
+      return createNotificationOtpSender(config, serviceClients);
     case 'webhook':
       return new WebhookOtpSender(config);
     case 'log':

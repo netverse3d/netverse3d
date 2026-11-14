@@ -3,6 +3,10 @@ import { decodeJwt } from 'jose';
 import request from 'supertest';
 import { TEST_AUDIENCE } from '@netverse/nest-kit/testing';
 import { PrismaService } from '../src/infrastructure/prisma/prisma.service';
+import {
+  OWN_SERVICE_NAME,
+  ServiceClientService,
+} from '../src/modules/service-clients/services/service-client.service';
 import { BOOTSTRAP_ADMIN, createTestApp, TestApp } from './support/test-app';
 
 interface CreatedClient {
@@ -267,6 +271,60 @@ describe('tài khoản của service', () => {
 
     it('thiếu trường bắt buộc bị từ chối', async () => {
       await http().post('/v1/auth/service-token').send({ clientId: randomUUID() }).expect(400);
+    });
+  });
+
+  describe('tài khoản của chính identity', () => {
+    const own = () => subject.app.get(ServiceClientService);
+    const ownRow = () => prisma.serviceClient.findUnique({ where: { name: OWN_SERVICE_NAME } });
+
+    it('tên của identity được giữ riêng, quản trị không tạo được tài khoản trùng tên', async () => {
+      const taken = await http()
+        .post('/v1/admin/service-clients')
+        .set(bearer(admin))
+        .send({ name: OWN_SERVICE_NAME, audiences: ['media'], permissions: ['media:read'] })
+        .expect(409);
+      expect(taken.body.code).toBe('IDENTITY.SERVICE_CLIENT_NAME_TAKEN');
+    });
+
+    it('identity tự tạo tài khoản của mình một lần, hiện trong danh sách của quản trị', async () => {
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      const listed = await http()
+        .get('/v1/admin/service-clients?size=100')
+        .set(bearer(admin))
+        .expect(200);
+      const rows = (listed.body.result.content as { name: string; permissions: string[] }[]).filter(
+        (row) => row.name === OWN_SERVICE_NAME,
+      );
+      expect(rows).toMatchObject([{ permissions: ['notification:send'] }]);
+    });
+
+    it('token của identity ký từ đúng tài khoản đó, chỉ cho audience đã cấp', async () => {
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      const issued = await own().issueOwnToken('notification');
+      const claims = decodeJwt(issued.accessToken);
+      expect(claims.client_id).toBe((await ownRow())?.id);
+      expect(claims.permissions).toEqual(['notification:send']);
+      expect(claims.aud).toBe('notification');
+      expect(claims.sub).toBe('service:identity');
+      await expect(own().issueOwnToken('media')).rejects.toMatchObject({
+        definition: { code: 'IDENTITY.AUDIENCE_NOT_ALLOWED' },
+      });
+    });
+
+    it('quản trị thu hồi thì identity không ký được token nữa, và khởi động lại không tự mở lại', async () => {
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      const row = await ownRow();
+      await http()
+        .post(`/v1/admin/service-clients/${row?.id}/revoke`)
+        .set(bearer(admin))
+        .expect(204);
+      await expect(own().issueOwnToken('notification')).rejects.toMatchObject({
+        definition: { code: 'IDENTITY.SERVICE_CLIENT_INVALID' },
+      });
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      expect((await ownRow())?.status).toBe('REVOKED');
     });
   });
 });

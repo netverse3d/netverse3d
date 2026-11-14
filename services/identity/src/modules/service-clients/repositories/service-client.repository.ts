@@ -19,6 +19,10 @@ export class ServiceClientRepository {
     return this.prisma.serviceClient.create({ data });
   }
 
+  findByName(name: string): Promise<ServiceClientRow | null> {
+    return this.prisma.serviceClient.findUnique({ where: { name } });
+  }
+
   findById(id: string): Promise<ServiceClientRow | null> {
     return this.prisma.serviceClient.findUnique({ where: { id } });
   }
