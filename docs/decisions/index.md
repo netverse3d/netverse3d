@@ -34,3 +34,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0028](./ADR-0028-service-to-service-communication.md) | Giao tiếp giữa các service: định danh service, Kafka cho sự việc, gRPC cho mệnh lệnh | Đã chốt |
 | [ADR-0029](./ADR-0029-contract-checks-ensure-consistency.md) | Bước kiểm hợp đồng bảo đảm nhất quán, không chặn thay đổi | Đã chốt |
 | [ADR-0030](./ADR-0030-notification-sending-rules.md) | Luật gửi của notification: loại template, hạn mức của tiệm, hạn của thông báo | Đã chốt |
+| [ADR-0031](./ADR-0031-payment-service-code-provenance.md) | Nguồn gốc mã payment gateway | Đã chốt |
