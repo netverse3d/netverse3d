@@ -233,7 +233,9 @@ for (const purpose of ['email_verification', 'password_reset']) {
       undefined,
       adminToken,
     );
+    assert.equal(existing.status, 200, JSON.stringify(existing.body));
     const [found] = existing.body.result.content;
+    assert.ok(found, 'the code template that caused the conflict is not listed');
     const updated = await notification('PATCH', '/v1/templates/' + found.id, content, adminToken);
     assert.equal(updated.status, 200, JSON.stringify(updated.body));
   } else {
