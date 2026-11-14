@@ -36,7 +36,11 @@ export class AppConfig extends KitConfig {
   };
   readonly providers: { timeoutMs: number };
   override readonly grpc?: { port: number };
-  readonly events: { transport: Env['EVENT_TRANSPORT']; brokers: string[] };
+  readonly events: {
+    transport: Env['EVENT_TRANSPORT'];
+    brokers: string[];
+    consumerGroup: string;
+  };
   readonly delivery: {
     pollIntervalMs: number;
     batchSize: number;
@@ -91,7 +95,11 @@ export class AppConfig extends KitConfig {
     };
     this.providers = { timeoutMs: env.PROVIDER_TIMEOUT_MS };
     this.grpc = env.GRPC_PORT === undefined ? undefined : { port: env.GRPC_PORT };
-    this.events = { transport: env.EVENT_TRANSPORT, brokers: env.KAFKA_BROKERS };
+    this.events = {
+      transport: env.EVENT_TRANSPORT,
+      brokers: env.KAFKA_BROKERS,
+      consumerGroup: env.EVENT_CONSUMER_GROUP,
+    };
     this.delivery = {
       pollIntervalMs: env.DELIVERY_POLL_INTERVAL_MS,
       batchSize: env.DELIVERY_BATCH_SIZE,

@@ -59,7 +59,8 @@ const baseSchema = z.object({
   PROVIDER_TIMEOUT_MS: positiveInt(10_000),
   GRPC_PORT: z.coerce.number().int().min(0).max(65535).optional(),
 
-  EVENT_TRANSPORT: z.enum(['none']).default('none'),
+  EVENT_TRANSPORT: z.enum(['none', 'kafka']).default('none'),
+  EVENT_CONSUMER_GROUP: z.string().min(1).default('notification'),
 
   KAFKA_BROKERS: commaSeparated,
   JOBS_ENABLED: booleanFlag.default(true),
@@ -204,6 +205,13 @@ export const envSchema = baseSchema.superRefine((env, context) => {
     'when PUSH_PROVIDER is firebase',
   );
   refuseBatchesThatOutliveTheLease(env, context);
+  if (env.EVENT_TRANSPORT === 'kafka' && env.KAFKA_BROKERS.length === 0) {
+    context.addIssue({
+      code: 'custom',
+      path: ['KAFKA_BROKERS'],
+      message: 'is required when EVENT_TRANSPORT is kafka',
+    });
+  }
 });
 
 export type Env = z.infer<typeof envSchema> & { EMAIL_SETTINGS: Record<string, unknown> };
