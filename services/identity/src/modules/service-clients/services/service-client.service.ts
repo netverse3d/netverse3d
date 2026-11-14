@@ -80,12 +80,20 @@ export class ServiceClientService {
     }
   }
 
+  async activate(id: string): Promise<void> {
+    const unknownSecret = hashClientSecret(newClientSecret());
+    if ((await this.repository.activateRevoked(id, unknownSecret)) === 0) {
+      throw new AppException(IdentityErrorCode.SERVICE_CLIENT_NOT_FOUND);
+    }
+  }
+
   async issueToken(dto: ServiceTokenRequestDto): Promise<ServiceTokenDto> {
     return this.signFor(await this.authenticate(dto.clientId, dto.clientSecret), dto.audience);
   }
 
   async ensureOwnAccount(audience: string, permissions: string[]): Promise<void> {
     if (await this.repository.findByName(OWN_SERVICE_NAME)) {
+      await this.repository.replaceGrantsOfActive(OWN_SERVICE_NAME, [audience], permissions);
       return;
     }
     try {

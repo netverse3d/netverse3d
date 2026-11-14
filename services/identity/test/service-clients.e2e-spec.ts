@@ -168,6 +168,17 @@ describe('tài khoản của service', () => {
       await revoke().expect(404);
     });
 
+    it('mở lại tài khoản đã thu hồi: khoá cũ không dùng lại được, đổi khoá mới thì lấy được token', async () => {
+      const client = await createClient();
+      const path = `/v1/admin/service-clients/${client.id}`;
+      await http().post(`${path}/activate`).set(bearer(admin)).expect(404);
+      await http().post(`${path}/revoke`).set(bearer(admin)).expect(204);
+      await http().post(`${path}/activate`).set(bearer(admin)).expect(204);
+      await tokenFor(client.id, client.clientSecret).expect(401);
+      const rotated = await http().post(`${path}/rotate-secret`).set(bearer(admin)).expect(200);
+      await tokenFor(client.id, rotated.body.result.clientSecret as string).expect(200);
+    });
+
     it('ghi audit lúc tạo, không kèm khoá bí mật', async () => {
       const created = await createClient();
       const row = await prisma.auditLog.findFirstOrThrow({
@@ -313,6 +324,19 @@ describe('tài khoản của service', () => {
       });
     });
 
+    it('tài khoản của identity luôn mang đúng audience và quyền mà cấu hình hiện tại cần', async () => {
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      await prisma.serviceClient.update({
+        where: { name: OWN_SERVICE_NAME },
+        data: { audiences: ['media'], permissions: ['media:read', 'media:write'] },
+      });
+      await own().ensureOwnAccount('notification', ['notification:send']);
+      expect(await ownRow()).toMatchObject({
+        audiences: ['notification'],
+        permissions: ['notification:send'],
+      });
+    });
+
     it('quản trị thu hồi thì identity không ký được token nữa, và khởi động lại không tự mở lại', async () => {
       await own().ensureOwnAccount('notification', ['notification:send']);
       const row = await ownRow();
@@ -325,6 +349,13 @@ describe('tài khoản của service', () => {
       });
       await own().ensureOwnAccount('notification', ['notification:send']);
       expect((await ownRow())?.status).toBe('REVOKED');
+
+      await http()
+        .post(`/v1/admin/service-clients/${row?.id}/activate`)
+        .set(bearer(admin))
+        .expect(204);
+      const issued = await own().issueOwnToken('notification');
+      expect(decodeJwt(issued.accessToken).client_id).toBe(row?.id);
     });
   });
 });

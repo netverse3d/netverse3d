@@ -12,6 +12,7 @@ interface RecordedCall {
 class FakeCommands implements CommandClient {
   readonly calls: RecordedCall[] = [];
   failure: Error | null = null;
+  closed = false;
 
   call<Reply>(method: string, request: object, options: CommandCallOptions): Promise<Reply> {
     this.calls.push({ method, request: request as Record<string, unknown>, options });
@@ -19,7 +20,7 @@ class FakeCommands implements CommandClient {
   }
 
   close(): void {
-    this.calls.length = 0;
+    this.closed = true;
   }
 }
 
@@ -105,9 +106,27 @@ describe('gửi mã một lần qua notification', () => {
   });
 
   it('đóng kênh tới notification lúc service tắt', async () => {
-    await sender.send(message);
+    expect(commands.closed).toBe(false);
     sender.onModuleDestroy();
-    expect(commands.calls).toHaveLength(0);
+    expect(commands.closed).toBe(true);
+  });
+
+  it('token sống rất ngắn vẫn được dùng lại trong nửa đầu thời gian sống của nó', async () => {
+    let shortLived = 0;
+    const brief = new NotificationOtpSender(commands, {
+      ensure: () => Promise.resolve(),
+      issueToken: () => {
+        shortLived += 1;
+        return Promise.resolve({ value: `brief-${shortLived}`, expiresAt: now + 30_000 });
+      },
+    });
+    await brief.send(message);
+    now += 10_000;
+    await brief.send(message);
+    expect(shortLived).toBe(1);
+    now += 10_000;
+    await brief.send(message);
+    expect(shortLived).toBe(2);
   });
 
   it('notification từ chối thì báo lỗi ra ngoài, và mã không nằm trong thông báo lỗi', async () => {
@@ -135,14 +154,18 @@ describe('cấu hình gửi mã qua notification', () => {
     );
   });
 
-  it.each([['notification'], ['http://notification:50051'], ['notification:port'], [':50051']])(
-    'địa chỉ %s không phải dạng máy chủ kèm cổng thì không khởi động',
-    (address) => {
-      expect(() =>
-        parseEnv({ ...base, OTP_DELIVERY: 'notification', OTP_NOTIFICATION_ADDRESS: address }),
-      ).toThrow('OTP_NOTIFICATION_ADDRESS');
-    },
-  );
+  it.each([
+    ['notification'],
+    ['http://notification:50051'],
+    ['notification:port'],
+    [':50051'],
+    ['notification:0'],
+    ['notification:70000'],
+  ])('địa chỉ %s không phải dạng máy chủ kèm cổng thì không khởi động', (address) => {
+    expect(() =>
+      parseEnv({ ...base, OTP_DELIVERY: 'notification', OTP_NOTIFICATION_ADDRESS: address }),
+    ).toThrow('OTP_NOTIFICATION_ADDRESS');
+  });
 
   it('audience của notification không nằm trong danh sách identity cấp thì không khởi động', () => {
     expect(() =>

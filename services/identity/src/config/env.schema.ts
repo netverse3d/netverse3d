@@ -25,6 +25,13 @@ const GUARDED_NAMES = [
 ];
 
 const positiveInt = (fallback: number) => z.coerce.number().int().positive().default(fallback);
+const MAX_PORT = 65_535;
+
+function hasUsablePort(address: string): boolean {
+  const port = Number(address.slice(address.lastIndexOf(':') + 1));
+  return port >= 1 && port <= MAX_PORT;
+}
+
 const HOST_AND_PORT = /^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?:\d{1,5}$/;
 
 export const envSchema = z
@@ -75,6 +82,7 @@ export const envSchema = z
     OTP_NOTIFICATION_ADDRESS: z
       .string()
       .regex(HOST_AND_PORT, 'must be a host name followed by a port, like notification:50051')
+      .refine(hasUsablePort, 'port must be between 1 and 65535')
       .optional(),
     OTP_NOTIFICATION_AUDIENCE: z.string().min(1).default('notification'),
     OTP_WEBHOOK_URL: z.url().optional(),

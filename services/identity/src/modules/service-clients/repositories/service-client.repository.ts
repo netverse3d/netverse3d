@@ -42,6 +42,25 @@ export class ServiceClientRepository {
     return count;
   }
 
+  async activateRevoked(id: string, secretHash: string): Promise<number> {
+    const { count } = await this.prisma.serviceClient.updateMany({
+      where: { id, status: 'REVOKED' },
+      data: { status: 'ACTIVE', secretHash, secretRotatedAt: new Date() },
+    });
+    return count;
+  }
+
+  async replaceGrantsOfActive(
+    name: string,
+    audiences: string[],
+    permissions: string[],
+  ): Promise<void> {
+    await this.prisma.serviceClient.updateMany({
+      where: { name, status: 'ACTIVE' },
+      data: { audiences, permissions },
+    });
+  }
+
   async revokeActive(id: string): Promise<number> {
     const { count } = await this.prisma.serviceClient.updateMany({
       where: { id, status: 'ACTIVE' },

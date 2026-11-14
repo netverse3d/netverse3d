@@ -28,6 +28,7 @@ export class NotificationOtpSender
   implements OnApplicationBootstrap, OnModuleDestroy
 {
   private token: IssuedToken | null = null;
+  private refreshAt = 0;
 
   constructor(
     private readonly commands: CommandClient,
@@ -64,8 +65,11 @@ export class NotificationOtpSender
   }
 
   private async accessToken(): Promise<string> {
-    if (!this.token || this.token.expiresAt - TOKEN_REFRESH_MARGIN_MS <= Date.now()) {
-      this.token = await this.account.issueToken();
+    if (!this.token || this.refreshAt <= Date.now()) {
+      const issued = await this.account.issueToken();
+      const lifetimeMs = issued.expiresAt - Date.now();
+      this.token = issued;
+      this.refreshAt = issued.expiresAt - Math.min(TOKEN_REFRESH_MARGIN_MS, lifetimeMs / 2);
     }
     return this.token.value;
   }
