@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { EventConsumer, NoneEventConsumer } from '@netverse/nest-kit';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { ProcessedEventsRepository } from './repositories/processed-events.repository';
 import { EventIntakeService } from './services/event-intake.service';
 
 @Module({
   imports: [NotificationsModule],
-  providers: [{ provide: EventConsumer, useClass: NoneEventConsumer }, EventIntakeService],
+  providers: [
+    { provide: EventConsumer, useClass: NoneEventConsumer },
+    EventIntakeService,
+    ProcessedEventsRepository,
+  ],
   exports: [EventConsumer],
 })
 export class EventsModule {}

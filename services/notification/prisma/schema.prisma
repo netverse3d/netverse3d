@@ -83,17 +83,17 @@ enum TemplateCategory {
 }
 
 model NotificationTemplate {
-  id        String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId  String          @map("tenant_id") @db.VarChar(128)
-  eventType String          @map("event_type") @db.VarChar(128)
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String           @map("tenant_id") @db.VarChar(128)
+  eventType String           @map("event_type") @db.VarChar(128)
   channel   DeliveryChannel
-  locale    String          @db.VarChar(16)
-  subject   String          @db.VarChar(1000)
+  locale    String           @db.VarChar(16)
+  subject   String           @db.VarChar(1000)
   body      String
   category  TemplateCategory @default(OPTIONAL)
-  version   Int             @default(1)
-  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  version   Int              @default(1)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz
 
   @@unique([tenantId, eventType, channel, locale])
   @@index([tenantId, createdAt])
@@ -186,6 +186,13 @@ model RecipientOptOut {
 
   @@id([tenantId, subject, channel, eventType])
   @@map("recipient_opt_outs")
+}
+
+model ProcessedEvent {
+  eventId     String   @id @map("event_id") @db.VarChar(128)
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz
+
+  @@map("processed_events")
 }
 
 model BlockedAddress {
