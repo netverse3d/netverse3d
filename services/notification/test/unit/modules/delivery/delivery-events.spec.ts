@@ -10,10 +10,14 @@ const validateEnvelope = ajv.compile(envelopeSchema);
 const validateDeliveryData = ajv.compile(notificationSchema);
 
 const TENANT = 'tenant-a';
-const outcome = (status: 'SENT' | 'SKIPPED' | 'DEAD', reason: string | null) => ({
+const outcome = (
+  status: 'SENT' | 'SKIPPED' | 'DEAD',
+  reason: string | null,
+  tenantId: string | null = TENANT,
+) => ({
   id: '11111111-2222-4333-8444-555555555555',
   type: `notification.delivery.${status.toLowerCase()}`,
-  tenantId: TENANT,
+  tenantId,
   createdAt: new Date('2026-11-13T08:00:00.000Z'),
   payload: {
     deliveryId: '7b1d6a52-0c4e-4b53-8f0a-9d2c1e3f4a5b',
@@ -40,6 +44,16 @@ describe('sự kiện của notification', () => {
       true,
       null,
     ]);
+  });
+
+  it('sự kiện của phạm vi nền tảng không mang mã tiệm và vẫn hợp lệ', () => {
+    const envelope = toEnvelope(outcome('SENT', null, null), 'notification');
+    expect([validateEnvelope(envelope), validateEnvelope.errors]).toEqual([true, null]);
+    expect([validateDeliveryData(envelope.data), validateDeliveryData.errors]).toEqual([
+      true,
+      null,
+    ]);
+    expect((envelope.data as { tenantId: unknown }).tenantId).toBeNull();
   });
 
   it('các loại sự kiện mẫu trùng với danh sách hợp đồng đã khai', () => {

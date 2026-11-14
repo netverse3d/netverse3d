@@ -5,12 +5,12 @@ import { CurrentActor } from '@netverse/nest-kit';
 import { Roles } from '@netverse/nest-kit';
 import { PageResponseDto } from '@netverse/nest-kit';
 import { ApiPagedEnvelope } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE } from '@netverse/nest-kit';
+import { SCOPE_ADMIN_ROLES } from '@netverse/nest-kit';
 import { DeliveryLogEntryDto, DeliveryQueryDto } from '../dto/delivery.dto';
 import { DeliveryLogService } from '../services/delivery-log.service';
 
 @ApiTags('deliveries')
-@Roles(TENANT_ADMIN_ROLE)
+@Roles(...SCOPE_ADMIN_ROLES)
 @Controller('deliveries')
 export class DeliveriesController {
   constructor(private readonly deliveries: DeliveryLogService) {}

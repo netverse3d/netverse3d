@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -141,7 +142,7 @@ async function eventsOn(topic, matches) {
     await admin.disconnect();
   }
   const consumer = kafka.consumer({
-    kafkaJS: { groupId: 'stack-smoke-' + RUN + '-' + topic, fromBeginning: true },
+    kafkaJS: { groupId: 'stack-smoke-' + randomUUID(), fromBeginning: true },
   });
   await consumer.connect();
   await consumer.subscribe({ topic });
@@ -327,6 +328,7 @@ try {
   console.log('the platform admin moderates shop and player content ok');
 
   const eventType = `shop.notice-${RUN}`;
+  const platformEvent = `account.notice-${RUN}`;
   const template = await notification(
     'POST',
     '/v1/templates',
@@ -390,10 +392,11 @@ try {
   assert.ok(mail.MessageID.includes('@netverse.test'), mail.MessageID);
   console.log('an email goes out over SMTP and arrives with escaped variables ok');
 
-  const tenantless = await notification('GET', '/v1/inbox', undefined, playerToken);
-  assert.equal(tenantless.status, 403, JSON.stringify(tenantless.body));
-  assert.equal(tenantless.body.code, 'NOTIFICATION.TENANT_REQUIRED');
-  console.log('notification refuses a token without a tenant ok');
+  const platformInbox = await notification('GET', '/v1/inbox', undefined, playerToken);
+  assert.equal(platformInbox.status, 200, JSON.stringify(platformInbox.body));
+  const playerTemplates = await notification('GET', '/v1/templates', undefined, playerToken);
+  assert.equal(playerTemplates.status, 403, JSON.stringify(playerTemplates.body));
+  console.log('a player without a shop has a platform inbox and no admin rights ok');
 
   const client = await identity(
     'POST',
@@ -457,6 +460,42 @@ try {
     assert.equal(delivered.title, 'Notice for Service');
     console.log('a service account sends a notification over gRPC, once per idempotency key ok');
 
+    const platformTemplate = await notification(
+      'POST',
+      '/v1/templates',
+      {
+        eventType: platformEvent,
+        channel: 'IN_APP',
+        locale: 'en',
+        subject: 'Welcome {{name}}',
+        body: 'From the platform',
+      },
+      adminToken,
+    );
+    assert.equal(platformTemplate.status, 201, JSON.stringify(platformTemplate.body));
+    const hiddenFromShop = await notification(
+      'GET',
+      '/v1/templates/' + platformTemplate.body.result.id,
+      undefined,
+      ownerToken,
+    );
+    assert.equal(hiddenFromShop.status, 404, JSON.stringify(hiddenFromShop.body));
+    const toPlayer = await commands.send(
+      {
+        scope: 'platform',
+        eventType: platformEvent,
+        recipient: { subject: playerId },
+        variablesJson: JSON.stringify({ name: 'Lan' }),
+        channels: ['CHANNEL_IN_APP'],
+      },
+      senderToken.body.result.accessToken,
+      'smoke-platform-' + RUN,
+    );
+    assert.equal(toPlayer.code, 0, toPlayer.detail);
+    const welcomed = await inboxOf(playerToken, platformEvent, 'Welcome Lan');
+    assert.equal(welcomed.title, 'Welcome Lan');
+    console.log('a service sends in the platform scope and the player reads it ok');
+
     const anonymous = await commands.send(command, null, key + '-a');
     assert.equal(anonymous.code, GRPC_UNAUTHENTICATED, anonymous.detail);
     const asOwner = await commands.send(command, ownerToken, key + '-b');
@@ -505,6 +544,13 @@ try {
     (event) => event.type === 'notification.delivery.sent' && event.data.eventType === eventType,
   );
   assert.equal(delivered.key, tenantId);
+  const platformDelivery = await eventsOn(
+    'netverse.notification.events.v1',
+    (event) =>
+      event.type === 'notification.delivery.sent' && event.data.eventType === platformEvent,
+  );
+  assert.equal(platformDelivery.key, 'platform');
+  assert.equal(platformDelivery.event.data.tenantId, null);
   assert.deepEqual(Object.keys(delivered.event.data).sort(), [
     'attempts',
     'channel',
@@ -515,7 +561,9 @@ try {
     'status',
     'tenantId',
   ]);
-  console.log('notification delivery events reach Kafka without the recipient address ok');
+  console.log(
+    'notification delivery events reach Kafka without the recipient address, platform ones without a shop ok',
+  );
 
   console.log('STACK SMOKE PASSED');
 } finally {

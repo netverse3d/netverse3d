@@ -5,7 +5,7 @@ import { CurrentActor } from '@netverse/nest-kit';
 import { Roles } from '@netverse/nest-kit';
 import { ApiEnvelope } from '@netverse/nest-kit';
 import { Audit, AuditResourceInput } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE } from '@netverse/nest-kit';
+import { SCOPE_ADMIN_ROLES } from '@netverse/nest-kit';
 import { ROLE_NOTIFICATION_SEND } from '../domain/limits';
 import { AcceptedNotificationDto, SendNotificationDto } from '../dto/notification.dto';
 import { NotificationsService } from '../services/notifications.service';
@@ -19,7 +19,7 @@ export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
   @Post()
-  @Roles(ROLE_NOTIFICATION_SEND, TENANT_ADMIN_ROLE)
+  @Roles(ROLE_NOTIFICATION_SEND, ...SCOPE_ADMIN_ROLES)
   @Audit({
     action: 'notification.send',
     resourceType: 'notification',

@@ -51,20 +51,20 @@ Thương hiệu quản lý ở `/v1/branding/:key`, dùng trong template qua `{{
 
 ## Quyền
 
-| Route                                                                      | Ai gọi được                                     |
-| -------------------------------------------------------------------------- | ----------------------------------------------- |
-| `POST /v1/notifications`                                                   | Vai trò `notification:send`, hoặc quản trị tiệm |
-| `/v1/templates`, `/v1/branding`, `/v1/blocked-addresses`, `/v1/deliveries` | Quản trị tiệm                                   |
-| `/v1/inbox`, `/v1/preferences/opt-outs`                                    | Người đã đăng nhập, chỉ dữ liệu của chính mình  |
+| Route                                                                      | Ai gọi được                                                         |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `POST /v1/notifications`                                                   | Vai trò `notification:send`, hoặc quản trị của phạm vi              |
+| `/v1/templates`, `/v1/branding`, `/v1/blocked-addresses`, `/v1/deliveries` | Quản trị tiệm trong tiệm mình, quản trị nền tảng ở phạm vi nền tảng |
+| `/v1/inbox`, `/v1/preferences/opt-outs`                                    | Người đã đăng nhập, chỉ dữ liệu của chính mình                      |
 
-Mọi dữ liệu giới hạn trong tenant lấy từ token. Token không gắn tenant bị từ chối bằng `NOTIFICATION.TENANT_REQUIRED`, nên hiện người chơi chưa có hộp thư và quản trị nền tảng chưa quản lý được template của tiệm; xem ADR-0027. Không có quyền với một tài nguyên thì trả `404`.
+Mọi dữ liệu thuộc một phạm vi, lấy từ token: token gắn tiệm thì phạm vi là tiệm đó, token của người dùng không gắn tiệm thì phạm vi là nền tảng, lưu với mã `platform`. Người chơi đọc hộp thư và đặt lựa chọn tắt nhận của mình ở phạm vi nền tảng. Quản trị nền tảng quản lý template, thương hiệu, địa chỉ bị chặn và nhật ký gửi của phạm vi đó; quản trị tiệm chỉ thấy phạm vi của tiệm mình. Sự kiện của phạm vi nền tảng phát ra không mang mã tiệm.
 
 ## Mệnh lệnh qua gRPC
 
 Service khác gửi thông báo bằng lệnh `Send` của `netverse.notification.v1.NotificationCommands`, hợp đồng ở `packages/contracts/grpc/v1/notification.proto`. Khai `GRPC_PORT` thì máy chủ gRPC nghe ở cổng đó; không khai thì không mở.
 
 - Bên gọi mang token của một tài khoản service có quyền `notification:send`. Token của người dùng bị từ chối.
-- `scope` là mã tenant của tiệm mà lệnh làm thay. Lệnh thiếu `scope` bị từ chối; phạm vi nền tảng chưa được hỗ trợ.
+- `scope` là phạm vi mà lệnh làm thay: mã tenant của một tiệm, hoặc `platform`. Gửi ở phạm vi nền tảng thì nêu đúng `platform`. Lệnh thiếu `scope` bị từ chối, service không được suy phạm vi ngầm.
 - Metadata `idempotency-key` là bắt buộc, dài tối đa 128 ký tự. Khoá được tách theo từng tài khoản service, nên hai service dùng cùng một khoá không đụng nhau, và cũng không đụng khoá gửi qua HTTP.
 - Nội dung được kiểm theo cùng luật với `POST /v1/notifications` rồi đi vào cùng đường xử lý.
 

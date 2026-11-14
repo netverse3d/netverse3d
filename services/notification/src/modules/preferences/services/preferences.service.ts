@@ -4,7 +4,7 @@ import { AppException } from '@netverse/nest-kit';
 import { PageResponseDto } from '@netverse/nest-kit';
 import { PaginationQueryDto } from '@netverse/nest-kit';
 import type { DeliveryChannelName } from '../../notifications/domain/channels';
-import { requireTenant } from '../../notifications/domain/require-tenant';
+import { scopeOf } from '@netverse/nest-kit';
 import { NotificationErrorCode } from '../../notifications/notification-error-codes';
 import {
   BlockAddressDto,
@@ -28,14 +28,14 @@ export class PreferencesService {
   constructor(private readonly repository: PreferencesRepository) {}
 
   async listOptOuts(actor: Actor): Promise<OptOutListResponseDto> {
-    const rows = await this.repository.findOptOuts(requireTenant(actor), actor.subject);
+    const rows = await this.repository.findOptOuts(scopeOf(actor), actor.subject);
     return { optOuts: rows.map(OptOutResponseDto.from) };
   }
 
   async optOut(dto: OptOutKeyDto, actor: Actor): Promise<OptOutResponseDto> {
     return OptOutResponseDto.from(
       await this.repository.upsertOptOut({
-        tenantId: requireTenant(actor),
+        tenantId: scopeOf(actor),
         subject: actor.subject,
         ...dto,
       }),
@@ -44,7 +44,7 @@ export class PreferencesService {
 
   async optIn(dto: OptOutKeyDto, actor: Actor): Promise<void> {
     await this.repository.deleteOptOut({
-      tenantId: requireTenant(actor),
+      tenantId: scopeOf(actor),
       subject: actor.subject,
       ...dto,
     });
@@ -54,7 +54,7 @@ export class PreferencesService {
     try {
       return BlockedAddressResponseDto.from(
         await this.repository.createBlockedAddress({
-          tenantId: requireTenant(actor),
+          tenantId: scopeOf(actor),
           address: normalizeAddress(dto.address),
           reason: dto.reason ?? null,
           createdBy: actor.subject,
@@ -73,7 +73,7 @@ export class PreferencesService {
     actor: Actor,
   ): Promise<PageResponseDto<BlockedAddressResponseDto>> {
     const [rows, total] = await this.repository.findBlockedPage(
-      requireTenant(actor),
+      scopeOf(actor),
       query.skip,
       query.take,
     );
@@ -81,7 +81,7 @@ export class PreferencesService {
   }
 
   async unblock(id: string, actor: Actor): Promise<void> {
-    if (!(await this.repository.deleteBlockedAddress(id, requireTenant(actor)))) {
+    if (!(await this.repository.deleteBlockedAddress(id, scopeOf(actor)))) {
       throw new AppException(NotificationErrorCode.BLOCKED_ADDRESS_NOT_FOUND);
     }
   }

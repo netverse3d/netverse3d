@@ -7,7 +7,6 @@ import {
   flattenValidationErrors,
   GrpcServer,
   loadContract,
-  PLATFORM_SCOPE,
 } from '@netverse/nest-kit';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -17,12 +16,12 @@ import type { SendRequest__Output } from '../../../generated/grpc/netverse/notif
 import { DeliveryChannelName } from '../domain/channels';
 import { ROLE_NOTIFICATION_SEND } from '../domain/limits';
 import { SendNotificationDto } from '../dto/notification.dto';
+import { isScope } from '../domain/scope';
 import { NotificationErrorCode } from '../notification-error-codes';
 import { NotificationsService } from '../services/notifications.service';
 
 const CONTRACT = 'notification';
 const SERVICE = 'netverse.notification.v1.NotificationCommands';
-const SCOPE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
 
 function keyOwnedBy(clientId: string, idempotencyKey: string): string {
   return createHash('sha256').update(`${clientId}\n${idempotencyKey}`).digest('hex');
@@ -93,8 +92,7 @@ export class NotificationCommands implements OnModuleInit {
   }
 
   private async send(request: SendRequest__Output, call: CommandCall): Promise<SendReply> {
-    const scopeIsReserved = request.scope.toLowerCase() === PLATFORM_SCOPE;
-    if (!SCOPE_PATTERN.test(request.scope) || scopeIsReserved) {
+    if (!isScope(request.scope)) {
       throw new AppException(NotificationErrorCode.SCOPE_REQUIRED);
     }
     const dto = plainToInstance(SendNotificationDto, {

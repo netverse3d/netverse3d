@@ -16,9 +16,16 @@ describe('đọc sự kiện đầu vào', () => {
     expect(() => parseInboundEvent(Buffer.from('{oops'))).toThrow(InvalidEventError);
   });
 
+  it('nhận sự kiện của phạm vi nền tảng khi nêu đúng mã dành riêng', () => {
+    expect(parse({ ...valid, tenantId: 'platform' })).toMatchObject({ tenantId: 'platform' });
+  });
+
   it.each([
     ['thiếu id', { ...valid, id: undefined }],
     ['thiếu tenant', { ...valid, tenantId: undefined }],
+    ['phạm vi viết giả làm nền tảng', { ...valid, tenantId: 'Platform' }],
+    ['phạm vi có khoảng trắng', { ...valid, tenantId: 'platform ' }],
+    ['phạm vi có ký tự lạ', { ...valid, tenantId: 'shop/1' }],
     ['loại sự kiện sai dạng', { ...valid, eventType: 'has space' }],
     ['thiếu recipient', { ...valid, recipient: undefined }],
     ['email sai', { ...valid, recipient: { email: 'x' } }],

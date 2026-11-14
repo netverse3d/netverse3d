@@ -137,13 +137,12 @@ describe('lệnh gửi thông báo qua gRPC', () => {
     expect(error.errorCode).toBe('NOTIFICATION.SCOPE_REQUIRED');
   });
 
-  it('phạm vi nền tảng chưa được hỗ trợ ở đợt này và bị từ chối rõ ràng', async () => {
-    const error = await failure(send(request({ scope: 'platform' })));
-    expect(error.status).toBe(GrpcStatus.INVALID_ARGUMENT);
-    expect(error.errorCode).toBe('NOTIFICATION.SCOPE_REQUIRED');
+  it('service gửi được ở phạm vi nền tảng khi nêu rõ phạm vi đó', async () => {
+    const reply = await send(request({ scope: 'platform' }));
+    expect(reply.notificationId).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it.each([['x'.repeat(129)], ['tenant with space'], [' platform'], ['Platform']])(
+  it.each([['x'.repeat(129)], ['tenant with space'], [' platform'], ['Platform'], ['PLATFORM']])(
     'phạm vi %s sai dạng bị từ chối là lỗi của bên gọi, không phải lỗi nội bộ',
     async (scope) => {
       const error = await failure(send(request({ scope })));

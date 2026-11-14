@@ -5,7 +5,7 @@ import { CurrentActor } from '@netverse/nest-kit';
 import { Roles } from '@netverse/nest-kit';
 import { ApiEnvelope } from '@netverse/nest-kit';
 import { Audit, AuditResourceInput } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE } from '@netverse/nest-kit';
+import { SCOPE_ADMIN_ROLES } from '@netverse/nest-kit';
 import {
   BrandingEntryResponseDto,
   BrandingResponseDto,
@@ -16,7 +16,7 @@ import { BrandingService } from '../services/branding.service';
 const brandingKeyParam = ({ params }: AuditResourceInput) => params.key;
 
 @ApiTags('branding')
-@Roles(TENANT_ADMIN_ROLE)
+@Roles(...SCOPE_ADMIN_ROLES)
 @Controller('branding')
 export class BrandingController {
   constructor(private readonly branding: BrandingService) {}

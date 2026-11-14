@@ -18,7 +18,7 @@ import { PageResponseDto } from '@netverse/nest-kit';
 import { PaginationQueryDto } from '@netverse/nest-kit';
 import { ApiEnvelope, ApiPagedEnvelope } from '@netverse/nest-kit';
 import { Audit, AuditResourceInput } from '@netverse/nest-kit';
-import { TENANT_ADMIN_ROLE } from '@netverse/nest-kit';
+import { SCOPE_ADMIN_ROLES } from '@netverse/nest-kit';
 import { BlockAddressDto, BlockedAddressResponseDto } from '../dto/preferences.dto';
 import { PreferencesService } from '../services/preferences.service';
 
@@ -27,7 +27,7 @@ const createdBlockId = ({ result }: AuditResourceInput) =>
 const blockIdParam = ({ params }: AuditResourceInput) => params.id;
 
 @ApiTags('blocked-addresses')
-@Roles(TENANT_ADMIN_ROLE)
+@Roles(...SCOPE_ADMIN_ROLES)
 @Controller('blocked-addresses')
 export class BlockedAddressesController {
   constructor(private readonly preferences: PreferencesService) {}

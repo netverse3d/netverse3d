@@ -3,7 +3,7 @@ import type { Actor } from '@netverse/nest-kit';
 import { AppException } from '@netverse/nest-kit';
 import { ErrorCode } from '@netverse/nest-kit';
 import { BRAND_KEY_PATTERN, MAX_BRAND_KEY_LENGTH } from '../../notifications/domain/limits';
-import { requireTenant } from '../../notifications/domain/require-tenant';
+import { scopeOf } from '@netverse/nest-kit';
 import { NotificationErrorCode } from '../../notifications/notification-error-codes';
 import {
   BrandingEntryResponseDto,
@@ -19,7 +19,7 @@ export class BrandingService {
   constructor(private readonly repository: BrandingRepository) {}
 
   async list(actor: Actor): Promise<BrandingResponseDto> {
-    const rows = await this.repository.findAll(requireTenant(actor));
+    const rows = await this.repository.findAll(scopeOf(actor));
     return { entries: rows.map(BrandingEntryResponseDto.from) };
   }
 
@@ -30,12 +30,12 @@ export class BrandingService {
   ): Promise<BrandingEntryResponseDto> {
     this.assertKey(key);
     return BrandingEntryResponseDto.from(
-      await this.repository.upsert(requireTenant(actor), key, dto.value),
+      await this.repository.upsert(scopeOf(actor), key, dto.value),
     );
   }
 
   async remove(key: string, actor: Actor): Promise<void> {
-    if (!(await this.repository.delete(requireTenant(actor), key))) {
+    if (!(await this.repository.delete(scopeOf(actor), key))) {
       throw new AppException(NotificationErrorCode.BRANDING_NOT_FOUND);
     }
   }

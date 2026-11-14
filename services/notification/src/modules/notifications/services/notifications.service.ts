@@ -6,7 +6,7 @@ import { AppConfig } from '../../../config/app-config';
 import { TemplatesService } from '../../templates/services/templates.service';
 import type { DeliveryChannelName } from '../domain/channels';
 import { MAX_IDEMPOTENCY_KEY_LENGTH } from '../domain/limits';
-import { requireTenant } from '../domain/require-tenant';
+import { scopeOf } from '@netverse/nest-kit';
 import { AcceptedNotificationDto, SendNotificationDto } from '../dto/notification.dto';
 import { NotificationErrorCode } from '../notification-error-codes';
 import {
@@ -81,7 +81,7 @@ export class NotificationsService {
   ): Promise<AcceptedNotificationDto> {
     return AcceptedNotificationDto.from(
       await this.accept({
-        tenantId: requireTenant(actor),
+        tenantId: scopeOf(actor),
         source: 'API',
         idempotencyKey: idempotencyKey || undefined,
         eventType: dto.eventType,

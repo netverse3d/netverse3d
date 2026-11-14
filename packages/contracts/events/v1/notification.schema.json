@@ -28,6 +28,6 @@
     "status": { "enum": ["SENT", "SKIPPED", "DEAD"] },
     "reason": { "type": ["string", "null"] },
     "attempts": { "type": "integer", "minimum": 0 },
-    "tenantId": { "type": "string" }
+    "tenantId": { "type": ["string", "null"] }
   }
 }
