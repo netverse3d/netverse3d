@@ -8,7 +8,7 @@ import {
 import { randomUUID } from 'crypto';
 import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';
 import { ProviderAccountResolver } from '@app/modules/provider-accounts/services/provider-account-resolver.service';
 import {

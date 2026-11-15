@@ -1,5 +1,5 @@
 import { createHmac } from 'crypto';
-import { safeEqualString } from '@app/common/utils/hash.util';
+import { safeEqualString } from '@app/modules/shared/utils/hash.util';
 
 export interface PayosCreateSignatureFields {
   amount: number;

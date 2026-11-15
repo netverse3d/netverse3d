@@ -9,8 +9,8 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-import { PAYMENT_EVENT_TYPES } from '@app/common/constants/payment-event-types';
-import { IsPublicHttpsWebhookUrl } from '@app/common/utils/webhook-target.util';
+import { PAYMENT_EVENT_TYPES } from '@app/modules/tenant-webhooks/domain/payment-event-types';
+import { IsPublicHttpsWebhookUrl } from '@app/modules/tenant-webhooks/domain/webhook-target.util';
 
 export class CreateTenantWebhookDto {
   @ApiProperty()

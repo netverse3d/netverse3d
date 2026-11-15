@@ -1,5 +1,5 @@
 import { PrismaKnownError, uniqueViolation } from '@test/support/prisma-errors';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { CustomerService } from '@app/modules/customers/services/customer.service';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';
 import { CreatePaymentIntentDto } from '@app/modules/payments/dto/create-payment-intent.dto';

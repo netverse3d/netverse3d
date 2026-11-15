@@ -3,7 +3,7 @@ import { PaginationQueryDto } from '@netverse/nest-kit';
 import { listTenantPage } from '@app/common/pagination/list-tenant-page';
 import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { sha256 } from '@app/common/utils/hash.util';
+import { sha256 } from '@app/modules/shared/utils/hash.util';
 import { randomBytes } from 'crypto';
 import { TenantRepository } from '@app/modules/tenants/repositories/tenant.repository';
 import { CreateTenantApiKeyDto } from '../dto/create-tenant-api-key.dto';

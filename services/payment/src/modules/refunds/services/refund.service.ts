@@ -3,7 +3,7 @@ import { JsonValue } from '@app/infrastructure/prisma/prisma.types';
 import { randomBytes } from 'crypto';
 import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { AppConfig } from '@app/config/app-config';
 import { TransactionRunner } from '@app/infrastructure/prisma/transaction-runner';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';

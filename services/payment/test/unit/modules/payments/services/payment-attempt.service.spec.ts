@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { payment_intent_status } from '@app/infrastructure/prisma/prisma.types';
 import { FakePaymentProvider } from '@test/fakes/fake-payment-provider';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';
 import { ProviderAccountResolver } from '@app/modules/provider-accounts/services/provider-account-resolver.service';
 import { PaymentProviderRegistry } from '@app/modules/providers/registry/payment-provider.registry';

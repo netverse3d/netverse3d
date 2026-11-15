@@ -1,5 +1,8 @@
 import { AppException } from '@netverse/nest-kit';
-import { ensurePositiveMinorAmount, sumMinorAmounts } from '@app/common/utils/money.util';
+import {
+  ensurePositiveMinorAmount,
+  sumMinorAmounts,
+} from '@app/modules/payments/domain/money.util';
 
 describe('sumMinorAmounts', () => {
   it('cộng đúng BigInt minor-unit (không float)', () => {

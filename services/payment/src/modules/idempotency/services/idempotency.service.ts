@@ -3,8 +3,8 @@ import { InputJson, JsonValue, idempotency_records } from '@app/infrastructure/p
 import { AppException } from '@netverse/nest-kit';
 import { ErrorCodeDefinition, errorCodeForStatus } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { sha256 } from '@app/common/utils/hash.util';
-import { normalizeForJson } from '@app/common/utils/serialization.util';
+import { sha256 } from '@app/modules/shared/utils/hash.util';
+import { normalizeForJson } from '@app/modules/shared/utils/serialization.util';
 import { IdempotencyRepository } from '../repositories/idempotency.repository';
 
 export const IDEMPOTENCY_LEASE_MS = 60_000;

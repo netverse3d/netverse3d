@@ -31,4 +31,31 @@ describe('ranh giới cấu trúc payment', () => {
 
     expect(facades).toEqual([]);
   });
+
+  it('không để helper theo miền trong common', () => {
+    const commonHelpers = sourceFiles(resolve(sourceRoot, 'common'))
+      .filter((path) => /[/\\](constants|context|decorators|utils)[/\\]/.test(path))
+      .map((path) => relative(sourceRoot, path).replaceAll('\\', '/'));
+
+    expect(commonHelpers).toEqual([]);
+  });
+
+  it('đặt helper dùng nhiều miền trong shared và giữ caller ở nhiều miền', () => {
+    const sharedHelpers = ['hash.util', 'serialization.util', 'signature.util'];
+    const moduleRoot = resolve(sourceRoot, 'modules');
+    const callersFor = (helper: string): string[] =>
+      sourceFiles(moduleRoot)
+        .filter((path) => relative(moduleRoot, path).split(/[\\/]/)[0] !== 'shared')
+        .filter((path) =>
+          readFileSync(path, 'utf8').includes(`@app/modules/shared/utils/${helper}`),
+        )
+        .flatMap((path) => {
+          const domain = relative(moduleRoot, path).split(/[\\/]/)[0];
+          return domain && domain !== '..' ? [domain] : [];
+        });
+
+    for (const helper of sharedHelpers) {
+      expect(new Set(callersFor(helper)).size).toBeGreaterThanOrEqual(2);
+    }
+  });
 });

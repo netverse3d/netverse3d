@@ -1,6 +1,6 @@
 import { createHmac } from 'crypto';
-import { signPayload } from '@app/common/utils/signature.util';
-import { safeEqualString } from '@app/common/utils/hash.util';
+import { signPayload } from '@app/modules/shared/utils/signature.util';
+import { safeEqualString } from '@app/modules/shared/utils/hash.util';
 
 describe('signPayload', () => {
   const secret = 'whsec_test_secret';

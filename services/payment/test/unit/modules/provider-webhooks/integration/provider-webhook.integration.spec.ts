@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { FakePaymentProvider } from '@test/fakes/fake-payment-provider';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@app/infrastructure/prisma/client';
-import { signPayload } from '@app/common/utils/signature.util';
+import { signPayload } from '@app/modules/shared/utils/signature.util';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import { TransactionRunner } from '@app/infrastructure/prisma/transaction-runner';
 import { PaymentAuditLogRepository } from '@app/modules/audit/repositories/audit-log.repository';

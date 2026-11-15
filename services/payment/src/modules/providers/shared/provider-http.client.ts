@@ -1,4 +1,4 @@
-import { fetchWithTimeout, isTimeoutError } from '@app/common/utils/http.util';
+import { fetchWithTimeout, isTimeoutError } from '@app/modules/providers/shared/http.util';
 
 export type ProviderTransportErrorKind = 'timeout' | 'network' | 'http' | 'invalid_json';
 

@@ -1,7 +1,7 @@
 import { IT_DATABASE_URL } from '@test/support/integration-env';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@app/infrastructure/prisma/client';
-import { sha256 } from '@app/common/utils/hash.util';
+import { sha256 } from '@app/modules/shared/utils/hash.util';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import { IdempotencyRepository } from '@app/modules/idempotency/repositories/idempotency.repository';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';

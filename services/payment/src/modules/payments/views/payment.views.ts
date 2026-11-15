@@ -1,5 +1,5 @@
 import { payment_attempt_status, payment_attempts } from '@app/infrastructure/prisma/client';
-import { normalizeForJson } from '@app/common/utils/serialization.util';
+import { normalizeForJson } from '@app/modules/shared/utils/serialization.util';
 import { ProviderNextAction } from '@app/modules/providers/contracts/payment-provider.contract';
 
 export const OPEN_ATTEMPT_STATUSES: readonly payment_attempt_status[] = [

@@ -5,7 +5,7 @@ import { createServer, IncomingMessage, Server } from 'http';
 import { AddressInfo } from 'net';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@app/infrastructure/prisma/client';
-import { verifyPayloadSignature } from '@app/common/utils/signature.util';
+import { verifyPayloadSignature } from '@app/modules/shared/utils/signature.util';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import { TransactionRunner } from '@app/infrastructure/prisma/transaction-runner';
 import { TenantWebhookRepository } from '@app/modules/tenant-webhooks/repositories/tenant-webhook.repository';

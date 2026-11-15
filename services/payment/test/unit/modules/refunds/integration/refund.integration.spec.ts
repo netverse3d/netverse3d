@@ -3,7 +3,7 @@ import { IT_DATABASE_URL } from '@test/support/integration-env';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { FakePaymentProvider } from '@test/fakes/fake-payment-provider';
 import { PrismaClient } from '@app/infrastructure/prisma/client';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import {
   ProviderCredentialCipher,

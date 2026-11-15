@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@app/infrastructure/prisma/client';
 import { createHmac, randomBytes } from 'crypto';
 import { RawHttpResponse } from '@netverse/nest-kit';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import {
   ProviderCredentialCipher,

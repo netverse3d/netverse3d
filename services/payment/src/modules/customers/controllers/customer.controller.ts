@@ -3,7 +3,7 @@ import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentTenant,
   CurrentTenantPayload,
-} from '@app/common/decorators/current-tenant.decorator';
+} from '@app/modules/auth/decorators/current-tenant.decorator';
 import { ApiEnvelope } from '@netverse/nest-kit';
 import { Audit } from '@netverse/nest-kit';
 import { resourceIdFromResult } from '@app/modules/audit/audit-resource';

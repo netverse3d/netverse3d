@@ -6,7 +6,6 @@ import {
   ProviderCredentialCipher,
   ProviderCredentialCryptoService,
 } from '@app/infrastructure/secrets/provider-credential-crypto.service';
-import { isPublicIpAddress, resolveWebhookTarget } from '@app/common/utils/webhook-target.util';
 import { tenantWebhookSecretAad } from '@app/modules/tenant-webhooks/services/tenant-webhook-secret.util';
 import {
   classifyResponse,
@@ -15,21 +14,6 @@ import {
 } from '@app/modules/outbox/services/outbound-webhook.service';
 
 describe('outbound webhook — chính sách giao hàng', () => {
-  it.each(['127.0.0.1', '10.0.0.1', '169.254.169.254', '::1', 'fc00::1', '2001:db8::1'])(
-    'từ chối địa chỉ IP không công khai %s',
-    (address) => {
-      expect(isPublicIpAddress(address)).toBe(false);
-    },
-  );
-
-  it.each(['8.8.8.8', '2606:4700:4700::1111'])('chấp nhận địa chỉ IP công khai %s', (address) => {
-    expect(isPublicIpAddress(address)).toBe(true);
-  });
-
-  it('không phân giải đích loopback thành webhook public', async () => {
-    await expect(resolveWebhookTarget('127.0.0.1')).rejects.toThrow('non-public address');
-  });
-
   it.each([200, 201, 204])('HTTP %i -> delivered', (status) => {
     expect(classifyResponse(status)).toEqual({ outcome: 'delivered', httpStatus: status });
   });

@@ -8,8 +8,11 @@ import {
 } from '@app/infrastructure/prisma/prisma.types';
 import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
-import { ensurePositiveMinorAmount, sumMinorAmounts } from '@app/common/utils/money.util';
+import { CurrentTenantPayload } from '@app/modules/auth/decorators/current-tenant.decorator';
+import {
+  ensurePositiveMinorAmount,
+  sumMinorAmounts,
+} from '@app/modules/payments/domain/money.util';
 import { CustomerService } from '@app/modules/customers/services/customer.service';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';
 import { IDEMPOTENCY_SCOPE_CREATE_INTENT } from '../constants/payment.constants';

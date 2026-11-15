@@ -7,14 +7,14 @@ import {
   payment_outbox_events,
   tenant_webhook_endpoints,
 } from '@app/infrastructure/prisma/prisma.types';
-import { signPayload } from '@app/common/utils/signature.util';
+import { signPayload } from '@app/modules/shared/utils/signature.util';
 import {
   isAllowedWebhookUrl,
   isLoopbackAddress,
   resolveWebhookTarget,
   UnsafeWebhookTargetError,
-} from '@app/common/utils/webhook-target.util';
-import { ResolvedWebhookAddress } from '@app/common/utils/webhook-target.util';
+} from '@app/modules/tenant-webhooks/domain/webhook-target.util';
+import { ResolvedWebhookAddress } from '@app/modules/tenant-webhooks/domain/webhook-target.util';
 import { AppConfig } from '@app/config/app-config';
 import { tenantWebhookSecretAad } from '@app/modules/tenant-webhooks/services/tenant-webhook-secret.util';
 

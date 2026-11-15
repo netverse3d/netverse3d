@@ -1,4 +1,4 @@
-import { verifyPayloadSignature } from '@app/common/utils/signature.util';
+import { verifyPayloadSignature } from '@app/modules/shared/utils/signature.util';
 import {
   ProviderAccountContext,
   ProviderWebhookSignatureCheck,
