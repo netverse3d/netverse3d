@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { safeEqualString, sha256 } from '@app/common/utils/hash.util';
 import { ApiKeyAuthRepository } from '../repositories/api-key-auth.repository';

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InputJson, payment_intent_status, refunds } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { PrismaDb } from '@app/infrastructure/prisma/transaction-runner';
-import { AuditService } from '@app/modules/audit/services/audit.service';
+import { AuditService } from '@netverse/nest-kit';
 import { PaymentOutboxRepository } from '@app/modules/outbox/repositories/payment-outbox.repository';
 import { PaymentIntentRepository } from '@app/modules/payments/repositories/payment-intent.repository';
 import { decideIntentTransition } from '@app/modules/payments/state/payment-state-machine';

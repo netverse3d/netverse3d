@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InputJson, WebhookEventCreateInput } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { RawHttpResponse } from '@app/common/dto/raw-http-response';
+import { RawHttpResponse } from '@netverse/nest-kit';
 import { PaymentAttemptRepository } from '@app/modules/payments/repositories/payment-attempt.repository';
 import { PaymentIntentRepository } from '@app/modules/payments/repositories/payment-intent.repository';
 import {

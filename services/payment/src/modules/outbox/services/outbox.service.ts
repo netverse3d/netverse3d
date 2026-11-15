@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PageResponseDto } from '@app/common/pagination/page-response.dto';
+import { PageResponseDto } from '@netverse/nest-kit';
 import { DeadDeliveryQueryDto } from '../dto/outbox.dto';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { PaymentOutboxDeliveryRepository } from '../repositories/payment-outbox-delivery.repository';
 import { PaymentOutboxRepository } from '../repositories/payment-outbox.repository';

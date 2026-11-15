@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 
 export class DispatchOutboxDto {
   @ApiPropertyOptional({ minimum: 1, maximum: 200, default: 50 })

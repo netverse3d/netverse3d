@@ -1,4 +1,4 @@
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 
 export function parseProviderAmount(value: unknown, message: string, field: string): bigint {

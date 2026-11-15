@@ -1,5 +1,5 @@
 import { idempotency_records } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { sha256 } from '@app/common/utils/hash.util';
 import { IdempotencyRepository } from '@app/modules/idempotency/repositories/idempotency.repository';

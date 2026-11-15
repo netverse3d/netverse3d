@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InputJson } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
-import { AuditService } from '@app/modules/audit/services/audit.service';
+import { AuditService } from '@netverse/nest-kit';
 import { PaymentAttemptRepository } from '@app/modules/payments/repositories/payment-attempt.repository';
 import { PaymentQueryService } from '@app/modules/payments/services/payment-query.service';
 import { PaymentProviderRegistry } from '@app/modules/providers/registry/payment-provider.registry';

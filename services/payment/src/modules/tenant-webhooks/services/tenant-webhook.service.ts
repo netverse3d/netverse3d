@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes, randomUUID } from 'crypto';
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { listTenantPage } from '@app/common/pagination/list-tenant-page';
 import { tenant_webhook_endpoints } from '@app/infrastructure/prisma/prisma.types';
 import { ProviderCredentialCryptoService } from '@app/infrastructure/secrets/provider-credential-crypto.service';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { tenantWebhookSecretAad } from './tenant-webhook-secret.util';
 import { CreateTenantWebhookDto, UpdateTenantWebhookDto } from '../dto/create-tenant-webhook.dto';

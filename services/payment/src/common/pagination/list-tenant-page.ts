@@ -1,5 +1,5 @@
-import { PageResponseDto } from './page-response.dto';
-import { PaginationQueryDto } from './pagination-query.dto';
+import { PageResponseDto } from '@netverse/nest-kit';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { resolveSort, SortDirection } from './resolve-sort';
 import { toColumnSort } from './to-column-sort';
 

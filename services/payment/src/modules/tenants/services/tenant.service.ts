@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PageResponseDto } from '@app/common/pagination/page-response.dto';
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { PageResponseDto } from '@netverse/nest-kit';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { resolveSort } from '@app/common/pagination/resolve-sort';
 import { toColumnSort } from '@app/common/pagination/to-column-sort';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { InputJson, JSON_NULL } from '@app/infrastructure/prisma/prisma.types';
 import { CreateTenantDto } from '../dto/create-tenant.dto';

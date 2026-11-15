@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { payment_attempt_status, payment_method_type } from '@app/infrastructure/prisma/client';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import {
   PaymentProvider,

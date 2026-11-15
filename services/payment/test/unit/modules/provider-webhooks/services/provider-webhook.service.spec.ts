@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { FakePaymentProvider } from '@test/fakes/fake-payment-provider';
-import { AppException } from '@app/common/errors/app.exception';
-import { RawHttpResponse } from '@app/common/dto/raw-http-response';
+import { AppException } from '@netverse/nest-kit';
+import { RawHttpResponse } from '@netverse/nest-kit';
 import { signPayload } from '@app/common/utils/signature.util';
 import { PrismaDb, TransactionRunner } from '@app/infrastructure/prisma/transaction-runner';
 import {

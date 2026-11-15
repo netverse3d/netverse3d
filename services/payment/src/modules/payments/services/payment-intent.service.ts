@@ -6,7 +6,7 @@ import {
   PaymentIntentCreateInput,
   isUniqueViolation,
 } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
 import { ensurePositiveMinorAmount, sumMinorAmounts } from '@app/common/utils/money.util';

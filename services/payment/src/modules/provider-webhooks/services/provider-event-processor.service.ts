@@ -5,10 +5,10 @@ import {
   payment_attempts,
   payment_intent_status,
 } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { PrismaDb } from '@app/infrastructure/prisma/transaction-runner';
-import { AuditService } from '@app/modules/audit/services/audit.service';
+import { AuditService } from '@netverse/nest-kit';
 import { PaymentOutboxRepository } from '@app/modules/outbox/repositories/payment-outbox.repository';
 import { PaymentAttemptRepository } from '@app/modules/payments/repositories/payment-attempt.repository';
 import { PaymentIntentRepository } from '@app/modules/payments/repositories/payment-intent.repository';

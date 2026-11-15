@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InputJson, JsonValue, idempotency_records } from '@app/infrastructure/prisma/prisma.types';
-import { AppException } from '@app/common/errors/app.exception';
-import { ErrorCodeDefinition, errorCodeForStatus } from '@app/common/errors/error-code';
+import { AppException } from '@netverse/nest-kit';
+import { ErrorCodeDefinition, errorCodeForStatus } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { sha256 } from '@app/common/utils/hash.util';
 import { normalizeForJson } from '@app/common/utils/serialization.util';

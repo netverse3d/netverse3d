@@ -2,8 +2,8 @@ import { Body, Controller, Get, HttpCode, Param, Post, RawBodyRequest, Req } fro
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
-import { Public } from '@app/common/decorators/public.decorator';
-import { ApiEnvelope } from '@app/common/swagger/api-envelope.decorators';
+import { Public } from '@netverse/nest-kit';
+import { ApiEnvelope } from '@netverse/nest-kit';
 import { ProviderWebhookRequest } from '@app/modules/providers/contracts/payment-provider.contract';
 import { WebhookIngestResponseDto } from '../dto/webhook-ingest-response.dto';
 import { ProviderWebhookService } from '../services/provider-webhook.service';

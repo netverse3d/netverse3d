@@ -2,10 +2,10 @@ import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { errors as joseErrors } from 'jose';
 import { PinoLogger } from 'nestjs-pino';
-import { AppException } from '@app/common/errors/app.exception';
-import { ErrorCode } from '@app/common/errors/error-code';
-import { JwtAuthGuard } from '@app/infrastructure/auth/jwt-auth.guard';
-import { JwtVerifier } from '@app/infrastructure/auth/jwt-verifier.service';
+import { AppException } from '@netverse/nest-kit';
+import { ErrorCode } from '@netverse/nest-kit';
+import { JwtAuthGuard } from '@netverse/nest-kit';
+import { JwtVerifier } from '@netverse/nest-kit';
 
 function guardFailingWith(error: unknown): JwtAuthGuard {
   const reflector = { getAllAndOverride: () => false } as unknown as Reflector;

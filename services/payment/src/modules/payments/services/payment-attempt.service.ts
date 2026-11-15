@@ -6,7 +6,7 @@ import {
   payment_intent_status,
 } from '@app/infrastructure/prisma/prisma.types';
 import { randomUUID } from 'crypto';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';

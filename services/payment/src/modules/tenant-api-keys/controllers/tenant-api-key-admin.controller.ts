@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from '@app/common/decorators/roles.decorator';
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
-import { ApiEnvelope, ApiPagedEnvelope } from '@app/common/swagger/api-envelope.decorators';
-import { Audit } from '@app/modules/audit/audit.decorator';
+import { Roles } from '@netverse/nest-kit';
+import { PaginationQueryDto } from '@netverse/nest-kit';
+import { ApiEnvelope, ApiPagedEnvelope } from '@netverse/nest-kit';
+import { Audit } from '@netverse/nest-kit';
 import { resourceIdFromResult } from '@app/modules/audit/audit-resource';
 import { CreateTenantApiKeyDto } from '../dto/create-tenant-api-key.dto';
 import {

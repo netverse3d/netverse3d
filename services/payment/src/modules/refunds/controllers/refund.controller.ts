@@ -4,8 +4,8 @@ import {
   CurrentTenant,
   CurrentTenantPayload,
 } from '@app/common/decorators/current-tenant.decorator';
-import { ApiEnvelope } from '@app/common/swagger/api-envelope.decorators';
-import { Audit } from '@app/modules/audit/audit.decorator';
+import { ApiEnvelope } from '@netverse/nest-kit';
+import { Audit } from '@netverse/nest-kit';
 import { resourceIdFromResult } from '@app/modules/audit/audit-resource';
 import { ApiKeyAuth } from '@app/modules/auth/decorators/api-key-auth.decorator';
 import { CreateRefundDto } from '../dto/create-refund.dto';

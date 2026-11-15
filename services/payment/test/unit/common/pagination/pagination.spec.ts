@@ -1,6 +1,6 @@
-import { AppException } from '@app/common/errors/app.exception';
-import { PageResponseDto } from '@app/common/pagination/page-response.dto';
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { AppException } from '@netverse/nest-kit';
+import { PageResponseDto } from '@netverse/nest-kit';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { resolveSort } from '@app/common/pagination/resolve-sort';
 
 function query(page: number, size: number): PaginationQueryDto {

@@ -2,7 +2,7 @@ import { IT_DATABASE_URL } from '@test/support/integration-env';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@app/infrastructure/prisma/client';
 import { createHmac, randomBytes } from 'crypto';
-import { RawHttpResponse } from '@app/common/dto/raw-http-response';
+import { RawHttpResponse } from '@netverse/nest-kit';
 import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
 import { PrismaService } from '@app/infrastructure/prisma/prisma.service';
 import {
@@ -10,8 +10,8 @@ import {
   ProviderCredentialCryptoService,
 } from '@app/infrastructure/secrets/provider-credential-crypto.service';
 import { TransactionRunner } from '@app/infrastructure/prisma/transaction-runner';
-import { AuditLogRepository } from '@app/modules/audit/repositories/audit-log.repository';
-import { AuditService } from '@app/modules/audit/services/audit.service';
+import { PaymentAuditLogRepository } from '@app/modules/audit/repositories/audit-log.repository';
+import { AuditService } from '@netverse/nest-kit';
 import { IdempotencyRepository } from '@app/modules/idempotency/repositories/idempotency.repository';
 import { IdempotencyService } from '@app/modules/idempotency/services/idempotency.service';
 import { PaymentOutboxRepository } from '@app/modules/outbox/repositories/payment-outbox.repository';
@@ -110,7 +110,7 @@ export async function buildFlowHarness(providers: PaymentProvider[]): Promise<Fl
       intentRepository,
       attemptRepository,
       new PaymentOutboxRepository(db),
-      new AuditService(new AuditLogRepository(db)),
+      new AuditService(new PaymentAuditLogRepository(db)),
     ),
     new TransactionRunner(db),
     { dispatchById: async () => ({}) } as unknown as OutboxService,
@@ -136,7 +136,7 @@ export async function buildFlowHarness(providers: PaymentProvider[]): Promise<Fl
       attemptRepository,
       registry,
       recorder,
-      new AuditService(new AuditLogRepository(db)),
+      new AuditService(new PaymentAuditLogRepository(db)),
       new PaymentQueryService(
         new PaymentIntentService(intentRepository, {} as CustomerService, {} as IdempotencyService),
       ),

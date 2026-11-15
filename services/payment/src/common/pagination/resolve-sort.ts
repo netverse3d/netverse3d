@@ -1,5 +1,5 @@
-import { AppException } from '../errors/app.exception';
-import { ErrorCode } from '../errors/error-code';
+import { AppException } from '@netverse/nest-kit';
+import { ErrorCode } from '@netverse/nest-kit';
 
 export type SortDirection = 'asc' | 'desc';
 

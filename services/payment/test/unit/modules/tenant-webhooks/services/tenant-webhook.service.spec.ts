@@ -1,4 +1,4 @@
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import { randomBytes } from 'crypto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';

@@ -1,4 +1,4 @@
-import { PaginationQueryDto } from '@app/common/pagination/pagination-query.dto';
+import { PaginationQueryDto } from '@netverse/nest-kit';
 import {
   ProviderAccountCreateInput,
   provider_accounts,

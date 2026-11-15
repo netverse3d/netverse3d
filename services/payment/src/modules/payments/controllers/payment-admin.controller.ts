@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from '@app/common/decorators/roles.decorator';
-import { ApiEnvelope } from '@app/common/swagger/api-envelope.decorators';
+import { Roles } from '@netverse/nest-kit';
+import { ApiEnvelope } from '@netverse/nest-kit';
 import { PaymentIntentResponseDto } from '../dto/payment-response.dto';
 import { PaymentQueryService } from '../services/payment-query.service';
 

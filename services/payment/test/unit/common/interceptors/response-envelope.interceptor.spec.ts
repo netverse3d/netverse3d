@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { lastValueFrom, of } from 'rxjs';
-import { RawHttpResponse } from '@app/common/dto/raw-http-response';
-import { ResponseEnvelopeInterceptor } from '@app/common/interceptors/response-envelope.interceptor';
+import { RawHttpResponse } from '@netverse/nest-kit';
+import { ResponseEnvelopeInterceptor } from '@netverse/nest-kit';
 
 describe('ResponseEnvelopeInterceptor — envelope và chuẩn hoá BigInt', () => {
   const interceptor = new ResponseEnvelopeInterceptor(new Reflector());

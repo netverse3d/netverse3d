@@ -1,7 +1,7 @@
 import { ArgumentsHost } from '@nestjs/common';
-import { AppException } from '@app/common/errors/app.exception';
-import { ErrorCode } from '@app/common/errors/error-code';
-import { GlobalExceptionFilter } from '@app/common/filters/global-exception.filter';
+import { AppException } from '@netverse/nest-kit';
+import { ErrorCode } from '@netverse/nest-kit';
+import { GlobalExceptionFilter } from '@netverse/nest-kit';
 
 function buildHost() {
   const response = { status: jest.fn().mockReturnThis(), json: jest.fn() };

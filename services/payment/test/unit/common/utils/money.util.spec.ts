@@ -1,4 +1,4 @@
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { ensurePositiveMinorAmount, sumMinorAmounts } from '@app/common/utils/money.util';
 
 describe('sumMinorAmounts', () => {

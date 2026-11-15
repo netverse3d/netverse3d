@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import type { Request } from 'express';
 import { PinoLogger } from 'nestjs-pino';
-import { assignActor } from '../../../common/context/request-context';
-import { AppException } from '../../../common/errors/app.exception';
+import { assignActor } from '@netverse/nest-kit';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '../../payments/payment-error-codes';
 import { ApiKeyAuthService } from '../services/api-key-auth.service';
 

@@ -8,11 +8,3 @@ export class PaymentAuditLogRepository extends SharedAuditLogRepository {
     super(prisma as unknown as Database);
   }
 }
-
-export { PaymentAuditLogRepository as AuditLogRepository };
-export type {
-  AuditLogFilter,
-  AuditLogRecord,
-  AuditOutcome,
-  AuditTransaction,
-} from '@netverse/nest-kit';

@@ -2,10 +2,9 @@ import 'reflect-metadata';
 import { writeFileSync } from 'node:fs';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { buildOpenApiDocument, setupApp } from '@netverse/nest-kit';
 import { dump } from 'js-yaml';
 import { AppModule } from '../src/app.module';
-import { setupApp } from '../src/bootstrap/setup-app';
-import { buildOpenApiDocument } from '../src/bootstrap/setup-swagger';
 import { AppConfig } from '../src/config/app-config';
 
 const PLACEHOLDER_ENV = {

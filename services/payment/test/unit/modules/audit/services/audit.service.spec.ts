@@ -1,5 +1,5 @@
-import { AuditLogRepository } from '@app/modules/audit/repositories/audit-log.repository';
-import { AuditService } from '@app/modules/audit/services/audit.service';
+import { AuditLogRepository } from '@netverse/nest-kit';
+import { AuditService } from '@netverse/nest-kit';
 
 const entry = { action: 'thing.create', resourceType: 'thing', outcome: 'SUCCESS' as const };
 

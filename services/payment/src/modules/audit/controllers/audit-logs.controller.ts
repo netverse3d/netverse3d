@@ -1,11 +1,11 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuditLogQueryDto, AuditLogResponseDto, PageResponseDto } from '@netverse/nest-kit';
-import type { Actor } from '../../../common/context/request-context';
-import { CurrentActor } from '../../../common/decorators/current-actor.decorator';
-import { Roles } from '../../../common/decorators/roles.decorator';
-import { ApiPagedEnvelope } from '../../../common/swagger/api-envelope.decorators';
-import { AuditService } from '../services/audit.service';
+import type { Actor } from '@netverse/nest-kit';
+import { CurrentActor } from '@netverse/nest-kit';
+import { Roles } from '@netverse/nest-kit';
+import { ApiPagedEnvelope } from '@netverse/nest-kit';
+import { AuditService } from '@netverse/nest-kit';
 
 @ApiTags('audit-logs')
 @Controller('audit-logs')

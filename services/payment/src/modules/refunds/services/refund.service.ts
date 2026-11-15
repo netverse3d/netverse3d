@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JsonValue } from '@app/infrastructure/prisma/prisma.types';
 import { randomBytes } from 'crypto';
-import { AppException } from '@app/common/errors/app.exception';
+import { AppException } from '@netverse/nest-kit';
 import { PaymentErrorCode } from '@app/modules/payments/payment-error-codes';
 import { CurrentTenantPayload } from '@app/common/decorators/current-tenant.decorator';
 import { AppConfig } from '@app/config/app-config';
