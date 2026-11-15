@@ -13,7 +13,7 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0007](./ADR-0007-branching-and-release.md) | Hai môi trường, phát hành bằng tag qua nút Release | Đã chốt |
 | [ADR-0008](./ADR-0008-media-replaces-asset.md) | Media service đảm nhận luôn phần Asset | Đã chốt |
 | [ADR-0009](./ADR-0009-traceability-and-drift.md) | Truy vết yêu cầu và hỏi lại khi lệch | Đã chốt |
-| [ADR-0010](./ADR-0010-one-way-virtual-currency.md) | Tiền ảo nạp một chiều, chủ tiệm nhận điểm doanh thu riêng | Đề xuất |
+| [ADR-0010](./ADR-0010-one-way-virtual-currency.md) | Tiền ảo nạp một chiều, chủ tiệm nhận điểm doanh thu riêng | Đã chốt |
 | [ADR-0011](./ADR-0011-station-screens.md) | Màn hình máy là lớp 2D, màn hình chung đồng bộ bằng trạng thái | Đề xuất |
 | [ADR-0012](./ADR-0012-games-for-rl-bots.md) | Game trên máy do nhóm làm, bot học tăng cường chơi cùng người | Đề xuất |
 | [ADR-0013](./ADR-0013-vertical-slice-roadmap.md) | Lộ trình theo lát cắt chạy được, room server giả trong lúc chờ core | Đã chốt |
@@ -36,3 +36,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0030](./ADR-0030-notification-sending-rules.md) | Luật gửi của notification: loại template, hạn mức của tiệm, hạn của thông báo | Đã chốt |
 | [ADR-0031](./ADR-0031-payment-service-code-provenance.md) | Nguồn gốc mã payment gateway | Đã chốt |
 | [ADR-0032](./ADR-0032-no-dependabot.md) | Không dùng Dependabot, nâng thư viện có chủ đích | Đã chốt |
+| [ADR-0033](./ADR-0033-credit-rate-play-block-and-starter-points.md) | Tỷ giá Xèng, block giờ máy 30 phút và điểm khởi đầu cho chủ tiệm mới | Đã chốt |

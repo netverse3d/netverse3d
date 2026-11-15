@@ -36,11 +36,11 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | Mã | Yêu cầu | Trạng thái | Ưu tiên | Thành phần |
 | --- | --- | --- | --- | --- |
 | REQ-008 | Thông báo realtime, trong ứng dụng và email | Đã chốt | Bắt buộc | `notification` |
-| REQ-010 | Thanh toán qua PayOS | Nháp | Bắt buộc | `payment` |
+| REQ-010 | Thanh toán qua PayOS | Đã chốt | Bắt buộc | `payment` |
 | REQ-011 | Thuê máy theo thời gian và gia hạn | Nháp | Bắt buộc | `shop` |
 | REQ-012 | Hoá đơn và lịch sử giao dịch | Nháp | Nên có | `payment` |
-| REQ-028 | Tiền ảo Xèng nạp một chiều | Nháp | Bắt buộc | `payment` |
-| REQ-029 | Sổ cái số dư ghi kép | Nháp | Bắt buộc | `payment` |
+| REQ-028 | Tiền ảo Xèng nạp một chiều | Đã chốt | Bắt buộc | `payment` |
+| REQ-029 | Sổ cái số dư ghi kép | Đã chốt | Bắt buộc | `payment` |
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 | REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
 | REQ-046 | Service gọi service bằng định danh riêng | Đã chốt | Bắt buộc | `identity` |
@@ -145,7 +145,7 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-009: Chủ tiệm thuê đất để mở tiệm
 
-Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước.
+Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước. Chủ tiệm mới thuê khu đất đầu tiên bằng điểm khởi đầu do hệ thống cấp một lần, theo ADR-0033.
 
 Nguồn: `mentor-brief`, `mentor-architecture-full`
 
@@ -157,7 +157,7 @@ Nguồn: `mentor-architecture-full`, `mentor-architecture-lite`
 
 ### REQ-011: Thuê máy theo thời gian và gia hạn
 
-Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Giá quy ra Xèng còn mở. Đơn giá 1.000đ một máy trong sơ đồ là giá license máy, theo REQ-045.
+Người chơi trả Xèng theo từng block 30 phút trả trước, giá mỗi block do tiệm đặt bằng số Xèng nguyên theo ADR-0033; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá 1.000đ một máy trong sơ đồ là giá license máy, theo REQ-045.
 
 Nguồn: `mentor-architecture-lite`, `mentor-demo`
 
@@ -259,7 +259,7 @@ Nguồn: `team-decision`
 
 ### REQ-028: Tiền ảo Xèng nạp một chiều
 
-Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Xèng là tên tạm.
+Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Tên chính thức là Xèng, 1 Xèng bằng 1.000đ, số dư là số nguyên, theo ADR-0033.
 
 Nguồn: `team-decision`
 
@@ -271,7 +271,7 @@ Nguồn: `team-decision`
 
 ### REQ-030: Điểm doanh thu của chủ tiệm
 
-Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, nâng cấp và bài trí tiệm, theo ADR-0021; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
+Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Chủ tiệm mới được cấp điểm khởi đầu một lần, đủ thuê lô đất nhỏ nhất, theo ADR-0033. Điểm chỉ dùng để thuê đất, nâng cấp và bài trí tiệm, theo ADR-0021; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
 
 Nguồn: `team-decision`, `mentor-architecture-lite`
 

@@ -65,7 +65,7 @@ requirements:
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-009
     title: Chủ tiệm thuê đất để mở tiệm
-    description: Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước.
+    description: Muốn mở tiệm net, người dùng phải thuê một khu đất trong thế giới trước. Chủ tiệm mới thuê khu đất đầu tiên bằng điểm khởi đầu do hệ thống cấp một lần, theo ADR-0033.
     status: accepted
     priority: must
     milestone: M4
@@ -74,14 +74,14 @@ requirements:
   - id: REQ-010
     title: Thanh toán qua PayOS
     description: PayOS dùng cho hai loại đơn theo ADR-0021, gồm người chơi nạp Xèng và chủ tiệm mua license máy. Webhook được xác thực và xử lý lặp an toàn. Chạy môi trường thử cho tới khi có quyết định khác.
-    status: draft
+    status: accepted
     priority: must
     milestone: M3
     area: payment
     sources: [mentor-architecture-full, mentor-architecture-lite]
   - id: REQ-011
     title: Thuê máy theo thời gian và gia hạn
-    description: Người chơi trả Xèng theo từng block thời gian trả trước, giá do tiệm đặt; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Giá quy ra Xèng còn mở. Đơn giá 1.000đ một máy trong sơ đồ là giá license máy, theo REQ-045.
+    description: Người chơi trả Xèng theo từng block 30 phút trả trước, giá mỗi block do tiệm đặt bằng số Xèng nguyên theo ADR-0033; hết block thì gia hạn hoặc rời máy. Room server dừng giữa chừng không làm mất hay trừ thêm tiền. Đơn giá 1.000đ một máy trong sơ đồ là giá license máy, theo REQ-045.
     status: draft
     priority: must
     milestone: M3
@@ -217,8 +217,8 @@ requirements:
     sources: [team-decision]
   - id: REQ-028
     title: Tiền ảo Xèng nạp một chiều
-    description: Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Xèng là tên tạm.
-    status: draft
+    description: Người dùng nạp tiền thật để nhận Xèng và chỉ tiêu trong Netverse. Không rút, không chuyển cho người khác, không đổi ngược ra tiền. Tên chính thức là Xèng, 1 Xèng bằng 1.000đ, số dư là số nguyên, theo ADR-0033.
+    status: accepted
     priority: must
     milestone: M3
     area: payment
@@ -226,14 +226,14 @@ requirements:
   - id: REQ-029
     title: Sổ cái số dư ghi kép
     description: Mọi thay đổi số dư Xèng và điểm doanh thu đi qua sổ cái ghi kép, không sửa số dư trực tiếp. Mỗi lần nạp gắn với mã đơn để webhook lặp lại không cộng hai lần.
-    status: draft
+    status: accepted
     priority: must
     milestone: M3
     area: payment
     sources: [team-decision]
   - id: REQ-030
     title: Điểm doanh thu của chủ tiệm
-    description: Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Điểm chỉ dùng để thuê đất, nâng cấp và bài trí tiệm, theo ADR-0021; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
+    description: Xèng người chơi trả cho giờ máy bị huỷ, hệ thống cấp điểm doanh thu cho chủ tiệm theo một tỷ lệ. Chủ tiệm mới được cấp điểm khởi đầu một lần, đủ thuê lô đất nhỏ nhất, theo ADR-0033. Điểm chỉ dùng để thuê đất, nâng cấp và bài trí tiệm, theo ADR-0021; không chuyển, không đổi ra Xèng. Chủ tiệm dùng máy tiệm mình không tạo điểm; bot khách tạo điểm có giới hạn theo REQ-038.
     status: draft
     priority: must
     milestone: M4

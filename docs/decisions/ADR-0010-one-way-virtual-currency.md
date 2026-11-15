@@ -1,8 +1,8 @@
 # ADR-0010: Tiền ảo nạp một chiều, chủ tiệm nhận điểm doanh thu riêng
 
-- Trạng thái: proposed
+- Trạng thái: accepted
 - Ngày: 2026-11-08
-- Xem thêm: [ADR-0021](./ADR-0021-two-real-money-flows.md) thêm dòng tiền license máy và bỏ việc mua máy bằng điểm
+- Xem thêm: [ADR-0021](./ADR-0021-two-real-money-flows.md) thêm dòng tiền license máy và bỏ việc mua máy bằng điểm; [ADR-0033](./ADR-0033-credit-rate-play-block-and-starter-points.md) chốt tên, tỷ giá, block giờ máy và điểm khởi đầu
 
 ## Bối cảnh
 
@@ -35,8 +35,7 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
 - `payment` là nơi duy nhất sửa số dư. `shop` gọi `payment` để trừ Xèng và chờ kết quả trước khi cấp block giờ máy; việc cấp điểm doanh thu đi qua sự kiện.
 - Webhook nạp tiền phải xử lý lặp an toàn theo mã đơn và có outbox, để người đã trả tiền chắc chắn nhận Xèng.
 - Còn mở:
-  - Tên chính thức, tỷ giá Xèng, tỷ lệ cấp điểm, độ dài block.
-  - Chủ tiệm mới chưa có điểm thì thuê khu đất đầu tiên bằng gì: Xèng, hay một khoản điểm khởi đầu do hệ thống cấp.
+  - Tỷ lệ cấp điểm doanh thu. Tên, tỷ giá, độ dài block và khu đất đầu tiên đã chốt ở ADR-0033.
   - Có áp giới hạn giờ chơi cho người dưới 18 tuổi không.
   - Trần điểm từ bot khách là bao nhiêu, tính theo tiệm hay theo chủ tiệm, tiệm được coi là mới trong bao lâu.
 - Nếu sau này chạy bằng tiền thật, cần người có chuyên môn pháp lý xem lại toàn bộ.
