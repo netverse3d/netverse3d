@@ -128,3 +128,23 @@ test('lựa chọn metadata trong form khớp danh mục và field của repo', 
     }
   }
 });
+
+test('tài liệu hướng dẫn đồng bộ metadata từ form và xử lý needs-triage', () => {
+  const guide = readFileSync('CONTRIBUTING.md', 'utf8');
+  const workflow = readFileSync('docs/wiki/team/workflow.md', 'utf8');
+  const runbook = readFileSync('docs/runbooks/issue-quality.md', 'utf8');
+
+  for (const document of [guide, workflow, runbook]) {
+    assert.match(document, /needs-triage/);
+    assert.match(document, /Priority/);
+    assert.match(document, /Effort/);
+  }
+
+  assert.match(guide, /dropdown bắt buộc trong form/i);
+  assert.match(guide, /đồng bộ/);
+  assert.match(workflow, /pnpm issues:audit/);
+  assert.match(runbook, /pnpm issues:audit --apply/);
+  assert.match(runbook, /đọc.*trước.*ghi|preview/i);
+  assert.match(runbook, /GITHUB_TOKEN/);
+  assert.match(runbook, /Closes #/);
+});
