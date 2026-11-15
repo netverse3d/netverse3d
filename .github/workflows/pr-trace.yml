@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  issues: read
 
 jobs:
   trace:
@@ -44,6 +45,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           HEAD_REF: ${{ github.head_ref }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.txt"
           node scripts/trace/check-pr.mjs \

@@ -33,7 +33,9 @@ flowchart LR
 | Task    | Một việc làm được trong vài ngày                                      |
 | Bug     | Hành vi sai so với REQ                                                |
 
-Mỗi issue có Type, nhãn `area:*`, Milestone, Priority và Effort ngay từ lúc tạo. Assignees, Start date và Target date phải có trước khi chuyển sang `Ready`. Priority, Effort và hai ngày là field của issue; Project chỉ giữ Status. Thang đo và trách nhiệm từng vai nằm ở [hướng dẫn đóng góp](https://github.com/netverse3d/netverse3d/blob/staging/CONTRIBUTING.md).
+Chọn mẫu phù hợp và điền Type, area, Milestone, Priority và Effort trong form issue. Workflow tự đồng bộ các câu trả lời vào metadata của issue khi tạo hoặc sửa. Task và Bug cần Effort; Feature không cần. Nếu dữ liệu thiếu hoặc không hợp lệ, workflow gắn `needs-triage`; sửa câu trả lời trong thân issue rồi lưu để workflow chạy lại. Khi hợp lệ, workflow đồng bộ metadata và gỡ nhãn này. Không tự điền Priority hoặc Effort cho issue cũ khi audit.
+
+Assignees, Start date và Target date phải có trước khi chuyển sang `Ready`. Priority, Effort và hai ngày là field của issue; Project chỉ giữ Status. PR đóng issue bị CI chặn nếu metadata bắt buộc còn thiếu hoặc vẫn có `needs-triage`. Chạy audit chỉ đọc bằng `pnpm issues:audit`; hướng dẫn xem preview và áp dụng thay đổi nhãn nằm trong [runbook chất lượng issue](../../runbooks/issue-quality.md). Thang đo và trách nhiệm từng vai nằm ở [hướng dẫn đóng góp](https://github.com/netverse3d/netverse3d/blob/staging/CONTRIBUTING.md).
 
 ## Khi nào một việc sẵn sàng làm
 

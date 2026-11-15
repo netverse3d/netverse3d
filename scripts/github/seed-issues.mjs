@@ -12,7 +12,16 @@ import {
   planMilestoneMoves,
   selectMissingIssues,
 } from './backlog.mjs';
-import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
+import {
+  api,
+  gh,
+  ghJson,
+  graphql,
+  listIssues,
+  ORGANIZATION,
+  PROJECT_TITLE,
+  REPOSITORY,
+} from './gh.mjs';
 
 const REQUEST_GAP_MS = 1200;
 const repositoryPath = `repos/${REPOSITORY}`;
@@ -21,15 +30,6 @@ function readPlan() {
   const seed = parse(readFileSync('docs/requirements/backlog-seed.yaml', 'utf8'));
   const { milestones } = parse(readFileSync('docs/requirements/milestones.yaml', 'utf8'));
   return planBacklog(loadRegistry(process.cwd()), seed, milestones);
-}
-
-function listIssues() {
-  const issues = [];
-  for (let page = 1; ; page += 1) {
-    const batch = api('GET', `${repositoryPath}/issues?state=all&per_page=100&page=${page}`);
-    issues.push(...batch.filter((item) => !item.pull_request));
-    if (batch.length < 100) return issues;
-  }
 }
 
 function loadProject() {
@@ -108,13 +108,6 @@ const SET_ISSUE_FIELDS_MUTATION = `mutation($issueId: ID!, $issueFields: [IssueF
     clientMutationId
   }
 }`;
-
-function graphql(query, variables) {
-  return ghJson(
-    ['api', 'graphql', '-H', 'GraphQL-Features: issue_fields', '--input', '-'],
-    JSON.stringify({ query, variables }),
-  ).data;
-}
 
 function loadIssueFields() {
   return graphql(ISSUE_FIELDS_QUERY, { organization: ORGANIZATION }).organization.issueFields.nodes;

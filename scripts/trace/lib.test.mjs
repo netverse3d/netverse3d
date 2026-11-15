@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { parse } from 'yaml';
 import {
   evaluateBranchFlow,
   evaluatePullRequest,
+  extractClosingIssueNumbers,
   extractReferences,
   isProductPath,
   isTraceExempt,
@@ -33,8 +35,34 @@ const decisions = [
   { id: 'ADR-0002', status: 'superseded' },
 ];
 
+function completeIssue(number = 12, overrides = {}) {
+  return {
+    number,
+    type: 'Task',
+    labels: ['area:identity'],
+    milestone: 'M1',
+    fields: {
+      Priority: 'High',
+      Effort: 'Medium',
+      'Start date': '2026-11-15',
+      'Target date': '2026-11-18',
+    },
+    assignees: ['developer'],
+    ...overrides,
+  };
+}
+
 function review(body, files = ['services/identity/src/main.ts']) {
-  return evaluatePullRequest({ body, files, requirements, decisions });
+  const closingIssues = extractClosingIssueNumbers(body).map((number) => completeIssue(number));
+  return evaluatePullRequest({
+    body,
+    files,
+    requirements,
+    decisions,
+    closingIssues,
+    allowedAreaLabels: ['area:identity'],
+    allowedMilestones: ['M1'],
+  });
 }
 
 test('chặn PR đổi mã sản phẩm mà không có REQ hoặc ADR', () => {
@@ -76,6 +104,93 @@ test('nhận PR có REQ đã chốt và issue', () => {
 
 test('nhận PR có ADR đã chốt và issue', () => {
   assert.deepEqual(review('Closes #12, ADR-0001').errors, []);
+});
+
+test('lấy đủ số issue cần đóng, không lặp số và nhận biến thể từ khóa GitHub', () => {
+  assert.deepEqual(extractClosingIssueNumbers('Closes #12, fixes #13; resolves #12'), [12, 13]);
+});
+
+test('workflow PR có quyền đọc issue và truyền token cho bộ kiểm metadata', () => {
+  const workflow = parse(readFileSync('.github/workflows/pr-trace.yml', 'utf8'));
+  assert.equal(workflow.permissions.issues, 'read');
+  const traceStep = workflow.jobs.trace.steps.find((step) =>
+    step.run?.includes('scripts/trace/check-pr.mjs'),
+  );
+  assert.equal(traceStep.env.GH_TOKEN, '${{ github.token }}');
+});
+
+test('chặn PR đóng issue thiếu area, milestone, Priority và Effort', () => {
+  const { errors } = evaluatePullRequest({
+    body: 'Closes #12',
+    files: [],
+    requirements,
+    decisions,
+    closingIssues: [{ number: 12, type: 'Task', labels: [], fields: {}, assignees: [] }],
+  });
+  assert.match(errors.join('\n'), /#12.*area/);
+  assert.match(errors.join('\n'), /#12.*Milestone/);
+  assert.match(errors.join('\n'), /#12.*Priority/);
+  assert.match(errors.join('\n'), /#12.*Effort/);
+});
+
+test('issue đóng qua PR cần assignee và Start date cùng Target date', () => {
+  const { errors } = evaluatePullRequest({
+    body: 'Closes #12',
+    files: [],
+    requirements,
+    decisions,
+    closingIssues: [
+      {
+        number: 12,
+        type: 'Task',
+        labels: ['area:identity'],
+        milestone: 'M1',
+        fields: { Priority: 'High', Effort: 'Medium' },
+        assignees: [],
+      },
+    ],
+  });
+  assert.match(errors.join('\n'), /#12.*Assignees/);
+  assert.match(errors.join('\n'), /#12.*Start date/);
+  assert.match(errors.join('\n'), /#12.*Target date/);
+});
+
+test('chặn PR nếu không tải được metadata của issue cần đóng', () => {
+  const { errors } = evaluatePullRequest({
+    body: 'Closes #12',
+    files: [],
+    requirements,
+    decisions,
+  });
+  assert.match(errors.join('\n'), /#12: issue metadata could not be loaded/);
+});
+
+test('nhận issue đủ metadata và chặn needs-triage', () => {
+  const complete = completeIssue(12, {
+    type: { name: 'Task' },
+    labels: [{ name: 'area:identity' }],
+    milestone: { title: 'M1' },
+    assignees: [{ login: 'developer' }],
+  });
+  const acceptedResult = evaluatePullRequest({
+    body: 'Closes #12',
+    files: [],
+    requirements,
+    decisions,
+    closingIssues: [complete],
+    allowedAreaLabels: ['area:identity'],
+    allowedMilestones: ['M1'],
+  });
+  assert.deepEqual(acceptedResult.errors, []);
+
+  const triageResult = evaluatePullRequest({
+    body: 'Closes #12',
+    files: [],
+    requirements,
+    decisions,
+    closingIssues: [{ ...complete, labels: [...complete.labels, { name: 'needs-triage' }] }],
+  });
+  assert.match(triageResult.errors.join('\n'), /#12.*needs-triage/);
 });
 
 test('miễn REQ cho PR chỉ đổi tài liệu hoặc công cụ', () => {
@@ -149,6 +264,7 @@ test('cảnh báo khi PR tự thêm ADR rồi tự trích dẫn', () => {
     files: ['services/identity/src/main.ts'],
     requirements,
     decisions,
+    closingIssues: [completeIssue()],
     baseDecisionIds: ['ADR-0002'],
   });
   assert.match(warnings.join(), /ADR-0001 was added by this pull request/);
@@ -166,6 +282,7 @@ test('cảnh báo khi PR tự thêm yêu cầu rồi tự trích dẫn', () => {
     files: ['services/identity/src/main.ts'],
     requirements,
     decisions,
+    closingIssues: [completeIssue()],
     baseRequirementIds: ['REQ-002'],
   });
   assert.deepEqual(errors, []);
@@ -178,6 +295,7 @@ test('không cảnh báo khi yêu cầu đã có từ trước', () => {
     files: ['services/identity/src/main.ts'],
     requirements,
     decisions,
+    closingIssues: [completeIssue()],
     baseRequirementIds: ['REQ-001'],
   });
   assert.deepEqual(warnings, []);
@@ -189,6 +307,7 @@ test('cảnh báo khi dựa trên ADR mới ở mức đề xuất', () => {
     files: ['services/identity/src/main.ts'],
     requirements,
     decisions: [...decisions, { id: 'ADR-0003', status: 'proposed' }],
+    closingIssues: [completeIssue()],
   });
   assert.match(warnings.join(), /ADR-0003 is still proposed/);
 });

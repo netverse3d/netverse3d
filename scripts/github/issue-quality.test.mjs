@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { validateIssueMetadata } from './issue-quality.mjs';
+import { parse } from 'yaml';
+import { ISSUE_FIELD_CATALOG, issueFieldInputs } from './backlog.mjs';
+import {
+  ISSUE_FIELD_QUERY,
+  parseIssueFormMetadata,
+  parseIssueFieldValues,
+  applyIssueSyncPlan,
+  planIssueAudit,
+  planIssueSync,
+  runIssueAudit,
+  validateIssueMetadata,
+} from './issue-quality.mjs';
 
 function issue(overrides = {}) {
   return {
@@ -50,10 +62,330 @@ test('issue Feature không bắt buộc có Effort', () => {
   );
 });
 
+const formBody = [
+  '### Khu vực',
+  '',
+  'area:identity',
+  '',
+  '### Milestone',
+  '',
+  'M1 · Giao diện và Identity',
+  '',
+  '### Priority',
+  '',
+  'High',
+  '',
+  '### Effort',
+  '',
+  'Medium',
+].join('\n');
+
+test('workflow chạy khi mở hoặc sửa issue và chỉ nhận quyền ghi issue', () => {
+  const workflow = parse(readFileSync('.github/workflows/issue-quality.yml', 'utf8'));
+  assert.deepEqual(workflow.on.issues.types, ['opened', 'edited']);
+  assert.deepEqual(workflow.permissions, { contents: 'read', issues: 'write' });
+  assert.ok(
+    workflow.jobs.sync.steps.some((step) => step.run?.includes('issue-quality.mjs --sync')),
+  );
+});
+
+test('đọc metadata được chọn từ nội dung issue form', () => {
+  assert.deepEqual(parseIssueFormMetadata(formBody), {
+    area: 'area:identity',
+    milestone: 'M1 · Giao diện và Identity',
+    priority: 'High',
+    effort: 'Medium',
+  });
+});
+
+test('tạo kế hoạch đồng bộ metadata hợp lệ và gỡ needs-triage', () => {
+  assert.deepEqual(
+    planIssueSync(
+      {
+        type: { name: 'Task' },
+        labels: [{ name: 'needs-triage' }, { name: 'backend' }],
+        body: formBody,
+      },
+      {
+        areaLabels: ['area:identity'],
+        milestones: [{ number: 9, title: 'M1 · Giao diện và Identity' }],
+      },
+    ),
+    {
+      action: 'sync',
+      type: 'Task',
+      labels: ['backend', 'area:identity'],
+      milestone: { number: 9, title: 'M1 · Giao diện và Identity' },
+      fields: { priority: 'High', effort: 'Medium' },
+    },
+  );
+});
+
+test('không đồng bộ một phần khi thiếu metadata hoặc dùng giá trị ngoài danh mục', () => {
+  const missing = planIssueSync(
+    { type: { name: 'Task' }, labels: [], body: '### Khu vực\n\narea:unknown' },
+    { areaLabels: ['area:identity'], milestones: [] },
+  );
+  assert.equal(missing.action, 'triage');
+  assert.ok(missing.errors.includes('Milestone is required'));
+  assert.ok(missing.errors.some((error) => error.includes('area:unknown')));
+
+  const unsupported = planIssueSync(
+    { type: { name: 'Task' }, labels: [], body: formBody.replace('High', 'P1') },
+    {
+      areaLabels: ['area:identity'],
+      milestones: [{ number: 9, title: 'M1 · Giao diện và Identity' }],
+    },
+  );
+  assert.equal(unsupported.action, 'triage');
+  assert.ok(unsupported.errors.includes('Priority has unsupported value: P1'));
+
+  const unknownMilestone = planIssueSync(
+    { type: { name: 'Task' }, labels: [], body: formBody },
+    { areaLabels: ['area:identity'], milestones: [] },
+  );
+  assert.equal(unknownMilestone.action, 'triage');
+  assert.ok(
+    unknownMilestone.errors.some((error) => error.startsWith('Milestone has unsupported value:')),
+  );
+});
+
+test('Feature hợp lệ không tự thêm Effort', () => {
+  const featureBody = formBody.replace(/### Effort\n+Medium/, '');
+  assert.deepEqual(
+    planIssueSync(
+      { type: { name: 'Feature' }, labels: [], body: featureBody },
+      {
+        areaLabels: ['area:identity'],
+        milestones: [{ number: 9, title: 'M1 · Giao diện và Identity' }],
+      },
+    ),
+    {
+      action: 'sync',
+      type: 'Feature',
+      labels: ['area:identity'],
+      milestone: { number: 9, title: 'M1 · Giao diện và Identity' },
+      fields: { priority: 'High' },
+    },
+  );
+});
+
+test('đồng bộ hợp lệ bỏ nhãn needs-triage, giữ nhãn khác và chỉ cập nhật field đổi', async () => {
+  const calls = [];
+  const plan = {
+    action: 'sync',
+    type: 'Task',
+    labels: ['backend', 'area:identity'],
+    milestone: { number: 9, title: 'M1 · Giao diện và Identity' },
+    fields: { priority: 'High', effort: 'Medium' },
+  };
+  await applyIssueSyncPlan(
+    {
+      number: 15,
+      node_id: 'I_15',
+      type: { name: 'Bug' },
+      labels: [{ name: 'backend' }, { name: 'needs-triage' }, { name: 'area:old' }],
+      milestone: { number: 8 },
+      fields: { Priority: 'Low', Effort: 'Medium' },
+    },
+    plan,
+    {
+      apiRequest: async (...args) => calls.push(['api', ...args]),
+      setFields: async (...args) => calls.push(['fields', ...args]),
+    },
+  );
+  assert.deepEqual(calls, [
+    [
+      'api',
+      'PATCH',
+      'repos/netverse3d/netverse3d/issues/15',
+      { type: 'Task', milestone: 9, labels: ['backend', 'area:identity'] },
+    ],
+    ['fields', 'I_15', { priority: 'High' }],
+  ]);
+});
+
+test('đồng bộ lặp lại không ghi lại metadata đã đúng', async () => {
+  const calls = [];
+  await applyIssueSyncPlan(
+    {
+      number: 15,
+      type: { name: 'Task' },
+      labels: [{ name: 'area:identity' }, { name: 'backend' }],
+      milestone: { number: 9 },
+      fields: { Priority: 'High', Effort: 'Medium' },
+    },
+    {
+      action: 'sync',
+      type: 'Task',
+      labels: ['backend', 'area:identity'],
+      milestone: { number: 9, title: 'M1 · Giao diện và Identity' },
+      fields: { priority: 'High', effort: 'Medium' },
+    },
+    {
+      apiRequest: async (...args) => calls.push(args),
+      setFields: async (...args) => calls.push(args),
+    },
+  );
+  assert.deepEqual(calls, []);
+});
+
+test('lỗi API khi gắn needs-triage làm đồng bộ thất bại', async () => {
+  await assert.rejects(
+    applyIssueSyncPlan(
+      { number: 15, labels: [] },
+      { action: 'triage', errors: ['Priority is required'] },
+      {
+        apiRequest: async () => {
+          throw new Error('API failed');
+        },
+        setFields: async () => {},
+      },
+    ),
+    /API failed/,
+  );
+});
+
+test('issue thiếu metadata nhận needs-triage đúng một lần', async () => {
+  const calls = [];
+  const apiRequest = async (...args) => calls.push(args);
+  const plan = { action: 'triage', errors: ['Priority is required'] };
+  const issue = { number: 15, labels: [{ name: 'area:identity' }] };
+  await applyIssueSyncPlan(issue, plan, { apiRequest, setFields: async () => {} });
+  await applyIssueSyncPlan(
+    { ...issue, labels: [...issue.labels, { name: 'needs-triage' }] },
+    plan,
+    { apiRequest, setFields: async () => {} },
+  );
+  assert.deepEqual(calls, [
+    [
+      'PATCH',
+      'repos/netverse3d/netverse3d/issues/15',
+      { labels: ['area:identity', 'needs-triage'] },
+    ],
+  ]);
+});
+
+test('đọc tên lựa chọn Priority và chuỗi ngày từ REST Issue Fields', () => {
+  assert.deepEqual(
+    parseIssueFieldValues([
+      {
+        issue_field_name: 'Priority',
+        data_type: 'single_select',
+        single_select_option: { name: 'High' },
+        value: 2,
+      },
+      { issue_field_name: 'Start date', data_type: 'date', value: '2026-11-15' },
+    ]),
+    { Priority: 'High', 'Start date': '2026-11-15' },
+  );
+});
+
+test('audit báo issue lỗi và chỉ đề xuất thêm nhãn needs-triage', () => {
+  const report = planIssueAudit(
+    [
+      {
+        number: 41,
+        title: 'Thiếu Priority',
+        type: { name: 'Task' },
+        labels: [{ name: 'area:identity' }],
+        milestone: { title: 'M1 · Giao diện và Identity' },
+        fields: { Effort: 'Medium' },
+      },
+    ],
+    {
+      areaLabels: ['area:identity'],
+      milestones: ['M1 · Giao diện và Identity'],
+    },
+  );
+  assert.ok(report.issues[0].errors.includes('Priority is required'));
+  assert.deepEqual(report.changes, [
+    { number: 41, action: 'add', labels: ['area:identity', 'needs-triage'] },
+  ]);
+});
+
+test('audit chỉ bỏ needs-triage khi metadata hợp lệ và không tự điền Priority/Effort', () => {
+  const report = planIssueAudit(
+    [
+      {
+        number: 42,
+        title: 'Đã đủ metadata',
+        type: { name: 'Task' },
+        labels: [{ name: 'area:identity' }, { name: 'needs-triage' }],
+        milestone: { title: 'M1 · Giao diện và Identity' },
+        fields: { Priority: 'High', Effort: 'Medium' },
+      },
+    ],
+    {
+      areaLabels: ['area:identity'],
+      milestones: ['M1 · Giao diện và Identity'],
+    },
+  );
+  assert.deepEqual(report.changes, [{ number: 42, action: 'remove', labels: ['area:identity'] }]);
+});
+
+test('audit mặc định không ghi GitHub và --apply chỉ chạy sau bước xem trước', async () => {
+  const calls = [];
+  const issue = {
+    number: 41,
+    type: { name: 'Task' },
+    labels: [],
+    milestone: null,
+    fields: {},
+  };
+  const options = {
+    areaLabels: ['area:identity'],
+    milestones: ['M1 · Giao diện và Identity'],
+    apiRequest: async (...args) => calls.push(['write', ...args]),
+    onPreview: () => calls.push(['preview']),
+  };
+  await runIssueAudit([issue], options);
+  assert.deepEqual(calls, [['preview']]);
+
+  calls.length = 0;
+  await runIssueAudit([issue], { ...options, apply: true });
+  assert.deepEqual(calls, [
+    ['preview'],
+    ['write', 'PATCH', 'repos/netverse3d/netverse3d/issues/41', { labels: ['needs-triage'] }],
+  ]);
+});
+
 test('issue Task phải có Effort', () => {
   assert.deepEqual(validateIssueMetadata(issue({ fields: { Priority: 'High' } })), [
     'Effort is required',
   ]);
+});
+
+test('danh mục Issue Fields dùng ID và option ID chính thức, không cần đọc organization', () => {
+  assert.deepEqual(ISSUE_FIELD_CATALOG, [
+    {
+      id: 'IFSS_kgDOAvSbTg',
+      name: 'Priority',
+      options: [
+        { id: 'IFSSO_kgDOBSyqEA', name: 'Urgent' },
+        { id: 'IFSSO_kgDOBSyqEg', name: 'High' },
+        { id: 'IFSSO_kgDOBSyqEw', name: 'Medium' },
+        { id: 'IFSSO_kgDOBSyqFA', name: 'Low' },
+      ],
+    },
+    { id: 'IFD_kgDOAvSbUg', name: 'Start date' },
+    { id: 'IFD_kgDOAvSbUw', name: 'Target date' },
+    {
+      id: 'IFSS_kgDOAvSbVA',
+      name: 'Effort',
+      options: [
+        { id: 'IFSSO_kgDOBSyqGA', name: 'High' },
+        { id: 'IFSSO_kgDOBSyqGg', name: 'Medium' },
+        { id: 'IFSSO_kgDOBSyqHA', name: 'Low' },
+      ],
+    },
+  ]);
+  assert.deepEqual(issueFieldInputs(ISSUE_FIELD_CATALOG, { priority: 'High', effort: 'Medium' }), [
+    { fieldId: 'IFSS_kgDOAvSbTg', singleSelectOptionId: 'IFSSO_kgDOBSyqEg' },
+    { fieldId: 'IFSS_kgDOAvSbVA', singleSelectOptionId: 'IFSSO_kgDOBSyqGg' },
+  ]);
+  assert.match(ISSUE_FIELD_QUERY, /node\(id: \$issueId\)/);
+  assert.doesNotMatch(ISSUE_FIELD_QUERY, /organization\s*\(/);
 });
 
 test('Ready cần assignee, Start date và Target date', () => {

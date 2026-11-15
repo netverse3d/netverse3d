@@ -17,7 +17,7 @@ Nếu Xèng của người chơi chảy thẳng vào ví chủ tiệm, hai tài 
 
 ## Quyết định
 
-- Tiền ảo tên tạm là **Xèng**. Trong mã dùng tên trung tính `Credit` để đổi tên hiển thị không phải đổi mã.
+- Tên chính thức của tiền ảo là **Xèng**. Trong mã dùng tên trung tính `Credit` để đổi tên hiển thị không phải đổi mã.
 - Xèng chỉ có được bằng cách nạp qua PayOS hoặc do hệ thống cấp. Xèng chỉ tiêu, không rút, không chuyển cho người khác, không đổi ngược.
 - Chủ tiệm nhận **điểm doanh thu** (`RevenuePoints`), không nhận Xèng. Khi người chơi trả Xèng cho giờ máy, Xèng bị huỷ và hệ thống cấp điểm cho chủ tiệm theo một tỷ lệ.
 - Điểm doanh thu chỉ dùng để thuê đất, nâng cấp và bài trí tiệm. Không chuyển, không đổi ra Xèng, không đổi ra tiền.

@@ -2,10 +2,76 @@ name: Công việc
 description: Một việc làm được trong vài ngày, kết thúc bằng một PR
 type: Task
 body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Khu vực
+      options:
+        - 'area:admin'
+        - 'area:ai-chat'
+        - 'area:config'
+        - 'area:contracts'
+        - 'area:docs'
+        - 'area:game'
+        - 'area:game-assets'
+        - 'area:game-shared'
+        - 'area:identity'
+        - 'area:infra'
+        - 'area:media'
+        - 'area:nest-kit'
+        - 'area:notification'
+        - 'area:payment'
+        - 'area:shop'
+        - 'area:ui'
+        - 'area:web-3d'
+        - 'area:worker-ai'
+        - 'area:worker-asset'
+        - 'area:worker-jobs'
+        - 'area:world'
+    validations:
+      required: true
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - 'M0 · Nền móng'
+        - 'M1 · Giao diện và Identity'
+        - 'M2 · Lát cắt đầu'
+        - 'M3 · Xèng và Payment'
+        - 'M4 · Chủ tiệm'
+        - 'M5 · Tích hợp game core'
+        - 'M6 · Bot học tăng cường'
+        - 'M7 · Chatbot, TTS và NPC'
+        - 'M8 · Production'
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - 'Urgent'
+        - 'High'
+        - 'Medium'
+        - 'Low'
+    validations:
+      required: true
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Effort
+      options:
+        - 'High'
+        - 'Medium'
+        - 'Low'
+    validations:
+      required: true
+
   - type: markdown
     attributes:
       value: |
-        Sau khi tạo, điền thanh bên phải: Labels `area:*`, Milestone, Priority, Effort. Khi nhận việc, điền thêm Assignees, Start date, Target date. Xem CONTRIBUTING.md.
+        Chọn Area, Milestone, Priority và Effort trong biểu mẫu; workflow sẽ đồng bộ chúng vào thanh bên. Khi nhận việc, điền Assignees, Start date, Target date. Xem CONTRIBUTING.md.
   - type: input
     id: requirement
     attributes:

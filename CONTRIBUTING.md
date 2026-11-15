@@ -22,21 +22,23 @@ Không làm việc gì mà chưa có issue. Việc nhỏ cũng mở issue, mô t
 
 ## Thông tin bắt buộc của một issue
 
-Các thông tin này nằm ở thanh bên phải của issue trên GitHub.
+Chọn mẫu phù hợp khi tạo issue rồi điền các dropdown bắt buộc trong form. Workflow `issue-quality` đọc câu trả lời khi issue được tạo hoặc sửa, sau đó đồng bộ Type, nhãn area, Milestone, Priority và Effort vào issue. Không cần tự nhập các giá trị đó lần nữa ở thanh bên.
 
-| Thông tin       | Ý nghĩa                                         | Phải có khi nào                |
-| --------------- | ----------------------------------------------- | ------------------------------ |
-| **Type**        | `Feature`, `Task` hoặc `Bug`                    | Lúc tạo                        |
-| **Labels**      | Một nhãn `area:*` cho thành phần chịu ảnh hưởng | Lúc tạo                        |
-| **Milestone**   | Giai đoạn mà việc này thuộc về                  | Lúc tạo                        |
-| **Priority**    | Mức cần làm trước, xem thang bên dưới           | Lúc tạo                        |
-| **Effort**      | Công sức ước lượng, xem thang bên dưới          | Lúc tạo                        |
-| **Assignees**   | Người chịu trách nhiệm đưa việc tới lúc xong    | Trước khi chuyển sang `Ready`  |
-| **Start date**  | Ngày bắt đầu làm                                | Trước khi chuyển sang `Ready`  |
-| **Target date** | Ngày dự kiến PR được merge                      | Trước khi chuyển sang `Ready`  |
-| **Status**      | Cột trong Project `Netverse 3D`                 | Cập nhật mỗi khi đổi giai đoạn |
+| Thông tin       | Ý nghĩa                                         | Phải có khi nào                   |
+| --------------- | ----------------------------------------------- | --------------------------------- |
+| **Type**        | `Feature`, `Task` hoặc `Bug`                    | Chọn mẫu lúc tạo                  |
+| **Labels**      | Một nhãn `area:*` cho thành phần chịu ảnh hưởng | Chọn trong form lúc tạo           |
+| **Milestone**   | Giai đoạn mà việc này thuộc về                  | Chọn trong form lúc tạo           |
+| **Priority**    | Mức cần làm trước, xem thang bên dưới           | Chọn trong form lúc tạo           |
+| **Effort**      | Công sức ước lượng, xem thang bên dưới          | Chọn trong form lúc tạo; Task/Bug |
+| **Assignees**   | Người chịu trách nhiệm đưa việc tới lúc xong    | Trước khi chuyển sang `Ready`     |
+| **Start date**  | Ngày bắt đầu làm                                | Trước khi chuyển sang `Ready`     |
+| **Target date** | Ngày dự kiến PR được merge                      | Trước khi chuyển sang `Ready`     |
+| **Status**      | Cột trong Project `Netverse 3D`                 | Cập nhật mỗi khi đổi giai đoạn    |
 
 Issue cha loại `Feature` không cần Effort; công sức nằm ở các issue con. Priority và Effort là field của issue. Hai field `Priority` và `Size` cũ trong Project không còn dùng.
+
+Nếu thiếu hoặc chọn giá trị không hợp lệ, workflow gắn nhãn `needs-triage` và không đồng bộ một phần metadata. Sửa câu trả lời trong thân issue rồi lưu; sự kiện `edited` chạy lại workflow. Khi metadata hợp lệ, workflow đồng bộ và tự gỡ `needs-triage`. PR đóng issue sẽ bị CI từ chối nếu metadata còn thiếu hoặc issue còn nhãn này. Xem [runbook chất lượng issue](docs/runbooks/issue-quality.md) để kiểm tra hoặc audit issue cũ.
 
 ### Loại issue
 
