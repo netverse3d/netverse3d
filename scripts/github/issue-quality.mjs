@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { parse } from 'yaml';
 import { issueFieldInputs } from './backlog.mjs';
-import { api, graphql, ORGANIZATION, REPOSITORY } from './gh.mjs';
+import { api, graphql, listIssues, ORGANIZATION, REPOSITORY } from './gh.mjs';
 
 const issueTypes = new Set(['Feature', 'Task', 'Bug']);
 const priorityValues = new Set(['Urgent', 'High', 'Medium', 'Low']);
@@ -196,6 +196,73 @@ export function loadIssueFieldData(issueId) {
   return { fields: metadata.organization.issueFields.nodes, values };
 }
 
+export function parseIssueFieldValues(values) {
+  return Object.fromEntries(
+    values
+      .map((field) => [
+        field.issue_field_name,
+        field.data_type === 'single_select' ? field.single_select_option?.name : field.value,
+      ])
+      .filter(([name, value]) => name && value !== undefined && value !== null),
+  );
+}
+
+export function planIssueAudit(issues, { areaLabels = [], milestones = [] } = {}) {
+  const areas = new Set(areaLabels);
+  const milestoneTitles = new Set(milestones);
+  const audited = issues.map((issue) => {
+    const errors = validateIssueMetadata(issue, {
+      allowedAreaLabels: areas,
+      allowedMilestones: milestoneTitles,
+    });
+    const labels = issueLabelNames(issue.labels);
+    return {
+      number: issue.number,
+      errors,
+      hasTriage: labels.includes('needs-triage'),
+      labels,
+    };
+  });
+  const changes = audited.flatMap((issue) => {
+    if (issue.errors.length > 0 && !issue.hasTriage) {
+      return [
+        {
+          number: issue.number,
+          action: 'add',
+          labels: [...issue.labels, 'needs-triage'],
+        },
+      ];
+    }
+    if (issue.errors.length === 0 && issue.hasTriage) {
+      return [
+        {
+          number: issue.number,
+          action: 'remove',
+          labels: issue.labels.filter((label) => label !== 'needs-triage'),
+        },
+      ];
+    }
+    return [];
+  });
+  return { issues: audited, changes };
+}
+
+export async function runIssueAudit(
+  issues,
+  { apply = false, areaLabels = [], milestones = [], apiRequest = api, onPreview = () => {} } = {},
+) {
+  const report = planIssueAudit(issues, { areaLabels, milestones });
+  onPreview(report);
+  if (apply) {
+    for (const change of report.changes) {
+      await apiRequest('PATCH', `repos/${REPOSITORY}/issues/${change.number}`, {
+        labels: change.labels,
+      });
+    }
+  }
+  return report;
+}
+
 async function syncIssue(number) {
   const repositoryPath = `repos/${REPOSITORY}`;
   const issue = api('GET', `${repositoryPath}/issues/${number}`);
@@ -227,11 +294,66 @@ async function syncIssue(number) {
   console.log(`Synchronized metadata for #${number}`);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const flagIndex = process.argv.indexOf('--sync');
-  const number = Number(process.argv[flagIndex + 1]);
-  if (flagIndex === -1 || !Number.isInteger(number) || number < 1) {
-    throw new Error('Usage: node scripts/github/issue-quality.mjs --sync <issue-number>');
+function printAudit(report, apply) {
+  for (const issue of report.issues) {
+    if (issue.errors.length > 0) {
+      console.log(`#${issue.number}: ${issue.errors.join('; ')}`);
+    }
   }
-  await syncIssue(number);
+  for (const change of report.changes) {
+    console.log(
+      `Preview #${change.number}: ${change.action === 'add' ? 'add' : 'remove'} needs-triage`,
+    );
+  }
+  const invalid = report.issues.filter((issue) => issue.errors.length > 0).length;
+  const result = apply
+    ? 'apply enabled; changes follow this preview'
+    : 'read-only; no changes applied';
+  console.log(
+    `Audit: ${report.issues.length} open issues, ${invalid} with missing metadata, ${report.changes.length} label updates; ${result}.`,
+  );
+}
+
+async function auditOpenIssues(apply) {
+  const catalog = parse(readFileSync('docs/catalog.yaml', 'utf8'));
+  const areaLabels = [
+    ...catalog.components.map((component) => `area:${component.id}`),
+    'area:docs',
+    'area:infra',
+  ];
+  const milestones = parse(
+    readFileSync('docs/requirements/milestones.yaml', 'utf8'),
+  ).milestones.map((milestone) => milestone.title);
+  const issues = listIssues('open').map((issue) => ({
+    ...issue,
+    fields: parseIssueFieldValues(
+      api('GET', `repos/${REPOSITORY}/issues/${issue.number}/issue-field-values`),
+    ),
+  }));
+  const report = await runIssueAudit(issues, {
+    apply,
+    areaLabels,
+    milestones,
+    onPreview: (report) => printAudit(report, apply),
+  });
+  if (apply) console.log(`Applied ${report.changes.length} label updates.`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  if (process.argv.includes('--audit')) {
+    await auditOpenIssues(process.argv.includes('--apply'));
+  } else if (process.argv.includes('--apply')) {
+    throw new Error('Usage: node scripts/github/issue-quality.mjs --audit [--apply]');
+  } else if (process.argv.includes('--sync')) {
+    const flagIndex = process.argv.indexOf('--sync');
+    const number = Number(process.argv[flagIndex + 1]);
+    if (!Number.isInteger(number) || number < 1) {
+      throw new Error('Usage: node scripts/github/issue-quality.mjs --sync <issue-number>');
+    }
+    await syncIssue(number);
+  } else {
+    throw new Error(
+      'Usage: node scripts/github/issue-quality.mjs --sync <issue-number> | --audit [--apply]',
+    );
+  }
 }

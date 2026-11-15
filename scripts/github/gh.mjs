@@ -32,6 +32,18 @@ export function graphql(query, variables) {
   ).data;
 }
 
+export function listIssues(state = 'all') {
+  if (!['all', 'open', 'closed'].includes(state)) {
+    throw new Error(`Unsupported issue state: ${state}`);
+  }
+  const issues = [];
+  for (let page = 1; ; page += 1) {
+    const batch = api('GET', `repos/${REPOSITORY}/issues?state=${state}&per_page=100&page=${page}`);
+    issues.push(...batch.filter((item) => !item.pull_request));
+    if (batch.length < 100) return issues;
+  }
+}
+
 export function apiStatus(path) {
   const result = spawnSync('gh', ['api', path, '--silent'], { encoding: 'utf8' });
   return result.status === 0;
