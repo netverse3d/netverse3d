@@ -25,6 +25,13 @@ export function api(method, path, body) {
   return ghJson([...args, '--input', '-'], JSON.stringify(body));
 }
 
+export function graphql(query, variables) {
+  return ghJson(
+    ['api', 'graphql', '-H', 'GraphQL-Features: issue_fields', '--input', '-'],
+    JSON.stringify({ query, variables }),
+  ).data;
+}
+
 export function apiStatus(path) {
   const result = spawnSync('gh', ['api', path, '--silent'], { encoding: 'utf8' });
   return result.status === 0;

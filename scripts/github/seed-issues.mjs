@@ -12,7 +12,7 @@ import {
   planMilestoneMoves,
   selectMissingIssues,
 } from './backlog.mjs';
-import { api, gh, ghJson, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
+import { api, gh, ghJson, graphql, ORGANIZATION, PROJECT_TITLE, REPOSITORY } from './gh.mjs';
 
 const REQUEST_GAP_MS = 1200;
 const repositoryPath = `repos/${REPOSITORY}`;
@@ -108,13 +108,6 @@ const SET_ISSUE_FIELDS_MUTATION = `mutation($issueId: ID!, $issueFields: [IssueF
     clientMutationId
   }
 }`;
-
-function graphql(query, variables) {
-  return ghJson(
-    ['api', 'graphql', '-H', 'GraphQL-Features: issue_fields', '--input', '-'],
-    JSON.stringify({ query, variables }),
-  ).data;
-}
 
 function loadIssueFields() {
   return graphql(ISSUE_FIELDS_QUERY, { organization: ORGANIZATION }).organization.issueFields.nodes;

@@ -59,8 +59,13 @@ test('mẫu issue nào cũng nhắc điền thông tin ở thanh bên', () => {
   for (const template of issueTemplates()) {
     const reminder = template.body.find((field) => field.type === 'markdown');
     assert.ok(reminder, `${template.name} thiếu lời nhắc`);
-    for (const detail of ['Assignees', 'Priority', 'Effort']) {
+    for (const detail of ['Assignees', 'Area', 'Milestone', 'Priority', 'đồng bộ']) {
       assert.ok(reminder.attributes.value.includes(detail), `${template.name} thiếu ${detail}`);
+    }
+    if (template.type === 'Feature') {
+      assert.ok(reminder.attributes.value.includes('Effort không bắt buộc'));
+    } else {
+      assert.ok(reminder.attributes.value.includes('Effort'));
     }
   }
 });
