@@ -26,6 +26,12 @@ function requiredFieldIds(template) {
     .map((field) => field.id);
 }
 
+function dropdownOptions(template, id) {
+  const field = template.body.find((item) => item.id === id);
+  assert.equal(field?.type, 'dropdown', `${template.name} phải dùng dropdown cho ${id}`);
+  return field.attributes.options;
+}
+
 test('tài liệu đóng góp nêu đủ bảy thông tin bắt buộc của issue', () => {
   const guide = readFileSync('CONTRIBUTING.md', 'utf8');
   for (const detail of REQUIRED_ISSUE_DETAILS) {
@@ -55,6 +61,65 @@ test('mẫu issue nào cũng nhắc điền thông tin ở thanh bên', () => {
     assert.ok(reminder, `${template.name} thiếu lời nhắc`);
     for (const detail of ['Assignees', 'Priority', 'Effort']) {
       assert.ok(reminder.attributes.value.includes(detail), `${template.name} thiếu ${detail}`);
+    }
+  }
+});
+
+test('mẫu issue bắt buộc chọn area, milestone và Priority', () => {
+  for (const template of issueTemplates()) {
+    const required = requiredFieldIds(template);
+    for (const field of ['area', 'milestone', 'priority']) {
+      assert.ok(required.includes(field), `${template.name} thiếu dropdown ${field} bắt buộc`);
+    }
+  }
+});
+
+test('Effort bắt buộc ở Task và Bug, còn Feature không yêu cầu Effort', () => {
+  for (const template of issueTemplates()) {
+    const required = requiredFieldIds(template);
+    if (template.type === 'Feature') {
+      assert.ok(!required.includes('effort'), `${template.name} không được bắt Effort`);
+    } else {
+      assert.ok(required.includes('effort'), `${template.name} thiếu Effort bắt buộc`);
+    }
+  }
+});
+
+test('lựa chọn metadata trong form khớp danh mục và field của repo', () => {
+  const catalog = parse(readFileSync('docs/catalog.yaml', 'utf8'));
+  const milestones = parse(readFileSync('docs/requirements/milestones.yaml', 'utf8'))
+    .milestones.map((milestone) => milestone.title)
+    .sort();
+  const expectedAreas = [
+    ...catalog.components.map((component) => `area:${component.id}`),
+    'area:docs',
+    'area:infra',
+  ].sort();
+  const expectedPriority = ['Urgent', 'High', 'Medium', 'Low'];
+  const expectedEffort = ['High', 'Medium', 'Low'];
+
+  for (const template of issueTemplates()) {
+    assert.deepEqual(
+      [...dropdownOptions(template, 'area')].sort(),
+      expectedAreas,
+      `${template.name} lệch danh sách area`,
+    );
+    assert.deepEqual(
+      [...dropdownOptions(template, 'milestone')].sort(),
+      milestones,
+      `${template.name} lệch milestone`,
+    );
+    assert.deepEqual(
+      dropdownOptions(template, 'priority'),
+      expectedPriority,
+      `${template.name} lệch Priority`,
+    );
+    if (template.type !== 'Feature') {
+      assert.deepEqual(
+        dropdownOptions(template, 'effort'),
+        expectedEffort,
+        `${template.name} lệch Effort`,
+      );
     }
   }
 });
