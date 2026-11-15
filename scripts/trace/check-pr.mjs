@@ -2,8 +2,11 @@ import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import { argument } from '../lib/cli.mjs';
 import { gitLines, gitOutputOrNull } from '../lib/git.mjs';
+import { api, REPOSITORY } from '../github/gh.mjs';
+import { loadIssueFieldData } from '../github/issue-quality.mjs';
 import {
   evaluateBranchFlow,
+  extractClosingIssueNumbers,
   evaluatePullRequest,
   isTraceExempt,
   loadDecisions,
@@ -34,12 +37,30 @@ function loadBaseDecisionIds() {
 
 const requirements = loadRegistry(root);
 const decisions = loadDecisions(root);
+const exempt = isTraceExempt({ base, head, isFork });
+const closingIssues = exempt
+  ? []
+  : extractClosingIssueNumbers(body).map((number) => {
+      const issue = api('GET', `repos/${REPOSITORY}/issues/${number}`);
+      return { ...issue, fields: loadIssueFieldData(issue.node_id).values };
+    });
+const catalog = parse(readFileSync('docs/catalog.yaml', 'utf8'));
+const milestoneOptions = parse(
+  readFileSync('docs/requirements/milestones.yaml', 'utf8'),
+).milestones.map((milestone) => milestone.title);
 const result = evaluatePullRequest({
   body,
   files,
   requirements,
   decisions,
-  exempt: isTraceExempt({ base, head, isFork }),
+  exempt,
+  closingIssues,
+  allowedAreaLabels: [
+    ...catalog.components.map((component) => `area:${component.id}`),
+    'area:docs',
+    'area:infra',
+  ],
+  allowedMilestones: milestoneOptions,
   baseRequirementIds: loadBaseRequirementIds(),
   baseDecisionIds: loadBaseDecisionIds(),
 });

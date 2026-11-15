@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
+import { validateIssueMetadata } from '../github/issue-quality.mjs';
 
 export const REQUIREMENT_STATUSES = ['draft', 'accepted', 'implemented', 'deprecated'];
 export const REQUIREMENT_PRIORITIES = ['must', 'should', 'could'];
@@ -8,7 +9,7 @@ export const DECISION_STATUSES = ['proposed', 'accepted', 'superseded'];
 
 const REQUIREMENT_ID = /^REQ-\d{3}$/;
 const REFERENCE = /\b(?:REQ-\d{3}|ADR-\d{4})\b/g;
-const CLOSING_REFERENCE = /(?:^|\s)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#\d+/i;
+const CLOSING_REFERENCE = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)\b/gi;
 const PRODUCT_PATH = /^(?:apps|services|workers|packages|infra)\//;
 const NON_PRODUCT_FILE = /(?:^|\/)(?:README\.md|component\.yaml)$/;
 
@@ -76,6 +77,14 @@ export function extractReferences(text) {
   return [...new Set(text?.match(REFERENCE) ?? [])];
 }
 
+export function extractClosingIssueNumbers(body) {
+  return [
+    ...new Set(
+      [...String(body ?? '').matchAll(CLOSING_REFERENCE)].map((match) => Number(match[1])),
+    ),
+  ];
+}
+
 export function isProductPath(file) {
   return PRODUCT_PATH.test(file) && !NON_PRODUCT_FILE.test(file);
 }
@@ -120,6 +129,9 @@ export function evaluatePullRequest({
   requirements,
   decisions,
   exempt = false,
+  closingIssues = [],
+  allowedAreaLabels,
+  allowedMilestones,
   baseRequirementIds = null,
   baseDecisionIds = null,
 }) {
@@ -147,8 +159,29 @@ export function evaluatePullRequest({
       );
     }
   }
-  if (!exempt && !CLOSING_REFERENCE.test(body ?? '')) {
+  const closingIssueNumbers = extractClosingIssueNumbers(body);
+  if (!exempt && closingIssueNumbers.length === 0) {
     errors.push('a pull request into staging must close an issue, for example "Closes #12"');
+  }
+  if (!exempt) {
+    const issuesByNumber = new Map(closingIssues.map((issue) => [issue.number, issue]));
+    for (const number of closingIssueNumbers) {
+      const issue = issuesByNumber.get(number);
+      if (!issue) {
+        errors.push(`#${number}: issue metadata could not be loaded`);
+        continue;
+      }
+      const labels = Array.isArray(issue.labels)
+        ? issue.labels.map((label) => (typeof label === 'string' ? label : label.name))
+        : [];
+      if (labels.includes('needs-triage')) errors.push(`#${number}: issue is marked needs-triage`);
+      const metadataErrors = validateIssueMetadata(issue, {
+        ready: true,
+        allowedAreaLabels: allowedAreaLabels ? new Set(allowedAreaLabels) : undefined,
+        allowedMilestones: allowedMilestones ? new Set(allowedMilestones) : undefined,
+      });
+      for (const error of metadataErrors) errors.push(`#${number}: ${error}`);
+    }
   }
   return { errors, warnings, references, productFiles };
 }

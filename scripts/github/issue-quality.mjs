@@ -18,12 +18,19 @@ function singleSelectError(fields, fieldName, allowedValues, required) {
   return allowedValues.has(value) ? null : `${fieldName} has unsupported value: ${value}`;
 }
 
-export function validateIssueMetadata(issue, { ready = false, allowedAreaLabels } = {}) {
+export function validateIssueMetadata(
+  issue,
+  { ready = false, allowedAreaLabels, allowedMilestones } = {},
+) {
   const errors = [];
-  const type = text(issue.type);
-  const labels = Array.isArray(issue.labels) ? issue.labels.map(text) : [];
+  const type = text(typeof issue.type === 'string' ? issue.type : issue.type?.name);
+  const labels = Array.isArray(issue.labels)
+    ? issue.labels.map((label) => text(typeof label === 'string' ? label : label?.name))
+    : [];
   const areaLabels = labels.filter((label) => label.startsWith('area:') && label.length > 5);
-  const milestone = text(issue.milestone);
+  const milestone = text(
+    typeof issue.milestone === 'string' ? issue.milestone : issue.milestone?.title,
+  );
   const fields = issue.fields && typeof issue.fields === 'object' ? issue.fields : {};
 
   if (!issueTypes.has(type))
@@ -32,6 +39,8 @@ export function validateIssueMetadata(issue, { ready = false, allowedAreaLabels 
   else if (allowedAreaLabels && !allowedAreaLabels.has(areaLabels[0]))
     errors.push(`area label has unsupported value: ${areaLabels[0]}`);
   if (!milestone) errors.push('Milestone is required');
+  else if (allowedMilestones && !allowedMilestones.has(milestone))
+    errors.push(`Milestone has unsupported value: ${milestone}`);
 
   const priorityError = singleSelectError(fields, 'Priority', priorityValues, true);
   if (priorityError) errors.push(priorityError);
@@ -41,7 +50,9 @@ export function validateIssueMetadata(issue, { ready = false, allowedAreaLabels 
 
   if (ready) {
     const assignees = Array.isArray(issue.assignees)
-      ? issue.assignees.filter((assignee) => text(assignee)).length
+      ? issue.assignees.filter((assignee) =>
+          text(typeof assignee === 'string' ? assignee : assignee?.login),
+        ).length
       : 0;
     if (assignees === 0) errors.push('Assignees are required before Ready');
     if (!text(fields['Start date'])) errors.push('Start date is required before Ready');
@@ -159,6 +170,10 @@ const ISSUE_FIELD_QUERY = `query($organization: String!, $issueId: ID!) {
             name
             field { ... on IssueFieldSingleSelect { name } }
           }
+          ... on IssueFieldDateValue {
+            value
+            field { ... on IssueFieldDate { name } }
+          }
         }
       }
     }
@@ -170,6 +185,16 @@ const SET_ISSUE_FIELDS_MUTATION = `mutation($issueId: ID!, $issueFields: [IssueF
     clientMutationId
   }
 }`;
+
+export function loadIssueFieldData(issueId) {
+  const metadata = graphql(ISSUE_FIELD_QUERY, { organization: ORGANIZATION, issueId });
+  const values = Object.fromEntries(
+    (metadata.node.issueFieldValues?.nodes ?? [])
+      .filter((value) => value.field?.name)
+      .map((value) => [value.field.name, value.name ?? value.value]),
+  );
+  return { fields: metadata.organization.issueFields.nodes, values };
+}
 
 async function syncIssue(number) {
   const repositoryPath = `repos/${REPOSITORY}`;
@@ -188,23 +213,10 @@ async function syncIssue(number) {
     return;
   }
 
-  const metadata = graphql(ISSUE_FIELD_QUERY, {
-    organization: ORGANIZATION,
-    issueId: issue.node_id,
-  });
-  const fields = metadata.organization.issueFields.nodes;
-  const fieldValues = Object.fromEntries(
-    (metadata.node.issueFieldValues?.nodes ?? []).map((value) => [value.field.name, value.name]),
-  );
-  const issueWithFields = {
-    ...issue,
-    fields: {
-      Priority: fieldValues.Priority,
-      Effort: fieldValues.Effort,
-    },
-  };
+  const metadata = loadIssueFieldData(issue.node_id);
+  const issueWithFields = { ...issue, fields: metadata.values };
   const setFields = async (nodeId, values) => {
-    const issueFields = issueFieldInputs(fields, {
+    const issueFields = issueFieldInputs(metadata.fields, {
       priority: values.priority,
       effort: values.effort,
     });
