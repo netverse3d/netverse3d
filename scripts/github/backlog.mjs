@@ -2,6 +2,29 @@ const PRIORITY = { must: 'High', should: 'Medium', could: 'Low' };
 const EFFORT = { XS: 'Low', S: 'Low', M: 'Medium', L: 'High', XL: 'High' };
 const READY_REQUIREMENT_STATUSES = ['accepted', 'implemented'];
 const REFINE_BEFORE_READY = 'Người nhận bổ sung mục này trước khi chuyển issue sang Ready.';
+export const ISSUE_FIELD_CATALOG = [
+  {
+    id: 'IFSS_kgDOAvSbTg',
+    name: 'Priority',
+    options: [
+      { id: 'IFSSO_kgDOBSyqEA', name: 'Urgent' },
+      { id: 'IFSSO_kgDOBSyqEg', name: 'High' },
+      { id: 'IFSSO_kgDOBSyqEw', name: 'Medium' },
+      { id: 'IFSSO_kgDOBSyqFA', name: 'Low' },
+    ],
+  },
+  { id: 'IFD_kgDOAvSbUg', name: 'Start date' },
+  { id: 'IFD_kgDOAvSbUw', name: 'Target date' },
+  {
+    id: 'IFSS_kgDOAvSbVA',
+    name: 'Effort',
+    options: [
+      { id: 'IFSSO_kgDOBSyqGA', name: 'High' },
+      { id: 'IFSSO_kgDOBSyqGg', name: 'Medium' },
+      { id: 'IFSSO_kgDOBSyqHA', name: 'Low' },
+    ],
+  },
+];
 
 function areaLabels(requirement) {
   return [`area:${requirement.area}`];

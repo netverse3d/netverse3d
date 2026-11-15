@@ -146,5 +146,6 @@ test('tài liệu hướng dẫn đồng bộ metadata từ form và xử lý ne
   assert.match(runbook, /pnpm issues:audit --apply/);
   assert.match(runbook, /đọc.*trước.*ghi|preview/i);
   assert.match(runbook, /GITHUB_TOKEN/);
+  assert.match(runbook, /scripts\/github\/backlog\.mjs/);
   assert.match(runbook, /Closes #/);
 });

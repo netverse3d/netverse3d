@@ -9,6 +9,8 @@
 
 Workflow dùng `GITHUB_TOKEN` với `contents: read` và `issues: write`. Workflow kiểm tra PR chỉ cần `contents: read` và `issues: read`. Không cấp thêm quyền cho hai workflow này.
 
+Token của Actions không đọc được danh sách Issue Fields ở cấp tổ chức. ID field và option chuẩn được lưu trong `scripts/github/backlog.mjs`; khi đổi field hoặc lựa chọn trên GitHub, cập nhật danh mục này và chạy bộ test script.
+
 ## Xử lý `needs-triage`
 
 Nhãn này nghĩa là form thiếu metadata hoặc có lựa chọn không được hỗ trợ. Xem lỗi của lần chạy `issue-quality` trong tab Actions, sửa câu trả lời tương ứng trong thân issue rồi lưu issue để sự kiện `edited` chạy lại. Khi dữ liệu hợp lệ, workflow đồng bộ metadata và gỡ `needs-triage`. Không tự đoán hoặc tự điền Priority, Effort thay người tạo issue.

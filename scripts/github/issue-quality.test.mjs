@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+import { ISSUE_FIELD_CATALOG, issueFieldInputs } from './backlog.mjs';
 import {
+  ISSUE_FIELD_QUERY,
   parseIssueFormMetadata,
   parseIssueFieldValues,
   applyIssueSyncPlan,
@@ -352,6 +354,38 @@ test('issue Task phải có Effort', () => {
   assert.deepEqual(validateIssueMetadata(issue({ fields: { Priority: 'High' } })), [
     'Effort is required',
   ]);
+});
+
+test('danh mục Issue Fields dùng ID và option ID chính thức, không cần đọc organization', () => {
+  assert.deepEqual(ISSUE_FIELD_CATALOG, [
+    {
+      id: 'IFSS_kgDOAvSbTg',
+      name: 'Priority',
+      options: [
+        { id: 'IFSSO_kgDOBSyqEA', name: 'Urgent' },
+        { id: 'IFSSO_kgDOBSyqEg', name: 'High' },
+        { id: 'IFSSO_kgDOBSyqEw', name: 'Medium' },
+        { id: 'IFSSO_kgDOBSyqFA', name: 'Low' },
+      ],
+    },
+    { id: 'IFD_kgDOAvSbUg', name: 'Start date' },
+    { id: 'IFD_kgDOAvSbUw', name: 'Target date' },
+    {
+      id: 'IFSS_kgDOAvSbVA',
+      name: 'Effort',
+      options: [
+        { id: 'IFSSO_kgDOBSyqGA', name: 'High' },
+        { id: 'IFSSO_kgDOBSyqGg', name: 'Medium' },
+        { id: 'IFSSO_kgDOBSyqHA', name: 'Low' },
+      ],
+    },
+  ]);
+  assert.deepEqual(issueFieldInputs(ISSUE_FIELD_CATALOG, { priority: 'High', effort: 'Medium' }), [
+    { fieldId: 'IFSS_kgDOAvSbTg', singleSelectOptionId: 'IFSSO_kgDOBSyqEg' },
+    { fieldId: 'IFSS_kgDOAvSbVA', singleSelectOptionId: 'IFSSO_kgDOBSyqGg' },
+  ]);
+  assert.match(ISSUE_FIELD_QUERY, /node\(id: \$issueId\)/);
+  assert.doesNotMatch(ISSUE_FIELD_QUERY, /organization\s*\(/);
 });
 
 test('Ready cần assignee, Start date và Target date', () => {

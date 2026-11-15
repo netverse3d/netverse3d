@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { parse } from 'yaml';
-import { issueFieldInputs } from './backlog.mjs';
-import { api, graphql, listIssues, ORGANIZATION, REPOSITORY } from './gh.mjs';
+import { ISSUE_FIELD_CATALOG, issueFieldInputs } from './backlog.mjs';
+import { api, graphql, listIssues, REPOSITORY } from './gh.mjs';
 
 const issueTypes = new Set(['Feature', 'Task', 'Bug']);
 const priorityValues = new Set(['Urgent', 'High', 'Medium', 'Low']);
@@ -153,15 +153,7 @@ export async function applyIssueSyncPlan(issue, plan, { apiRequest, setFields })
   return plan;
 }
 
-const ISSUE_FIELD_QUERY = `query($organization: String!, $issueId: ID!) {
-  organization(login: $organization) {
-    issueFields(first: 50) {
-      nodes {
-        ... on IssueFieldSingleSelect { id name options { id name } }
-        ... on IssueFieldDate { id name }
-      }
-    }
-  }
+export const ISSUE_FIELD_QUERY = `query($issueId: ID!) {
   node(id: $issueId) {
     ... on Issue {
       issueFieldValues(first: 50) {
@@ -187,13 +179,13 @@ const SET_ISSUE_FIELDS_MUTATION = `mutation($issueId: ID!, $issueFields: [IssueF
 }`;
 
 export function loadIssueFieldData(issueId) {
-  const metadata = graphql(ISSUE_FIELD_QUERY, { organization: ORGANIZATION, issueId });
+  const metadata = graphql(ISSUE_FIELD_QUERY, { issueId });
   const values = Object.fromEntries(
     (metadata.node.issueFieldValues?.nodes ?? [])
       .filter((value) => value.field?.name)
       .map((value) => [value.field.name, value.name ?? value.value]),
   );
-  return { fields: metadata.organization.issueFields.nodes, values };
+  return { fields: ISSUE_FIELD_CATALOG, values };
 }
 
 export function parseIssueFieldValues(values) {
