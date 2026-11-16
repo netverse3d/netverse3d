@@ -362,8 +362,32 @@
       "slots": {
         "cart": {
           "variants": ["a", "b"],
-          "maxTriangles": 2500,
+          "maxTriangles": 3200,
           "size": [1.7, 2.2, 0.9],
+          "anchors": ["collision_main"]
+        },
+        "stool": {
+          "variants": ["a", "b"],
+          "maxTriangles": 300,
+          "size": [0.32, 0.32, 0.32],
+          "anchors": ["collision_main"]
+        },
+        "lowtable": {
+          "variants": ["a"],
+          "maxTriangles": 400,
+          "size": [0.6, 0.5, 0.6],
+          "anchors": ["collision_main"]
+        },
+        "parasol": {
+          "variants": ["a"],
+          "maxTriangles": 700,
+          "size": [2.2, 2.4, 2.2],
+          "anchors": ["collision_main"]
+        },
+        "cooler": {
+          "variants": ["a"],
+          "maxTriangles": 300,
+          "size": [0.6, 0.45, 0.4],
           "anchors": ["collision_main"]
         }
       }
