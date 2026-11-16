@@ -141,7 +141,8 @@ function images() {
 }
 
 function up() {
-  checkTools(loadVersions());
+  const versions = loadVersions();
+  checkTools(versions);
   buildImages();
   const listed = run('k3d', ['cluster', 'list', '-o', 'json'], { capture: true }).stdout;
   if (!clusterExists(listed, CLUSTER_NAME)) {
@@ -149,6 +150,19 @@ function up() {
   }
   importImages();
   requireDirectory(PLATFORM_DIR);
+  kubectl([
+    'apply',
+    '--server-side',
+    '--force-conflicts',
+    '-f',
+    `https://github.com/kubernetes-sigs/gateway-api/releases/download/${versions.gatewayApi}/standard-install.yaml`,
+  ]);
+  kubectl([
+    'wait',
+    '--for=condition=Established',
+    'crd/gatewayclasses.gateway.networking.k8s.io',
+    '--timeout=120s',
+  ]);
   kubectl(['apply', '--server-side', '--force-conflicts', '-k', PLATFORM_DIR]);
   kubectl(['wait', '--for=condition=Established', 'crd', '--all', '--timeout=120s']);
   for (const [namespace, deployment, timeout] of OPERATORS) {
