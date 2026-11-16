@@ -1,0 +1,66 @@
+version: 1
+entrypoints:
+  web: { port: 8000 }
+  storage: { port: 8333 }
+policies:
+  rate-api: { rateLimit: { average: 100, period: 1s, burst: 200 } }
+  rate-auth: { rateLimit: { average: 30, period: 1m, burst: 10 } }
+  body-1m: { maxRequestBodyBytes: 1048576 }
+  web-headers:
+    { frameDeny: true, contentTypeNosniff: true, referrerPolicy: strict-origin-when-cross-origin }
+routes:
+  - id: identity-auth
+    entrypoint: web
+    prefix: /api/identity/v1/auth
+    strip: /api/identity
+    backend: { service: identity, port: 3000 }
+    policies: [rate-auth, body-1m]
+    priority: 200
+  - id: identity
+    entrypoint: web
+    prefix: /api/identity/v1
+    strip: /api/identity
+    backend: { service: identity, port: 3000 }
+    policies: [rate-api, body-1m]
+  - id: media
+    entrypoint: web
+    prefix: /api/media/v1
+    strip: /api/media
+    backend: { service: media, port: 3000 }
+    policies: [rate-api, body-1m]
+  - id: notification
+    entrypoint: web
+    prefix: /api/notification/v1
+    strip: /api/notification
+    backend: { service: notification, port: 3000 }
+    policies: [rate-api, body-1m]
+  - id: payment-webhooks
+    entrypoint: web
+    prefix: /api/payment/v1/webhooks
+    strip: /api/payment
+    backend: { service: payment, port: 3000 }
+    policies: [rate-api, body-1m]
+  - id: web
+    entrypoint: web
+    prefix: /
+    backend: { service: web-3d, port: 80 }
+    policies: [rate-api, web-headers]
+    priority: 1
+  - id: storage
+    entrypoint: storage
+    prefix: /
+    backend: { service: object-store, port: 8333, namespace: netverse-data }
+    policies: []
+  - id: ws-game
+    entrypoint: web
+    prefix: /ws/game
+    backend: { service: game, port: 8080 }
+    policies: [rate-api]
+    enabled: false
+  - id: ws-probe
+    entrypoint: web
+    prefix: /ws/_probe
+    strip: /ws/_probe
+    backend: { service: gateway-probe, port: 80 }
+    policies: []
+    environments: [compose, k8s-conformance]
