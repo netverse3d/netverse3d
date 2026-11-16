@@ -26,6 +26,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - NODE_ENV=production
+      - SWAGGER_ENABLED=false
       - S3_PUBLIC_ENDPOINT=storage.staging.invalid
       - S3_PUBLIC_PORT=443
   - name: identity-config
@@ -33,16 +34,19 @@ configMapGenerator:
     behavior: merge
     literals:
       - NODE_ENV=production
+      - SWAGGER_ENABLED=false
   - name: notification-config
     namespace: netverse
     behavior: merge
     literals:
       - NODE_ENV=production
+      - SWAGGER_ENABLED=false
   - name: payment-config
     namespace: netverse
     behavior: merge
     literals:
       - NODE_ENV=production
+      - SWAGGER_ENABLED=false
 patches:
   - target:
       group: gateway.networking.k8s.io

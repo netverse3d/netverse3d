@@ -77,7 +77,9 @@ export class AppConfig extends KitConfig {
     };
     this.log = { level: env.LOG_LEVEL, pretty: env.LOG_PRETTY ?? env.NODE_ENV === 'development' };
     this.database = { url: env.DATABASE_URL };
-    this.swagger = { enabled: env.SWAGGER_ENABLED ?? env.NODE_ENV !== 'production' };
+    this.swagger = {
+      enabled: env.NODE_ENV !== 'production' && (env.SWAGGER_ENABLED ?? true),
+    };
     this.rateLimit = {
       ttlMs: env.RATE_LIMIT_TTL_MS,
       max: env.RATE_LIMIT_MAX,
