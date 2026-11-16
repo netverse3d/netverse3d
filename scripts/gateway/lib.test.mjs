@@ -82,6 +82,14 @@ const wsProbe = {
   policies: [],
   environments: ['compose', 'k8s-conformance'],
 };
+const apiDocs = {
+  id: 'api-docs',
+  entrypoint: 'web',
+  prefix: '/docs',
+  backend: { service: 'api-docs', port: 8080 },
+  policies: ['rate-api'],
+  environments: ['compose-dev', 'k8s-local'],
+};
 
 function k8sDocs(doc, environment) {
   return parseAllDocuments(renderKubernetes(doc, { environment })).map((item) => item.toJS());
@@ -161,6 +169,37 @@ test('route tắt hoặc khác môi trường không được sinh', () => {
   assert.deepEqual(k8sNames, ['media']);
   const conformanceNames = k8sDocs(doc, 'k8s-conformance').map((item) => item.metadata.name);
   assert.deepEqual(conformanceNames, ['ws-probe']);
+});
+
+test('tài liệu chỉ có route ở Compose dev và k3d local', () => {
+  const doc = baseDoc([apiDocs, identity]);
+  assert.deepEqual(validateRoutes(doc), []);
+  assert.equal(parse(renderCompose(doc)).http.routers['api-docs'], undefined);
+  assert.equal(
+    parse(renderCompose(doc, { environment: 'compose-dev' })).http.routers['api-docs'].service,
+    'api-docs',
+  );
+  assert.ok(parse(renderCompose(doc, { environment: 'compose-dev' })).http.routers.identity);
+  assert.deepEqual(
+    k8sDocs(doc, 'k8s').map((item) => item.metadata.name),
+    ['identity'],
+  );
+  assert.deepEqual(
+    k8sDocs(doc, 'k8s-local').map((item) => item.metadata.name),
+    ['api-docs'],
+  );
+});
+
+test('từ chối tài liệu trên môi trường production và route nội bộ', () => {
+  for (const route of [
+    { ...apiDocs, environments: ['compose'] },
+    { ...apiDocs, environments: ['k8s'] },
+    { ...apiDocs, prefix: '/api/identity/docs-json' },
+    { ...apiDocs, strip: '/docs' },
+    { ...apiDocs, backend: { service: 'identity', port: 3000 } },
+  ]) {
+    assert.ok(validateRoutes(baseDoc([route])).length > 0);
+  }
 });
 
 test('HTTPRoute cắt tiền tố bằng ReplacePrefixMatch giữ /v1', () => {

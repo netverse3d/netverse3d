@@ -40,6 +40,12 @@ routes:
     strip: /api/payment
     backend: { service: payment, port: 3000 }
     policies: [rate-api, body-1m]
+  - id: api-docs
+    entrypoint: web
+    prefix: /docs
+    backend: { service: api-docs, port: 8080 }
+    policies: [rate-api, web-headers]
+    environments: [compose-dev, k8s-local]
   - id: web
     entrypoint: web
     prefix: /

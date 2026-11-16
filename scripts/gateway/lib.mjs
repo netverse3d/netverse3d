@@ -6,9 +6,11 @@ export const ROUTES_FILE = 'infra/gateway/routes.yaml';
 export const COMPOSE_FILE = 'infra/compose/compose.yaml';
 export const OUTPUTS = {
   compose: 'infra/gateway/compose/dynamic.yaml',
+  composeDev: 'infra/gateway/compose/dynamic-dev.yaml',
   k8sRoutes: 'infra/k8s/base/gateway/routes.yaml',
   k8sMiddlewares: 'infra/k8s/base/gateway/middlewares.yaml',
   k8sConformanceRoutes: 'infra/k8s/components/conformance/routes.yaml',
+  k8sLocalRoutes: 'infra/k8s/components/api-docs/routes.yaml',
 };
 
 const KNOWN_BACKENDS = new Set([
@@ -19,6 +21,7 @@ const KNOWN_BACKENDS = new Set([
   'web-3d',
   'object-store',
   'gateway-probe',
+  'api-docs',
   'game',
 ]);
 const DEFAULT_ENVIRONMENTS = ['compose', 'k8s'];
@@ -38,7 +41,10 @@ function environmentsOf(route) {
 
 function activeRoutes(doc, environment) {
   return doc.routes.filter(
-    (route) => route.enabled !== false && environmentsOf(route).includes(environment),
+    (route) =>
+      route.enabled !== false &&
+      (environmentsOf(route).includes(environment) ||
+        (environment === 'compose-dev' && environmentsOf(route).includes('compose'))),
   );
 }
 
@@ -60,6 +66,11 @@ function isPathPrefixOf(base, path) {
 
 function apiRouteErrors(route) {
   const { id, prefix, strip } = route;
+  if (id === 'api-docs') {
+    return prefix === '/docs' && strip === undefined
+      ? []
+      : ['api-docs: route must use /docs without strip'];
+  }
   if (route.entrypoint !== 'web' || prefix === '/' || prefix.startsWith('/ws/')) {
     if (strip !== undefined && !isPathPrefixOf(strip, prefix)) {
       return [`${id}: strip ${strip} is not a path prefix of ${prefix}`];
@@ -85,6 +96,16 @@ export function validateRoutes(doc) {
       errors.push(`${route.id}: unknown entrypoint ${route.entrypoint}`);
     }
     errors.push(...prefixErrors(route), ...apiRouteErrors(route));
+    if (route.id === 'api-docs') {
+      if (
+        route.entrypoint !== 'web' ||
+        route.backend?.service !== 'api-docs' ||
+        route.backend?.port !== 8080 ||
+        JSON.stringify(route.environments) !== JSON.stringify(['compose-dev', 'k8s-local'])
+      ) {
+        errors.push('api-docs: route must be restricted to development backends');
+      }
+    }
     const key = `${route.entrypoint} ${route.prefix}`;
     if (seenPrefixes.has(key)) {
       errors.push(
@@ -138,8 +159,8 @@ function usedPolicies(doc, routes) {
   return Object.keys(doc.policies ?? {}).filter((name) => names.has(name));
 }
 
-export function renderCompose(doc) {
-  const routes = activeRoutes(doc, 'compose');
+export function renderCompose(doc, { environment = 'compose' } = {}) {
+  const routes = activeRoutes(doc, environment);
   const routers = {};
   const services = {};
   const middlewares = {};
@@ -249,9 +270,11 @@ export function renderKubernetesMiddlewares(doc) {
 export function renderAll(doc) {
   return {
     [OUTPUTS.compose]: renderCompose(doc),
+    [OUTPUTS.composeDev]: renderCompose(doc, { environment: 'compose-dev' }),
     [OUTPUTS.k8sRoutes]: renderKubernetes(doc, { environment: 'k8s' }),
     [OUTPUTS.k8sMiddlewares]: renderKubernetesMiddlewares(doc),
     [OUTPUTS.k8sConformanceRoutes]: renderKubernetes(doc, { environment: 'k8s-conformance' }),
+    [OUTPUTS.k8sLocalRoutes]: renderKubernetes(doc, { environment: 'k8s-local' }),
   };
 }
 
