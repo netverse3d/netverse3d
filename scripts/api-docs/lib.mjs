@@ -51,7 +51,7 @@ export async function renderPublicDocuments(routes, contracts) {
     urls.push({ url: `/docs/${service}.json`, name });
   }
   output[join(OUTPUT_DIRECTORY, 'config.json')] = await prettier.format(
-    JSON.stringify({ urls }),
+    JSON.stringify({ urls, validatorUrl: 'none' }),
     formatOptions,
   );
   return output;

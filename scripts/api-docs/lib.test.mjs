@@ -40,6 +40,7 @@ test('một cấu hình giao diện liệt kê đúng ba service', () => {
     { url: '/docs/media.json', name: 'Media Service' },
     { url: '/docs/notification.json', name: 'Notification Service' },
   ]);
+  assert.equal(config.validatorUrl, 'none');
 });
 
 test('không sinh tài liệu nếu route công khai của service bị đổi', () => {
