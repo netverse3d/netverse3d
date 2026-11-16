@@ -1,0 +1,97 @@
+name: k8s
+
+on:
+  pull_request:
+    paths:
+      - infra/k8s/**
+      - infra/gateway/**
+      - scripts/k8s/**
+      - scripts/gateway/**
+      - tests/e2e/**
+      - services/*/Dockerfile
+      - apps/web-3d/Dockerfile
+      - .github/workflows/k8s.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: k8s-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  KUBECTL_VERSION: v1.35.10
+  KUBECTL_SHA256: c49a28f1f4efc4d475ed05f47f2ce8e563bf7bef69ed77fe1b924ea6d83b6327
+  KUBECONFORM_VERSION: v0.8.0
+  KUBECONFORM_SHA256: 9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883
+  K3D_VERSION: v5.9.0
+  K3D_SHA256: 06d8f25bc3a971c4eb29e0ff08429b180402db0f4dec838c9eac427e296800a0
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install kubectl and kubeconform
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSLo "$HOME/bin/kubectl" "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          echo "$KUBECTL_SHA256  $HOME/bin/kubectl" | sha256sum -c
+          curl -fsSLo /tmp/kubeconform.tar.gz "https://github.com/yannh/kubeconform/releases/download/$KUBECONFORM_VERSION/kubeconform-linux-amd64.tar.gz"
+          echo "$KUBECONFORM_SHA256  /tmp/kubeconform.tar.gz" | sha256sum -c
+          tar -xzf /tmp/kubeconform.tar.gz -C "$HOME/bin" kubeconform
+          chmod +x "$HOME/bin/kubectl" "$HOME/bin/kubeconform"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+      - run: pnpm k8s:check
+
+  cluster:
+    needs: render
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install kubectl and k3d
+        run: |
+          mkdir -p "$HOME/bin"
+          curl -fsSLo "$HOME/bin/kubectl" "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          echo "$KUBECTL_SHA256  $HOME/bin/kubectl" | sha256sum -c
+          curl -fsSLo "$HOME/bin/k3d" "https://github.com/k3d-io/k3d/releases/download/$K3D_VERSION/k3d-linux-amd64"
+          echo "$K3D_SHA256  $HOME/bin/k3d" | sha256sum -c
+          chmod +x "$HOME/bin/kubectl" "$HOME/bin/k3d"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+      - run: pnpm k8s:up
+        env:
+          NETVERSE_DOCKER_DATA_DIR: /var/lib/docker
+      - run: pnpm test:gateway
+        env:
+          GATEWAY_URL: http://127.0.0.1:58180
+          GATEWAY_STORAGE_URL: http://127.0.0.1:58335
+          GATEWAY_WS_PROBE: '1'
+      - run: pnpm smoke:k8s
+      - run: pnpm test:k8s
+        env:
+          K8S_CONTEXT: k3d-netverse
+      - name: Show cluster state
+        if: failure()
+        run: |
+          kubectl --context k3d-netverse get pods -A -o wide
+          kubectl --context k3d-netverse get events -A --sort-by=.lastTimestamp | tail -100
+          for app in identity media notification payment web-3d; do
+            kubectl --context k3d-netverse -n netverse logs "deploy/$app" --all-containers --tail 200 || true
+          done
+          kubectl --context k3d-netverse -n netverse-system logs deploy/traefik --tail 200 || true
+      - if: always()
+        run: pnpm k8s:down

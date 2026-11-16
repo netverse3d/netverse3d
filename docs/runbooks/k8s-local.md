@@ -4,12 +4,12 @@ Dựng cụm k3d một node chạy cổng Traefik, PostgreSQL bằng CloudNative
 
 ## 1. Cần gì
 
-| Công cụ     | Phiên bản  | Kiểm                                   |
-| ----------- | ---------- | -------------------------------------- |
+| Công cụ     | Phiên bản  | Kiểm                                |
+| ----------- | ---------- | ----------------------------------- |
 | Docker      | RAM ≥ 6 GB | `docker info`, xem mục Total Memory |
-| k3d         | 5.9.0      | `k3d version`                          |
-| kubectl     | 1.35       | `kubectl version --client`             |
-| kubeconform | 0.8.0      | `kubeconform -v`                       |
+| k3d         | 5.9.0      | `k3d version`                       |
+| kubectl     | 1.35       | `kubectl version --client`          |
+| kubeconform | 0.8.0      | `kubeconform -v`                    |
 
 Ổ chứa dữ liệu Docker cần còn ít nhất 25 GB. `pnpm k8s:up` tự đo và dừng nếu thiếu. Trên Windows với Docker Desktop, tệp đĩa ảo chỉ nở chứ không tự co; xem mục 6.
 
