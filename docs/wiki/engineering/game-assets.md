@@ -160,6 +160,50 @@ Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standar
 - **Đăng ký thành phần**: Khai báo trong `assets.config.json` dưới mục `"environments" -> "night-sky"` để quản lý tập trung theo chuẩn ADR-0019.
 - **Hàm tiện ích `setupOutdoorEnvironment(THREE, scene, renderer, options)`**: Tự động cấu hình `scene.background`, `scene.environment`, `scene.environmentIntensity` (0,45), `scene.fog`, độ phơi sáng `renderer.toneMappingExposure` (1,0) cùng đèn bán cầu `HemisphereLight` (`#3c2e74` / `#120c24`) và đèn mặt trăng `DirectionalLight` (`#9fb4ff`). Trang `library/street.html` áp dụng trực tiếp hàm này, đồng thời hỗ trợ nút bật/tắt sương (`Sương`) trên thanh hiển thị.
 
+### Thang phát sáng và mức bloom chung
+
+Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md) và [REQ-040](../../requirements/registry.yaml), các nguồn sáng trong thế giới (tiệm cyber và đường phố đêm) tuân thủ bảng thang phát sáng chuẩn `EMISSIVE_SCALE` khai báo tại `runtime/lighting.mjs` và cấu hình `assets.config.json` để giữ bối cảnh đêm luôn đạt tiêu chí mỹ thuật (A2 nền tối thật, A5 quầng mềm, A6 neon tiết chế, chữ đọc được, C3 bloom chuẩn):
+
+| Loại nguồn       | Mã định danh       | Khoảng cường độ | Mặc định | Đặc tả mỹ thuật                                                                                                               |
+| :--------------- | :----------------- | :-------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| **Ống neon**     | `neon`             | 1,8 – 2,8       | 2,2      | Ống neon viền biển hiệu, đèn lồng, dây đèn giăng. Đủ rực để vượt ngưỡng bloom nhưng không cháy trắng làm mất nét chữ `decal`. |
+| **Màn hình**     | `screen`           | 0,8 – 1,4       | 1,0      | Màn hình máy trạm, TV, bảng hiển thị. Sáng dịu trong đêm, đọc rõ nội dung và giao diện.                                       |
+| **Đèn đường**    | `streetLamp`       | 2,5 – 3,5       | 3,0      | Tấm sáng đèn đường có cần vươn, chùm sáng định hướng chiếu rọi mặt vỉa hè và lòng đường.                                      |
+| **Đèn tín hiệu** | `trafficSignal`    | 2,0 – 3,0       | 2,5      | Đèn tín hiệu giao thông, đèn báo pha; nhìn rõ từ xa trong sương.                                                              |
+| **Cửa sổ nhà**   | `window`           | 0,6 – 1,3       | 0,9      | Kính cửa sổ tầng lầu nhà ống (hàng `screen`). Sáng ấm không đều giữa các ô (tiêu chí A7).                                     |
+| **Đèn trước xe** | `vehicleHeadlight` | 3,0 – 4,5       | 3,6      | Đèn pha ô tô/xe máy; dải sáng mảnh chiếu xa có quầng trong sương.                                                             |
+| **Đèn sau xe**   | `vehicleTaillight` | 1,5 – 2,5       | 2,0      | Đèn hậu xe màu đỏ ngả cam; sáng tăng cường khi phanh.                                                                         |
+
+- **Chuẩn bloom chung (`STANDARD_BLOOM`)**: Áp dụng chung cho cả game (`apps/web-3d`) và các trang thư viện 3D (`library/street.html`, `library/shop.html`, `library/lab.html`):
+  - Ngưỡng bloom (`threshold`): **0,85**. Chỉ các phần tử có cường độ phát sáng cao hơn 0,85 mới sinh quầng sáng, bảo toàn nền trời đêm tối thật và ngăn bề mặt khuếch tán thông thường bị mờ đục.
+  - Cường độ bloom (`strength`): **0,35** (khoảng cho phép 0,25 – 0,45 tuỳ chế độ đèn tiệm).
+  - Bán kính (`radius`): **0,4**. Tạo quầng hào quang mềm mại bao quanh nguồn sáng trong sương.
+- **Ngân sách ánh sáng và quy ước hắt sáng (`LIGHT_BUDGET`)**:
+  - Ánh sáng hắt của neon và đèn tĩnh lên tường, mặt đất được nướng sẵn vào lightmap (AO/occlusion map) hoặc tận dụng vệt phản chiếu mặt đường ướt (roughness map kết hợp bản đồ môi trường PMREM).
+  - Giới hạn tối đa **6 đèn động thời gian thực** (`maxDynamicLightsPerBlock: 6`) cho mỗi khối phố (block) nhằm đảm bảo hiệu năng 60 FPS trên thiết bị di động và GPU tích hợp theo REQ-004.
+
+### Thang phát sáng và mức bloom chung
+
+Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md) và [REQ-040](../../requirements/registry.yaml), các nguồn sáng trong thế giới (tiệm cyber và đường phố đêm) tuân thủ bảng thang phát sáng chuẩn `EMISSIVE_SCALE` khai báo tại `runtime/lighting.mjs` và cấu hình `assets.config.json` để giữ bối cảnh đêm luôn đạt tiêu chí mỹ thuật (A2 nền tối thật, A5 quầng mềm, A6 neon tiết chế, chữ đọc được, C3 bloom chuẩn):
+
+| Loại nguồn       | Mã định danh       | Khoảng cường độ | Mặc định | Đặc tả mỹ thuật                                                                                                               |
+| :--------------- | :----------------- | :-------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| **Ống neon**     | `neon`             | 1,8 – 2,8       | 2,2      | Ống neon viền biển hiệu, đèn lồng, dây đèn giăng. Đủ rực để vượt ngưỡng bloom nhưng không cháy trắng làm mất nét chữ `decal`. |
+| **Màn hình**     | `screen`           | 0,8 – 1,4       | 1,0      | Màn hình máy trạm, TV, bảng hiển thị. Sáng dịu trong đêm, đọc rõ nội dung và giao diện.                                       |
+| **Đèn đường**    | `streetLamp`       | 2,5 – 3,5       | 3,0      | Tấm sáng đèn đường có cần vươn, chùm sáng định hướng chiếu rọi mặt vỉa hè và lòng đường.                                      |
+| **Đèn tín hiệu** | `trafficSignal`    | 2,0 – 3,0       | 2,5      | Đèn tín hiệu giao thông, đèn báo pha; nhìn rõ từ xa trong sương.                                                              |
+| **Cửa sổ nhà**   | `window`           | 0,6 – 1,3       | 0,9      | Kính cửa sổ tầng lầu nhà ống (hàng `screen`). Sáng ấm không đều giữa các ô (tiêu chí A7).                                     |
+| **Đèn trước xe** | `vehicleHeadlight` | 3,0 – 4,5       | 3,6      | Đèn pha ô tô/xe máy; dải sáng mảnh chiếu xa có quầng trong sương.                                                             |
+| **Đèn sau xe**   | `vehicleTaillight` | 1,5 – 2,5       | 2,0      | Đèn hậu xe màu đỏ ngả cam; sáng tăng cường khi phanh.                                                                         |
+
+- **Chuẩn bloom chung (`STANDARD_BLOOM`)**: Áp dụng chung cho cả game (`apps/web-3d`) và các trang thư viện 3D (`library/street.html`, `library/shop.html`, `library/lab.html`):
+  - Ngưỡng bloom (`threshold`): **0,85**. Chỉ các phần tử có cường độ phát sáng cao hơn 0,85 mới sinh quầng sáng, bảo toàn nền trời đêm tối thật và ngăn bề mặt khuếch tán thông thường bị mờ đục.
+  - Cường độ bloom (`strength`): **0,35** (khoảng cho phép 0,25 – 0,45 tuỳ chế độ đèn tiệm).
+  - Bán kính (`radius`): **0,4**. Tạo quầng hào quang mềm mại bao quanh nguồn sáng trong sương.
+- **Ngân sách ánh sáng và quy ước hắt sáng (`LIGHT_BUDGET`)**:
+  - Ánh sáng hắt của neon và đèn tĩnh lên tường, mặt đất được nướng sẵn vào lightmap (AO/occlusion map) hoặc tận dụng vệt phản chiếu mặt đường ướt (roughness map kết hợp bản đồ môi trường PMREM).
+  - Giới hạn tối đa **6 đèn động thời gian thực** (`maxDynamicLightsPerBlock: 6`) cho mỗi khối phố (block) nhằm đảm bảo hiệu năng 60 FPS trên thiết bị di động và GPU tích hợp theo REQ-004.
+
 ### Module phòng
 
 Phòng ghép từ module trên lưới ô 2 m, tường cao 3,6 m; cửa cao 2,28 m, phần tường phía trên cửa để treo biển; dải hắt sáng của trần mỏng 12 cm với đáy ở 3,36 m. Gốc module ở tâm ô, trên sàn. Tường nằm dọc cạnh −Y của ô và quay mặt vào trong. Ô khai `grid` phải có kích thước là bội số của ô lưới trên các trục đã khai (trục của glTF: 0 là ngang, 2 là sâu), nếu không lệnh xuất báo lỗi. Tường, góc, cửa, cửa sổ mang hộp `collision_*`. Module góc là một khối liền: hai cánh tường cắt ngắn và đâm vào một cột góc 32 cm, nên không có mặt nào chồng lên nhau ở góc; dải trang trí của mọi module chạy hết chiều rộng ô để hai module kề nhau khít mép. Trụ ốp ở hai mép module chỉ chạy từ mép trên dải chân tường tới mép dưới dải đèn, vì trụ cao hết tường có mặt trên trùng phẳng với dải băng trần và nhấp nháy khi nhìn từ trên xuống.

@@ -1,4 +1,19 @@
+import {
+  EMISSIVE_SCALE,
+  LIGHT_BUDGET,
+  STANDARD_BLOOM,
+  clampEmissiveIntensity,
+  isWithinEmissiveScale,
+} from './lighting.mjs';
 import { YAW, snap } from './shop-look.mjs';
+
+export {
+  EMISSIVE_SCALE,
+  LIGHT_BUDGET,
+  STANDARD_BLOOM,
+  clampEmissiveIntensity,
+  isWithinEmissiveScale,
+};
 
 export const STREET_CELL = 4;
 export const STOREY_HEIGHT = 3.8;
@@ -31,9 +46,9 @@ export const OUTDOOR_LIGHTING = {
   },
   exposure: 1.0,
   bloom: {
-    strength: 0.35,
-    radius: 0.4,
-    threshold: 0.85,
+    strength: STANDARD_BLOOM.strength,
+    radius: STANDARD_BLOOM.radius,
+    threshold: STANDARD_BLOOM.threshold,
   },
   environmentIntensity: 0.45,
 };

@@ -251,6 +251,7 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import {
+        EMISSIVE_SCALE,
         NIGHT_SKY,
         OUTDOOR_LIGHTING,
         roadLane,
@@ -367,7 +368,7 @@
       function repaint() {
         if (materials) for (const material of Object.values(materials)) material.dispose();
         materials = shopMaterials(THREE, recipes[state.recipeId], rows, {
-          glowBoost: 1.1,
+          glowBoost: EMISSIVE_SCALE.neon.default,
           lightmap: kitLightmap(kit.scene),
           lightmapIntensity: state.ao ? 1 : 0,
         });
