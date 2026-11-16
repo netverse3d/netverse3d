@@ -355,6 +355,20 @@
       }
     },
     {
+      "file": "stall-parts.glb",
+      "source": "parts-stall.blend",
+      "generator": "pipeline/make_stall_kit.py",
+      "lightmap": true,
+      "slots": {
+        "cart": {
+          "variants": ["a", "b"],
+          "maxTriangles": 2500,
+          "size": [1.7, 2.2, 0.9],
+          "anchors": ["collision_main"]
+        }
+      }
+    },
+    {
       "file": "street-parts.glb",
       "source": "parts-street.blend",
       "generator": "pipeline/make_street_kit.py",

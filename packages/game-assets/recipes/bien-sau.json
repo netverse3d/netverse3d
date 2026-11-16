@@ -50,6 +50,7 @@
     "bin": "a",
     "planter": "a",
     "board": "a",
+    "cart": "b",
     "shopfront": "a",
     "storey": "b",
     "roof": "a",

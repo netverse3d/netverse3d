@@ -34,6 +34,7 @@
       "lounge-parts.glb": "Góc console",
       "sign-parts.glb": "Biển hiệu",
       "street-parts.glb": "Phố",
+      "stall-parts.glb": "Hàng rong",
       "room-kit.glb": "Module phòng",
       "skyline-parts.glb": "Đường chân trời"
     },
@@ -70,6 +71,7 @@
       "bin": "Thùng rác",
       "planter": "Chậu cây",
       "board": "Biển chữ A",
+      "cart": "Xe hàng rong",
       "shopfront": "Tầng trệt",
       "storey": "Tầng lầu",
       "roof": "Mái",
@@ -81,6 +83,10 @@
       "ceiling": "Trần",
       "light": "Đèn trần",
       "marker": "Vạch sàn"
+    },
+    "variantNames": {
+      "cart_a": "Xe bánh mì",
+      "cart_b": "Xe nước"
     },
     "all": "Tất cả",
     "count": "món",

@@ -158,7 +158,7 @@ async function main() {
           view,
           element('div', { class: 'part-meta' }, [
             element('div', { class: 'part-name' }, [
-              element('b', {}, part.name),
+              element('b', {}, words.variantNames?.[part.name] ?? part.name),
               element('span', {}, words.slots[part.slot] ?? part.slot),
             ]),
             budgetRow(stage.triangles, slot.maxTriangles, words),

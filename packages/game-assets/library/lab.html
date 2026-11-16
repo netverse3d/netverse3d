@@ -373,6 +373,13 @@
           ['festoon_a', [-2, 0, 0], 0],
           ['festoon_a', [2, 0, 0], 0],
         ],
+        'Xe hàng rong': [
+          ['shopfront_a', [0, 0, 0], 0],
+          ['sidewalk_a', [0, 0, -0.65], 0],
+          ['cart_a', [-0.95, 0.15, -0.65], 0],
+          ['cart_b', [0.95, 0.15, -0.65], 0],
+          ['scale_character', [0, 0.15, -1.75], 0],
+        ],
       };
 
       const canvas = $('gl');
@@ -410,6 +417,7 @@
         ),
       );
       const loader = new GLTFLoader();
+      const characterPreview = await loader.loadAsync(`../exported/${config.character.file}`);
       const kits = Object.fromEntries(
         await Promise.all(
           config.kits.map(async (kit) => [
@@ -531,6 +539,7 @@
       }
 
       function partClone(name) {
+        if (name === 'scale_character') return characterPreview.scene.clone(true);
         for (const [file, gltf] of Object.entries(kits)) {
           const source = gltf.scene.getObjectByName(name);
           if (!source) continue;
