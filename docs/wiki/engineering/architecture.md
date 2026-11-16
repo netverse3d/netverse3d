@@ -9,8 +9,7 @@ flowchart TB
     AD[Admin]
   end
   subgraph Edge
-    GW[API Gateway]
-    WS[WebSocket Gateway]
+    GW[API Gateway Traefik]
   end
   subgraph Realtime
     GG[Game Gateway]:::pending
@@ -34,8 +33,7 @@ flowchart TB
   end
   W --> GW
   AD --> GW
-  W --> WS
-  WS --> GG --> RS
+  GW -.-> GG --> RS
   GW --> ID & CO & WO & ME & PA & AI & NO
   RS --> CO & WO
   ID & CO & WO & ME & PA & NO --> PG
@@ -58,7 +56,7 @@ Xem [danh sách thành phần](./components.md).
 | `services/` | Tiến trình phục vụ API hoặc kết nối realtime, mỗi service một thư mục |
 | `workers/`  | Tiến trình xử lý việc nền                                             |
 | `packages/` | Mã và dữ liệu dùng chung, không tự triển khai                         |
-| `infra/`    | Compose, cổng vào `infra/gateway`, cấu hình quan sát                  |
+| `infra/`    | Compose, Kubernetes, cổng vào `infra/gateway`, cấu hình quan sát      |
 | `tests/`    | Kiểm chạy trên nhiều thành phần: kiểm chuẩn, đầu cuối, tải            |
 | `scripts/`  | Công cụ của repo                                                      |
 | `docs/`     | Yêu cầu, quyết định, wiki, runbook                                    |
@@ -85,7 +83,7 @@ Service viết bằng Go hoặc Python tự viết phần khung của mình và 
 
 | Kiểu                 | Dùng cho                                            | Khai ở đâu                       |
 | -------------------- | --------------------------------------------------- | -------------------------------- |
-| HTTP qua API Gateway | Client gọi service                                  | `packages/contracts/openapi/v1`  |
+| HTTP qua API Gateway | Client gọi service tại `/api/<service>/v1`          | `packages/contracts/openapi/v1`  |
 | WebSocket            | Gameplay realtime                                   | `packages/contracts/realtime/v1` |
 | gRPC                 | Service gọi đồng bộ với nhau, chỉ khi thật cần      | `packages/contracts`             |
 | Kafka                | Sự kiện và việc nền, cách mặc định giữa các service | `packages/contracts/events/v1`   |
@@ -93,6 +91,10 @@ Service viết bằng Go hoặc Python tự viết phần khung của mình và 
 Sự kiện đi từ bảng outbox của service lên Kafka. Mỗi service phát vào một topic `netverse.<service>.events.v1`, khoá thông điệp là mã tenant của sự kiện hoặc `platform`, nên sự kiện của một tiệm giữ đúng thứ tự. Sự kiện được kiểm theo hợp đồng trong `packages/contracts` trước lúc phát; sự kiện sai hợp đồng bị gác lại ở outbox. Một sự kiện chưa gửi được thì các sự kiện sau của service đó chờ, và broker lỗi không làm mất sự kiện. Bên nghe đưa sự kiện không xử lý được vào topic cùng tên thêm đuôi `.dlq`. Chi tiết ở [ADR-0028](../../decisions/ADR-0028-service-to-service-communication.md).
 
 Mệnh lệnh giữa các service đi qua gRPC. Hợp đồng nằm ở `packages/contracts/grpc/v1`, kiểu dùng trong mã được sinh từ hợp đồng. Bên gọi mang token của tài khoản service, nêu hạn chờ và khoá chống trùng; bên nhận kiểm token và quyền của từng mệnh lệnh. `notification` là service đầu tiên nhận mệnh lệnh, với lệnh gửi thông báo.
+
+## Cổng vào
+
+Traefik là cổng chung cho web, API và WebSocket theo [ADR-0034](../../decisions/ADR-0034-api-gateway.md). Client gọi API cùng origin ở `/api/<service>/v1/…`; cổng bỏ tiền tố `/api/<service>` trước khi chuyển đến service, còn service tự xác thực. Route `/ws/game` chỉ được bật khi game server sẵn sàng; hiện `/ws/_probe` phục vụ kiểm thử trên môi trường local. Danh sách route và chính sách lấy từ `infra/gateway/routes.yaml`; xem [runbook cổng vào](../../runbooks/gateway.md) để sửa và kiểm tra.
 
 ## Quy tắc kiến trúc
 
@@ -104,7 +106,9 @@ Mệnh lệnh giữa các service đi qua gRPC. Hợp đồng nằm ở `package
 
 ## Hạ tầng dev
 
-`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, object storage, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Object storage ở dev là SeaweedFS, nói giao thức S3, theo [ADR-0023](../../decisions/ADR-0023-media-service-origin-and-object-storage.md).
+`pnpm infra:up` chạy PostgreSQL, Redis, Kafka, object storage, Prometheus, Grafana, Loki và OpenTelemetry Collector bằng Docker Compose. Stack ứng dụng trong Compose dùng cổng web `http://localhost:58080` và cổng storage `http://localhost:58334`. Object storage ở dev là SeaweedFS, nói giao thức S3, theo [ADR-0023](../../decisions/ADR-0023-media-service-origin-and-object-storage.md).
+
+Cụm Kubernetes local chạy bằng k3d ở cổng web `http://localhost:58180` và cổng storage `http://localhost:58335`. Cách dựng và nghiệm thu nằm trong [runbook Kubernetes local](../../runbooks/k8s-local.md), theo [ADR-0035](../../decisions/ADR-0035-kubernetes-platform.md).
 
 | Dịch vụ                      | Địa chỉ mặc định                                   |
 | ---------------------------- | -------------------------------------------------- |

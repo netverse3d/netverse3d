@@ -74,6 +74,7 @@ export default withMermaid(
             { text: 'Tạo GitHub App', link: '/runbooks/github-app' },
             { text: 'Cấu hình Project', link: '/runbooks/github-project' },
             { text: 'Nghiệm thu dựng nền', link: '/runbooks/acceptance-bootstrap' },
+            { text: 'Nghiệm thu cổng vào', link: '/runbooks/acceptance-api-gateway' },
           ],
         },
       ],
