@@ -31,7 +31,7 @@ for (const service of findUntrustedBackends(doc, compose)) {
   errors.push(`${service} must set TRUST_PROXY_HOPS=1 behind the gateway`);
 }
 for (const service of findMissingBackends(doc, compose)) {
-  console.warn(`${service} is routed by the gateway but not defined in ${COMPOSE_FILE}`);
+  errors.push(`${service} is routed by the gateway but not defined in ${COMPOSE_FILE}`);
 }
 
 if (errors.length > 0) {

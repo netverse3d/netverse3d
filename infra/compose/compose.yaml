@@ -115,7 +115,7 @@ services:
       AUTH_ISSUER: http://identity:3000
       AUTH_AUDIENCE: identity
       KAFKA_BROKERS: kafka:19092
-      TOKEN_AUDIENCES: media,notification
+      TOKEN_AUDIENCES: media,notification,payment
       KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
       OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
       OTP_DELIVERY: notification
@@ -241,6 +241,58 @@ services:
       mailbox:
         condition: service_healthy
 
+  payment-migrate:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/payment/Dockerfile
+    command: [node_modules/.bin/prisma, migrate, deploy]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payment:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: services/payment/Dockerfile
+    env_file:
+      - ../../services/payment/.env.example
+    environment:
+      NODE_ENV: ${APP_ENV:-development}
+      LOG_PRETTY: 'false'
+      SERVICE_NAME: payment
+      TRUST_PROXY_HOPS: '1'
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/payment
+      AUTH_JWKS_URL: http://identity:3000/.well-known/jwks.json
+      AUTH_ISSUER: http://identity:3000
+      AUTH_AUDIENCE: payment
+    ports:
+      - 127.0.0.1:${PAYMENT_PORT:-53004}:3000
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/healthz || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      payment-migrate:
+        condition: service_completed_successfully
+      identity:
+        condition: service_healthy
+
+  web-3d:
+    profiles: [apps]
+    build:
+      context: ../..
+      dockerfile: apps/web-3d/Dockerfile
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1/ > /dev/null || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   gateway:
     image: traefik:v3.7.17
     profiles: [apps]
@@ -258,6 +310,14 @@ services:
       retries: 20
     depends_on:
       identity:
+        condition: service_healthy
+      media:
+        condition: service_healthy
+      notification:
+        condition: service_healthy
+      payment:
+        condition: service_healthy
+      web-3d:
         condition: service_healthy
 
   gateway-probe:

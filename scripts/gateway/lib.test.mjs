@@ -279,3 +279,18 @@ test('cấu hình tĩnh thật của repo qua kiểm', () => {
   const config = parse(readFileSync('infra/gateway/compose/traefik.yaml', 'utf8'));
   assert.deepEqual(validateStaticConfig(config), []);
 });
+
+test('payment là backend sau cổng phải tin một proxy', () => {
+  const payment = {
+    id: 'payment-webhooks',
+    entrypoint: 'web',
+    prefix: '/api/payment/v1/webhooks',
+    strip: '/api/payment',
+    backend: { service: 'payment', port: 3000 },
+    policies: ['rate-api'],
+  };
+  const compose = { services: { payment: { environment: { NODE_ENV: 'development' } } } };
+  assert.deepEqual(findUntrustedBackends(baseDoc([payment]), compose), ['payment']);
+  compose.services.payment.environment.TRUST_PROXY_HOPS = '1';
+  assert.deepEqual(findUntrustedBackends(baseDoc([payment]), compose), []);
+});
