@@ -369,7 +369,7 @@ requirements:
     sources: [team-decision]
   - id: REQ-047
     title: Client chỉ gọi hệ thống qua một cổng vào
-    description: Mọi yêu cầu HTTP và WebSocket từ client đi qua một cổng theo /api/<service>/v1 và /ws; cổng không chứa nghiệp vụ, chặn đường nội bộ, giới hạn tần suất và cỡ yêu cầu; service tự xác thực, theo ADR-0034.
+    description: Mọi yêu cầu HTTP và WebSocket từ client đi qua một cổng theo `/api/<service>/v1` và `/ws`; cổng không chứa nghiệp vụ, chặn đường nội bộ, giới hạn tần suất và cỡ yêu cầu; service tự xác thực, theo ADR-0034.
     status: accepted
     priority: must
     milestone: M1

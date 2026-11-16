@@ -1,4 +1,4 @@
-# ADR-0034: Cổng vào duy nhất bằng Traefik, định tuyến theo /api/<service>
+# ADR-0034: Cổng vào duy nhất bằng Traefik, định tuyến theo tên service
 
 - Trạng thái: accepted
 - Ngày: 2026-11-15
