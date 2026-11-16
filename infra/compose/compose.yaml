@@ -88,6 +88,7 @@ services:
 
   identity-migrate:
     profiles: [apps]
+    image: netverse/identity:local
     build:
       context: ../..
       dockerfile: services/identity/Dockerfile
@@ -100,6 +101,7 @@ services:
 
   identity:
     profiles: [apps]
+    image: netverse/identity:local
     build:
       context: ../..
       dockerfile: services/identity/Dockerfile
@@ -137,6 +139,7 @@ services:
 
   media-migrate:
     profiles: [apps]
+    image: netverse/media:local
     build:
       context: ../..
       dockerfile: services/media/Dockerfile
@@ -149,6 +152,7 @@ services:
 
   media:
     profiles: [apps]
+    image: netverse/media:local
     build:
       context: ../..
       dockerfile: services/media/Dockerfile
@@ -189,6 +193,7 @@ services:
 
   notification-migrate:
     profiles: [apps]
+    image: netverse/notification:local
     build:
       context: ../..
       dockerfile: services/notification/Dockerfile
@@ -201,6 +206,7 @@ services:
 
   notification:
     profiles: [apps]
+    image: netverse/notification:local
     build:
       context: ../..
       dockerfile: services/notification/Dockerfile
@@ -243,6 +249,7 @@ services:
 
   payment-migrate:
     profiles: [apps]
+    image: netverse/payment:local
     build:
       context: ../..
       dockerfile: services/payment/Dockerfile
@@ -255,6 +262,7 @@ services:
 
   payment:
     profiles: [apps]
+    image: netverse/payment:local
     build:
       context: ../..
       dockerfile: services/payment/Dockerfile
@@ -284,6 +292,7 @@ services:
 
   web-3d:
     profiles: [apps]
+    image: netverse/web-3d:local
     build:
       context: ../..
       dockerfile: apps/web-3d/Dockerfile

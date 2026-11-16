@@ -12,5 +12,6 @@
   "whoami": "v1.12.0",
   "busybox": "1.37.0",
   "crdsCatalog": "3eb90d47aba8d61919d4419dd38301536e32a94b",
-  "kubernetesJsonSchema": "e0c72a1bc5f409d1685c0e1323460c8a98cd7459"
+  "kubernetesJsonSchema": "e0c72a1bc5f409d1685c0e1323460c8a98cd7459",
+  "minFreeDiskGb": 25
 }

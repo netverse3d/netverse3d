@@ -1,4 +1,6 @@
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { join, win32 } from 'node:path';
 
 export const CLUSTER_NAME = 'netverse';
 export const CONTEXT = `k3d-${CLUSTER_NAME}`;
@@ -56,4 +58,35 @@ export function clusterExists(listJson, name) {
   } catch {
     return false;
   }
+}
+
+const GIB = 1024 ** 3;
+
+export function generatedIdentityKeys() {
+  return {
+    KEY_ENCRYPTION_SECRET: randomBytes(32).toString('hex'),
+    OTP_HASH_SECRET: randomBytes(32).toString('hex'),
+  };
+}
+
+export function secretManifest(name, namespace, stringData) {
+  return { apiVersion: 'v1', kind: 'Secret', metadata: { name, namespace }, stringData };
+}
+
+export function dockerDataPath({ platform, env, settings }) {
+  if (env.NETVERSE_DOCKER_DATA_DIR) return env.NETVERSE_DOCKER_DATA_DIR;
+  if (platform === 'win32') {
+    return settings?.CustomWslDistroDir || win32.join(env.LOCALAPPDATA ?? '', 'Docker');
+  }
+  if (platform === 'darwin') return join(env.HOME ?? '', 'Library/Containers/com.docker.docker');
+  return '/var/lib/docker';
+}
+
+export function checkFreeDisk({ path, freeBytes, minFreeGb }) {
+  const freeGb = Math.round((freeBytes / GIB) * 10) / 10;
+  return freeBytes >= minFreeGb * GIB
+    ? []
+    : [
+        `only ${freeGb} GB free where Docker stores data (${path}); at least ${minFreeGb} GB is required before building images`,
+      ];
 }
