@@ -5,6 +5,10 @@ on:
     paths:
       - infra/**
       - scripts/infra/**
+      - scripts/gateway/**
+      - tests/e2e/**
+      - services/*/Dockerfile
+      - apps/web-3d/Dockerfile
       - .env.example
       - .github/workflows/infra.yml
 
@@ -23,3 +27,27 @@ jobs:
       - run: node scripts/infra/compose.mjs smoke
       - if: always()
         run: docker compose --env-file .env.example -f infra/compose/compose.yaml --profile observability logs --tail 50
+
+  gateway:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COMPOSE: docker compose --env-file .env.example -f infra/compose/compose.yaml --profile apps
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm gateway:check
+      - run: $COMPOSE up -d --build --wait --wait-timeout 600
+      - run: pnpm smoke:stack
+      - run: pnpm test:gateway
+        env:
+          GATEWAY_WS_PROBE: '1'
+      - if: failure()
+        run: $COMPOSE logs --tail 200
+      - if: always()
+        run: $COMPOSE down -v

@@ -68,6 +68,7 @@ export default withMermaid(
           items: [
             { text: 'Nhận service có sẵn', link: '/runbooks/import-service' },
             { text: 'Chạy thử identity, media và notification', link: '/runbooks/stack-smoke' },
+            { text: 'Vận hành cổng vào', link: '/runbooks/gateway' },
             { text: 'Phát hành', link: '/runbooks/release' },
             { text: 'Tạo GitHub App', link: '/runbooks/github-app' },
             { text: 'Cấu hình Project', link: '/runbooks/github-project' },
