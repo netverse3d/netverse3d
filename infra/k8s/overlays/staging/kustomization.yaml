@@ -1,0 +1,64 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base/data
+  - ../../base/apps
+  - ../../base/gateway
+images:
+  - name: netverse/identity
+    newName: ghcr.io/netverse3d/identity
+    newTag: 0.0.0-staging
+  - name: netverse/media
+    newName: ghcr.io/netverse3d/media
+    newTag: 0.0.0-staging
+  - name: netverse/notification
+    newName: ghcr.io/netverse3d/notification
+    newTag: 0.0.0-staging
+  - name: netverse/payment
+    newName: ghcr.io/netverse3d/payment
+    newTag: 0.0.0-staging
+  - name: netverse/web-3d
+    newName: ghcr.io/netverse3d/web-3d
+    newTag: 0.0.0-staging
+configMapGenerator:
+  - name: media-config
+    namespace: netverse
+    behavior: merge
+    literals:
+      - NODE_ENV=production
+      - S3_PUBLIC_ENDPOINT=storage.staging.invalid
+      - S3_PUBLIC_PORT=443
+  - name: identity-config
+    namespace: netverse
+    behavior: merge
+    literals:
+      - NODE_ENV=production
+  - name: notification-config
+    namespace: netverse
+    behavior: merge
+    literals:
+      - NODE_ENV=production
+  - name: payment-config
+    namespace: netverse
+    behavior: merge
+    literals:
+      - NODE_ENV=production
+patches:
+  - target:
+      group: gateway.networking.k8s.io
+      kind: Gateway
+      name: netverse
+    patch: |-
+      - op: add
+        path: /spec/listeners/-
+        value:
+          name: websecure
+          port: 8443
+          protocol: HTTPS
+          tls:
+            mode: Terminate
+            certificateRefs:
+              - name: netverse-tls
+          allowedRoutes:
+            namespaces:
+              from: Same

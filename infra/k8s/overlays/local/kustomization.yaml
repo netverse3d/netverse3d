@@ -3,8 +3,11 @@ kind: Kustomization
 resources:
   - ../../base/data
   - ../../base/apps
+  - ../../base/gateway
   - mailbox.yaml
   - notification-grpc-host.yaml
+components:
+  - ../../components/conformance
 patches:
   - path: kafka-external.yaml
     target:
