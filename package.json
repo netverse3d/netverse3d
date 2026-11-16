@@ -38,7 +38,11 @@
     "gateway:render": "node scripts/gateway/render.mjs",
     "gateway:check": "node scripts/gateway/check.mjs",
     "test:gateway": "node --test \"tests/e2e/gateway/*.test.mjs\"",
-    "test:e2e-lib": "node --test \"tests/e2e/lib/*.test.mjs\""
+    "test:e2e-lib": "node --test \"tests/e2e/lib/*.test.mjs\"",
+    "k8s:up": "node scripts/k8s/cluster.mjs up",
+    "k8s:down": "node scripts/k8s/cluster.mjs down",
+    "k8s:status": "node scripts/k8s/cluster.mjs status",
+    "k8s:images": "node scripts/k8s/cluster.mjs images"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
