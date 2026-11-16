@@ -8,6 +8,7 @@ resources:
   - notification-grpc-host.yaml
 components:
   - ../../components/conformance
+  - ../../components/api-docs
 patches:
   - path: kafka-external.yaml
     target:

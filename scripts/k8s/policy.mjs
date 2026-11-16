@@ -162,6 +162,18 @@ function secretFindings(doc, overlay) {
     : [];
 }
 
+function apiDocsFindings(doc, overlay) {
+  if (overlay === 'local') return [];
+  const isDocsRoute =
+    doc.kind === 'HTTPRoute' &&
+    (doc.spec?.rules ?? []).some((rule) =>
+      (rule.matches ?? []).some((match) => match.path?.value === '/docs'),
+    );
+  return doc.metadata?.name === 'api-docs' || isDocsRoute
+    ? [finding('P12', doc, 'API documentation is only allowed in the local overlay')]
+    : [];
+}
+
 function networkFindings(docs) {
   const usesAppNamespace = docs.some(
     (doc) => WORKLOAD_KINDS.has(doc.kind) && doc.metadata?.namespace === APP_NAMESPACE,
@@ -187,6 +199,7 @@ function networkFindings(docs) {
 export function checkPolicy(docs, { overlay }) {
   const findings = [];
   for (const doc of docs.filter(Boolean)) {
+    findings.push(...apiDocsFindings(doc, overlay));
     if (WORKLOAD_KINDS.has(doc.kind)) {
       findings.push(
         ...imageFindings(doc, overlay),

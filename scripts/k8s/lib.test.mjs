@@ -45,10 +45,10 @@ test('đọc được phiên bản k3d từ đầu ra thật', () => {
   assert.equal(parseK3dVersion(''), null);
 });
 
-test('danh sách image gồm đủ năm thành phần chạy sau cổng', () => {
+test('danh sách image gồm các thành phần chạy sau cổng và tài liệu local', () => {
   assert.deepEqual(
     IMAGES.map((image) => image.id),
-    ['identity', 'media', 'notification', 'payment', 'web-3d'],
+    ['identity', 'media', 'notification', 'payment', 'web-3d', 'api-docs'],
   );
   assert.equal(IMAGES.find((image) => image.id === 'web-3d').dockerfile, 'apps/web-3d/Dockerfile');
   assert.equal(

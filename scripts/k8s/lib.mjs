@@ -14,6 +14,7 @@ export const IMAGES = [
   { id: 'notification', dockerfile: 'services/notification/Dockerfile' },
   { id: 'payment', dockerfile: 'services/payment/Dockerfile' },
   { id: 'web-3d', dockerfile: 'apps/web-3d/Dockerfile' },
+  { id: 'api-docs', dockerfile: 'infra/gateway/docs-ui/Dockerfile' },
 ];
 
 export function loadVersions(path = VERSIONS_FILE) {

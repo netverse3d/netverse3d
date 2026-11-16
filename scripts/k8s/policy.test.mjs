@@ -128,6 +128,17 @@ test('từ chối NodePort ngoài overlay local', () => {
   assert.deepEqual(rulesOf([namespace, denyAll, nodePort], 'staging'), ['P7']);
 });
 
+test('từ chối route và workload tài liệu ngoài overlay local', () => {
+  const route = {
+    kind: 'HTTPRoute',
+    metadata: { name: 'api-docs', namespace: 'netverse' },
+    spec: { rules: [{ matches: [{ path: { value: '/docs' } }] }] },
+  };
+  const service = { kind: 'Service', metadata: { name: 'api-docs', namespace: 'netverse' } };
+  assert.deepEqual(rulesOf([route, service], 'local'), []);
+  assert.deepEqual(rulesOf([route, service], 'staging'), ['P12', 'P12']);
+});
+
 test('yêu cầu default-deny-ingress trong namespace netverse', () => {
   assert.deepEqual(rulesOf([namespace, deployment()]), ['P8']);
 });
