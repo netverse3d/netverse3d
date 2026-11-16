@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { parseAllDocuments, parse } from 'yaml';
 import {
   GENERATED_HEADER,
+  STATIC_CONFIG_FILES,
   findMissingBackends,
   findUntrustedBackends,
   renderCompose,
@@ -276,8 +277,11 @@ test('access log không ghi Authorization và Cookie', () => {
 });
 
 test('cấu hình tĩnh thật của repo qua kiểm', () => {
-  const config = parse(readFileSync('infra/gateway/compose/traefik.yaml', 'utf8'));
-  assert.deepEqual(validateStaticConfig(config), []);
+  for (const file of STATIC_CONFIG_FILES) {
+    const config = parse(readFileSync(file, 'utf8'));
+    assert.deepEqual(validateStaticConfig(config), [], file);
+  }
+  assert.equal(STATIC_CONFIG_FILES.length, 2);
 });
 
 test('payment là backend sau cổng phải tin một proxy', () => {

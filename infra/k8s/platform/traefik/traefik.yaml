@@ -1,0 +1,66 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+entryPoints:
+  web:
+    address: ':8000'
+    transport:
+      respondingTimeouts:
+        readTimeout: 60s
+        writeTimeout: 60s
+        idleTimeout: 180s
+    forwardedHeaders:
+      insecure: false
+  storage:
+    address: ':8333'
+    transport:
+      respondingTimeouts:
+        readTimeout: 0s
+        writeTimeout: 0s
+        idleTimeout: 180s
+    forwardedHeaders:
+      insecure: false
+  websecure:
+    address: ':8443'
+    transport:
+      respondingTimeouts:
+        readTimeout: 60s
+        writeTimeout: 60s
+        idleTimeout: 180s
+    forwardedHeaders:
+      insecure: false
+  traefik:
+    address: ':8082'
+ping:
+  entryPoint: traefik
+metrics:
+  prometheus:
+    entryPoint: traefik
+    addRoutersLabels: true
+    addServicesLabels: true
+api:
+  dashboard: false
+log:
+  level: INFO
+  format: json
+accessLog:
+  format: json
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: drop
+      names:
+        User-Agent: keep
+        X-Request-Id: keep
+        Content-Type: keep
+providers:
+  kubernetesGateway: {}
+  kubernetesCRD:
+    allowCrossNamespace: false
+serversTransport:
+  forwardingTimeouts:
+    dialTimeout: 5s
+    responseHeaderTimeout: 30s
+    idleConnTimeout: 90s

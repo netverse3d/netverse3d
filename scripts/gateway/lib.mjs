@@ -280,7 +280,10 @@ export function findMissingBackends(routesDoc, composeDoc) {
   return composeBackends(routesDoc, { apiOnly: false }).filter((name) => !services[name]);
 }
 
-export const STATIC_CONFIG_FILE = 'infra/gateway/compose/traefik.yaml';
+export const STATIC_CONFIG_FILES = [
+  'infra/gateway/compose/traefik.yaml',
+  'infra/k8s/platform/traefik/traefik.yaml',
+];
 const SENSITIVE_HEADERS = ['Authorization', 'Cookie', 'Set-Cookie'];
 
 export function validateStaticConfig(config) {

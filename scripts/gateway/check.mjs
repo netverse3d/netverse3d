@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import {
   COMPOSE_FILE,
-  STATIC_CONFIG_FILE,
+  STATIC_CONFIG_FILES,
   findMissingBackends,
   findUntrustedBackends,
   loadRoutes,
@@ -22,8 +22,10 @@ if (errors.length === 0) {
   }
 }
 
-for (const error of validateStaticConfig(parse(readFileSync(STATIC_CONFIG_FILE, 'utf8')))) {
-  errors.push(`${STATIC_CONFIG_FILE}: ${error}`);
+for (const file of STATIC_CONFIG_FILES) {
+  for (const error of validateStaticConfig(parse(readFileSync(file, 'utf8')))) {
+    errors.push(`${file}: ${error}`);
+  }
 }
 
 const compose = parse(readFileSync(COMPOSE_FILE, 'utf8'));
