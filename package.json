@@ -42,7 +42,8 @@
     "k8s:up": "node scripts/k8s/cluster.mjs up",
     "k8s:down": "node scripts/k8s/cluster.mjs down",
     "k8s:status": "node scripts/k8s/cluster.mjs status",
-    "k8s:images": "node scripts/k8s/cluster.mjs images"
+    "k8s:images": "node scripts/k8s/cluster.mjs images",
+    "k8s:check": "node scripts/k8s/check.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
