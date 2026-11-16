@@ -37,3 +37,5 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0031](./ADR-0031-payment-service-code-provenance.md) | Nguồn gốc mã payment gateway | Đã chốt |
 | [ADR-0032](./ADR-0032-no-dependabot.md) | Không dùng Dependabot, nâng thư viện có chủ đích | Đã chốt |
 | [ADR-0033](./ADR-0033-credit-rate-play-block-and-starter-points.md) | Tỷ giá Xèng, block giờ máy 30 phút và điểm khởi đầu cho chủ tiệm mới | Đã chốt |
+| [ADR-0034](./ADR-0034-api-gateway.md) | Cổng vào duy nhất bằng Traefik, định tuyến theo /api/<service> | Đã chốt |
+| [ADR-0035](./ADR-0035-kubernetes-platform.md) | Chạy hệ thống trên Kubernetes local bằng k3d, Kustomize và operator dữ liệu | Đã chốt |
