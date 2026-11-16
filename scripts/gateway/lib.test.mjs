@@ -202,6 +202,19 @@ test('từ chối tài liệu trên môi trường production và route nội b�
   }
 });
 
+test('Compose dev gắn UI và route, Compose gốc không gắn tài liệu', () => {
+  const base = parse(readFileSync('infra/compose/compose.yaml', 'utf8'));
+  const dev = parse(readFileSync('infra/compose/compose.dev.yaml', 'utf8'));
+  const prodRoutes = parse(readFileSync('infra/gateway/compose/dynamic.yaml', 'utf8'));
+  const devRoutes = parse(readFileSync('infra/gateway/compose/dynamic-dev.yaml', 'utf8'));
+  assert.equal(base.services['api-docs'], undefined);
+  assert.ok(base.services.gateway.volumes.some((volume) => volume.includes('/dynamic.yaml:')));
+  assert.ok(dev.services.gateway.volumes.some((volume) => volume.includes('dynamic-dev.yaml:')));
+  assert.equal(dev.services['api-docs'].profiles.includes('apps'), true);
+  assert.equal(prodRoutes.http.routers['api-docs'], undefined);
+  assert.equal(devRoutes.http.routers['api-docs'].service, 'api-docs');
+});
+
 test('HTTPRoute cắt tiền tố bằng ReplacePrefixMatch giữ /v1', () => {
   const [route] = k8sDocs(baseDoc([identityAuth]), 'k8s');
   const rule = route.spec.rules[0];
