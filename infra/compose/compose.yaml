@@ -109,6 +109,7 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: identity
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/identity
       AUTH_JWKS_URL: http://127.0.0.1:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000
@@ -157,6 +158,7 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: media
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
       S3_ENDPOINT: object-store
       S3_PORT: 8333
@@ -208,6 +210,7 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: notification
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/notification
       AUTH_JWKS_URL: http://identity:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000

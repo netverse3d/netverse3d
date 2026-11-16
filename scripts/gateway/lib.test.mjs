@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { parseAllDocuments, parse } from 'yaml';
 import {
   GENERATED_HEADER,
+  findMissingBackends,
   findUntrustedBackends,
   renderCompose,
   renderKubernetes,
@@ -214,4 +215,17 @@ test('báo service sau cổng chưa đặt TRUST_PROXY_HOPS=1', () => {
     },
   };
   assert.deepEqual(findUntrustedBackends(baseDoc([identity, media, web]), compose), ['media']);
+});
+
+test('chỉ xét tin proxy với service đã có trong Compose', () => {
+  const compose = { services: { identity: { environment: { TRUST_PROXY_HOPS: 1 } } } };
+  assert.deepEqual(findUntrustedBackends(baseDoc([identity, media]), compose), []);
+});
+
+test('báo backend của route chưa có trong Compose', () => {
+  const compose = { services: { identity: {}, 'web-3d': {} } };
+  assert.deepEqual(findMissingBackends(baseDoc([identity, media, web, storage, wsGame]), compose), [
+    'media',
+    'object-store',
+  ]);
 });

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import {
   COMPOSE_FILE,
+  findMissingBackends,
   findUntrustedBackends,
   loadRoutes,
   renderAll,
@@ -21,7 +22,10 @@ if (errors.length === 0) {
 
 const compose = parse(readFileSync(COMPOSE_FILE, 'utf8'));
 for (const service of findUntrustedBackends(doc, compose)) {
-  console.warn(`${service} must set TRUST_PROXY_HOPS=1 behind the gateway`);
+  errors.push(`${service} must set TRUST_PROXY_HOPS=1 behind the gateway`);
+}
+for (const service of findMissingBackends(doc, compose)) {
+  console.warn(`${service} is routed by the gateway but not defined in ${COMPOSE_FILE}`);
 }
 
 if (errors.length > 0) {

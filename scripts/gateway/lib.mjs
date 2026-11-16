@@ -261,11 +261,21 @@ function trustsOneProxy(service) {
   return String(environment.TRUST_PROXY_HOPS) === '1';
 }
 
-export function findUntrustedBackends(routesDoc, composeDoc) {
-  const backends = new Set(
-    activeRoutes(routesDoc, 'compose')
-      .filter((route) => route.prefix.startsWith('/api/'))
-      .map((route) => route.backend.service),
+function composeBackends(routesDoc, { apiOnly }) {
+  const routes = activeRoutes(routesDoc, 'compose').filter(
+    (route) => !apiOnly || route.prefix.startsWith('/api/'),
   );
-  return [...backends].filter((name) => !trustsOneProxy(composeDoc.services?.[name])).sort();
+  return [...new Set(routes.map((route) => route.backend.service))].sort();
+}
+
+export function findUntrustedBackends(routesDoc, composeDoc) {
+  const services = composeDoc.services ?? {};
+  return composeBackends(routesDoc, { apiOnly: true }).filter(
+    (name) => services[name] && !trustsOneProxy(services[name]),
+  );
+}
+
+export function findMissingBackends(routesDoc, composeDoc) {
+  const services = composeDoc.services ?? {};
+  return composeBackends(routesDoc, { apiOnly: false }).filter((name) => !services[name]);
 }
