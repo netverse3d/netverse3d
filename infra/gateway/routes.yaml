@@ -24,7 +24,7 @@ routes:
     policies: [rate-api, body-1m]
   - id: media
     entrypoint: web
-    prefix: /api/media/v1-negative
+    prefix: /api/media/v2
     strip: /api/media
     backend: { service: media, port: 3000 }
     policies: [rate-api, body-1m]
