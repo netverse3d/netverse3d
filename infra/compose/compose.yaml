@@ -165,7 +165,7 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-netverse-local}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me-local-only}
       S3_PUBLIC_ENDPOINT: ${MEDIA_S3_PUBLIC_ENDPOINT:-localhost}
-      S3_PUBLIC_PORT: ${MEDIA_S3_PUBLIC_PORT:-58333}
+      S3_PUBLIC_PORT: ${MEDIA_S3_PUBLIC_PORT:-58334}
       AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://identity:3000/.well-known/jwks.json}
       AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://identity:3000}
       AUTH_AUDIENCE: media
@@ -240,6 +240,29 @@ services:
         condition: service_healthy
       mailbox:
         condition: service_healthy
+
+  gateway:
+    image: traefik:v3.7.17
+    profiles: [apps]
+    command: [--configFile=/etc/traefik/traefik.yaml]
+    volumes:
+      - ../gateway/compose/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ../gateway/compose/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+    ports:
+      - 127.0.0.1:${GATEWAY_PORT:-58080}:8000
+      - 127.0.0.1:${GATEWAY_STORAGE_PORT:-58334}:8333
+    healthcheck:
+      test: [CMD, traefik, healthcheck, --ping, --configFile=/etc/traefik/traefik.yaml]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      identity:
+        condition: service_healthy
+
+  gateway-probe:
+    image: traefik/whoami:v1.12.0
+    profiles: [apps]
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.131.0

@@ -2,11 +2,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 import {
   COMPOSE_FILE,
+  STATIC_CONFIG_FILE,
   findMissingBackends,
   findUntrustedBackends,
   loadRoutes,
   renderAll,
   validateRoutes,
+  validateStaticConfig,
 } from './lib.mjs';
 
 const doc = loadRoutes();
@@ -18,6 +20,10 @@ if (errors.length === 0) {
     if (actual !== expected)
       errors.push(`gateway config is stale, run pnpm gateway:render: ${path}`);
   }
+}
+
+for (const error of validateStaticConfig(parse(readFileSync(STATIC_CONFIG_FILE, 'utf8')))) {
+  errors.push(`${STATIC_CONFIG_FILE}: ${error}`);
 }
 
 const compose = parse(readFileSync(COMPOSE_FILE, 'utf8'));

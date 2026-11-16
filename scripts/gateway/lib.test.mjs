@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { parseAllDocuments, parse } from 'yaml';
 import {
@@ -9,6 +10,7 @@ import {
   renderKubernetes,
   renderKubernetesMiddlewares,
   validateRoutes,
+  validateStaticConfig,
 } from './lib.mjs';
 
 function baseDoc(routes) {
@@ -228,4 +230,52 @@ test('báo backend của route chưa có trong Compose', () => {
     'media',
     'object-store',
   ]);
+});
+
+function safeStatic() {
+  return {
+    entryPoints: {
+      web: { address: ':8000', forwardedHeaders: { insecure: false } },
+      storage: { address: ':8333', forwardedHeaders: { insecure: false } },
+      traefik: { address: ':8082' },
+    },
+    api: { dashboard: false },
+    accessLog: { fields: { headers: { defaultMode: 'drop', names: { 'X-Request-Id': 'keep' } } } },
+    providers: { file: { filename: '/etc/traefik/dynamic.yaml' } },
+  };
+}
+
+test('cấu hình tĩnh không bật dashboard và không dùng provider docker', () => {
+  assert.deepEqual(validateStaticConfig(safeStatic()), []);
+  const dashboard = { ...safeStatic(), api: { dashboard: true } };
+  assert.ok(validateStaticConfig(dashboard).some((error) => error.includes('dashboard')));
+  const insecureApi = { ...safeStatic(), api: { dashboard: false, insecure: true } };
+  assert.ok(validateStaticConfig(insecureApi).some((error) => error.includes('api.insecure')));
+  const docker = { ...safeStatic(), providers: { docker: {} } };
+  assert.ok(validateStaticConfig(docker).some((error) => error.includes('docker')));
+});
+
+test('cấu hình tĩnh từ chối tin X-Forwarded-For của client', () => {
+  const insecure = safeStatic();
+  insecure.entryPoints.web.forwardedHeaders = { insecure: true };
+  assert.ok(validateStaticConfig(insecure).some((error) => error.includes('web')));
+  const trusted = safeStatic();
+  trusted.entryPoints.storage.forwardedHeaders = { trustedIPs: ['0.0.0.0/0'] };
+  assert.ok(validateStaticConfig(trusted).some((error) => error.includes('storage')));
+});
+
+test('access log không ghi Authorization và Cookie', () => {
+  for (const header of ['Authorization', 'Cookie']) {
+    const config = safeStatic();
+    config.accessLog.fields.headers.names[header] = 'keep';
+    assert.ok(validateStaticConfig(config).some((error) => error.includes(header)));
+  }
+  const keepAll = safeStatic();
+  keepAll.accessLog.fields.headers.defaultMode = 'keep';
+  assert.ok(validateStaticConfig(keepAll).some((error) => error.includes('defaultMode')));
+});
+
+test('cấu hình tĩnh thật của repo qua kiểm', () => {
+  const config = parse(readFileSync('infra/gateway/compose/traefik.yaml', 'utf8'));
+  assert.deepEqual(validateStaticConfig(config), []);
 });

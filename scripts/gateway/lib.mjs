@@ -279,3 +279,29 @@ export function findMissingBackends(routesDoc, composeDoc) {
   const services = composeDoc.services ?? {};
   return composeBackends(routesDoc, { apiOnly: false }).filter((name) => !services[name]);
 }
+
+export const STATIC_CONFIG_FILE = 'infra/gateway/compose/traefik.yaml';
+const SENSITIVE_HEADERS = ['Authorization', 'Cookie', 'Set-Cookie'];
+
+export function validateStaticConfig(config) {
+  const errors = [];
+  if (config.api?.dashboard !== false) errors.push('api.dashboard must be false');
+  if (config.api?.insecure === true) errors.push('api.insecure must not be enabled');
+  if (config.providers?.docker) errors.push('providers.docker must not be used');
+  for (const [name, entryPoint] of Object.entries(config.entryPoints ?? {})) {
+    const forwarded = entryPoint.forwardedHeaders ?? {};
+    if (forwarded.insecure === true || (forwarded.trustedIPs ?? []).length > 0) {
+      errors.push(`entryPoints.${name} must not trust client forwarded headers`);
+    }
+  }
+  const headers = config.accessLog?.fields?.headers;
+  if (headers && headers.defaultMode !== 'drop') {
+    errors.push('accessLog.fields.headers.defaultMode must be drop');
+  }
+  for (const header of SENSITIVE_HEADERS) {
+    if (headers?.names?.[header] && headers.names[header] !== 'drop') {
+      errors.push(`accessLog must not keep the ${header} header`);
+    }
+  }
+  return errors;
+}
