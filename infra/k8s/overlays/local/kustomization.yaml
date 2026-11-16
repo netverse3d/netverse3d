@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base/data
+  - mailbox.yaml
+patches:
+  - path: kafka-external.yaml
+    target:
+      group: kafka.strimzi.io
+      kind: Kafka
+      name: netverse-kafka
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+  - name: pg-identity
+    namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=identity, password=local-only-identity]
+  - name: pg-media
+    namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=media, password=local-only-media]
+  - name: pg-notification
+    namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=notification, password=local-only-notification]
+  - name: pg-payment
+    namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=payment, password=local-only-payment]
+  - name: object-store
+    namespace: netverse-data
+    literals: [accessKey=netverse-local, secretKey=change-me-local-only]
