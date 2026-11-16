@@ -75,4 +75,16 @@ describe('cấu hình môi trường', () => {
     });
     expect(env.DATABASE_URL).toBe('postgresql://x');
   });
+
+  it('tắt log dạng đẹp khi LOG_PRETTY=false, kể cả ở development', () => {
+    const config = new AppConfig(
+      parseEnv({ ...valid, NODE_ENV: 'development', LOG_PRETTY: 'false' }),
+    );
+    expect(config.log.pretty).toBe(false);
+  });
+
+  it('mặc định bật log dạng đẹp ở development khi không khai LOG_PRETTY', () => {
+    expect(new AppConfig(parseEnv({ ...valid, NODE_ENV: 'development' })).log.pretty).toBe(true);
+    expect(new AppConfig(parseEnv({ ...valid, NODE_ENV: 'production' })).log.pretty).toBe(false);
+  });
 });

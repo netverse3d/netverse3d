@@ -18,6 +18,7 @@ export const envSchema = z.object({
   SERVICE_VERSION: z.string().min(1).default('0.0.0'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+  LOG_PRETTY: booleanFlag.optional(),
   DATABASE_URL: z.string().min(1),
   CORS_ORIGINS: commaSeparated,
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).default(0),
