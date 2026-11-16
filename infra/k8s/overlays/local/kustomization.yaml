@@ -21,16 +21,32 @@ secretGenerator:
     namespace: netverse-data
     type: kubernetes.io/basic-auth
     literals: [username=identity, password=local-only-identity]
+  - name: pg-identity
+    namespace: netverse
+    type: kubernetes.io/basic-auth
+    literals: [username=identity, password=local-only-identity]
   - name: pg-media
     namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=media, password=local-only-media]
+  - name: pg-media
+    namespace: netverse
     type: kubernetes.io/basic-auth
     literals: [username=media, password=local-only-media]
   - name: pg-notification
     namespace: netverse-data
     type: kubernetes.io/basic-auth
     literals: [username=notification, password=local-only-notification]
+  - name: pg-notification
+    namespace: netverse
+    type: kubernetes.io/basic-auth
+    literals: [username=notification, password=local-only-notification]
   - name: pg-payment
     namespace: netverse-data
+    type: kubernetes.io/basic-auth
+    literals: [username=payment, password=local-only-payment]
+  - name: pg-payment
+    namespace: netverse
     type: kubernetes.io/basic-auth
     literals: [username=payment, password=local-only-payment]
   - name: object-store

@@ -3,3 +3,4 @@ kind: Component
 resources:
   - probe.yaml
   - routes.yaml
+  - network-policy.yaml

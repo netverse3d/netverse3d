@@ -43,7 +43,9 @@
     "k8s:down": "node scripts/k8s/cluster.mjs down",
     "k8s:status": "node scripts/k8s/cluster.mjs status",
     "k8s:images": "node scripts/k8s/cluster.mjs images",
-    "k8s:check": "node scripts/k8s/check.mjs"
+    "k8s:check": "node scripts/k8s/check.mjs",
+    "smoke:k8s": "node scripts/k8s/smoke-env.mjs",
+    "test:k8s": "node --test \"tests/e2e/k8s/*.test.mjs\""
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
