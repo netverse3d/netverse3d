@@ -118,22 +118,36 @@ function ensureIdentityKeys() {
   }
 }
 
-function images() {
+function buildImages() {
   checkDisk();
   for (const image of IMAGES) {
-    const tag = `netverse/${image.id}:local`;
-    mustRun('docker', ['build', '-f', image.dockerfile, '-t', tag, '.']);
-    mustRun('k3d', ['image', 'import', '-c', CLUSTER_NAME, tag]);
+    mustRun('docker', ['build', '-f', image.dockerfile, '-t', `netverse/${image.id}:local`, '.']);
   }
+}
+
+function importImages() {
+  mustRun('k3d', [
+    'image',
+    'import',
+    '-c',
+    CLUSTER_NAME,
+    ...IMAGES.map((image) => `netverse/${image.id}:local`),
+  ]);
+}
+
+function images() {
+  buildImages();
+  importImages();
 }
 
 function up() {
   checkTools(loadVersions());
+  buildImages();
   const listed = run('k3d', ['cluster', 'list', '-o', 'json'], { capture: true }).stdout;
   if (!clusterExists(listed, CLUSTER_NAME)) {
     mustRun('k3d', ['cluster', 'create', '--config', CLUSTER_CONFIG]);
   }
-  images();
+  importImages();
   requireDirectory(PLATFORM_DIR);
   kubectl(['apply', '--server-side', '--force-conflicts', '-k', PLATFORM_DIR]);
   kubectl(['wait', '--for=condition=Established', 'crd', '--all', '--timeout=120s']);
