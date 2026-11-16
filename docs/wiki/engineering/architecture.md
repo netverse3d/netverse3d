@@ -94,7 +94,7 @@ Mệnh lệnh giữa các service đi qua gRPC. Hợp đồng nằm ở `package
 
 ## Cổng vào
 
-Traefik là cổng chung cho web, API và WebSocket theo [ADR-0034](../../decisions/ADR-0034-api-gateway.md). Client gọi API cùng origin ở `/api/<service>/v1/…`; cổng bỏ tiền tố `/api/<service>` trước khi chuyển đến service, còn service tự xác thực. Route `/ws/game` chỉ được bật khi game server sẵn sàng; hiện `/ws/_probe` phục vụ kiểm thử trên môi trường local. Danh sách route và chính sách lấy từ `infra/gateway/routes.yaml`; xem [runbook cổng vào](../../runbooks/gateway.md) để sửa và kiểm tra.
+Traefik là cổng chung cho web, API và WebSocket theo [ADR-0034](../../decisions/ADR-0034-api-gateway.md). Client gọi API cùng origin ở `/api/<service>/v1/…`; cổng bỏ tiền tố `/api/<service>` trước khi chuyển đến service, còn service tự xác thực. Môi trường dev có một Swagger UI ở `/docs` để chọn đặc tả của Identity, Media và Notification và thử API trên cùng origin; staging và production không phục vụ tài liệu. Route `/ws/game` chỉ được bật khi game server sẵn sàng; hiện `/ws/_probe` phục vụ kiểm thử trên môi trường local. Danh sách route và chính sách lấy từ `infra/gateway/routes.yaml`; xem [runbook cổng vào](../../runbooks/gateway.md) để sửa và kiểm tra.
 
 ## Quy tắc kiến trúc
 

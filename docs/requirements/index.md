@@ -375,7 +375,7 @@ Nguồn: `team-decision`
 
 ### REQ-047: Client chỉ gọi hệ thống qua một cổng vào
 
-Mọi yêu cầu HTTP và WebSocket từ client đi qua một cổng theo `/api/<service>/v1` và `/ws`; cổng không chứa nghiệp vụ, chặn đường nội bộ, giới hạn tần suất và cỡ yêu cầu; service tự xác thực, theo ADR-0034.
+Mọi yêu cầu HTTP và WebSocket từ client đi qua một cổng theo `/api/<service>/v1` và `/ws`; cổng không chứa nghiệp vụ, chặn đường nội bộ, giới hạn tần suất và cỡ yêu cầu; service tự xác thực. Môi trường phát triển có một giao diện `/docs` để chọn tài liệu API công khai của từng service và thử API qua cổng; staging và production không phục vụ giao diện hoặc đặc tả này, theo ADR-0034.
 
 Nguồn: `mentor-architecture-full`, `team-decision`
 

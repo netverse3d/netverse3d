@@ -17,7 +17,7 @@ Sơ đồ kiến trúc có lớp cổng vào cho client, nhưng `infra/gateway` 
    - giới hạn tần suất theo IP;
    - giới hạn cỡ yêu cầu;
    - thay X-Forwarded-For do client gửi bằng IP cổng thấy.
-4. Chỉ đường `/api/<service>/v<n>` mới ra ngoài. `/healthz`, `/livez`, `/docs`, metric và khoá công khai của identity chỉ dùng trong mạng nội bộ.
+4. Client gọi API qua `/api/<service>/v<n>`. Ở môi trường phát triển, cổng còn phục vụ một Swagger UI tại `/docs` và các đặc tả API công khai của từng service trên cùng origin; chọn service trong UI không đổi quy tắc định tuyến API. Compose dev và cụm Kubernetes local có route này. Staging và production không triển khai UI, không mở route đặc tả, và service không phục vụ Swagger UI hoặc JSON. `/healthz`, `/livez`, metric, khoá công khai của identity và Swagger riêng của service vẫn chỉ dùng trong mạng nội bộ ở dev.
 5. Payment chỉ mở đường webhook của nhà cung cấp. Các đường dùng API key và đường quản trị nội bộ không đi qua cổng, vì trình duyệt không được giữ API key và màn quản trị payment chưa có.
 6. Object storage đi qua một entrypoint riêng, không cắt tiền tố và giữ nguyên `Host`, vì URL ký sẵn ký cả host lẫn đường dẫn.
 7. Route khai một lần ở `infra/gateway/routes.yaml`. Cấu hình của Compose và Kubernetes được sinh từ tệp đó, bước kiểm báo khi tệp sinh lệch nguồn.
@@ -31,7 +31,8 @@ Sơ đồ kiến trúc có lớp cổng vào cho client, nhưng `infra/gateway` 
 ## Hệ quả
 
 - URL công khai của API đổi sang `/api/<service>/v1/…`. Kịch bản kiểm xuyên service và client sau này gọi qua cổng.
-- Swagger của service chỉ xem được ở cổng riêng của service khi chạy local.
+- FE xem một Swagger UI ở cổng chung khi chạy dev; mỗi service vẫn sở hữu OpenAPI của mình. Bản trình bày chỉ gồm API đi qua cổng và đặt URL máy chủ công khai để `Try it out` gọi đúng `/api/<service>/v<n>`.
+- Staging và production không có đường tài liệu. Việc ẩn tài liệu không thay thế xác thực và phân quyền của service.
 - Webhook của nhà cung cấp thanh toán phải đăng ký URL `/api/payment/v1/webhooks/<provider>`.
 - Service chạy sau cổng mà quên `TRUST_PROXY_HOPS=1` thì mọi client dùng chung một hạn mức; bước kiểm cấu hình cổng chặn trường hợp này trong Compose.
 - Hạn mức của cổng tính theo từng bản Traefik. Khi chạy nhiều bản, hạn mức thực tế nhân theo số bản.
