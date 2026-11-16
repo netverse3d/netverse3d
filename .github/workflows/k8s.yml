@@ -80,6 +80,7 @@ jobs:
           GATEWAY_URL: http://127.0.0.1:58180
           GATEWAY_STORAGE_URL: http://127.0.0.1:58335
           GATEWAY_WS_PROBE: '1'
+      - run: sleep 30
       - run: pnpm smoke:k8s
       - run: pnpm test:k8s
         env:
