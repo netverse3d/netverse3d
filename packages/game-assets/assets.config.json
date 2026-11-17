@@ -362,7 +362,7 @@
       "slots": {
         "cart": {
           "variants": ["a", "b"],
-          "maxTriangles": 3200,
+          "maxTriangles": 3500,
           "size": [1.7, 2.2, 0.9],
           "anchors": ["collision_main"]
         },

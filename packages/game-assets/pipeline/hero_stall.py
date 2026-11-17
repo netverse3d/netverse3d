@@ -3,7 +3,7 @@ import math
 import bmesh
 from mathutils import Vector
 
-from hero_kit import HeroPart, rounded_rect
+from hero_kit import ALL_ROWS, HeroPart, rounded_rect
 
 
 def remove_hidden_face(part, new_faces, axis, position, normal):
@@ -24,10 +24,10 @@ def cart_wheels(part):
             ([(0.19, -0.018), (0.235, -0.023), (0.27, 0), (0.235, 0.023), (0.19, 0.018), (0.19, -0.018)], 'soft'),
             ([(0.172, -0.014), (0.205, -0.014), (0.205, 0.014), (0.172, 0.014), (0.172, -0.014)], 'metal'),
         ):
-            rings = [[center + Vector((along, radius * math.cos(2 * math.pi * side / 12), radius * math.sin(2 * math.pi * side / 12))) for side in range(12)] for radius, along in profile]
-            part.loft(rings, lambda r, c: row, levels=0, cap=False, smooth=False)
-        for side in range(10):
-            angle = 2 * math.pi * side / 10
+            rings = [[center + Vector((along, radius * math.cos(2 * math.pi * side / 16), radius * math.sin(2 * math.pi * side / 16))) for side in range(16)] for radius, along in profile]
+            part.loft(rings, lambda r, c: row, levels=0, cap=False, smooth=True)
+        for side in range(12):
+            angle = 2 * math.pi * side / 12
             radial = Vector((0, math.cos(angle), math.sin(angle)))
             tangent = Vector((0, -math.sin(angle), math.cos(angle)))
             inner = center + radial * 0.038
@@ -35,7 +35,7 @@ def cart_wheels(part):
             width = 0.006
             face = [inner - tangent * width, outer - tangent * width, outer + tangent * width, inner + tangent * width]
             part.oriented_poly(face, (sign, 0, 0), 'metal')
-        part.revolve((x + sign * 0.006, 0.13, 0.27), 'x', [(0.055, -0.012, 'metal'), (0.055, 0.012, 'metal')], segments=10, smooth=False)
+        part.revolve((x + sign * 0.006, 0.13, 0.27), 'x', [(0.055, -0.012, 'metal'), (0.055, 0.012, 'metal')], segments=16, smooth=True)
     part.tube([(0, 0.28, 0.5), (0, 0.34, 0.02)], 0.022, 'metal', sides=4)
     part.rounded_box((0, 0.34, 0.0175), (0.16, 0.1, 0.035), 'soft', radius=0.008, segments=1)
 
@@ -44,15 +44,15 @@ def cart_chassis(part):
     cart_wheels(part)
     part.rounded_box((0, 0.05, 0.53), (1.25, 0.67, 0.14), 'metal', radius=0.025, segments=1)
     part.rounded_box((0, -0.235, 0.76), (1.17, 0.045, 0.3), 'body', radius=0.012, segments=1)
-    part.rounded_box((0, -0.262, 0.79), (0.8, 0.012, 0.045), 'trim', radius=0.003, segments=1)
     for x in (-0.31, 0.31):
-        part.oriented_poly([(x - 0.2, -0.259, 0.66), (x + 0.2, -0.259, 0.66), (x + 0.2, -0.259, 0.86), (x - 0.2, -0.259, 0.86)], (0, -1, 0), 'trim')
-        part.tube([(x - 0.21, -0.263, 0.65), (x - 0.21, -0.263, 0.87), (x + 0.21, -0.263, 0.87), (x + 0.21, -0.263, 0.65)], 0.007, 'metal', sides=3)
+        part.rounded_box((x, -0.262, 0.76), (0.43, 0.012, 0.23), 'metal', radius=0.005, segments=1)
+        part.tube([(x - 0.19, -0.27, 0.665), (x - 0.19, -0.27, 0.855), (x + 0.19, -0.27, 0.855), (x + 0.19, -0.27, 0.665)], 0.003, 'body', sides=3)
     part.tube([(-0.52, -0.26, 0.61), (0.52, -0.26, 0.61)], 0.01, 'metal', sides=4)
     for x in (-0.56, 0.56):
         for z in (0.69, 0.84):
             part.tube([(x, -0.263, z - 0.017), (x, -0.263, z + 0.017)], 0.006, 'metal', sides=3)
     part.tube([(-0.12, -0.274, 0.77), (0.12, -0.274, 0.77)], 0.012, 'metal', sides=4)
+    part.tube([(-0.6, -0.303, 0.912), (0.6, -0.303, 0.912)], 0.005, 'strip', sides=4)
     for x in (-0.54, 0.54):
         part.tube([(x, 0.32, 0.48), (x, 0.32, 0.93)], 0.021, 'metal', sides=4)
     part.tube([(-0.54, 0.32, 0.92), (0.54, 0.32, 0.92)], 0.025, 'metal', sides=4)
@@ -67,31 +67,47 @@ def roof_sign(part, z=1.91, y=-0.02):
     part.tube([(-0.51, y - 0.08, z - 0.14), (0.51, y - 0.08, z - 0.14), (0.51, y - 0.08, z + 0.14), (-0.51, y - 0.08, z + 0.14)], 0.009, 'strip', sides=4, closed=True)
 
 
-def curved_canopy(part, center_y, edge_z, half_width, half_depth, row):
-    rings = []
-    for step in range(49):
-        x = half_width * (step / 24 - 1)
-        arch = 0.026 * (1 - (x / half_width) ** 2)
-        wave = 0.017 * (math.cos(2 * math.pi * x / 0.078) - 1) / 2
-        rings.append([(x, center_y - half_depth, edge_z + arch + wave), (x, center_y + half_depth, edge_z + arch + wave - 0.022)])
-    part.loft(rings, lambda r, c: row, levels=0, closed=False, cap=False, smooth=False)
-    front_y = center_y - half_depth - 0.012
-    part.rounded_box((0, front_y, edge_z - 0.004), (2 * half_width, 0.034, 0.07), 'metal', radius=0.012, segments=2)
-    for x in (-half_width, half_width):
-        part.tube([(x, center_y - half_depth, edge_z - 0.025), (x, center_y + half_depth, edge_z - 0.047)], 0.014, 'metal', sides=4)
-    part.tube([(-half_width + 0.08, front_y - 0.015, edge_z - 0.037), (half_width - 0.08, front_y - 0.015, edge_z - 0.037)], 0.008, 'strip', sides=4)
-
-
-def baguette(part, x, y, z, length):
-    rings = []
-    for step, width in enumerate((0.008, 0.052, 0.064, 0.052, 0.008)):
-        along = length * (step / 4 - 0.5)
-        center_z = z + 0.015 * math.sin(math.pi * step / 4)
-        rings.append([(x + along, y + width * math.cos(2 * math.pi * side / 8), center_z + width * 0.8 * math.sin(2 * math.pi * side / 8)) for side in range(8)])
-    part.loft(rings, lambda r, c: 'soft' if r < 3 else 'top', levels=0, smooth=False)
-    for offset in (-0.105, 0.03):
-        part.tube([(x + offset - 0.025, y - 0.038, z + 0.042), (x + offset + 0.02, y + 0.038, z + 0.052)], 0.0025, 'top', sides=3)
-
+def baguette(part, x, y, z, yaw):
+    sides = 10
+    profile = ((-0.5, 0.014), (-0.39, 0.033), (-0.30, 0.040), (-0.15, 0.043), (0, 0.043), (0.15, 0.043), (0.30, 0.040), (0.39, 0.033), (0.5, 0.014))
+    vertices = []
+    for ring, (along, radius) in enumerate(profile):
+        for side in range(sides):
+            angle = 2 * math.pi * side / sides
+            across = radius * math.cos(angle)
+            split = max(0.0, min(1.0, (0.36 - abs(along)) / 0.11))
+            height = radius * 0.82 * max(math.sin(angle), -0.83)
+            if side == 2:
+                across -= 0.007 * split
+                height += 0.005 * split
+            elif side == 3:
+                across += 0.009 * split
+                height -= 0.011 * split
+            elif side == 4:
+                across += 0.020 * split
+                height += 0.001 * split
+            length_offset = along * 0.25
+            bend = 0.004 * (1 - 4 * along * along)
+            vertices.append((x + length_offset * math.cos(yaw) - (across + bend) * math.sin(yaw), y + length_offset * math.sin(yaw) + (across + bend) * math.cos(yaw), z + height))
+    faces = []
+    rows = []
+    for ring in range(len(profile) - 1):
+        for side in range(sides):
+            next_side = (side + 1) % sides
+            faces.append((ring * sides + side, ring * sides + next_side, (ring + 1) * sides + next_side, (ring + 1) * sides + side))
+            rows.append('screen' if 1 <= ring <= 6 and side in (2, 3) else 'trim')
+    faces.extend((tuple(reversed(range(sides))), tuple((len(profile) - 1) * sides + side for side in range(sides))))
+    rows.extend(('trim', 'trim'))
+    before = set(part.bm.faces)
+    part.add_cage(vertices, faces, rows, levels=0, smooth=True)
+    for face in set(part.bm.faces) - before:
+        row = ALL_ROWS[face[part.row_layer]]
+        if row == 'screen':
+            part._tag((face,), 'screen', key_u=0.0, smooth=False)
+        else:
+            height = face.calc_center_median().z - z
+            key_u = 0.02 if height < -0.012 else 0.25 if height > 0.021 and face.calc_center_median().y > y else 0.04
+            part._tag((face,), 'trim', key_u=key_u, smooth=True)
 
 def glass_panel(part, axis, center, size):
     rings = []
@@ -112,45 +128,61 @@ def glass_panel(part, axis, center, size):
 
 def build_cart_a():
     cart = HeroPart('cart_a')
-    cart_chassis(cart)
-    cart.rounded_box((0.7, 0.1, 0.68), (0.18, 0.28, 0.025), 'metal', radius=0.007, segments=1)
-    cart.tube([(0.63, 0.22, 0.6), (0.7, 0.22, 0.67)], 0.009, 'metal', sides=4)
-    cart.revolve((0.7, 0.1, 0.684), 'z', [(0.052, 0, 'body'), (0.066, 0.018, 'body'), (0.066, 0.17, 'body'), (0.035, 0.2, 'metal')], segments=8, smooth=False)
-    cart.rounded_box((0, 0.04, 0.96), (1.3, 0.72, 0.07), 'metal', radius=0.016, segments=2)
-    for x in (-0.53, 0, 0.53):
-        cart.rounded_box((x, 0.0, 1.005), (0.43, 0.5, 0.035), 'metal', radius=0.01, segments=1)
-        cart.rounded_box((x, -0.263, 1.032), (0.37, 0.025, 0.025), 'trim', radius=0.005, segments=1)
-    for x, y, z in ((-0.31, -0.11, 1.105), (0.17, -0.11, 1.105), (0.04, 0.09, 1.17)):
-        baguette(cart, x, y, z, 0.39)
-    cart.rounded_box((-0.43, 0.15, 1.07), (0.18, 0.15, 0.1), 'body', radius=0.008, segments=1)
-    before = set(cart.bm.faces)
-    cart.rounded_box((0.44, 0.15, 1.035), (0.26, 0.16, 0.025), 'top', radius=0.006, segments=1)
-    remove_hidden_face(cart, set(cart.bm.faces) - before, 2, 1.0225, -1)
-    for x in (-0.6, 0.6):
-        for y in (-0.29, 0.33):
-            cart.tube([(x, y, 1.0), (x, y, 1.59)], 0.016, 'metal', sides=4)
-    for z in (1.04, 1.59):
-        for y in (-0.29, 0.33):
-            cart.tube([(-0.6, y, z), (0.6, y, z)], 0.014, 'metal', sides=4)
-    for x in (-0.31, 0.31):
-        cart.tube([(x, -0.3, 1.06), (x, -0.3, 1.57)], 0.007, 'metal', sides=4)
-    for z in (1.075, 1.135):
-        cart.tube([(-0.56, -0.308, z), (0.56, -0.308, z)], 0.008, 'metal', sides=4)
-    glass_panel(cart, 'y', (0, -0.297, 1.548), (1.12, 0.072, 0.008))
-    for x in (-0.585, 0.585):
-        glass_panel(cart, 'x', (x, 0.02, 1.31), (0.62, 0.47, 0.008))
-    glass_panel(cart, 'z', (0, 0.02, 1.585), (1.18, 0.62, 0.008))
-    for x in (-0.55, 0.55):
-        cart.tube([(x, 0.23, 1.589), (x, 0.23, 2.0)], 0.022, 'metal', sides=4)
-    curved_canopy(cart, 0.04, 2.07, 0.765, 0.41, 'top')
-    roof_sign(cart)
-    for x in (-0.55, 0.55):
-        cart.tube([(x, 0.23, 1.83), (x, -0.33, 2.025)], 0.012, 'metal', sides=4)
+    kiosk_body(cart)
+    box_solid(cart, (-0.16, -0.06, 1.006), (0.76, 0.30, 0.012), 'metal', omit_bottom=True)
+    for x in (-0.40, -0.16, 0.08):
+        baguette(cart, x, -0.06, 1.041, math.pi / 2)
+    for x, yaw in ((-0.34, 0.18), (0.0, -0.16)):
+        baguette(cart, x, -0.06, 1.102, yaw)
+    for x in (-0.55, 0.23):
+        for y in (-0.22, 0.13):
+            cart.tube([(x, y, 0.985), (x, y, 1.47)], 0.01, 'metal', sides=4)
+    for z in (0.985, 1.47):
+        cart.tube([(-0.55, -0.22, z), (0.23, -0.22, z), (0.23, 0.13, z), (-0.55, 0.13, z)], 0.009, 'metal', sides=4, closed=True)
+    pane_reflections(cart, 'y', -0.22, -0.54, 0.22, 1.0, 1.46, -1)
+    for x, side in ((-0.55, -1), (0.23, 1)):
+        pane_reflections(cart, 'x', x, -0.21, 0.12, 1.0, 1.46, side)
+    box_solid(cart, (-0.16, -0.045, 1.477), (0.80, 0.37, 0.014), 'metal')
+    for x0, x1, y in ((-0.54, -0.13, 0.137), (-0.41, 0.0, 0.125)):
+        flat_frame(cart, x0, x1, y, 1.0, 1.46, 0.01)
+        pane_reflections(cart, 'y', y, x0 + 0.01, x1 - 0.01, 1.01, 1.45, 1)
+    charcoal_grill(cart)
+    cart.revolve((-0.48, 0.26, 0.986), 'z', [(0.045, 0, 'body'), (0.055, 0.08, 'body'), (0.03, 0.10, 'metal')], segments=8, smooth=False)
+    cart.tube([(-0.48, 0.26, 1.09), (-0.47, 0.32, 1.12), (-0.38, 0.32, 1.12)], 0.004, 'soft', sides=4)
+    for level in range(3):
+        box_solid(cart, (-0.24, 0.265, 0.994 + 0.017 * level), (0.14 - 0.012 * level, 0.11 - 0.012 * level, 0.018), 'top', omit_bottom=True)
+    for x in (-0.03, 0.04):
+        cart.revolve((x, 0.27, 0.986), 'z', [(0.022, 0, 'body'), (0.022, 0.082, 'body'), (0.016, 0.089, 'top')], segments=6, smooth=False)
+    box_solid(cart, (0.22, 0.27, 0.995), (0.19, 0.10, 0.02), 'top', omit_bottom=True)
     bmesh.ops.remove_doubles(cart.bm, verts=cart.bm.verts[:], dist=1e-6)
     return cart
 
 
-def box_solid(part, center, size, row, omit_top=False):
+def charcoal_grill(part):
+    for x in (0.29, 0.59):
+        box_solid(part, (x, -0.09, 0.998), (0.025, 0.13, 0.025), 'metal')
+    box_solid(part, (0.44, -0.09, 1.028), (0.34, 0.19, 0.045), 'soft')
+    for sign in (-1, 1):
+        x = 0.44 + sign * 0.178
+        part.oriented_poly([(x, -0.197, 1.018), (x, 0.017, 1.018), (x + sign * 0.012, 0.023, 1.101), (x + sign * 0.012, -0.203, 1.101)], (sign, 0, 0), 'metal')
+        part.tube([(x + sign * 0.01, -0.15, 1.072), (x + sign * 0.047, -0.15, 1.072), (x + sign * 0.047, -0.03, 1.072), (x + sign * 0.01, -0.03, 1.072)], 0.005, 'metal', sides=3)
+    for sign in (-1, 1):
+        y = -0.09 + sign * 0.103
+        part.oriented_poly([(0.267, y, 1.018), (0.613, y, 1.018), (0.632, y + sign * 0.008, 1.101), (0.248, y + sign * 0.008, 1.101)], (0, sign, 0), 'metal')
+    box_solid(part, (0.44, -0.09, 1.068), (0.29, 0.15, 0.006), 'strip', omit_bottom=True)
+    for x, y in ((0.32, -0.13), (0.40, -0.055), (0.49, -0.14), (0.56, -0.06)):
+        part.revolve((x, y, 1.073), 'z', [(0.017, 0, 'soft'), (0.022, 0.011, 'top'), (0.009, 0.019, 'soft')], segments=4, smooth=False)
+    part.tube([(0.25, -0.194, 1.104), (0.63, -0.194, 1.104), (0.63, 0.014, 1.104), (0.25, 0.014, 1.104)], 0.006, 'metal', sides=3, closed=True)
+    for index in range(9):
+        y = -0.178 + index * 0.022
+        part.tube([(0.258, y, 1.106), (0.622, y, 1.106)], 0.0025, 'metal', sides=3)
+    for index in range(3):
+        x = 0.34 + index * 0.09
+        y = -0.17 + index * 0.012
+        part.tube([(x - 0.02, y - 0.055, 1.119), (x + 0.025, y + 0.095, 1.119)], 0.0025, 'metal', sides=3)
+        part.revolve((x, y + 0.02, 1.127), 'z', [(0.018, -0.006, 'top'), (0.020, 0, 'trim'), (0.013, 0.008, 'top')], segments=4, smooth=False)
+
+def box_solid(part, center, size, row, omit_top=False, omit_bottom=False):
     cx, cy, cz = center
     hx, hy, hz = size[0] / 2, size[1] / 2, size[2] / 2
     verts = [
@@ -158,8 +190,10 @@ def box_solid(part, center, size, row, omit_top=False):
         (cx - hx, cy - hy, cz + hz), (cx + hx, cy - hy, cz + hz), (cx + hx, cy + hy, cz + hz), (cx - hx, cy + hy, cz + hz),
     ]
     faces = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [2, 3, 7, 6], [3, 0, 4, 7], [1, 2, 6, 5]]
+    if omit_bottom:
+        faces.pop(0)
     if omit_top:
-        faces.pop(1)
+        faces.pop(0 if omit_bottom else 1)
     part.add_cage(verts, faces, [row] * len(faces), levels=0, smooth=False)
 
 
@@ -202,18 +236,17 @@ def scalloped_hem(part):
 
 def arch_fender(part, center, wheel_y):
     rings = []
-    for step in range(10):
-        angle = math.radians(12 + 156 * step / 9)
+    for step in range(14):
+        angle = math.radians(12 + 156 * step / 13)
         cos, sin = math.cos(angle), math.sin(angle)
-        outer = (center[0] + 0.302 * cos, center[2] + 0.302 * sin)
-        inner = (center[0] + 0.279 * cos, center[2] + 0.279 * sin)
+        outer = (center[0] + 0.303 * cos, center[2] + 0.303 * sin)
+        inner = (center[0] + 0.281 * cos, center[2] + 0.281 * sin)
         rings.append([
             (outer[0], wheel_y - 0.046, outer[1]),
             (outer[0], wheel_y + 0.046, outer[1]),
-            (inner[0], wheel_y + 0.046, inner[1]),
-            (inner[0], wheel_y - 0.046, inner[1]),
+            (inner[0], wheel_y + math.copysign(0.046, wheel_y), inner[1]),
         ])
-    part.loft(rings, lambda r, c: 'metal', levels=0, cap=True, smooth=False)
+    part.loft(rings, lambda r, c: 'metal', levels=0, closed=False, cap=False, smooth=False)
 
 
 def flat_frame(part, x0, x1, y, z0, z1, width):
@@ -256,29 +289,29 @@ def pane_reflections(part, axis, fixed, u0, u1, z0, z1, outward):
 
 
 def kiosk_wheels(part):
-    segments = 10
-    tyre = ((0.173, -0.029), (0.216, -0.031), (0.247, -0.025), (0.255, -0.012), (0.255, 0.012), (0.247, 0.025), (0.216, 0.031), (0.173, 0.029))
+    segments = 16
+    tyre = ((0.173, -0.029), (0.239, -0.031), (0.260, -0.013), (0.260, 0.013), (0.239, 0.031), (0.173, 0.029))
     for wheel_y in (-0.345, 0.345):
         center = Vector((-0.47, wheel_y, 0.255))
         out = math.copysign(1.0, wheel_y)
 
         def ring(radius, along):
             return [
-                (center.x + radius * math.cos(-math.pi / 2 - 2 * math.pi * side / segments), wheel_y + along, center.z + radius * math.sin(-math.pi / 2 - 2 * math.pi * side / segments))
+                (center.x + radius * math.cos(-math.pi / 2 + math.pi / segments + 2 * math.pi * side / segments), wheel_y + along, center.z + radius * math.sin(-math.pi / 2 + math.pi / segments + 2 * math.pi * side / segments))
                 for side in range(segments)
             ]
 
-        part.loft([ring(radius, along) for radius, along in tyre], lambda r, c: 'soft', levels=0, cap=False, smooth=False)
-        part.loft([ring(radius, out * offset) for radius, offset in ((0.169, 0.030), (0.153, 0.019), (0.146, 0.019))], lambda r, c: 'metal', levels=0, cap=False, smooth=False)
+        part.loft([ring(radius, along) for radius, along in tyre], lambda r, c: 'soft', levels=0, cap=False, smooth=True)
+        part.loft([ring(radius, out * offset) for radius, offset in ((0.169, 0.030), (0.146, 0.019))], lambda r, c: 'metal', levels=0, cap=False, smooth=False)
         for index in range(6):
             angle = math.pi / 2 + 2 * math.pi * index / 6
             radial = Vector((math.cos(angle), 0, math.sin(angle)))
             tangent = Vector((-math.sin(angle), 0, math.cos(angle)))
             points = []
-            for along, inner_width, outer_width in ((out * 0.015, 0.014, 0.019), (out * 0.028, 0.012, 0.017)):
-                for radius, width in ((0.042, inner_width), (0.151, outer_width)):
+            for along in (out * 0.015, out * 0.028):
+                for radius, width in ((0.042, 0.014), (0.151, 0.014)):
                     points.extend((center + radial * radius + tangent * width + Vector((0, along, 0)), center + radial * radius - tangent * width + Vector((0, along, 0))))
-            faces = ((0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3))
+            faces = ((4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (1, 5, 7, 3))
             if out < 0:
                 faces = tuple(tuple(reversed(face)) for face in faces)
             part.add_cage(points, faces, ['metal'] * 6, levels=0, smooth=False)
@@ -287,8 +320,8 @@ def kiosk_wheels(part):
         if out < 0:
             hub_profile.reverse()
             cap_profile.reverse()
-        part.revolve((center.x, wheel_y, center.z), 'y', hub_profile, segments=8, smooth=False)
-        part.revolve((center.x, wheel_y, center.z), 'y', cap_profile, segments=8, smooth=False)
+        part.revolve((center.x, wheel_y, center.z), 'y', hub_profile, segments=12, smooth=False)
+        part.revolve((center.x, wheel_y, center.z), 'y', cap_profile, segments=12, smooth=False)
         part.tube([(center.x, out * 0.285, center.z), (center.x, wheel_y, center.z)], 0.021, 'metal', sides=6)
         arch_fender(part, center, wheel_y)
     part.loft(
@@ -359,8 +392,7 @@ def menu_lightbox(part, x):
     part.tube([(x, -0.335, 0.97), (x, -0.335, 1.104)], 0.012, 'metal', sides=4)
 
 
-def build_cart_b():
-    cart = HeroPart('cart_b')
+def kiosk_body(cart):
     kiosk_wheels(cart)
     before = set(cart.bm.faces)
     cart.rounded_box((0, 0, 0.59), (1.3, 0.62, 0.68), 'metal', radius=0.014, segments=1)
@@ -391,6 +423,11 @@ def build_cart_b():
     cart.image_rect([(-0.48, -0.379, 1.816), (0.48, -0.379, 1.816), (0.48, -0.379, 2.056), (-0.48, -0.379, 2.056)], 'decal', (0, 0, 1, 1))
     cart.tube([(-0.50, -0.383, 1.814), (0.50, -0.383, 1.814), (0.50, -0.383, 2.058), (-0.50, -0.383, 2.058)], 0.006, 'strip', sides=4, closed=True)
     scalloped_hem(cart)
+
+
+def build_cart_b():
+    cart = HeroPart('cart_b')
+    kiosk_body(cart)
     display_case(cart)
     for x in (-0.66, 0.66):
         menu_lightbox(cart, x)
