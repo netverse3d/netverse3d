@@ -166,8 +166,12 @@ function apiDocsFindings(doc, overlay) {
   if (overlay === 'local') return [];
   const isDocsRoute =
     doc.kind === 'HTTPRoute' &&
-    (doc.spec?.rules ?? []).some((rule) =>
-      (rule.matches ?? []).some((match) => match.path?.value === '/docs'),
+    (doc.spec?.rules ?? []).some(
+      (rule) =>
+        (rule.matches ?? []).some((match) => {
+          const path = match.path?.value;
+          return path === '/docs' || path?.startsWith('/docs/');
+        }) || (rule.backendRefs ?? []).some((backend) => backend.name === 'api-docs'),
     );
   return doc.metadata?.name === 'api-docs' || isDocsRoute
     ? [finding('P12', doc, 'API documentation is only allowed in the local overlay')]

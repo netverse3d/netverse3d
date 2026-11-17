@@ -139,6 +139,31 @@ test('từ chối route và workload tài liệu ngoài overlay local', () => {
   assert.deepEqual(rulesOf([route, service], 'staging'), ['P12', 'P12']);
 });
 
+test('chặn mọi đường dưới docs và backend tài liệu khi route staging đổi tên', () => {
+  for (const path of ['/docs/', '/docs/config.json']) {
+    const route = {
+      kind: 'HTTPRoute',
+      metadata: { name: 'docs-staging', namespace: 'netverse' },
+      spec: { rules: [{ matches: [{ path: { type: 'PathPrefix', value: path } }] }] },
+    };
+    assert.deepEqual(rulesOf([route], 'staging'), ['P12']);
+  }
+  const backendRoute = {
+    kind: 'HTTPRoute',
+    metadata: { name: 'portal', namespace: 'netverse' },
+    spec: {
+      rules: [{ matches: [{ path: { value: '/portal' } }], backendRefs: [{ name: 'api-docs' }] }],
+    },
+  };
+  const unrelatedRoute = {
+    kind: 'HTTPRoute',
+    metadata: { name: 'docs-neighbor', namespace: 'netverse' },
+    spec: { rules: [{ matches: [{ path: { value: '/docsx' } }] }] },
+  };
+  assert.deepEqual(rulesOf([backendRoute], 'staging'), ['P12']);
+  assert.deepEqual(rulesOf([unrelatedRoute], 'staging'), []);
+});
+
 test('yêu cầu default-deny-ingress trong namespace netverse', () => {
   assert.deepEqual(rulesOf([namespace, deployment()]), ['P8']);
 });

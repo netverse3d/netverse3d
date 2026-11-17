@@ -51,7 +51,7 @@ Một thao tác có thể báo thành công dù không đổi trạng thái; vì
 
 **Kỳ vọng:** Từ UI Identity, `GET /v1/auth/providers` trả 200. Từ UI Media, `GET /v1/media` khi chưa đăng nhập trả 401; sau khi nhập token hợp lệ của `P1`, request tới đúng `/api/media/v1/media` và trả theo quyền của `P1`. JSON mô tả được API quản trị và token dịch vụ, nhưng việc nhìn thấy operation không cấp quyền gọi.
 
-**Bước:** Dùng nút `Try it out`, ghi request URL và status; nhập token thử vào nút Authorize rồi thử lại. Nếu request bỏ qua Gateway hoặc request không token được 200, giả thuyết kiểm quyền sai; dừng nghiệm thu.
+**Bước:** Dùng nút `Try it out`, ghi request URL và status; nhập token thử vào nút Authorize rồi thử lại. Khi đổi service ở menu, chọn Authorize và nhập token lại cho spec vừa chọn. Nếu request bỏ qua Gateway hoặc request không token được 200, giả thuyết kiểm quyền sai; dừng nghiệm thu.
 
 **Nếu khác kỳ vọng:** Giả thuyết sai; dừng nghiệm thu và kiểm xác thực của service.
 
@@ -75,15 +75,15 @@ Nếu một đường trả JSON nội bộ, giả thuyết “chỉ spec đã l
 
 ## 3. Kết quả đã ghi
 
-| Ca    | Kết quả | Môi trường                | Quan sát                                                                                                                                         |
-| ----- | ------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TC-01 | Pass    | Compose gốc trên cổng thử | Năm URL docs và `/api/identity/docs-json` trả 404                                                                                                |
-| TC-01 | N/A     | Staging/production thật   | Chưa có môi trường để gọi HTTP                                                                                                                   |
-| TC-02 | Pass    | k3d local và Compose dev  | UI, config và ba JSON trả 200; Chrome trên k3d chọn lần lượt ba service, hiện đúng tên và endpoint                                               |
-| TC-03 | Pass    | k3d local                 | Test e2e kiểm ba `servers`, path đại diện và cùng origin                                                                                         |
-| TC-04 | Pass    | k3d local                 | Chrome dùng `Try it out` gọi `/api/identity/v1/auth/providers` được 200 và `/api/media/v1/media` không token được 401; smoke kiểm token có quyền |
-| TC-05 | Pass    | k3d local                 | `pnpm smoke:k8s` kiểm các phản hồi 403 theo vai trò và tenant                                                                                    |
-| TC-06 | Pass    | k3d local                 | Gateway test 12/12, đường nội bộ 404                                                                                                             |
+| Ca    | Kết quả | Môi trường                | Quan sát                                                                                                                                                                               |
+| ----- | ------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TC-01 | Pass    | Compose gốc trên cổng thử | Năm URL docs và `/api/identity/docs-json` trả 404                                                                                                                                      |
+| TC-01 | N/A     | Staging/production thật   | Chưa có môi trường để gọi HTTP                                                                                                                                                         |
+| TC-02 | Pass    | k3d local và Compose dev  | UI, config và ba JSON trả 200; Chrome trên k3d chọn lần lượt ba service, hiện đúng tên và endpoint                                                                                     |
+| TC-03 | Pass    | k3d local                 | Test e2e kiểm ba `servers`, path đại diện và cùng origin                                                                                                                               |
+| TC-04 | Pass    | k3d local                 | Chrome gọi `/api/identity/v1/auth/providers` được 200; Media không token trả 401, sau Authorize bằng token player thì `/api/media/v1/media` trả 200 qua Gateway                        |
+| TC-05 | Pass    | k3d local                 | Chrome dùng Authorize: token player gọi `/api/identity/v1/audit-logs` trả 403, token admin trả 200; cả hai request có Bearer qua Gateway. `pnpm smoke:k8s` kiểm thêm quyền theo tenant |
+| TC-06 | Pass    | k3d local                 | Gateway test 12/12, đường nội bộ 404                                                                                                                                                   |
 
 ## 4. Diễn giải
 
