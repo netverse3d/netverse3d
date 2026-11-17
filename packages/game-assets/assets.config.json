@@ -386,7 +386,7 @@
         },
         "cooler": {
           "variants": ["a"],
-          "maxTriangles": 300,
+          "maxTriangles": 500,
           "size": [0.6, 0.45, 0.4],
           "anchors": ["collision_main"]
         }

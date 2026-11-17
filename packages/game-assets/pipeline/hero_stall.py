@@ -486,9 +486,13 @@ def build_stool_a():
     for half, z, radius in ((0.138, 0.258, 0.001), (0.138, 0.285, 0.007), (0.133, 0.305, 0.025), (0.118, 0.306, 0.025), (0.108, 0.302, 0.025), (0.092, 0.305, 0.025), (0.083, 0.302, 0.025), (0.007, 0.302, 0.005), (0.007, 0.276, 0.005)):
         rings.append([(x, y, z) for x, y in rounded_rect(0, 0, half, half, radius, 1)])
     stool.loft(rings, lambda ring, side: 'soft' if ring >= 7 else 'top' if ring in (2, 3, 5, 6) else 'body', levels=0, cap=False, smooth=False)
-    for face in stool.bm.faces:
-        face[stool.key_layer] = 0.16 if face.calc_center_median().z > 0.29 and face.normal.z > 0 else 0.72
     orient_shells(stool)
+    for face in stool.bm.faces:
+        face.normal_update()
+        if ALL_ROWS[face[stool.row_layer]] == 'soft':
+            continue
+        key_u = 0.25 if face.calc_center_median().z > 0.29 and face.normal.z > 0 else 0.5
+        stool._tag((face,), 'trim', key_u=key_u, smooth=face.smooth)
     return stool
 
 
@@ -897,19 +901,18 @@ def build_stool_b():
 
     bmesh.ops.remove_doubles(stool.bm, verts=stool.bm.verts[:], dist=1e-5)
 
+    orient_shells(stool)
     for face in stool.bm.faces:
         face.normal_update()
         center_z = face.calc_center_median().z
         if face.normal.z < -0.85 and center_z < 0.02:
-            face[stool.row_layer] = ALL_ROWS.index('soft')
-        if face[stool.key_layer] < 0:
-            if face.normal.z > 0.45 and center_z > 0.41:
-                face[stool.key_layer] = 0.16
-            elif face.normal.y < -0.3:
-                face[stool.key_layer] = 0.25
-            else:
-                face[stool.key_layer] = 0.68
-    orient_shells(stool)
+            stool._tag((face,), 'soft', smooth=face.smooth)
+            continue
+        row = ALL_ROWS[face[stool.row_layer]]
+        if row == 'soft':
+            continue
+        key_u = 0.25 if row == 'top' else 0.5
+        stool._tag((face,), 'trim', key_u=key_u, smooth=face.smooth)
     return stool
 
 
@@ -928,31 +931,18 @@ def apron_skirt(part, outer, inner, bottom, top, row):
 
 def build_lowtable():
     table = HeroPart('lowtable_a')
-    top_half = 0.278
-    foot_half = 0.302
-    chamfer = 0.02
+    foot_half = 0.300
+    foot_radius = 0.030
+    top_half = 0.285
+    top_radius = 0.028
+    shoulder_z = 0.464
+    inner_top_z = 0.480
     wall = 0.013
-    top_z = 0.462
-    slope = (foot_half - top_half) / top_z
 
     def half_at(z):
-        return foot_half - slope * z
+        return foot_half - (foot_half - top_half) * (z / shoulder_z)
 
-    stations = (
-        (-0.258, -0.2803, 0.0),
-        (-0.252, -0.252, 0.0),
-        (-0.2168, -0.2168, 0.383),
-        (-0.207, -0.207, 0.390),
-        (-0.155, -0.155, 0.396),
-        (0.0, 0.0, 0.400),
-        (0.155, 0.155, 0.396),
-        (0.207, 0.207, 0.390),
-        (0.2168, 0.2168, 0.383),
-        (0.252, 0.252, 0.0),
-        (0.258, 0.2803, 0.0),
-    )
-
-    def plan(side, along, depth):
+    def side_point(side, along, depth):
         if side == 0:
             return (along, -depth)
         if side == 1:
@@ -961,77 +951,433 @@ def build_lowtable():
             return (-along, depth)
         return (-depth, -along)
 
-    rings = []
-    for side in range(4):
-        for top_along, foot_along, bottom in stations:
-            outer_bottom = plan(side, foot_along, half_at(bottom))
-            inner_bottom = plan(side, foot_along, half_at(bottom) - wall)
-            outer_top = plan(side, top_along, top_half)
-            inner_top = plan(side, top_along, top_half - wall)
-            rings.append((
-                (outer_bottom[0], outer_bottom[1], bottom),
-                (inner_bottom[0], inner_bottom[1], bottom),
-                (outer_top[0], outer_top[1], top_z),
-                (inner_top[0], inner_top[1], top_z),
-            ))
-    vertices = [point for ring in rings for point in ring]
+    def corner_point(side, step, half, radius):
+        c_off = half - radius
+        cx, cy = side_point(side, c_off, c_off)
+        angle = math.radians(-90 + 90 * side + 45 * step)
+        return (cx + radius * math.cos(angle), cy + radius * math.sin(angle))
+
+    side_stations = (
+        (-0.242, 0.0),
+        (-0.217, 0.362),
+        (-0.202, 0.386),
+        (-0.165, 0.398),
+        (0.0, 0.405),
+        (0.165, 0.398),
+        (0.202, 0.386),
+        (0.217, 0.362),
+        (0.242, 0.0),
+    )
+
+    verts = []
     faces = []
     rows = []
-    for index in range(len(rings)):
-        current = 4 * index
-        following = 4 * ((index + 1) % len(rings))
-        faces.append((current, following, following + 2, current + 2))
-        rows.append('body')
-        faces.append((following + 1, current + 1, current + 3, following + 3))
-        rows.append('soft')
-        faces.append((current + 1, following + 1, following, current))
-        rows.append('soft')
-    table.add_cage(vertices, faces, rows, levels=0, smooth=True)
-    table.slab(0, 0, 0.3, 0.3, 0.026, [(0.456, 0.009, 'body'), (0.477, 0, 'body'), (0.49, 0, 'top'), (0.497, 0.004, 'top'), (0.5, 0.012, 'top'), (0.49, 0.03, 'top'), (0.487, 0.047, 'soft')], corner=1)
+
+    def add_ring_16(z, half, radius):
+        ring = []
+        for side in range(4):
+            mx, my = side_point(side, 0.0, half)
+            ring.append(len(verts))
+            verts.append((mx, my, z))
+            for step in (0, 1, 2):
+                cx, cy = corner_point(side, step, half, radius)
+                ring.append(len(verts))
+                verts.append((cx, cy, z))
+        return ring
+
+    top_rings = [
+        add_ring_16(shoulder_z, top_half, top_radius),
+        add_ring_16(0.484, 0.283, 0.027),
+        add_ring_16(0.496, 0.275, 0.023),
+        add_ring_16(0.500, 0.264, 0.018),
+        add_ring_16(0.493, 0.248, 0.012),
+    ]
+    for r_idx in range(len(top_rings) - 1):
+        r0 = top_rings[r_idx]
+        r1 = top_rings[r_idx + 1]
+        for i in range(16):
+            j = (i + 1) % 16
+            faces.append((r0[i], r0[j], r1[j], r1[i]))
+            rows.append('trim')
+    faces.append(list(top_rings[-1]))
+    rows.append('trim')
+
+    inner_top_ring = add_ring_16(inner_top_z, top_half - wall, top_radius - wall)
+    faces.append(list(reversed(inner_top_ring)))
+    rows.append('soft')
+
+    outer_corner_bot = []
+    inner_corner_bot = []
+    for side in range(4):
+        o_c = []
+        i_c = []
+        for step in (0, 1, 2):
+            cx, cy = corner_point(side, step, foot_half, foot_radius)
+            o_c.append(len(verts))
+            verts.append((cx, cy, 0.0))
+            icx, icy = corner_point(side, step, foot_half - wall, foot_radius - wall)
+            i_c.append(len(verts))
+            verts.append((icx, icy, 0.0))
+        outer_corner_bot.append(o_c)
+        inner_corner_bot.append(i_c)
+
+    for side in range(4):
+        prev_side = (side - 1) % 4
+        t_l = top_rings[0][prev_side * 4 + 3]
+        t_m = top_rings[0][side * 4]
+        t_r = top_rings[0][side * 4 + 1]
+        it_l = inner_top_ring[prev_side * 4 + 3]
+        it_m = inner_top_ring[side * 4]
+        it_r = inner_top_ring[side * 4 + 1]
+
+        b_outer = [outer_corner_bot[prev_side][2]]
+        b_inner = [inner_corner_bot[prev_side][2]]
+        for along, bz in side_stations:
+            h = half_at(bz)
+            ox, oy = side_point(side, along, h)
+            ix, iy = side_point(side, along, h - wall)
+            b_outer.append(len(verts))
+            verts.append((ox, oy, bz))
+            b_inner.append(len(verts))
+            verts.append((ix, iy, bz))
+        b_outer.append(outer_corner_bot[side][0])
+        b_inner.append(inner_corner_bot[side][0])
+
+        for idx in range(5):
+            faces.append((b_outer[idx], b_outer[idx + 1], t_l))
+            rows.append('trim')
+            faces.append((it_l, b_inner[idx + 1], b_inner[idx]))
+            rows.append('trim')
+        faces.append((b_outer[5], t_m, t_l))
+        rows.append('trim')
+        faces.append((it_l, it_m, b_inner[5]))
+        rows.append('trim')
+        faces.append((b_outer[5], b_outer[6], t_m))
+        rows.append('trim')
+        faces.append((it_m, b_inner[6], b_inner[5]))
+        rows.append('trim')
+        faces.append((b_outer[6], t_r, t_m))
+        rows.append('trim')
+        faces.append((it_m, it_r, b_inner[6]))
+        rows.append('trim')
+        for idx in range(6, 10):
+            faces.append((b_outer[idx], b_outer[idx + 1], t_r))
+            rows.append('trim')
+            faces.append((it_r, b_inner[idx + 1], b_inner[idx]))
+            rows.append('trim')
+
+        for idx in range(10):
+            faces.append((b_inner[idx], b_inner[idx + 1], b_outer[idx + 1], b_outer[idx]))
+            rows.append('trim')
+
+        for step in (0, 1):
+            c_t0 = top_rings[0][side * 4 + 1 + step]
+            c_t1 = top_rings[0][side * 4 + 2 + step]
+            ic_t0 = inner_top_ring[side * 4 + 1 + step]
+            ic_t1 = inner_top_ring[side * 4 + 2 + step]
+            faces.append((outer_corner_bot[side][step], outer_corner_bot[side][step + 1], c_t1, c_t0))
+            rows.append('trim')
+            faces.append((ic_t0, ic_t1, inner_corner_bot[side][step + 1], inner_corner_bot[side][step]))
+            rows.append('trim')
+            faces.append((inner_corner_bot[side][step], inner_corner_bot[side][step + 1], outer_corner_bot[side][step + 1], outer_corner_bot[side][step]))
+            rows.append('soft')
+
+    table.add_cage(verts, faces, rows, levels=0, smooth=True)
+    bmesh.ops.remove_doubles(table.bm, verts=table.bm.verts[:], dist=1e-6)
+    bmesh.ops.recalc_face_normals(table.bm, faces=table.bm.faces[:])
     for face in table.bm.faces:
-        face[table.key_layer] = 0.16 if face.normal.z > 0.35 else 0.72
-        if face.normal.z < -0.35:
-            face[table.row_layer] = ALL_ROWS.index('soft')
-    orient_shells(table)
+        face.normal_update()
+        center_z = face.calc_center_median().z
+        if ALL_ROWS[face[table.row_layer]] == 'soft' or (face.normal.z < -0.5 and (center_z > 0.45 or center_z < 0.01)):
+            table._tag((face,), 'soft', smooth=face.smooth)
+            continue
+        key_u = 0.25 if face.normal.z > 0.35 else 0.5
+        table._tag((face,), 'trim', key_u=key_u, smooth=face.smooth)
     return table
 
 
 def build_parasol():
     parasol = HeroPart('parasol_a')
-    outline = [(-0.23, -0.065), (-0.065, -0.065), (-0.065, -0.23), (0.065, -0.23), (0.065, -0.065), (0.23, -0.065), (0.23, 0.065), (0.065, 0.065), (0.065, 0.23), (-0.065, 0.23), (-0.065, 0.065), (-0.23, 0.065)]
-    vertices = [(x, y, z) for z in (0, 0.075) for x, y in outline]
-    count = len(outline)
-    faces = [list(reversed(range(count))), [count + index for index in range(count)]]
-    for index in range(count):
-        next_index = (index + 1) % count
-        faces.append([index, next_index, count + next_index, count + index])
-    parasol.add_cage(vertices, faces, ['body'] * len(faces), levels=0, smooth=False)
-    parasol.revolve((0, 0, 0), 'z', [(0.1, 0.07, 'metal'), (0.105, 0.085, 'metal'), (0.045, 0.1, 'metal')], segments=10, smooth=False)
-    parasol.revolve((0, 0, 0), 'z', [(0.028, 0.08, 'metal'), (0.028, 2.39, 'metal'), (0.014, 2.395, 'metal')], segments=10, smooth=False)
-    rings = []
-    for radius, z in ((0.035, 2.395), (0.35, 2.34), (0.75, 2.19), (1.095, 2.02)):
-        rings.append([(radius * math.cos(2 * math.pi * side / 32), radius * math.sin(2 * math.pi * side / 32), z) for side in range(32)])
-    parasol.loft(rings, lambda r, c: 'top' if c % 8 < 4 else 'soft', levels=0, cap=False, smooth=False)
-    hem = [[(1.095 * math.cos(2 * math.pi * side / 32), 1.095 * math.sin(2 * math.pi * side / 32), z) for side in range(32)] for z in (2.02, 1.94)]
-    for side, point in enumerate(hem[1]):
-        hem[1][side] = (point[0], point[1], 1.96 if side % 4 in (0, 3) else 1.925)
-    parasol.loft(hem, lambda r, c: 'soft' if c % 8 < 4 else 'top', levels=0, cap=False, smooth=False)
-    for side in range(8):
-        angle = 2 * math.pi * side / 8
-        parasol.tube([(0.025 * math.cos(angle), 0.025 * math.sin(angle), 2.355), (0.34 * math.cos(angle), 0.34 * math.sin(angle), 2.34), (1.06 * math.cos(angle), 1.06 * math.sin(angle), 2.02)], 0.007, 'metal', sides=3)
-    parasol.revolve((0, 0, 0), 'z', [(0.038, 1.67, 'metal'), (0.052, 1.69, 'body'), (0.052, 1.73, 'body'), (0.038, 1.75, 'metal')], segments=10, smooth=False)
-    parasol.tube([(0.025, 0, 1.32), (0.1, 0, 1.32), (0.1, -0.055, 1.32)], 0.008, 'metal', sides=4)
+    base_segments = 12
+    base_profile = (
+        (0.225, 0.000, 'body'),
+        (0.220, 0.024, 'body'),
+        (0.145, 0.064, 'body'),
+        (0.052, 0.088, 'body'),
+        (0.040, 0.130, 'metal'),
+    )
+    base_verts = []
+    for radius, z, _ in base_profile:
+        for side in range(base_segments):
+            angle = 2 * math.pi * side / base_segments
+            base_verts.append((radius * math.cos(angle), radius * math.sin(angle), z))
+    base_faces = []
+    base_rows = []
+    for step in range(1, base_segments - 1):
+        base_faces.append((0, step + 1, step))
+        base_rows.append('body')
+    for ring_idx in range(len(base_profile) - 1):
+        row = base_profile[ring_idx + 1][2] if ring_idx == len(base_profile) - 2 else base_profile[ring_idx][2]
+        start0 = ring_idx * base_segments
+        start1 = (ring_idx + 1) * base_segments
+        for side in range(base_segments):
+            next_side = (side + 1) % base_segments
+            base_faces.append((start0 + side, start0 + next_side, start1 + next_side, start1 + side))
+            base_rows.append(row)
+    top_ring = (len(base_profile) - 1) * base_segments
+    for step in range(1, base_segments - 1):
+        base_faces.append((top_ring, top_ring + step, top_ring + step + 1))
+        base_rows.append('metal')
+    parasol.add_cage(base_verts, base_faces, base_rows, levels=0, smooth=True)
+
+    pole_segments = 8
+    pole_radius = 0.025
+    pole_verts = [(0.0, 0.0, 2.396)]
+    for z in (0.080, 2.385):
+        for side in range(pole_segments):
+            angle = 2 * math.pi * side / pole_segments
+            pole_verts.append((pole_radius * math.cos(angle), pole_radius * math.sin(angle), z))
+    pole_faces = []
+    pole_rows = []
+    for side in range(pole_segments):
+        next_side = (side + 1) % pole_segments
+        pole_faces.append((1 + side, 1 + next_side, 1 + pole_segments + next_side, 1 + pole_segments + side))
+        pole_rows.append('metal')
+        pole_faces.append((0, 1 + pole_segments + side, 1 + pole_segments + next_side))
+        pole_rows.append('metal')
+    parasol.add_cage(pole_verts, pole_faces, pole_rows, levels=0, smooth=True)
+
+    hub_rings = [
+        [(radius * math.cos(2 * math.pi * side / pole_segments), radius * math.sin(2 * math.pi * side / pole_segments), z) for side in range(pole_segments)]
+        for radius, z in ((0.024, 1.675), (0.046, 1.688), (0.046, 1.732), (0.024, 1.745))
+    ]
+    parasol.loft(hub_rings, lambda r, c: 'body' if r == 1 else 'metal', levels=0, cap=False, smooth=True)
+
+    parasol.tube([(0.020, 0.0, 1.32), (0.095, 0.0, 1.32), (0.095, -0.060, 1.32)], 0.0085, 'metal', sides=3)
+
+    canopy_segments = 32
+    top_profile = (
+        (1.090, 2.020),
+        (0.840, 2.138),
+        (0.560, 2.268),
+        (0.280, 2.362),
+    )
+    canopy_verts = [(0.0, 0.0, 2.395), (0.0, 0.0, 2.387)]
+    for radius, z in top_profile:
+        for side in range(canopy_segments):
+            angle = 2 * math.pi * side / canopy_segments
+            canopy_verts.append((radius * math.cos(angle), radius * math.sin(angle), z))
+    hem_outer_start = len(canopy_verts)
+    for side in range(canopy_segments):
+        angle = 2 * math.pi * side / canopy_segments
+        step = side % 4
+        drop = 0.045 if step == 0 else (0.112 if step in (1, 3) else 0.135)
+        canopy_verts.append((1.096 * math.cos(angle), 1.096 * math.sin(angle), 2.020 - drop))
+    hem_inner_top_start = len(canopy_verts)
+    for side in range(canopy_segments):
+        angle = 2 * math.pi * side / canopy_segments
+        canopy_verts.append((1.082 * math.cos(angle), 1.082 * math.sin(angle), 2.012))
+    under_mid_start = len(canopy_verts)
+    for idx in range(8):
+        angle = 2 * math.pi * idx / 8
+        canopy_verts.append((0.550 * math.cos(angle), 0.550 * math.sin(angle), 2.258))
+
+    canopy_faces = []
+    canopy_rows = []
+    canopy_keys = []
+    for ring_idx in range(len(top_profile) - 1):
+        s0 = 2 + ring_idx * canopy_segments
+        s1 = 2 + (ring_idx + 1) * canopy_segments
+        for side in range(canopy_segments):
+            next_side = (side + 1) % canopy_segments
+            canopy_faces.append((s0 + side, s0 + next_side, s1 + next_side, s1 + side))
+            canopy_rows.append('trim')
+            canopy_keys.append(0.0 if side % 8 < 4 else 0.5)
+    inner_top_ring = 2 + (len(top_profile) - 1) * canopy_segments
+    for side in range(canopy_segments):
+        next_side = (side + 1) % canopy_segments
+        canopy_faces.append((inner_top_ring + side, inner_top_ring + next_side, 0))
+        canopy_rows.append('trim')
+        canopy_keys.append(0.0 if side % 8 < 4 else 0.5)
+
+    rim_top_start = 2
+    for side in range(canopy_segments):
+        next_side = (side + 1) % canopy_segments
+        key_u = 0.0 if side % 8 < 4 else 0.5
+        canopy_faces.append((hem_outer_start + side, hem_outer_start + next_side, rim_top_start + next_side, rim_top_start + side))
+        canopy_rows.append('trim')
+        canopy_keys.append(key_u)
+        canopy_faces.append((hem_inner_top_start + side, hem_inner_top_start + next_side, hem_outer_start + next_side, hem_outer_start + side))
+        canopy_rows.append('trim')
+        canopy_keys.append(key_u)
+
+    for panel in range(8):
+        next_panel = (panel + 1) % 8
+        m0 = under_mid_start + panel
+        m1 = under_mid_start + next_panel
+        canopy_faces.append((1, m1, m0))
+        canopy_rows.append('soft')
+        canopy_keys.append(-1.0)
+        r_base = panel * 4
+        for step in range(4):
+            r0 = hem_inner_top_start + (r_base + step) % canopy_segments
+            r1 = hem_inner_top_start + (r_base + step + 1) % canopy_segments
+            canopy_faces.append((m0, r1, r0))
+            canopy_rows.append('soft')
+            canopy_keys.append(-1.0)
+        canopy_faces.append((m0, hem_inner_top_start + (r_base + 4) % canopy_segments, m1))
+        canopy_rows.append('soft')
+        canopy_keys.append(-1.0)
+
+    parasol.add_cage(canopy_verts, canopy_faces, canopy_rows, levels=0, smooth=True)
+    for face, key_u in zip(parasol.last_faces, canopy_keys):
+        if key_u >= 0:
+            parasol._tag((face,), 'trim', key_u=key_u, smooth=True)
+
+    for idx in range(8):
+        angle = 2 * math.pi * idx / 8
+        cos_a, sin_a = math.cos(angle), math.sin(angle)
+        rib_rings = []
+        for r, z in ((0.022, 2.365), (0.550, 2.248), (1.068, 2.004)):
+            center = Vector((r * cos_a, r * sin_a, z))
+            tangent = Vector((-sin_a, cos_a, 0.0))
+            up = Vector((0.0, 0.0, 1.0))
+            rib_rings.append([
+                center + tangent * 0.006 + up * 0.004,
+                center - tangent * 0.006 + up * 0.004,
+                center - up * 0.007,
+            ])
+        parasol.loft(rib_rings, lambda r, c: 'metal', levels=0, cap=False, smooth=False)
+
     bmesh.ops.remove_doubles(parasol.bm, verts=parasol.bm.verts[:], dist=1e-6)
+    bmesh.ops.recalc_face_normals(parasol.bm, faces=parasol.bm.faces[:])
     return parasol
 
 
 def build_cooler():
     cooler = HeroPart('cooler_a')
-    cooler.slab(0, 0, 0.29, 0.19, 0.03, [(0, 0, 'floor'), (0.04, 0, 'soft'), (0.055, 0, 'body'), (0.38, 0, 'body'), (0.412, 0.012, 'body')], corner=2)
-    cooler.rounded_box((0, 0, 0.417), (0.596, 0.396, 0.055), 'top', radius=0.012, segments=1)
-    for y in (-0.075, 0.075):
-        cooler.tube([(-0.18, y, 0.443), (0.18, y, 0.443)], 0.004, 'soft', sides=3)
-    for side in (-1, 1):
-        cooler.tube([(side * 0.282, -0.075, 0.255), (side * 0.29, -0.075, 0.32), (side * 0.29, 0.075, 0.32), (side * 0.282, 0.075, 0.255)], 0.006, 'metal', sides=4)
-    cooler.tube([(0, -0.188, 0.085), (0, -0.196, 0.085)], 0.015, 'metal', sides=8)
+
+    def cooler_profile(z, offset=0.0):
+        t = (z - 0.044) / (0.376 - 0.044)
+        return (0.255 + 0.019 * t + offset, 0.165 + 0.019 * t + offset, 0.035 + 0.005 * t + offset)
+
+    body_layers = (
+        (0.000, 0.258, 0.168, 0.038),
+        (0.044, 0.261, 0.171, 0.040),
+        (0.132, *cooler_profile(0.132)),
+        (0.136, *cooler_profile(0.136, 0.0075)),
+        (0.148, *cooler_profile(0.148, 0.0075)),
+        (0.152, *cooler_profile(0.152)),
+        (0.232, *cooler_profile(0.232)),
+        (0.236, *cooler_profile(0.236, 0.0075)),
+        (0.248, *cooler_profile(0.248, 0.0075)),
+        (0.252, *cooler_profile(0.252)),
+        (0.344, *cooler_profile(0.344)),
+        (0.348, *cooler_profile(0.348, 0.008)),
+        (0.376, *cooler_profile(0.376, 0.008)),
+    )
+    body_segments = (
+        ('soft', -1.0),
+        ('trim', 0.5),
+        ('trim', 0.5),
+        ('trim', 0.38),
+        ('trim', 0.28),
+        ('trim', 0.5),
+        ('trim', 0.5),
+        ('trim', 0.38),
+        ('trim', 0.28),
+        ('trim', 0.5),
+        ('trim', 0.5),
+        ('trim', 0.38),
+    )
+    body_rings = [
+        [(x, y, z) for x, y in rounded_rect(0, 0, hw, hh, radius, 2)]
+        for z, hw, hh, radius in body_layers
+    ]
+    ring_width = len(body_rings[0])
+    cooler.loft(body_rings, lambda r, c: body_segments[r][0], levels=0, cap=False, smooth=True)
+    for index, face in enumerate(cooler.last_faces):
+        row, key_u = body_segments[index // ring_width]
+        if row == 'trim':
+            cooler._tag((face,), 'trim', key_u=key_u, smooth=face.smooth)
+    bottom_verts = [cooler.bm.verts.new((x, y, 0.0)) for x, y in rounded_rect(0, 0, 0.258, 0.168, 0.038, 2)]
+    bottom_face = cooler.bm.faces.new(list(reversed(bottom_verts)))
+    cooler._tag((bottom_face,), 'soft', smooth=False)
+
+    lid_layers = (
+        (0.372, 0.286, 0.196, 0.042),
+        (0.382, 0.288, 0.198, 0.043),
+        (0.428, 0.285, 0.195, 0.042),
+        (0.442, 0.260, 0.170, 0.036),
+        (0.431, 0.248, 0.158, 0.030),
+    )
+    lid_rings = [
+        [(x, y, z) for x, y in rounded_rect(0, 0, hw, hh, radius, 2)]
+        for z, hw, hh, radius in lid_layers
+    ]
+    cooler.loft(lid_rings, lambda r, c: 'trim', levels=0, cap=True, smooth=True)
+    ring_count = (len(lid_layers) - 1) * ring_width
+    for index, face in enumerate(cooler.last_faces):
+        if index < ring_count:
+            seg = index // ring_width
+            key_u = 0.38 if seg == 3 else 0.25
+        elif index == ring_count:
+            key_u = 0.5
+        else:
+            key_u = 0.38
+        cooler._tag((face,), 'trim', key_u=key_u, smooth=face.smooth)
+
+    for y in (-0.062, 0.062):
+        rib_verts = [
+            (-0.175, y - 0.017, 0.4305),
+            (-0.160, y - 0.008, 0.442),
+            (-0.160, y + 0.008, 0.442),
+            (-0.175, y + 0.017, 0.4305),
+            (0.175, y - 0.017, 0.4305),
+            (0.160, y - 0.008, 0.442),
+            (0.160, y + 0.008, 0.442),
+            (0.175, y + 0.017, 0.4305),
+        ]
+        rib_faces = [
+            [0, 3, 2, 1],
+            [4, 5, 6, 7],
+            [0, 1, 5, 4],
+            [1, 2, 6, 5],
+            [2, 3, 7, 6],
+        ]
+        cooler.add_cage(rib_verts, rib_faces, ['trim'] * len(rib_faces), levels=0, smooth=False)
+        cooler._tag(cooler.last_faces, 'trim', key_u=0.25, smooth=False)
+
+    handle_stations = (
+        (0.264, 0.264, -0.056, -0.080),
+        (0.279, 0.299, -0.050, -0.074),
+        (0.279, 0.299, 0.050, 0.074),
+        (0.264, 0.264, 0.056, 0.080),
+    )
+    z0, z1, z2, z3 = 0.299, 0.305, 0.321, 0.327
+    for sign in (-1, 1):
+        ordered = list(reversed(handle_stations)) if sign > 0 else handle_stations
+        bar_rings = [
+            [
+                (sign * x_in, y_in, z0),
+                (sign * x_out, y_out, z1),
+                (sign * x_out, y_out, z2),
+                (sign * x_in, y_in, z3),
+            ]
+            for x_in, x_out, y_in, y_out in ordered
+        ]
+        cooler.loft(bar_rings, lambda r, c: 'soft' if c == 3 else 'trim', levels=0, cap=False, smooth=True)
+        for face in cooler.last_faces:
+            if ALL_ROWS[face[cooler.row_layer]] == 'trim':
+                cooler._tag((face,), 'trim', key_u=0.5, smooth=face.smooth)
+
+    plug_rings = [
+        [(0.017 * math.cos(-2 * math.pi * i / 6), -0.164, 0.075 + 0.017 * math.sin(-2 * math.pi * i / 6)) for i in range(6)],
+        [(0.014 * math.cos(-2 * math.pi * i / 6), -0.181, 0.075 + 0.014 * math.sin(-2 * math.pi * i / 6)) for i in range(6)],
+    ]
+    cooler.loft(plug_rings, lambda r, c: 'soft', levels=0, cap=False, smooth=True)
+    plug_front = cooler.bm.faces.new([cooler.bm.verts.new(p) for p in plug_rings[1]])
+    cooler._tag((plug_front,), 'soft', smooth=False)
+    bmesh.ops.remove_doubles(cooler.bm, verts=cooler.bm.verts[:], dist=1e-6)
+    bmesh.ops.recalc_face_normals(cooler.bm, faces=cooler.bm.faces[:])
     return cooler
