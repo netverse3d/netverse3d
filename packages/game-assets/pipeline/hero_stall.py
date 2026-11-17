@@ -16,6 +16,26 @@ def remove_hidden_face(part, new_faces, axis, position, normal):
         bmesh.ops.delete(part.bm, geom=hidden, context='FACES')
 
 
+def orient_shells(part):
+    unseen = set(part.bm.faces)
+    while unseen:
+        pending = [unseen.pop()]
+        island = set(pending)
+        while pending:
+            face = pending.pop()
+            for edge in face.edges:
+                for linked in edge.link_faces:
+                    if linked in unseen:
+                        unseen.remove(linked)
+                        island.add(linked)
+                        pending.append(linked)
+        if all(len(edge.link_faces) == 2 for face in island for edge in face.edges):
+            for face in island:
+                face.normal_update()
+            if sum(face.calc_center_median().dot(face.normal) * face.calc_area() for face in island) < 0:
+                bmesh.ops.reverse_faces(part.bm, faces=list(island))
+
+
 def cart_wheels(part):
     for sign in (-1, 1):
         x = sign * 0.66
@@ -435,79 +455,461 @@ def build_cart_b():
     return cart
 
 
-def tapered_leg(part, x, y, height, width, spread, row):
-    rings = []
-    for z, offset, half in ((0.0, spread, width * 0.38), (0.025, spread * 0.8, width * 0.43), (height, 0.0, width * 0.5)):
-        cx = x + math.copysign(offset, x)
-        cy = y + math.copysign(offset, y)
-        rings.append([(cx - half, cy - half, z), (cx + half, cy - half, z), (cx + half, cy + half, z), (cx - half, cy + half, z)])
-    part.loft(rings, lambda r, c: row, levels=0, smooth=False)
-
-
-def arched_panel(part, across, side):
-    outline = [(-0.15, 0), (-0.15, 0.278), (0.15, 0.278), (0.15, 0), (0.09, 0), (0.09, 0.14), (0.075, 0.18), (0.04, 0.215), (0, 0.225), (-0.04, 0.215), (-0.075, 0.18), (-0.09, 0.14), (-0.09, 0)]
-    if across == 'x':
-        rings = [[(u, side * depth, z) for u, z in outline] for depth in (0.107, 0.133)]
-    else:
-        rings = [[(side * depth, u, z) for u, z in outline] for depth in (0.107, 0.133)]
-    count = len(outline)
-    faces = [list(reversed(range(count))), [count + i for i in range(count)]]
-    for index in range(count):
-        if index in (1, 3, count - 1):
-            continue
-        next_index = (index + 1) % count
-        faces.append([index, next_index, count + next_index, count + index])
-    if (across == 'x' and side < 0) or (across == 'y' and side > 0):
-        faces = [list(reversed(face)) for face in faces]
-    part.add_cage(rings[0] + rings[1], faces, ['body'] * len(faces), levels=0, smooth=False)
-
-
-def round_splayed_leg(part, angle):
-    rings = []
-    for radius, z in ((0.14, 0), (0.11, 0.29)):
-        cx, cy = radius * math.cos(angle), radius * math.sin(angle)
-        rings.append([(cx + 0.017 * math.cos(2 * math.pi * side / 6), cy + 0.017 * math.sin(2 * math.pi * side / 6), z) for side in range(6)])
-    part.loft(rings, lambda r, c: 'body', levels=0, smooth=False)
-
-
-def plastic_seat(part, round_seat=False):
-    if round_seat:
-        part.revolve((0, 0, 0), 'z', [(0.01, 0.271, 'body'), (0.127, 0.271, 'body'), (0.146, 0.284, 'body'), (0.151, 0.297, 'soft'), (0.15, 0.309, 'top'), (0.133, 0.312, 'top'), (0.01, 0.307, 'top')], segments=12, smooth=False)
-    else:
-        rings = []
-        for z, inset in ((0.272, 0.01), (0.284, 0), (0.312, 0.005), (0.301, 0.015)):
-            rings.append([(x, y, z) for x, y in rounded_rect(0, 0, 0.155 - inset, 0.145 - inset, 0.026 - inset, 1)])
-        for z in (0.301, 0.272):
-            rings.append([(x, y, z) for x, y in rounded_rect(0, 0.082, 0.04, 0.013, 0.005, 1)])
-        vertices = [point for ring in rings for point in ring]
-        faces = []
-        rows = []
-        sides = len(rings[0])
-        for ring_index, row in enumerate(('body', 'body', 'top', 'top', 'soft', 'body')):
-            next_index = (ring_index + 1) % len(rings)
-            for side in range(sides):
-                next_side = (side + 1) % sides
-                faces.append([ring_index * sides + side, ring_index * sides + next_side, next_index * sides + next_side, next_index * sides + side])
-                rows.append(row)
-        part.add_cage(vertices, faces, rows, levels=0, smooth=False)
-
-
 def build_stool_a():
     stool = HeroPart('stool_a')
-    for across in ('x', 'y'):
-        for side in (-1, 1):
-            arched_panel(stool, across, side)
-    plastic_seat(stool)
+    arch = [(-0.095, 0), (-0.095, 0.115)]
+    arch.extend((0.095 * math.cos(math.pi - math.pi * step / 8), 0.115 + 0.095 * math.sin(math.pi * step / 8)) for step in range(1, 9))
+    arch.append((0.095, 0))
+    vertices = []
+    faces = []
+    rows = []
+    for axis in ('x', 'y'):
+        for sign in (-1, 1):
+            outlines = [[(-foot, 0), (-foot + 0.013, 0.27), (foot - 0.013, 0.27), (foot, 0)] + list(reversed(arch)) for foot in (0.15, 0.137)]
+            start = len(vertices)
+            for offset, outline in zip((0.15, 0.137), outlines):
+                vertices.extend((u, sign * (offset - 0.013 * z / 0.27), z) if axis == 'x' else (sign * (offset - 0.013 * z / 0.27), u, z) for u, z in outline)
+            count = len(outlines[0])
+            faces.extend(([start + i for i in range(count)], [start + count + i for i in reversed(range(count))]))
+            rows.extend(('body', 'soft'))
+            for index in range(1, count):
+                if index == 1 or index >= 3:
+                    next_index = (index + 1) % count
+                    faces.append([start + index, start + next_index, start + count + next_index, start + count + index])
+                    rows.append('soft' if index >= 4 and next_index != 0 else 'body')
+    stool.add_cage(vertices, faces, rows, levels=0, smooth=False)
+    bmesh.ops.remove_doubles(stool.bm, verts=stool.bm.verts[:], dist=1e-6)
+    bmesh.ops.recalc_face_normals(stool.bm, faces=stool.bm.faces[:])
+    stool.tube([(-0.133, -0.133, 0.024), (0.133, -0.133, 0.024), (0.133, 0.133, 0.024), (-0.133, 0.133, 0.024)], 0.009, 'soft', sides=4, closed=True)
+    bmesh.ops.remove_doubles(stool.bm, verts=stool.bm.verts[:], dist=1e-6)
+    rings = []
+    for half, z, radius in ((0.138, 0.258, 0.001), (0.138, 0.285, 0.007), (0.133, 0.305, 0.025), (0.118, 0.306, 0.025), (0.108, 0.302, 0.025), (0.092, 0.305, 0.025), (0.083, 0.302, 0.025), (0.007, 0.302, 0.005), (0.007, 0.276, 0.005)):
+        rings.append([(x, y, z) for x, y in rounded_rect(0, 0, half, half, radius, 1)])
+    stool.loft(rings, lambda ring, side: 'soft' if ring >= 7 else 'top' if ring in (2, 3, 5, 6) else 'body', levels=0, cap=False, smooth=False)
+    for face in stool.bm.faces:
+        face[stool.key_layer] = 0.16 if face.calc_center_median().z > 0.29 and face.normal.z > 0 else 0.72
+    orient_shells(stool)
     return stool
 
 
 def build_stool_b():
     stool = HeroPart('stool_b')
-    for angle in (0, math.pi / 2, math.pi, 3 * math.pi / 2):
-        round_splayed_leg(stool, angle)
-    stool.tube([(0.132 * math.cos(2 * math.pi * side / 8), 0.132 * math.sin(2 * math.pi * side / 8), 0.08) for side in range(8)], 0.009, 'body', sides=3, closed=True)
-    plastic_seat(stool, round_seat=True)
-    bmesh.ops.remove_doubles(stool.bm, verts=stool.bm.verts[:], dist=1e-6)
+    seat_layers = (
+        (0.394, 0.192, 0.172, 0.044),
+        (0.382, 0.220, 0.198, 0.048),
+        (0.415, 0.224, 0.202, 0.052),
+        (0.431, 0.214, 0.192, 0.058),
+        (0.419, 0.142, 0.128, 0.042),
+    )
+    seat_rings = []
+    for z, hw, hd, radius in seat_layers:
+        base_pts = rounded_rect(0, -0.014, hw, hd, radius, 2)
+        ring = []
+        for x, y in base_pts:
+            taper = 1.0 - 0.085 * (y / max(hd, 1e-4))
+            dish = -0.003 * max(0.0, 1.0 - (x / max(hw, 1e-4)) ** 2) if z > 0.425 and y < 0 else 0.0
+            ring.append((x * taper, y, z + dish))
+        seat_rings.append(ring)
+    seat_verts = [pt for ring in seat_rings for pt in ring]
+    ring_len = len(seat_rings[0])
+    bot_center = len(seat_verts)
+    seat_verts.extend((
+        (0.062, 0.040, 0.395),
+        (-0.062, 0.040, 0.395),
+        (-0.066, -0.068, 0.395),
+        (0.066, -0.068, 0.395),
+    ))
+    top_center = len(seat_verts)
+    seat_verts.extend((
+        (0.052, 0.034, 0.417),
+        (-0.052, 0.034, 0.417),
+        (-0.056, -0.062, 0.417),
+        (0.056, -0.062, 0.417),
+    ))
+    seat_faces = []
+    seat_rows = []
+    for r in range(len(seat_rings) - 1):
+        row_name = 'top' if r >= 2 else 'body'
+        for c in range(ring_len):
+            n = (c + 1) % ring_len
+            seat_faces.append((r * ring_len + c, r * ring_len + n, (r + 1) * ring_len + n, (r + 1) * ring_len + c))
+            seat_rows.append(row_name)
+    seat_faces.append((bot_center, bot_center + 3, bot_center + 2, bot_center + 1))
+    seat_rows.append('soft')
+    top_ring = (len(seat_rings) - 1) * ring_len
+    seat_faces.append((top_center, top_center + 1, top_center + 2, top_center + 3))
+    seat_rows.append('top')
+    for side_idx in range(4):
+        i0 = side_idx * 3
+        i1 = i0 + 1
+        i2 = i0 + 2
+        i3 = (i0 + 3) % ring_len
+        c0 = side_idx
+        c1 = (side_idx + 1) % 4
+        seat_faces.extend((
+            (i1, i0, bot_center + c0),
+            (i2, i1, bot_center + c0),
+            (i3, i2, bot_center + c0, bot_center + c1),
+        ))
+        seat_rows.extend(('soft', 'soft', 'soft'))
+        seat_faces.extend((
+            (top_ring + i0, top_ring + i1, top_center + c0),
+            (top_ring + i1, top_ring + i2, top_center + c0),
+            (top_ring + i2, top_ring + i3, top_center + c1, top_center + c0),
+        ))
+        seat_rows.extend(('top', 'top', 'top'))
+    stool.add_cage(seat_verts, seat_faces, seat_rows, levels=0, smooth=True)
+
+    back_levels = (
+        (0.382, 0.194, 0.000, 0.026),
+        (0.446, 0.198, 0.005, 0.027),
+        (0.504, 0.202, 0.014, 0.028),
+        (0.564, 0.204, 0.022, 0.030),
+        (0.624, 0.204, 0.030, 0.030),
+        (0.682, 0.196, 0.048, 0.029),
+        (0.736, 0.172, 0.066, 0.027),
+        (0.766, 0.136, 0.074, 0.024),
+    )
+
+    def eval_backrest(u, t):
+        idx = min(int(t), len(back_levels) - 2)
+        frac = t - idx
+        z0, hw0, arch0, thick0 = back_levels[idx]
+        z1, hw1, arch1, thick1 = back_levels[idx + 1]
+        z_edge = z0 + (z1 - z0) * frac
+        hw = hw0 + (hw1 - hw0) * frac
+        arch_lift = arch0 + (arch1 - arch0) * frac
+        thick = thick0 + (thick1 - thick0) * frac
+        arch_factor = math.sqrt(max(0.0, 1.0 - 0.88 * u * u))
+        z = z_edge + arch_lift * arch_factor
+        if abs(u) > 0.999:
+            if abs(t - 3.0) < 1e-6:
+                z = 0.602
+            elif abs(t - 4.0) < 1e-6:
+                z = 0.626
+        x = u * hw
+        y_spine = 0.156 + 0.218 * (z - 0.400)
+        y_curve = -0.038 * (x / 0.204) ** 2
+        y_mid = y_spine + y_curve
+        return (
+            (x, y_mid - 0.5 * thick, z),
+            (x, y_mid + 0.5 * thick, z),
+        )
+
+    hole_cols = 4
+    hole_rows = 4
+    u_min, u_max = -0.75, 0.75
+    bar_du = 0.075
+    hole_du = (u_max - u_min - (hole_cols - 1) * bar_du) / hole_cols
+    u_lattice = [u_min]
+    for step in range(hole_cols):
+        u_lattice.append(u_lattice[-1] + hole_du)
+        if step < hole_cols - 1:
+            u_lattice.append(u_lattice[-1] + bar_du)
+
+    t_min, t_max = 2.0, 5.85
+    bar_dt = 0.22
+    hole_dt = (t_max - t_min - (hole_rows - 1) * bar_dt) / hole_rows
+    t_lattice = [t_min]
+    for step in range(hole_rows):
+        t_lattice.append(t_lattice[-1] + hole_dt)
+        if step < hole_rows - 1:
+            t_lattice.append(t_lattice[-1] + bar_dt)
+
+    back_verts = []
+
+    def add_pair(u, t):
+        f_pt, b_pt = eval_backrest(u, t)
+        f_idx = len(back_verts)
+        back_verts.append(f_pt)
+        b_idx = len(back_verts)
+        back_verts.append(b_pt)
+        return f_idx, b_idx
+
+    lat_n = len(u_lattice)
+    lat_m = len(t_lattice)
+    lat_f = [[0] * lat_n for _ in range(lat_m)]
+    lat_b = [[0] * lat_n for _ in range(lat_m)]
+    for r_idx, t in enumerate(t_lattice):
+        for c_idx, u in enumerate(u_lattice):
+            f_idx, b_idx = add_pair(u, t)
+            lat_f[r_idx][c_idx] = f_idx
+            lat_b[r_idx][c_idx] = b_idx
+
+    u_bot_vals = (-1.0, -0.42, 0.0, 0.42, 1.0)
+    t_side_vals = (0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0)
+    u_top_vals = (1.0, 0.8, 0.4, 0.0, -0.4, -0.8, -1.0)
+
+    out_bot = [add_pair(u, 0.0) for u in u_bot_vals]
+    out_right = [out_bot[-1]] + [add_pair(1.0, t) for t in t_side_vals[1:]]
+    out_top = [out_right[-1]] + [add_pair(u, 7.0) for u in u_top_vals[1:]]
+    out_left = [out_top[-1]] + [add_pair(-1.0, t) for t in reversed(t_side_vals[1:-1])] + [out_bot[0]]
+
+    port_mids = {}
+    for sign_key, f3_idx, b3_idx, f4_idx, b4_idx in (
+        (-1, out_left[4][0], out_left[4][1], out_left[3][0], out_left[3][1]),
+        (1, out_right[2][0], out_right[2][1], out_right[3][0], out_right[3][1]),
+    ):
+        f3 = Vector(back_verts[f3_idx])
+        b3 = Vector(back_verts[b3_idx])
+        f4 = Vector(back_verts[f4_idx])
+        b4 = Vector(back_verts[b4_idx])
+        mid_b = (f3 + b3) * 0.5 + Vector((sign_key * 0.004, 0.0, -0.002))
+        mid_t = (f4 + b4) * 0.5 + Vector((sign_key * 0.004, 0.0, 0.003))
+        idx_b = len(back_verts)
+        back_verts.append((mid_b.x, mid_b.y, mid_b.z))
+        idx_t = len(back_verts)
+        back_verts.append((mid_t.x, mid_t.y, mid_t.z))
+        port_mids[sign_key] = (
+            idx_b,
+            idx_t,
+            (mid_b.x, mid_b.y, mid_b.z),
+            (mid_t.x, mid_t.y, mid_t.z),
+            back_verts[f3_idx],
+            back_verts[f4_idx],
+            back_verts[b3_idx],
+            back_verts[b4_idx],
+        )
+
+    back_faces = []
+    back_face_rows = []
+    hole_wall_indices = set()
+
+    for r in range(lat_m - 1):
+        for c in range(lat_n - 1):
+            f00 = lat_f[r][c]
+            f10 = lat_f[r][c + 1]
+            f11 = lat_f[r + 1][c + 1]
+            f01 = lat_f[r + 1][c]
+            b00 = lat_b[r][c]
+            b10 = lat_b[r][c + 1]
+            b11 = lat_b[r + 1][c + 1]
+            b01 = lat_b[r + 1][c]
+            if r % 2 == 0 and c % 2 == 0:
+                base_idx = len(back_faces)
+                back_faces.extend((
+                    (f00, f10, b10, b00),
+                    (f01, b01, b11, f11),
+                    (f00, b00, b01, f01),
+                    (f10, f11, b11, b10),
+                ))
+                back_face_rows.extend(('body', 'body', 'body', 'body'))
+                hole_wall_indices.update(range(base_idx, base_idx + 4))
+            else:
+                back_faces.append((f00, f10, f11, f01))
+                back_face_rows.append('body')
+                back_faces.append((b00, b01, b11, b10))
+                back_face_rows.append('body')
+
+    def bridge_rim(out_chain, in_f, in_b):
+        m_len = len(out_chain) - 1
+        k_len = len(in_f) - 1
+        i_idx, j_idx = 0, 0
+        while i_idx < m_len or j_idx < k_len:
+            if i_idx == m_len:
+                take_inner = True
+            elif j_idx == k_len:
+                take_inner = False
+            else:
+                d_in = (Vector(back_verts[out_chain[i_idx][0]]) - Vector(back_verts[in_f[j_idx + 1]])).length_squared
+                d_out = (Vector(back_verts[out_chain[i_idx + 1][0]]) - Vector(back_verts[in_f[j_idx]])).length_squared
+                take_inner = d_in < d_out
+            if take_inner:
+                back_faces.append((out_chain[i_idx][0], in_f[j_idx + 1], in_f[j_idx]))
+                back_face_rows.append('body')
+                back_faces.append((out_chain[i_idx][1], in_b[j_idx], in_b[j_idx + 1]))
+                back_face_rows.append('body')
+                j_idx += 1
+            else:
+                back_faces.append((out_chain[i_idx][0], out_chain[i_idx + 1][0], in_f[j_idx]))
+                back_face_rows.append('body')
+                back_faces.append((out_chain[i_idx][1], in_b[j_idx], out_chain[i_idx + 1][1]))
+                back_face_rows.append('body')
+                i_idx += 1
+
+    bridge_rim(out_bot, lat_f[0], lat_b[0])
+    bridge_rim(out_right, [lat_f[r][-1] for r in range(lat_m)], [lat_b[r][-1] for r in range(lat_m)])
+    bridge_rim(out_top, list(reversed(lat_f[-1])), list(reversed(lat_b[-1])))
+    bridge_rim(out_left, [lat_f[r][0] for r in range(lat_m - 1, -1, -1)], [lat_b[r][0] for r in range(lat_m - 1, -1, -1)])
+
+    for idx in range(len(out_bot) - 1):
+        f0, b0 = out_bot[idx]
+        f1, b1 = out_bot[idx + 1]
+        back_faces.append((f0, b0, b1, f1))
+        back_face_rows.append('soft')
+
+    for idx in range(len(out_top) - 1):
+        f0, b0 = out_top[idx]
+        f1, b1 = out_top[idx + 1]
+        back_faces.append((f0, b0, b1, f1))
+        back_face_rows.append('body')
+
+    for idx in range(len(out_right) - 1):
+        if idx == 2:
+            continue
+        f0, b0 = out_right[idx]
+        f1, b1 = out_right[idx + 1]
+        if idx == 1:
+            mb_r = port_mids[1][0]
+            back_faces.extend(((f0, b0, mb_r, f1), (mb_r, b0, b1)))
+            back_face_rows.extend(('body', 'body'))
+        elif idx == 3:
+            mt_r = port_mids[1][1]
+            back_faces.extend(((f0, mt_r, b1, f1), (mt_r, b0, b1)))
+            back_face_rows.extend(('body', 'body'))
+        else:
+            back_faces.append((f0, b0, b1, f1))
+            back_face_rows.append('body')
+
+    for idx in range(len(out_left) - 1):
+        if idx == 3:
+            continue
+        f0, b0 = out_left[idx]
+        f1, b1 = out_left[idx + 1]
+        if idx == 4:
+            mb_l = port_mids[-1][0]
+            back_faces.extend(((f1, f0, mb_l, b1), (mb_l, b0, b1)))
+            back_face_rows.extend(('body', 'body'))
+        elif idx == 2:
+            mt_l = port_mids[-1][1]
+            back_faces.extend(((f1, f0, b0, mt_l), (mt_l, b0, b1)))
+            back_face_rows.extend(('body', 'body'))
+        else:
+            back_faces.append((f0, b0, b1, f1))
+            back_face_rows.append('body')
+
+    before_back = set(stool.bm.faces)
+    stool.add_cage(back_verts, back_faces, back_face_rows, levels=0, smooth=True)
+    created_back = [f for f in stool.bm.faces if f not in before_back]
+    for idx in hole_wall_indices:
+        created_back[idx].smooth = False
+
+    def profile_points(hw, b):
+        return (
+            (-hw, -0.0055),
+            (-hw * 0.84, 0.008),
+            (0.0, 0.0125),
+            (hw * 0.84, 0.008),
+            (hw, -0.0055),
+            (0.0, 0.001 - 0.006 * b),
+        )
+
+    def leg_profile_points(hw):
+        return (
+            (-hw, -0.006),
+            (-hw * 0.84, 0.008),
+            (0.0, 0.0125),
+            (hw * 0.84, 0.008),
+            (hw, -0.006),
+            (0.0, 0.001),
+        )
+
+    def add_hex_loft(rings_list, row_fn, flip, cap_end=True):
+        verts = [pt for ring in rings_list for pt in ring]
+        last = (len(rings_list) - 1) * 6
+        faces = [
+            (0, 5, 2, 1),
+            (2, 5, 4, 3),
+        ]
+        rows = ['soft', 'soft']
+        if cap_end:
+            faces.extend((
+                (last + 0, last + 1, last + 2, last + 5),
+                (last + 2, last + 3, last + 4, last + 5),
+            ))
+            rows.extend((row_fn(len(rings_list) - 2, 0), row_fn(len(rings_list) - 2, 0)))
+        for r_i in range(len(rings_list) - 1):
+            for c_i in range(6):
+                n_i = (c_i + 1) % 6
+                faces.append((r_i * 6 + c_i, r_i * 6 + n_i, (r_i + 1) * 6 + n_i, (r_i + 1) * 6 + c_i))
+                rows.append(row_fn(r_i, c_i))
+        if flip:
+            faces = [tuple(reversed(f)) for f in faces]
+        stool.add_cage(verts, faces, rows, levels=0, smooth=True)
+
+    bend_angles = [math.radians(7.0 + (85.0 - 7.0) * step / 7) for step in range(8)]
+    yc, zc, radius_arc = -0.102, 0.486, 0.104
+    for sign in (-1, 1):
+        stations = [
+            (0.258, -0.258, 0.000, 0.0235, 0.0, 20.0, math.radians(7.0)),
+        ]
+        for step, theta in enumerate(bend_angles):
+            frac = step / 7.0
+            y = yc - radius_arc * math.cos(theta)
+            z = zc + radius_arc * math.sin(theta)
+            x = 0.258 - 0.036 * z
+            hw = 0.0258 + 0.0016 * frac
+            b = 0.2 + 0.8 * frac
+            yaw_deg = 16.0 * (1.0 - frac) + 3.0 * frac
+            stations.append((x, y, z, hw, b, yaw_deg, theta))
+        stations.extend((
+            (0.236, 0.015, 0.601, 0.0274, 1.0, 6.0, math.radians(85.2)),
+            (0.228, 0.105, 0.609, 0.0250, 1.0, 28.0, math.radians(85.6)),
+            (0.211, 0.156, 0.613, 0.0175, 1.0, 64.0, math.radians(86.0)),
+        ))
+        rings = []
+        for r_idx, (x, y, z, hw, b, yaw_deg, theta) in enumerate(stations):
+            center = Vector((sign * x, y, z))
+            yaw = math.radians(sign * yaw_deg)
+            side_vec = Vector((sign * math.cos(yaw), math.sin(yaw), 0.0)).normalized()
+            out_2d = Vector((0.0, -math.cos(theta), math.sin(theta)))
+            norm_vec = (out_2d - side_vec * out_2d.dot(side_vec)).normalized()
+            pts = []
+            for u, v in profile_points(hw, b):
+                pt = center + side_vec * u + norm_vec * v
+                if r_idx == 0:
+                    pt.z = 0.0
+                pts.append((pt.x, pt.y, pt.z))
+            rings.append(pts)
+        _, _, mid_b_pt, mid_t_pt, f3_pt, f4_pt, b3_pt, b4_pt = port_mids[sign]
+        rings.append([
+            f3_pt,
+            f4_pt,
+            mid_t_pt,
+            b4_pt,
+            b3_pt,
+            mid_b_pt,
+        ])
+
+        add_hex_loft(rings, lambda r_i, c_i: 'body', sign < 0, cap_end=False)
+
+    for sign in (-1, 1):
+        rear_stations = (
+            (0.236, 0.224, 0.000, 0.0200, 16.0),
+            (0.211, 0.194, 0.207, 0.0228, 15.0),
+            (0.186, 0.164, 0.414, 0.0250, 14.0),
+        )
+        rear_rings = []
+        tilt_rear = math.radians(8.5)
+        for r_idx, (x, y, z, hw, yaw_deg) in enumerate(rear_stations):
+            center = Vector((sign * x, y, z))
+            yaw = math.radians(yaw_deg)
+            side_vec = Vector((sign * math.cos(yaw), -math.sin(yaw), 0.0)).normalized()
+            out_dir = Vector((sign * math.sin(yaw) * math.cos(tilt_rear), math.cos(yaw) * math.cos(tilt_rear), math.sin(tilt_rear))).normalized()
+            pts = []
+            for u, v in leg_profile_points(hw):
+                pt = center + side_vec * u + out_dir * v
+                if r_idx == 0:
+                    pt.z = 0.0
+                pts.append((pt.x, pt.y, pt.z))
+            rear_rings.append(pts)
+        add_hex_loft(rear_rings, lambda r_i, c_i: 'body', sign < 0)
+
+    bmesh.ops.remove_doubles(stool.bm, verts=stool.bm.verts[:], dist=1e-5)
+
+    for face in stool.bm.faces:
+        face.normal_update()
+        center_z = face.calc_center_median().z
+        if face.normal.z < -0.85 and center_z < 0.02:
+            face[stool.row_layer] = ALL_ROWS.index('soft')
+        if face[stool.key_layer] < 0:
+            if face.normal.z > 0.45 and center_z > 0.41:
+                face[stool.key_layer] = 0.16
+            elif face.normal.y < -0.3:
+                face[stool.key_layer] = 0.25
+            else:
+                face[stool.key_layer] = 0.68
+    orient_shells(stool)
     return stool
 
 
@@ -526,16 +928,71 @@ def apron_skirt(part, outer, inner, bottom, top, row):
 
 def build_lowtable():
     table = HeroPart('lowtable_a')
-    for x in (-0.245, 0.245):
-        for y in (-0.245, 0.245):
-            tapered_leg(table, x, y, 0.474, 0.044, 0.012, 'body')
-    table.slab(0, 0, 0.295, 0.295, 0.034, [(0.459, 0.012, 'body'), (0.473, 0, 'body'), (0.49, 0, 'top'), (0.5, 0.008, 'top'), (0.491, 0.02, 'top')], corner=2)
-    apron_skirt(table, 0.275, 0.263, 0.403, 0.463, 'body')
-    for side in (-1, 1):
-        table.tube([(-0.25, side * 0.247, 0.458), (0.25, side * 0.247, 0.458)], 0.012, 'body', sides=4)
-        table.tube([(side * 0.247, -0.25, 0.458), (side * 0.247, 0.25, 0.458)], 0.012, 'body', sides=4)
-    table.tube([(-0.25, -0.25, 0.15), (0.25, 0.25, 0.15)], 0.012, 'body', sides=4)
-    table.tube([(-0.25, 0.25, 0.15), (0.25, -0.25, 0.15)], 0.012, 'body', sides=4)
+    top_half = 0.278
+    foot_half = 0.302
+    chamfer = 0.02
+    wall = 0.013
+    top_z = 0.462
+    slope = (foot_half - top_half) / top_z
+
+    def half_at(z):
+        return foot_half - slope * z
+
+    stations = (
+        (-0.258, -0.2803, 0.0),
+        (-0.252, -0.252, 0.0),
+        (-0.2168, -0.2168, 0.383),
+        (-0.207, -0.207, 0.390),
+        (-0.155, -0.155, 0.396),
+        (0.0, 0.0, 0.400),
+        (0.155, 0.155, 0.396),
+        (0.207, 0.207, 0.390),
+        (0.2168, 0.2168, 0.383),
+        (0.252, 0.252, 0.0),
+        (0.258, 0.2803, 0.0),
+    )
+
+    def plan(side, along, depth):
+        if side == 0:
+            return (along, -depth)
+        if side == 1:
+            return (depth, along)
+        if side == 2:
+            return (-along, depth)
+        return (-depth, -along)
+
+    rings = []
+    for side in range(4):
+        for top_along, foot_along, bottom in stations:
+            outer_bottom = plan(side, foot_along, half_at(bottom))
+            inner_bottom = plan(side, foot_along, half_at(bottom) - wall)
+            outer_top = plan(side, top_along, top_half)
+            inner_top = plan(side, top_along, top_half - wall)
+            rings.append((
+                (outer_bottom[0], outer_bottom[1], bottom),
+                (inner_bottom[0], inner_bottom[1], bottom),
+                (outer_top[0], outer_top[1], top_z),
+                (inner_top[0], inner_top[1], top_z),
+            ))
+    vertices = [point for ring in rings for point in ring]
+    faces = []
+    rows = []
+    for index in range(len(rings)):
+        current = 4 * index
+        following = 4 * ((index + 1) % len(rings))
+        faces.append((current, following, following + 2, current + 2))
+        rows.append('body')
+        faces.append((following + 1, current + 1, current + 3, following + 3))
+        rows.append('soft')
+        faces.append((current + 1, following + 1, following, current))
+        rows.append('soft')
+    table.add_cage(vertices, faces, rows, levels=0, smooth=True)
+    table.slab(0, 0, 0.3, 0.3, 0.026, [(0.456, 0.009, 'body'), (0.477, 0, 'body'), (0.49, 0, 'top'), (0.497, 0.004, 'top'), (0.5, 0.012, 'top'), (0.49, 0.03, 'top'), (0.487, 0.047, 'soft')], corner=1)
+    for face in table.bm.faces:
+        face[table.key_layer] = 0.16 if face.normal.z > 0.35 else 0.72
+        if face.normal.z < -0.35:
+            face[table.row_layer] = ALL_ROWS.index('soft')
+    orient_shells(table)
     return table
 
 

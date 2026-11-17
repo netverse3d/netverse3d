@@ -1,5 +1,5 @@
 {
-  "config": "7e6b45147d07709e5714ff8dc489af566bf169e79795c9cccb27cf295ebf9d07",
+  "config": "cea621f94ea22fc9ca8d1e5796e0c30bfeb2cbd6b71875db607092246a1d7469",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "99383511e93e0cab91a401957c879dd4889c5ebd1c446689319f28de676cddfb",
@@ -10,7 +10,7 @@
     "environment-kit.blend": "56bd286b8c8a5b5ed6aca5b44cd91f07fae3e3d0665b9f82399d893589d81a5e",
     "parts-lounge.blend": "93f9076ecc3f7046470819015a7d193eb409353285dff7b32a7ab1a4da2d6964",
     "parts-signs.blend": "00f170d65cf74291ee8da52753fde9c2f0a9a679e33f5a043c15403624671c5a",
-    "parts-stall.blend": "43dc55215d9053f744cc97a06658afb0b20484278c81435b12ee790e4dd680ab",
+    "parts-stall.blend": "cc4969cb4e6f67a09478606adf0cf64ccdcb9793109950935992ca3fe8e1c558",
     "parts-street.blend": "cf5acd3327d630f8ffecce104201d2fec728ddb9c0e64e82377bd9d77c1e657c",
     "parts-skyline.blend": "1afe48889818a4109d61980a8df0695709275296b1ad65f81dec1f45d0f1ff82",
     "showcase-tim-neon.blend": "1c893d1ac8aefae926fd49d979500cfd2b8079cc837b472610afd96771ccdf70"
@@ -23,7 +23,7 @@
     "room-kit.glb": "cd9410f4a4b63ec63ffb645dd83a0007e3f0cbf1ef6496719a1751dbe322bffc",
     "lounge-parts.glb": "304eb974f98585d8c31fe592cf085bf691079580d207f1e5a2225d682a2bb23a",
     "sign-parts.glb": "72a4d0f555db9bd783f9f1a34b5540700da3c5f05da0ce322cc8db6f3b39bdd2",
-    "stall-parts.glb": "0af29685551d6b93b495850ad56f0fa85ed367a700d9c77f7c6937af4918977f",
+    "stall-parts.glb": "935003e9bca4fca5debdb6bd80a2214686de75fc83f942e65f3d16afffa51b6a",
     "street-parts.glb": "e91b8ad55fe1c2cafdb363e5024310fe5b7013d8ed60f29c062ebf0a1978e813",
     "skyline-parts.glb": "ef66294c5d55458cd92361bf9f034e7fb60f5560ce996b285392f3ff5e2ddb67",
     "showcase-tim-neon.glb": "2c5acfe482d39e88881cbea75257c054cafea21bd19a65356744b3d9b780e4d7",

@@ -72,7 +72,7 @@
       "planter": "Chậu cây",
       "board": "Biển chữ A",
       "cart": "Xe hàng rong",
-      "stool": "Ghế nhựa thấp",
+      "stool": "Ghế nhựa vỉa hè",
       "lowtable": "Bàn cà phê thấp",
       "parasol": "Dù vỉa hè",
       "cooler": "Thùng đá",
@@ -91,8 +91,8 @@
     "variantNames": {
       "cart_a": "Xe bánh mì",
       "cart_b": "Xe nước",
-      "stool_a": "Ghế vuông bốn chân",
-      "stool_b": "Ghế tròn ba chân"
+      "stool_a": "Ghế đẩu nhựa vuông",
+      "stool_b": "Ghế nhựa tựa lưng"
     },
     "all": "Tất cả",
     "count": "món",

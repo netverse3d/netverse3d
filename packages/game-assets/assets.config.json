@@ -368,14 +368,14 @@
         },
         "stool": {
           "variants": ["a", "b"],
-          "maxTriangles": 300,
-          "size": [0.32, 0.32, 0.32],
+          "maxTriangles": 900,
+          "size": [0.59, 0.85, 0.57],
           "anchors": ["collision_main"]
         },
         "lowtable": {
           "variants": ["a"],
           "maxTriangles": 400,
-          "size": [0.6, 0.5, 0.6],
+          "size": [0.61, 0.51, 0.61],
           "anchors": ["collision_main"]
         },
         "parasol": {
