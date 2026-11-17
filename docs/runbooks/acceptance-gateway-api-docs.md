@@ -41,7 +41,7 @@ Một thao tác có thể báo thành công dù không đổi trạng thái; vì
 
 #### TC-03 · Đặc tả trỏ Try it out về Gateway [dương]
 
-**Kỳ vọng:** Ba JSON tại `/docs/<service>.json` đều trả 200, có `servers[0].url` lần lượt `/api/identity`, `/api/media`, `/api/notification`. Identity có `/v1/auth/providers`, Media có `/v1/media`, Notification có `/v1/inbox`; không có path `/healthz`, `/livez`, JWKS hoặc `/docs-json`.
+**Kỳ vọng:** Ba JSON tại `/docs/identity.json`, `/docs/media.json` và `/docs/notification.json` đều trả 200, có `servers[0].url` lần lượt `/api/identity`, `/api/media`, `/api/notification`. Identity có `/v1/auth/providers`, Media có `/v1/media`, Notification có `/v1/inbox`; không có path `/healthz`, `/livez`, JWKS hoặc `/docs-json`.
 
 **Bước:** Đọc `servers` và `paths` trong từng JSON; ở UI mở một operation và xem URL request. Nếu request dùng cổng riêng của service hoặc rời cùng origin, giả thuyết “Try it out qua Gateway” sai; kiểm bước sinh spec.
 
@@ -65,7 +65,7 @@ Một thao tác có thể báo thành công dù không đổi trạng thái; vì
 
 #### TC-06 · Đường nội bộ vẫn bị chặn [âm]
 
-**Kỳ vọng:** `/api/<service>/docs`, `/api/<service>/docs-json`, `/api/<service>/healthz` và đường chứa `..` hoặc ký tự mã hoá không trả nội dung Swagger hoặc health nội bộ. Bộ `pnpm test:gateway` kiểm các đường này.
+**Kỳ vọng:** Với Identity, Media và Notification, các đường nội bộ như `/api/identity/docs`, `/api/identity/docs-json`, `/api/identity/healthz` cùng đường tương ứng của hai service còn lại không trả nội dung Swagger hoặc health. Đường chứa `..` hoặc ký tự mã hoá cũng bị chặn. Bộ `pnpm test:gateway` kiểm các đường này.
 
 **Bước:** Gọi trực tiếp các đường nội bộ qua Gateway và chạy `pnpm test:gateway`; đọc status và nội dung phản hồi.
 
