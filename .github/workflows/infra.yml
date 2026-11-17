@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      COMPOSE: docker compose --env-file .env.example -f infra/compose/compose.yaml --profile apps
+      COMPOSE: docker compose --env-file .env.example -f infra/compose/compose.yaml -f infra/compose/compose.dev.yaml --profile apps
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -42,6 +42,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm gateway:check
+      - run: pnpm api-docs:check
       - run: $COMPOSE up -d --build --wait --wait-timeout 600
       - run: pnpm smoke:stack
       - run: pnpm test:gateway
