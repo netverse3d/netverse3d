@@ -1628,7 +1628,7 @@
       }
     }
   },
-  "info": { "title": "media", "description": "", "version": "0.1.0", "contact": {} },
+  "info": { "title": "notification", "description": "", "version": "0.1.0", "contact": {} },
   "tags": [],
   "servers": [{ "url": "/api/notification" }],
   "components": {

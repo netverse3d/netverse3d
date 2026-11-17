@@ -5,7 +5,7 @@ Dùng lúc cần biết các service chạy thật được cùng nhau: sau khi 
 Cần Docker đang chạy và Node 22 trên máy. Các lệnh chạy từ gốc repo. Để ngắn, đặt:
 
 ```
-COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml --profile apps"
+COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml -f infra/compose/compose.dev.yaml --profile apps"
 ```
 
 ## 1. Bật hạ tầng
@@ -34,6 +34,7 @@ Kết quả mong đợi:
 | `curl http://127.0.0.1:53003/healthz`                                                | 200, tức cả máy chủ gRPC của notification đang nghe |
 | `curl http://127.0.0.1:53004/healthz`                                                | 200, payment đã nối được database                   |
 | `curl http://127.0.0.1:58080/api/identity/v1/auth/providers`                         | 200, cổng vào chuyển được tới identity              |
+| `curl http://127.0.0.1:58080/docs/config.json`                                       | 200, chọn được Identity, Media, Notification        |
 | `curl http://127.0.0.1:58080/api/identity/healthz`                                   | 404, cổng không mở đường nội bộ                     |
 | `$COMPOSE ps -a identity-migrate media-migrate notification-migrate payment-migrate` | cả bốn `Exited (0)`                                 |
 

@@ -2,15 +2,15 @@
 
 Manifest để chạy toàn hệ thống trên Kubernetes, theo [ADR-0035](../../docs/decisions/ADR-0035-kubernetes-platform.md). Cụm local là k3d một node.
 
-| Thư mục            | Chứa gì                                               |
-| ------------------ | ----------------------------------------------------- |
-| `k3d/`             | Cấu hình cụm local                                    |
-| `platform/`        | Gateway API, Traefik, CloudNativePG, Strimzi          |
-| `base/`            | Dữ liệu, service, cổng vào                            |
-| `components/`      | Phần ghép thêm cho cụm local, như route thử WebSocket |
-| `overlays/local`   | Cụm local, chạy thật                                  |
-| `overlays/staging` | Khung cho staging, chỉ kiểm tĩnh                      |
-| `versions.json`    | Phiên bản đã ghim của công cụ và thành phần           |
+| Thư mục            | Chứa gì                                                         |
+| ------------------ | --------------------------------------------------------------- |
+| `k3d/`             | Cấu hình cụm local                                              |
+| `platform/`        | Gateway API, Traefik, CloudNativePG, Strimzi                    |
+| `base/`            | Dữ liệu, service, cổng vào                                      |
+| `components/`      | Phần ghép thêm cho cụm local: route thử WebSocket và Swagger UI |
+| `overlays/local`   | Cụm local, chạy thật                                            |
+| `overlays/staging` | Khung cho staging, chỉ kiểm tĩnh                                |
+| `versions.json`    | Phiên bản đã ghim của công cụ và thành phần                     |
 
 ## Cần cài
 

@@ -26,7 +26,7 @@ Dựng cụm k3d một node chạy cổng Traefik, PostgreSQL bằng CloudNative
 pnpm k8s:up
 ```
 
-Lệnh kiểm phiên bản công cụ và đĩa trống, build năm image cho các service và web, tạo cụm `netverse`, nạp image, cài Gateway API, Traefik, CloudNativePG, Strimzi, rồi áp overlay `local` và chờ mọi thứ sẵn sàng. Lần đầu mất khoảng 10–20 phút.
+Lệnh kiểm phiên bản công cụ và đĩa trống, build sáu image cho các service, web và UI tài liệu, tạo cụm `netverse`, nạp image, cài Gateway API, Traefik, CloudNativePG, Strimzi, rồi áp overlay `local` và chờ mọi thứ sẵn sàng. Lần đầu mất khoảng 10–20 phút.
 
 Kết quả mong đợi: dòng cuối `Cluster netverse is ready at http://127.0.0.1:58180/`.
 
@@ -42,6 +42,7 @@ Mọi lệnh dùng context `k3d-netverse`; tạo cụm không đổi context hi�
 | `kubectl --context k3d-netverse -n netverse get deploy`                                      | mọi deploy `1/1`                               |
 | `kubectl --context k3d-netverse -n netverse get httproute`                                   | mọi route có trong `infra/gateway/routes.yaml` |
 | `curl http://127.0.0.1:58180/api/identity/v1/auth/providers`                                 | 200                                            |
+| `curl http://127.0.0.1:58180/docs/config.json`                                               | 200, có ba service trong menu                  |
 
 Rồi chạy ba bộ kiểm:
 

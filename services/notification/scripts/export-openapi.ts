@@ -3,7 +3,7 @@ import { exportOpenApiFile } from '@netverse/nest-kit/testing';
 import { AppModule } from '../src/app.module';
 
 const PLACEHOLDER_ENV = {
-  SERVICE_NAME: 'media',
+  SERVICE_NAME: 'notification',
   S3_ENDPOINT: 'localhost',
   S3_PORT: '9000',
   S3_ACCESS_KEY: 'unused',

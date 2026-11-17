@@ -4,12 +4,61 @@ import { rawRequest, websocketEcho } from '../lib/http.mjs';
 
 const GATEWAY_URL = process.env.GATEWAY_URL ?? 'http://127.0.0.1:58080';
 const GATEWAY_STORAGE_URL = process.env.GATEWAY_STORAGE_URL ?? 'http://127.0.0.1:58334';
+const GATEWAY_DOCS_ENABLED = process.env.GATEWAY_DOCS_ENABLED !== 'false';
 const WS_PROBE_ENABLED = process.env.GATEWAY_WS_PROBE === '1';
 const ADMIN_EMAIL = process.env.BOOTSTRAP_ADMIN_EMAIL ?? 'admin@example.test';
 const ADMIN_PASSWORD = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? 'change-me-admin-password';
 const SPOOFED_IP = '203.0.113.77';
 const SERVICES = ['identity', 'media', 'notification', 'payment'];
 const ONE_MEBIBYTE = 1024 * 1024;
+
+test('một cổng tài liệu chọn đúng ba service theo môi trường', async () => {
+  const paths = [
+    '/docs/',
+    '/docs/config.json',
+    '/docs/identity.json',
+    '/docs/media.json',
+    '/docs/notification.json',
+  ];
+  if (!GATEWAY_DOCS_ENABLED) {
+    for (const path of paths) {
+      const response = await send(path);
+      assert.equal(response.status, 404, describe(path, response));
+    }
+    return;
+  }
+
+  const page = await send('/docs/');
+  assert.equal(page.status, 200, describe('/docs/', page));
+  assert.match(page.text, /swagger-ui/);
+  const initializer = await send('/docs/swagger-initializer.js');
+  assert.equal(initializer.status, 200, describe('swagger-initializer.js', initializer));
+  assert.match(initializer.text, /configUrl: "\/docs\/config.json"/);
+
+  const config = await send('/docs/config.json');
+  assert.equal(config.status, 200, describe('/docs/config.json', config));
+  assert.deepEqual(config.json.urls, [
+    { url: '/docs/identity.json', name: 'Identity Service' },
+    { url: '/docs/media.json', name: 'Media Service' },
+    { url: '/docs/notification.json', name: 'Notification Service' },
+  ]);
+  for (const [service, path] of [
+    ['identity', '/v1/auth/providers'],
+    ['media', '/v1/media'],
+    ['notification', '/v1/inbox'],
+  ]) {
+    const response = await send(`/docs/${service}.json`);
+    assert.equal(response.status, 200, describe(service, response));
+    assert.equal(response.json.info.title, service);
+    assert.deepEqual(response.json.servers, [{ url: `/api/${service}` }]);
+    assert.ok(response.json.paths[path], `${service} is missing ${path}`);
+    assert.ok(Object.keys(response.json.paths).every((candidate) => candidate.startsWith('/v1/')));
+  }
+  const publicApi = await send('/api/identity/v1/auth/providers');
+  assert.equal(publicApi.status, 200, describe('providers', publicApi));
+  const protectedApi = await send('/api/media/v1/media');
+  assert.equal(protectedApi.status, 401, describe('media', protectedApi));
+});
 
 async function send(path, { method = 'GET', headers = {}, body } = {}) {
   const response = await fetch(`${GATEWAY_URL}${path}`, {

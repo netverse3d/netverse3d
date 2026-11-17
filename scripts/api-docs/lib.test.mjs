@@ -19,6 +19,8 @@ test('bản tài liệu công khai giữ đủ API qua cổng và dùng đúng U
       readFileSync(join(root, `infra/gateway/docs/${service}.json`), 'utf8'),
     );
     const route = routes.find((item) => item.id === service);
+    assert.equal(source.info.title, service);
+    assert.equal(publicDocument.info.title, service);
     assert.deepEqual(publicDocument.servers, [{ url: route.strip }]);
     assert.deepEqual(
       Object.keys(publicDocument.paths).sort(),
