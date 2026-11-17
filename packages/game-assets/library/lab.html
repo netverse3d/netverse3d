@@ -190,6 +190,8 @@
         <div class="list" id="loungeList"></div>
         <h2>Phố</h2>
         <div class="list" id="streetList"></div>
+        <h2>Giao thông</h2>
+        <div class="list" id="trafficList"></div>
         <h2>Ghép thử mối nối</h2>
         <div class="list" id="setList"></div>
       </nav>
@@ -252,7 +254,7 @@
         </div>
         <div class="row">
           <span>Phát sáng</span
-          ><input id="glow" type="range" min="0.6" max="2" step="0.05" value="1.1" /><output
+          ><input id="glow" type="range" min="0.6" max="3.5" step="0.05" value="1.1" /><output
             for="glow"
             >1.10</output
           >
@@ -299,6 +301,7 @@
       import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+      import { createActorLook } from '../runtime/actor-look.mjs';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
@@ -373,6 +376,23 @@
           ['festoon_a', [-2, 0, 0], 0],
           ['festoon_a', [2, 0, 0], 0],
         ],
+        'Ngã tư đèn tín hiệu': [
+          ['road_b', [-4, 0, 0], 0],
+          ['road_a', [0, 0, 0], 0],
+          ['road_a', [4, 0, 0], 0],
+          ['road_a', [-4, 0, 4], Math.PI / 2],
+          ['sidewalk_a', [0, 0, 2.5], Math.PI],
+          ['sidewalk_a', [4, 0, 2.5], Math.PI],
+          ['signal_a', [-2.0, 0.15, 2.65], Math.PI],
+          ['walk_a', [-0.8, 0.15, 2.35], Math.PI],
+          ['roadsign_a', [0.8, 0.15, 2.4], Math.PI],
+          ['roadsign_b', [2.0, 0.15, 2.4], Math.PI],
+          ['roadsign_c', [3.2, 0.15, 2.4], Math.PI],
+          ['streetlight_a', [4.5, 0.15, 2.6], Math.PI],
+          ['streetlight_b', [-5.6, 0, -2.0], 0],
+          ['camera_a', [-3.1, 0.15, 2.6], Math.PI],
+          ['player', [0.0, 0.15, 2.45], Math.PI],
+        ],
       };
 
       const canvas = $('gl');
@@ -410,14 +430,27 @@
         ),
       );
       const loader = new GLTFLoader();
-      const kits = Object.fromEntries(
-        await Promise.all(
+      const [kits, actor] = await Promise.all([
+        Promise.all(
           config.kits.map(async (kit) => [
             kit.file,
             await loader.loadAsync(`../exported/${kit.file}`),
           ]),
-        ),
-      );
+        ).then(Object.fromEntries),
+        loader.loadAsync('../exported/player.glb'),
+      ]);
+      const actorLook = createActorLook(THREE);
+      actorLook.dress(actor.scene);
+      for (const prop of ['crate', 'cup']) {
+        const mesh = actor.scene.getObjectByName(prop);
+        if (mesh) mesh.visible = false;
+      }
+      const idleClip = actor.animations.find((clip) => clip.name === 'idle');
+      if (idleClip) {
+        const mixer = new THREE.AnimationMixer(actor.scene);
+        mixer.clipAction(idleClip).play();
+        mixer.update(0);
+      }
       const anchors = Object.assign(
         {},
         ...Object.values(kits).map((gltf) => kitAnchors(gltf.parser.json)),
@@ -487,6 +520,75 @@
       let materialSets = {};
       let display = null;
       let decal = null;
+      const roadsignDecals = {};
+
+      function roadsignDecalMaterial(name) {
+        if (roadsignDecals[name]) return roadsignDecals[name];
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = name === 'roadsign_c' ? 176 : 256;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        if (name === 'roadsign_a') {
+          ctx.fillStyle = '#f5f5f5';
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = '#d62828';
+          ctx.lineWidth = 36;
+          ctx.beginPath();
+          ctx.arc(w / 2, h / 2, 102, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = '#1b1b22';
+          ctx.fillRect(58, h / 2 - 16, w - 116, 32);
+        } else if (name === 'roadsign_b') {
+          ctx.fillStyle = '#f5f5f5';
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = '#d62828';
+          ctx.lineWidth = 28;
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(w / 2, 26);
+          ctx.lineTo(w - 22, h - 21);
+          ctx.lineTo(22, h - 21);
+          ctx.closePath();
+          ctx.stroke();
+          ctx.fillStyle = '#1b1b22';
+          ctx.beginPath();
+          ctx.moveTo(w / 2 - 11, 92);
+          ctx.lineTo(w / 2 + 11, 92);
+          ctx.lineTo(w / 2 + 7, 174);
+          ctx.lineTo(w / 2 - 7, 174);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(w / 2, 201, 11, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillStyle = '#0d5bd9';
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = '#f5f5f5';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.roundRect(14, 14, w - 28, h - 28, 14);
+          ctx.stroke();
+          ctx.fillStyle = '#f5f5f5';
+          ctx.beginPath();
+          ctx.moveTo(w / 2, 34);
+          ctx.lineTo(w / 2 + 42, 82);
+          ctx.lineTo(w / 2 + 15, 82);
+          ctx.lineTo(w / 2 + 15, 142);
+          ctx.lineTo(w / 2 - 15, 142);
+          ctx.lineTo(w / 2 - 15, 82);
+          ctx.lineTo(w / 2 - 42, 82);
+          ctx.closePath();
+          ctx.fill();
+        }
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const mat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.55 });
+        roadsignDecals[name] = mat;
+        return mat;
+      }
 
       function disposeGroup(group) {
         group.traverse((object) => {
@@ -531,6 +633,7 @@
       }
 
       function partClone(name) {
+        if (name === 'player') return actor.scene;
         for (const [file, gltf] of Object.entries(kits)) {
           const source = gltf.scene.getObjectByName(name);
           if (!source) continue;
@@ -538,7 +641,12 @@
           const clone = source.clone(true);
           clone.traverse((mesh) => {
             if (!mesh.isMesh) return;
-            mesh.material = set[mesh.material.name] ?? set.surface;
+            const matName = mesh.material.name;
+            if (matName === 'decal' && name.startsWith('roadsign_')) {
+              mesh.material = roadsignDecalMaterial(name);
+            } else {
+              mesh.material = set[matName] ?? set.surface;
+            }
             mesh.frustumCulled = false;
           });
           return clone;
@@ -708,6 +816,7 @@
         const room = $('roomList');
         const lounge = $('loungeList');
         const street = $('streetList');
+        const traffic = $('trafficList');
         for (const [name, info] of Object.entries(slotOf)) {
           const button = document.createElement('button');
           button.textContent = name;
@@ -717,9 +826,12 @@
             show();
           });
           const list =
-            { 'station-parts.glb': station, 'room-kit.glb': room, 'street-parts.glb': street }[
-              info.kit
-            ] ?? lounge;
+            {
+              'station-parts.glb': station,
+              'room-kit.glb': room,
+              'street-parts.glb': street,
+              'traffic-parts.glb': traffic,
+            }[info.kit] ?? lounge;
           list.append(button);
         }
         const sets = $('setList');

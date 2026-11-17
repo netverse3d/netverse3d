@@ -658,3 +658,56 @@ test('tệp xuất mang ảnh bóng xem thử bị nhận ra để bộ kiểm c
   assert.deepEqual(previewImages(preview), ['lounge-parts-lightmap-preview']);
   assert.deepEqual(previewImages({}), []);
 });
+
+test('ô đồ có lưới con khai trong children được kiểm tên, quan hệ cha-con và cộng dồn tam giác', () => {
+  const model = makeKitModel({
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1, 2] },
+      { name: 'chair_a__seat_anchor', translation: [0, 0.4, 0] },
+      { name: 'chair_a_bulb', mesh: 1 },
+    ],
+    meshes: [
+      { primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] },
+      { primitives: [{ indices: 0, material: 1, attributes: { POSITION: 1, TEXCOORD_0: 3 } }] },
+    ],
+    materials: [{ name: 'surface' }, { name: 'glow' }],
+    accessors: [
+      { count: 180 },
+      { count: 3, min: [-0.1, 0, -0.1], max: [0.1, 0.5, 0.1] },
+      { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+      { count: 1, bufferView: 1, componentType: 5126, type: 'VEC2' },
+    ],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: 8 },
+      { buffer: 0, byteOffset: 8, byteLength: 8 },
+    ],
+  });
+  const glowBin = Buffer.concat([uvBuffer(0.5, 0.375), uvBuffer(0.5, 0.875)]);
+  assert.deepEqual(
+    finishExport(makeKitRoot(model, { children: ['bulb'], maxTriangles: 120 }, {}, glowBin)),
+    [],
+  );
+
+  const overBudget = finishExport(
+    makeKitRoot(model, { children: ['bulb'], maxTriangles: 100 }, {}, glowBin),
+  ).join('\n');
+  assert.match(overBudget, /chair_a has 120 triangles, limit 100/);
+
+  const detached = makeKitModel({
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1] },
+      { name: 'chair_a__seat_anchor', translation: [0, 0.4, 0] },
+      { name: 'chair_a_bulb', mesh: 1 },
+    ],
+    meshes: model.meshes,
+    materials: model.materials,
+    accessors: model.accessors,
+    bufferViews: model.bufferViews,
+  });
+  assert.match(
+    finishExport(
+      makeKitRoot(detached, { children: ['bulb'], maxTriangles: 120 }, {}, glowBin),
+    ).join('\n'),
+    /chair_a is missing child mesh chair_a_bulb/,
+  );
+});

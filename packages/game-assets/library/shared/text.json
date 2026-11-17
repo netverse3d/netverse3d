@@ -35,9 +35,15 @@
       "sign-parts.glb": "Biển hiệu",
       "street-parts.glb": "Phố",
       "room-kit.glb": "Module phòng",
-      "skyline-parts.glb": "Đường chân trời"
+      "skyline-parts.glb": "Đường chân trời",
+      "traffic-parts.glb": "Giao thông"
     },
     "slots": {
+      "signal": "Đèn tín hiệu",
+      "walk": "Đèn đi bộ",
+      "roadsign": "Biển báo giao thông",
+      "streetlight": "Đèn đường lớn",
+      "camera": "Camera giao thông",
       "landmark": "Tháp điểm tựa",
       "bridge": "Cầu dây văng",
       "highrise": "Nhà cao tầng",

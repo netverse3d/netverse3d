@@ -1,5 +1,5 @@
 {
-  "config": "f7cf43eefddc720370d4de71b34645b5a5684d86f3f03fd9f33be8b6fafd0193",
+  "config": "8d8bd71d67f561527ef3eb755fea163d20fa20b4bf63478064fe4c16487abd67",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "99383511e93e0cab91a401957c879dd4889c5ebd1c446689319f28de676cddfb",
@@ -12,6 +12,7 @@
     "parts-signs.blend": "00f170d65cf74291ee8da52753fde9c2f0a9a679e33f5a043c15403624671c5a",
     "parts-street.blend": "cf5acd3327d630f8ffecce104201d2fec728ddb9c0e64e82377bd9d77c1e657c",
     "parts-skyline.blend": "1afe48889818a4109d61980a8df0695709275296b1ad65f81dec1f45d0f1ff82",
+    "parts-traffic.blend": "23563a71086e9f7af93f3ef7525aca2a2c0e6df6f745631d6f7ac7ae05c9f43f",
     "showcase-tim-neon.blend": "1c893d1ac8aefae926fd49d979500cfd2b8079cc837b472610afd96771ccdf70"
   },
   "exported": {
@@ -24,6 +25,7 @@
     "sign-parts.glb": "72a4d0f555db9bd783f9f1a34b5540700da3c5f05da0ce322cc8db6f3b39bdd2",
     "street-parts.glb": "e91b8ad55fe1c2cafdb363e5024310fe5b7013d8ed60f29c062ebf0a1978e813",
     "skyline-parts.glb": "ef66294c5d55458cd92361bf9f034e7fb60f5560ce996b285392f3ff5e2ddb67",
+    "traffic-parts.glb": "7c6d79e655c608845699c9d20e92da7f52219701035e6f78269d0abf2aa59401",
     "showcase-tim-neon.glb": "2c5acfe482d39e88881cbea75257c054cafea21bd19a65356744b3d9b780e4d7",
     "showcase-tim-neon-base.jpg": "a5766f32c59ca74f54b2431a17acd0f067768e556289d33d964cd36837d4cec0",
     "showcase-tim-neon-spill.jpg": "64a0e9d62da6f2b90eb30720c4b15fa821ba096ae81982ea66fecad037bff684"

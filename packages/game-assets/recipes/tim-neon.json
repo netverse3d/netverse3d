@@ -62,7 +62,12 @@
     "tower": "a",
     "rooftop": "a",
     "festoon": "a",
-    "lantern": "a"
+    "lantern": "a",
+    "signal": "a",
+    "walk": "a",
+    "roadsign": "a",
+    "streetlight": "a",
+    "camera": "a"
   },
   "layout": {
     "cells": [4, 3],

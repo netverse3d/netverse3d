@@ -81,16 +81,29 @@ function compareNames(kind, actual, expected, fail) {
 }
 
 function checkMeshes(gltf, nodes, expected, fail) {
+  const childMap = expected.children ?? {};
+  const allChildNames = Object.values(childMap).flat();
   compareNames(
     'mesh',
     nodes.map((node) => node.name),
-    Object.keys(expected.meshes),
+    [...Object.keys(expected.meshes), ...allChildNames],
     fail,
   );
+  const byName = new Map(nodes.map((node) => [node.name, node]));
   for (const node of nodes) {
     const limit = expected.meshes[node.name];
     if (limit === undefined) continue;
-    const triangles = triangleCount(gltf, gltf.meshes[node.mesh]);
+    const childNames = childMap[node.name] ?? [];
+    const childIndices = new Set(node.children ?? []);
+    let triangles = triangleCount(gltf, gltf.meshes[node.mesh]);
+    for (const childName of childNames) {
+      const child = byName.get(childName);
+      if (!child) continue;
+      if (!childIndices.has(gltf.nodes.indexOf(child))) {
+        fail(`${node.name} is missing child mesh ${childName}`);
+      }
+      triangles += triangleCount(gltf, gltf.meshes[child.mesh]);
+    }
     if (triangles > limit) fail(`${node.name} has ${triangles} triangles, limit ${limit}`);
   }
 }
@@ -260,15 +273,21 @@ function meshBounds(gltf, mesh) {
   }));
 }
 
-function meshExtent(gltf, mesh) {
-  return meshBounds(gltf, mesh).map(({ min, max }) => max - min);
-}
-
-function checkSizes(gltf, nodes, sizes, fail) {
+function checkSizes(gltf, nodes, sizes, children, fail) {
+  const byName = new Map(nodes.map((node) => [node.name, node]));
   for (const node of nodes) {
     const limit = sizes[node.name];
     if (limit === undefined) continue;
-    const extent = meshExtent(gltf, gltf.meshes[node.mesh]);
+    const parts = [
+      node,
+      ...(children[node.name] ?? []).map((name) => byName.get(name)).filter(Boolean),
+    ];
+    const allBounds = parts.map((part) => meshBounds(gltf, gltf.meshes[part.mesh]));
+    const extent = [0, 1, 2].map(
+      (axis) =>
+        Math.max(...allBounds.map((bounds) => bounds[axis].max)) -
+        Math.min(...allBounds.map((bounds) => bounds[axis].min)),
+    );
     if (extent.some((value, axis) => value > limit[axis])) {
       const measured = extent.map((value) => value.toFixed(3)).join(' x ');
       fail(`${node.name} is ${measured} m, larger than ${limit.join(' x ')}`);
@@ -345,7 +364,7 @@ export function checkModel(file, gltf, expected, bin) {
   checkClips(gltf, expected.clips ?? [], fail);
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
-  checkSizes(gltf, meshNodes, expected.sizes ?? {}, fail);
+  checkSizes(gltf, meshNodes, expected.sizes ?? {}, expected.children ?? {}, fail);
   checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   else if (expected.kit) fail('kits need a palette in the config');
@@ -398,12 +417,26 @@ function kitParts(kit) {
 function kitExpectation(kit, palette) {
   const parts = kitParts(kit);
   const perPart = (pick) => Object.fromEntries(parts.map(({ name, spec }) => [name, pick(spec)]));
+  const children = Object.fromEntries(
+    parts
+      .filter(({ spec }) => (spec.children ?? []).length > 0)
+      .map(({ name, spec }) => [name, spec.children.map((child) => `${name}_${child}`)]),
+  );
+  const allChildNames = Object.values(children).flat();
+  const attributes =
+    kit.lightmap === true
+      ? {
+          ...perPart(() => [LIGHTMAP_ATTRIBUTE]),
+          ...Object.fromEntries(allChildNames.map((name) => [name, [LIGHTMAP_ATTRIBUTE]])),
+        }
+      : {};
   return {
     file: kit.file,
     kit: true,
     lightmap: kit.lightmap === true,
     meshes: perPart((spec) => spec.maxTriangles),
-    attributes: kit.lightmap === true ? perPart(() => [LIGHTMAP_ATTRIBUTE]) : {},
+    children,
+    attributes,
     anchors: perPart((spec) => spec.anchors ?? []),
     sizes: perPart((spec) => spec.size),
     grids: perPart((spec) => spec.grid),
