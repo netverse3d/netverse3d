@@ -140,7 +140,7 @@ test('từ chối route và workload tài liệu ngoài overlay local', () => {
 });
 
 test('chặn mọi đường dưới docs và backend tài liệu khi route staging đổi tên', () => {
-  for (const path of ['/docs/', '/docs/config.json']) {
+  for (const path of ['/docs', '/docs/', '/docs/config.json']) {
     const route = {
       kind: 'HTTPRoute',
       metadata: { name: 'docs-staging', namespace: 'netverse' },
