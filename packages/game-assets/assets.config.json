@@ -509,6 +509,26 @@
           "size": [16.0, 49.0, 15.0]
         }
       }
+    },
+    {
+      "file": "vehicle-parts.glb",
+      "source": "parts-vehicles.blend",
+      "generator": "pipeline/make_vehicle_kit.py",
+      "lightmap": true,
+      "slots": {
+        "motorbike": {
+          "variants": ["a", "b"],
+          "maxTriangles": 1800,
+          "size": [0.78, 1.18, 2.0],
+          "anchors": ["socket_rider", "collision_main"]
+        },
+        "car": {
+          "variants": ["a", "b"],
+          "maxTriangles": 3000,
+          "size": [2.05, 1.85, 4.85],
+          "anchors": ["collision_main"]
+        }
+      }
     }
   ],
   "scenes": [

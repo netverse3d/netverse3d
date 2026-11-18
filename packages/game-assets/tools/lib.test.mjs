@@ -658,3 +658,54 @@ test('tệp xuất mang ảnh bóng xem thử bị nhận ra để bộ kiểm c
   assert.deepEqual(previewImages(preview), ['lounge-parts-lightmap-preview']);
   assert.deepEqual(previewImages({}), []);
 });
+
+function makeVehicleModel(childOverrides = {}) {
+  return {
+    nodes: [
+      { name: 'chair_a', mesh: 0, children: [1, 2] },
+      { name: 'chair_a__seat_anchor', translation: [0, 0.4, 0] },
+      { name: 'chair_a_wheel_fl', mesh: 1, translation: [0.2, 0.1, 0], ...childOverrides },
+    ],
+    meshes: [
+      { primitives: [{ indices: 0, material: 0, attributes: { POSITION: 1, TEXCOORD_0: 2 } }] },
+      { primitives: [{ indices: 3, material: 0, attributes: { POSITION: 4, TEXCOORD_0: 2 } }] },
+    ],
+    accessors: [
+      { count: 150 },
+      { count: 3, min: [-0.1, 0.1, -0.1], max: [0.1, 0.5, 0.1] },
+      { count: 1, bufferView: 0, componentType: 5126, type: 'VEC2' },
+      { count: 150 },
+      { count: 3, min: [-0.05, -0.1, -0.1], max: [0.05, 0.1, 0.1] },
+    ],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 8 }],
+    materials: [{ name: 'surface' }],
+  };
+}
+
+test('lưới con có vị trí đặt tại trục quay được chấp nhận và cộng dồn số tam giác cùng kích thước', () => {
+  const model = makeVehicleModel();
+  assert.deepEqual(
+    finishExport(makeKitRoot(model, { maxTriangles: 100, size: [0.55, 0.55, 0.25] })),
+    [],
+  );
+  const overTris = finishExport(makeKitRoot(model, { maxTriangles: 99, size: [0.55, 0.55, 0.25] }));
+  assert.match(overTris.join('\n'), /chair_a has 100 triangles, limit 99/);
+  const overSize = finishExport(makeKitRoot(model, { maxTriangles: 100, size: [0.3, 0.55, 0.25] }));
+  assert.match(
+    overSize.join('\n'),
+    /chair_a is 0\.350 x 0\.500 x 0\.200 m, larger than 0\.3 x 0\.55 x 0\.25/,
+  );
+});
+
+test('lưới con vẫn bị từ chối nếu còn scale hoặc góc xoay chưa apply', () => {
+  const scaled = makeVehicleModel({ scale: [1, 2, 1] });
+  assert.match(
+    finishExport(makeKitRoot(scaled, { maxTriangles: 100 })).join('\n'),
+    /chair_a_wheel_fl has an unapplied transform/,
+  );
+  const rotated = makeVehicleModel({ rotation: [0, 0.707, 0, 0.707] });
+  assert.match(
+    finishExport(makeKitRoot(rotated, { maxTriangles: 100 })).join('\n'),
+    /chair_a_wheel_fl has an unapplied transform/,
+  );
+});

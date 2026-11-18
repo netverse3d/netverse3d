@@ -63,7 +63,7 @@
     "summary": "Mặt đường, vỉa hè, cột điện, đèn, đồ vỉa hè và mặt tiền nhà ống để lắp khối phố quanh tiệm, kèm một con hẻm mẫu lắp từ dữ liệu.",
     "href": "catalog.html?section=street",
     "state": "rebuilt",
-    "kits": ["street-parts.glb", "stall-parts.glb", "skyline-parts.glb"],
+    "kits": ["street-parts.glb", "stall-parts.glb", "skyline-parts.glb", "vehicle-parts.glb"],
     "pages": [
       {
         "title": "Hẻm mẫu",

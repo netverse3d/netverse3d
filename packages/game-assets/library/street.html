@@ -192,8 +192,8 @@
         <div class="brand">
           <h1>Hẻm mẫu</h1>
           <p>
-            Lắp một khối phố từ dữ liệu: mặt hẻm, vỉa hè, lô tiệm với mặt tiền xếp tầng, cột điện và
-            đồ vỉa hè. <a href="index.html">Về thư viện</a> ·
+            Lắp một khối phố từ dữ liệu: mặt hẻm, vỉa hè, lô tiệm, xe đậu trước cửa và xe chạy theo
+            làn. <a href="index.html">Về thư viện</a> ·
             <a href="lab.html?part=road_a">Phòng lab</a>
           </p>
         </div>
@@ -295,6 +295,12 @@
         streetPlan,
       } from '../runtime/street-look.mjs';
       import { buildShop, kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import {
+        createTrafficLane,
+        parkedVehiclePlacements,
+        wheelSpinAngle,
+      } from '../runtime/traffic.mjs';
+      import { createVehicle } from '../runtime/vehicle-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const BLOCKS = ['hem-mau'];
@@ -350,6 +356,7 @@
       );
       const loader = new GLTFLoader();
       const kit = await loader.loadAsync('../exported/street-parts.glb');
+      const vehicleKit = await loader.loadAsync('../exported/vehicle-parts.glb');
       const anchors = kitAnchors(kit.parser.json);
 
       const scene = new THREE.Scene();
@@ -374,8 +381,9 @@
       composer.addPass(new OutputPass());
 
       const streetGroup = new THREE.Group();
+      const vehicleGroup = new THREE.Group();
       const helperGroup = new THREE.Group();
-      scene.add(streetGroup, helperGroup);
+      scene.add(streetGroup, vehicleGroup, helperGroup);
 
       const rain = createRainSystem(THREE);
       scene.add(rain.mesh);
@@ -392,6 +400,9 @@
         quality: 'high',
       };
       let materials = null;
+      let vehicleMaterials = null;
+      let trafficLane = null;
+      let movingVehicles = [];
       let plan = [];
       const clock = new THREE.Clock();
       let currentWeather = WEATHER_STATES.clear;
@@ -409,11 +420,81 @@
 
       function repaint() {
         if (materials) for (const material of Object.values(materials)) material.dispose();
+        if (vehicleMaterials) {
+          for (const material of Object.values(vehicleMaterials)) material.dispose();
+          vehicleMaterials.surface.map.dispose();
+          vehicleMaterials.surface.emissiveMap.dispose();
+        }
         materials = shopMaterials(THREE, recipes[state.recipeId], rows, {
           glowBoost: EMISSIVE_SCALE.neon.default,
           lightmap: kitLightmap(kit.scene),
           lightmapIntensity: state.ao ? 1 : 0,
         });
+        vehicleMaterials = shopMaterials(THREE, recipes[state.recipeId], rows, {
+          glowBoost: EMISSIVE_SCALE.neon.default,
+          lightmap: kitLightmap(vehicleKit.scene),
+          lightmapIntensity: state.ao ? 1 : 0,
+          roughness: 0.35,
+        });
+      }
+
+      function rebuildVehicles(block) {
+        for (const vehicle of vehicleGroup.children) vehicle.userData.disposeVehicle();
+        vehicleGroup.clear();
+        movingVehicles = [];
+        const parked = parkedVehiclePlacements(block);
+        for (const item of parked) {
+          const vehicle = createVehicle(
+            THREE,
+            vehicleKit.scene,
+            item.part,
+            vehicleMaterials,
+            recipes[state.recipeId],
+            rows,
+            item.id,
+          );
+          vehicle.position.set(...item.position);
+          vehicle.rotation.y = item.yaw;
+          vehicleGroup.add(vehicle);
+        }
+        trafficLane = createTrafficLane(block, {
+          duration: 16,
+          count: 2,
+          lateralOffset: 0.55,
+        });
+        for (const [index, part] of ['car_a', 'motorbike_b'].entries()) {
+          const vehicle = createVehicle(
+            THREE,
+            vehicleKit.scene,
+            part,
+            vehicleMaterials,
+            recipes[state.recipeId],
+            rows,
+            `${block.id}:moving-${index}`,
+          );
+          vehicleGroup.add(vehicle);
+          const wheels = [];
+          vehicle.traverse((mesh) => {
+            if (mesh.isMesh && mesh.name.includes('_wheel_')) wheels.push(mesh);
+          });
+          movingVehicles.push({
+            vehicle,
+            wheels,
+            radius: part === 'car_a' ? 0.31 : 0.24,
+            sample: { position: [0, 0, 0] },
+          });
+        }
+      }
+
+      function updateTraffic(elapsed) {
+        for (let index = 0; index < movingVehicles.length; index += 1) {
+          const moving = movingVehicles[index];
+          const sample = trafficLane.positionAt(elapsed, index, moving.sample);
+          moving.vehicle.position.set(sample.position[0], sample.position[1], sample.position[2]);
+          moving.vehicle.rotation.y = sample.yaw;
+          const angle = wheelSpinAngle(sample.travelled, moving.radius);
+          for (const wheel of moving.wheels) wheel.rotation.x = angle;
+        }
       }
 
       function helperLayer() {
@@ -471,12 +552,13 @@
         const block = blocks[state.blockId];
         plan = streetPlan(block);
         streetGroup.add(buildShop(THREE, kit.scene, plan, materials));
+        rebuildVehicles(block);
         helperLayer();
         $('sCells').textContent = `${block.cells[0]} × ${block.cells[1]} ô 4 m`;
         $('sLots').textContent = String((block.lots ?? []).length);
         $('sRoads').textContent = String((block.roads ?? []).length);
         $('sWaypoints').textContent = String(sidewalkWaypoints(block).length);
-        $('mParts').textContent = String(plan.length);
+        $('mParts').textContent = String(plan.length + vehicleGroup.children.length);
         $('blockOut').textContent = JSON.stringify(block, null, 2);
       }
 
@@ -525,7 +607,10 @@
         state[name] = !state[name];
         button.setAttribute('aria-pressed', String(state[name]));
         if (name === 'bloom') bloom.enabled = state.bloom;
-        if (name === 'ao') materials.surface.aoMapIntensity = state.ao ? 1 : 0;
+        if (name === 'ao') {
+          materials.surface.aoMapIntensity = state.ao ? 1 : 0;
+          vehicleMaterials.surface.aoMapIntensity = state.ao ? 1 : 0;
+        }
         if (name === 'fog') {
           scene.fog = state.fog
             ? new THREE.Fog(
@@ -569,6 +654,7 @@
 
         applyWeatherToOutdoor(scene, currentWeather, { renderer, materials });
         rain.update(camera, delta, currentWeather);
+        updateTraffic(elapsed);
 
         $('wName').textContent = currentWeather.name ?? state.weatherMode;
         $('wRain').textContent = String(currentWeather.rainCount);
