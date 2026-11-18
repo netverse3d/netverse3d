@@ -8,7 +8,7 @@ gitGraph
   branch staging
   branch feat/12-login
   commit id: "wip"
-  commit id: "review"
+  commit id: "issue + CI"
   checkout staging
   commit id: "feat: login (#12)" tag: "identity/stg-v0.1.0"
   commit id: "fix: payment (#13)" tag: "payment/stg-v0.3.1"
@@ -34,6 +34,8 @@ gitGraph
 | -------------------------------------- | --------- | ------------ |
 | `feat/*`, `fix/*`, `docs/*`, `chore/*` | `staging` | Squash       |
 | `staging`                              | `main`    | Merge commit |
+
+PR công việc vào `staging` merge theo tiêu chí issue và pipeline; không yêu cầu approval. Người merge xác nhận mục "Xong khi nào" của issue và toàn bộ check bắt buộc xanh. PR promote `staging` lên `main` giữ ngoại lệ issue/REQ hiện có và phải đạt điều kiện phát hành cùng checks. Review góp ý là tùy chọn; nếu `CHANGES_REQUESTED` chặn PR thì người merge dismiss sau khi xác nhận đủ điều kiện. Approval production release vẫn theo quy định trong [ADR-0007](../../decisions/ADR-0007-branching-and-release.md).
 
 Thay đổi chỉ đi một chiều từ `staging` lên `main`. Không squash ở bước này: git sẽ coi commit chưa vào `main` và gây xung đột ở vòng sau.
 

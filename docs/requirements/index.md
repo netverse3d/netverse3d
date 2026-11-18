@@ -388,6 +388,6 @@ Nguồn: `team-decision`
 
 ### REQ-049: Gộp PR theo tiêu chí issue và pipeline, không bắt approval
 
-Mọi thay đổi vào staging hoặc main đi qua PR, đóng issue có REQ hoặc ADR và đạt tiêu chí trong mục Xong khi nào của issue; người merge xác nhận nội dung đáp ứng yêu cầu và toàn bộ check bắt buộc xanh. PR không cần approval, review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue và trạng thái pipeline. Quy định approval của lần phát hành production giữ nguyên theo ADR-0007.
+PR công việc vào staging phải đóng issue có REQ hoặc ADR và đáp ứng mục Xong khi nào của issue; người merge xác nhận chức năng đạt yêu cầu và mọi check bắt buộc xanh. PR promote staging lên main tuân theo điều kiện phát hành ở ADR-0007 và được miễn issue/REQ như quy định hiện có. Cả hai luồng PR đều không cần approval; review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue hoặc điều kiện promote cùng trạng thái pipeline. Approval của lần phát hành production vẫn bắt buộc theo ADR-0007.
 
 Nguồn: `team-decision`
