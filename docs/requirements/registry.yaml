@@ -383,3 +383,11 @@ requirements:
     milestone: M1
     area: infra
     sources: [team-decision]
+  - id: REQ-049
+    title: Gộp PR theo tiêu chí issue và pipeline, không bắt approval
+    description: Mọi thay đổi vào staging hoặc main đi qua PR, đóng issue có REQ hoặc ADR và đạt tiêu chí trong mục Xong khi nào của issue; người merge xác nhận nội dung đáp ứng yêu cầu và toàn bộ check bắt buộc xanh. PR không cần approval, review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue và trạng thái pipeline. Quy định approval của lần phát hành production giữ nguyên theo ADR-0007.
+    status: accepted
+    priority: must
+    milestone: M0
+    area: infra
+    sources: [team-decision]

@@ -8,6 +8,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | --- | --- | --- | --- | --- |
 | REQ-027 | Tách staging và production, phát hành theo tag | Đã chốt | Bắt buộc | `infra` |
 | REQ-044 | Bố cục monorepo thống nhất và chỉ mục toàn repo | Đã chốt | Nên có | `infra` |
+| REQ-049 | Gộp PR theo tiêu chí issue và pipeline, không bắt approval | Đã chốt | Bắt buộc | `infra` |
 
 ## M1 · Giao diện và Identity
 
@@ -382,5 +383,11 @@ Nguồn: `mentor-architecture-full`, `team-decision`
 ### REQ-048: Chạy toàn hệ thống trên Kubernetes local và trong CI
 
 Cụm k3d chạy cổng Traefik theo Gateway API, các service, PostgreSQL bằng CloudNativePG, Kafka bằng Strimzi và object storage; manifest đóng gói bằng Kustomize; CI dựng cụm và chạy bộ kiểm cổng cùng kịch bản xuyên service, theo ADR-0035.
+
+Nguồn: `team-decision`
+
+### REQ-049: Gộp PR theo tiêu chí issue và pipeline, không bắt approval
+
+Mọi thay đổi vào staging hoặc main đi qua PR, đóng issue có REQ hoặc ADR và đạt tiêu chí trong mục Xong khi nào của issue; người merge xác nhận nội dung đáp ứng yêu cầu và toàn bộ check bắt buộc xanh. PR không cần approval, review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue và trạng thái pipeline. Quy định approval của lần phát hành production giữ nguyên theo ADR-0007.
 
 Nguồn: `team-decision`
