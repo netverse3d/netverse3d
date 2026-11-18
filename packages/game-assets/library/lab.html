@@ -302,6 +302,7 @@
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
+      import { createActorLook } from '../runtime/actor-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -373,6 +374,19 @@
           ['festoon_a', [-2, 0, 0], 0],
           ['festoon_a', [2, 0, 0], 0],
         ],
+        'Làn xe và nhân vật': [
+          ['road_a', [-4, 0, 0], 0],
+          ['road_a', [0, 0, 0], 0],
+          ['road_a', [4, 0, 0], 0],
+          ['sidewalk_a', [-4, 0, -2.5], 0],
+          ['sidewalk_a', [0, 0, -2.5], 0],
+          ['sidewalk_a', [4, 0, -2.5], 0],
+          ['car_a', [-2.8, 0, 0.95], Math.PI / 2],
+          ['car_b', [2.8, 0, 0.95], Math.PI / 2],
+          ['motorbike_a', [1.2, 0, -1.25], Math.PI * 0.72],
+          ['motorbike_b', [-0.8, 0, -1.1], -Math.PI / 2],
+          ['player', [0.3, 0.15, -2.25], 0],
+        ],
       };
 
       const canvas = $('gl');
@@ -410,14 +424,23 @@
         ),
       );
       const loader = new GLTFLoader();
-      const kits = Object.fromEntries(
-        await Promise.all(
+      const [kits, actor] = await Promise.all([
+        Promise.all(
           config.kits.map(async (kit) => [
             kit.file,
             await loader.loadAsync(`../exported/${kit.file}`),
           ]),
-        ),
-      );
+        ).then(Object.fromEntries),
+        loader.loadAsync('../exported/player.glb'),
+      ]);
+      const actorLook = createActorLook(THREE);
+      actorLook.dress(actor.scene);
+      const idleClip = actor.animations.find((clip) => clip.name === 'idle') ?? actor.animations[0];
+      if (idleClip) {
+        const mixer = new THREE.AnimationMixer(actor.scene);
+        mixer.clipAction(idleClip).play();
+        mixer.update(0);
+      }
       const anchors = Object.assign(
         {},
         ...Object.values(kits).map((gltf) => kitAnchors(gltf.parser.json)),
@@ -531,6 +554,11 @@
       }
 
       function partClone(name) {
+        if (name === 'player') {
+          actor.scene.position.set(0, 0, 0);
+          actor.scene.rotation.set(0, 0, 0);
+          return actor.scene;
+        }
         for (const [file, gltf] of Object.entries(kits)) {
           const source = gltf.scene.getObjectByName(name);
           if (!source) continue;
@@ -717,9 +745,12 @@
             show();
           });
           const list =
-            { 'station-parts.glb': station, 'room-kit.glb': room, 'street-parts.glb': street }[
-              info.kit
-            ] ?? lounge;
+            {
+              'station-parts.glb': station,
+              'room-kit.glb': room,
+              'street-parts.glb': street,
+              'vehicle-parts.glb': street,
+            }[info.kit] ?? lounge;
           list.append(button);
         }
         const sets = $('setList');
@@ -808,7 +839,10 @@
       renderLists();
       resize();
       const linkedPart = query.get('part');
-      if (linkedPart && slotOf[linkedPart]) state.selection = { kind: 'part', name: linkedPart };
+      const linkedSet = query.get('set');
+      if (linkedSet && SETS[linkedSet]) state.selection = { kind: 'set', name: linkedSet };
+      else if (linkedPart && slotOf[linkedPart])
+        state.selection = { kind: 'part', name: linkedPart };
       if (query.get('spin') === '0') {
         state.spin = false;
         document.querySelector('[data-toggle="spin"]').setAttribute('aria-pressed', 'false');

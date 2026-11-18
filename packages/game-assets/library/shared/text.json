@@ -35,7 +35,8 @@
       "sign-parts.glb": "Biển hiệu",
       "street-parts.glb": "Phố",
       "room-kit.glb": "Module phòng",
-      "skyline-parts.glb": "Đường chân trời"
+      "skyline-parts.glb": "Đường chân trời",
+      "vehicle-parts.glb": "Xe cộ"
     },
     "slots": {
       "landmark": "Tháp điểm tựa",
@@ -80,7 +81,9 @@
       "window": "Cửa sổ",
       "ceiling": "Trần",
       "light": "Đèn trần",
-      "marker": "Vạch sàn"
+      "marker": "Vạch sàn",
+      "motorbike": "Xe máy",
+      "car": "Ô tô"
     },
     "all": "Tất cả",
     "count": "món",

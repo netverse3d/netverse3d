@@ -62,7 +62,9 @@
     "tower": "a",
     "rooftop": "a",
     "festoon": "a",
-    "lantern": "a"
+    "lantern": "a",
+    "motorbike": "a",
+    "car": "a"
   },
   "layout": {
     "cells": [4, 3],
