@@ -11,6 +11,10 @@ Toàn bộ giao diện của người chơi và chủ tiệm nằm trong `apps/w
 
 React dựng thẻ `<canvas>` một lần rồi giao cho Three.js. Từ đó hai bên không gọi nhau, chỉ đọc và ghi chung một kho trạng thái.
 
+## Gọi API
+
+Client gọi service bằng đường tương đối cùng origin, như `/api/identity/v1/auth/providers` hoặc `/api/media/v1/assets`; không cấu hình một host riêng cho từng service. [API Gateway](./architecture.md#cổng-vào) chuyển yêu cầu đến service tương ứng và service tự kiểm token. Kết nối WebSocket đi qua `/ws` khi game server được đưa vào hệ thống.
+
 ```mermaid
 flowchart LR
   subgraph React

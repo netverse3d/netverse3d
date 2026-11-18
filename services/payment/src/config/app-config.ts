@@ -60,10 +60,10 @@ export class AppConfig extends KitConfig {
       bodyLimit: env.BODY_LIMIT,
       requestTimeoutMs: env.REQUEST_TIMEOUT_MS,
     };
-    this.log = { level: env.LOG_LEVEL, pretty: env.NODE_ENV === 'development' };
+    this.log = { level: env.LOG_LEVEL, pretty: env.LOG_PRETTY ?? env.NODE_ENV === 'development' };
     this.database = { url: env.DATABASE_URL };
     this.swagger = {
-      enabled: env.SWAGGER_ENABLED ?? env.NODE_ENV !== 'production',
+      enabled: env.NODE_ENV !== 'production' && (env.SWAGGER_ENABLED ?? true),
       apiKeys: [{ name: 'tenant-api-key', header: 'x-api-key' }],
     };
     this.rateLimit = { ttlMs: env.RATE_LIMIT_TTL_MS, max: env.RATE_LIMIT_MAX };

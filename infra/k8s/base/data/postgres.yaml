@@ -1,0 +1,87 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: netverse-pg
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-202610260819-minimal-trixie@sha256:87f97b9a922e469b91faaaa36ced7c2092cf890efd3622f29095d252b70b9718
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+  postgresql:
+    pg_hba:
+      - host identity identity all scram-sha-256
+      - host media media all scram-sha-256
+      - host notification notification all scram-sha-256
+      - host payment payment all scram-sha-256
+      - host all identity,media,notification,payment all reject
+  managed:
+    roles:
+      - name: identity
+        ensure: present
+        login: true
+        passwordSecret:
+          name: pg-identity
+      - name: media
+        ensure: present
+        login: true
+        passwordSecret:
+          name: pg-media
+      - name: notification
+        ensure: present
+        login: true
+        passwordSecret:
+          name: pg-notification
+      - name: payment
+        ensure: present
+        login: true
+        passwordSecret:
+          name: pg-payment
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: identity
+spec:
+  name: identity
+  owner: identity
+  cluster:
+    name: netverse-pg
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: media
+spec:
+  name: media
+  owner: media
+  cluster:
+    name: netverse-pg
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: notification
+spec:
+  name: notification
+  owner: notification
+  cluster:
+    name: netverse-pg
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: payment
+spec:
+  name: payment
+  owner: payment
+  cluster:
+    name: netverse-pg

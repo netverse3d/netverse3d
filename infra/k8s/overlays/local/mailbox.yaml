@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailbox
+  namespace: netverse-data
+  labels:
+    app.kubernetes.io/name: mailbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mailbox
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mailbox
+    spec:
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:v1.33.1
+          ports:
+            - name: smtp
+              containerPort: 1025
+            - name: http
+              containerPort: 8025
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+          resources:
+            requests:
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailbox
+  namespace: netverse-data
+spec:
+  selector:
+    app.kubernetes.io/name: mailbox
+  ports:
+    - name: smtp
+      port: 1025
+      targetPort: smtp
+    - name: http
+      port: 8025
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailbox-host
+  namespace: netverse-data
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: mailbox
+  ports:
+    - name: http
+      port: 8025
+      targetPort: http
+      nodePort: 32025

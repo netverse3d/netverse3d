@@ -37,7 +37,7 @@ describe('cấu hình môi trường', () => {
     expect(env.CORS_ORIGINS).toEqual(['https://a.test', 'https://b.test']);
   });
 
-  it('tắt swagger mặc định ở production, bật được khi khai rõ', () => {
+  it('chỉ bật swagger ngoài production dù biến cấu hình yêu cầu bật', () => {
     const production = {
       ...valid,
       NODE_ENV: 'production',
@@ -50,7 +50,7 @@ describe('cấu hình môi trường', () => {
     );
     expect(
       new AppConfig(parseEnv({ ...production, SWAGGER_ENABLED: 'true' })).swagger.enabled,
-    ).toBe(true);
+    ).toBe(false);
   });
 });
 

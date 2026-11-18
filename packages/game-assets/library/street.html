@@ -223,6 +223,35 @@
           </div>
         </section>
         <section>
+          <h2>Thời tiết <small>REQ-043</small></h2>
+          <div class="row">
+            <span>Trạng thái</span>
+            <select id="weatherSelect">
+              <option value="auto">Tự động ngẫu nhiên</option>
+              <option value="clear">Tạnh</option>
+              <option value="lightRain">Mưa nhẹ</option>
+              <option value="heavyRain">Mưa lớn</option>
+              <option value="denseFog">Sương dày</option>
+            </select>
+          </div>
+          <div class="row">
+            <span>Chất lượng</span>
+            <select id="qualitySelect">
+              <option value="high">Cao (đủ hạt mưa)</option>
+              <option value="medium">Vừa (50% hạt)</option>
+              <option value="low">Thấp (tắt mưa)</option>
+            </select>
+          </div>
+          <dl style="margin-top: 8px">
+            <dt>Thời tiết</dt>
+            <dd id="wName">Tạnh</dd>
+            <dt>Hạt mưa</dt>
+            <dd id="wRain">0</dd>
+            <dt>Độ ướt đường</dt>
+            <dd id="wWet">0%</dd>
+          </dl>
+        </section>
+        <section>
           <h2>Số liệu</h2>
           <dl>
             <dt>Ô</dt>
@@ -251,8 +280,15 @@
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import {
+        EMISSIVE_SCALE,
         NIGHT_SKY,
         OUTDOOR_LIGHTING,
+        WEATHER_CONFIG,
+        WEATHER_STATES,
+        applyQualityLevel,
+        applyWeatherToOutdoor,
+        createRainSystem,
+        getWeatherAtTime,
         roadLane,
         setupOutdoorEnvironment,
         sidewalkWaypoints,
@@ -341,6 +377,9 @@
       const helperGroup = new THREE.Group();
       scene.add(streetGroup, helperGroup);
 
+      const rain = createRainSystem(THREE);
+      scene.add(rain.mesh);
+
       const state = {
         blockId: BLOCKS[0],
         recipeId: recipeIds[0],
@@ -349,9 +388,13 @@
         bloom: true,
         ao: true,
         fog: true,
+        weatherMode: 'auto',
+        quality: 'high',
       };
       let materials = null;
       let plan = [];
+      const clock = new THREE.Clock();
+      let currentWeather = WEATHER_STATES.clear;
 
       function disposeGroup(group) {
         group.traverse((object) => {
@@ -367,7 +410,7 @@
       function repaint() {
         if (materials) for (const material of Object.values(materials)) material.dispose();
         materials = shopMaterials(THREE, recipes[state.recipeId], rows, {
-          glowBoost: 1.1,
+          glowBoost: EMISSIVE_SCALE.neon.default,
           lightmap: kitLightmap(kit.scene),
           lightmapIntensity: state.ao ? 1 : 0,
         });
@@ -469,6 +512,12 @@
         repaint();
         rebuild();
       });
+      $('weatherSelect').addEventListener('change', (event) => {
+        state.weatherMode = event.target.value;
+      });
+      $('qualitySelect').addEventListener('change', (event) => {
+        state.quality = event.target.value;
+      });
       $('toggleBar').addEventListener('click', (event) => {
         const button = event.target.closest('[data-toggle]');
         if (!button) return;
@@ -507,6 +556,24 @@
       controls.autoRotate = spin;
       controls.autoRotateSpeed = 0.6;
       renderer.setAnimationLoop(() => {
+        const delta = clock.getDelta();
+        const elapsed = clock.getElapsedTime();
+
+        if (state.weatherMode === 'auto') {
+          const target = getWeatherAtTime({ time: elapsed, seed: 'saigon-hem-mau' });
+          currentWeather = applyQualityLevel(target, state.quality);
+        } else {
+          const target = WEATHER_STATES[state.weatherMode] ?? WEATHER_STATES.clear;
+          currentWeather = applyQualityLevel(target, state.quality);
+        }
+
+        applyWeatherToOutdoor(scene, currentWeather, { renderer, materials });
+        rain.update(camera, delta, currentWeather);
+
+        $('wName').textContent = currentWeather.name ?? state.weatherMode;
+        $('wRain').textContent = String(currentWeather.rainCount);
+        $('wWet').textContent = `${Math.round(currentWeather.wetness * 100)}%`;
+
         controls.update();
         composer.render();
         $('mCalls').textContent = String(renderer.info.render.calls);

@@ -67,6 +67,14 @@ describe('định dạng log', () => {
 });
 
 describe('cấu hình môi trường', () => {
+  it('chỉ bật swagger ngoài production dù biến cấu hình yêu cầu bật', () => {
+    expect(new AppConfig(parseEnv(valid)).swagger.enabled).toBe(true);
+    expect(new AppConfig(parseEnv(production)).swagger.enabled).toBe(false);
+    expect(
+      new AppConfig(parseEnv({ ...production, SWAGGER_ENABLED: 'true' })).swagger.enabled,
+    ).toBe(false);
+  });
+
   it('nhận cấu hình tối thiểu và áp giá trị mặc định', () => {
     const env = parseEnv(valid);
     expect(env.ACCESS_TOKEN_TTL_SECONDS).toBe(900);

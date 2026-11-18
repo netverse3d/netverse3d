@@ -10,7 +10,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `services/` | Tiến trình phục vụ API hoặc kết nối realtime, mỗi service một thư mục | 8 |
 | `workers/` | Tiến trình xử lý việc nền | 3 |
 | `packages/` | Mã và dữ liệu dùng chung, không tự triển khai | 6 |
-| `infra/` | Hạ tầng chạy hệ thống, gồm Compose, cổng vào và cấu hình quan sát | 0 |
+| `infra/` | Hạ tầng chạy hệ thống, gồm Compose, Kubernetes, cổng vào và cấu hình quan sát | 0 |
 | `tests/` | Kiểm chạy trên nhiều thành phần cùng lúc, gồm kiểm chuẩn, đầu cuối và tải | 0 |
 | `scripts/` | Công cụ của repo để kiểm, sinh tài liệu và phát hành | 0 |
 | `docs/` | Yêu cầu, quyết định, wiki và runbook | 0 |

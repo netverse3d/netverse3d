@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/kafka/listeners/-
+  value:
+    name: external
+    port: 9094
+    type: nodeport
+    tls: false
+    configuration:
+      bootstrap:
+        nodePort: 32092
+      brokers:
+        - broker: 0
+          nodePort: 32093
+          advertisedHost: 127.0.0.1
+          advertisedPort: 59193

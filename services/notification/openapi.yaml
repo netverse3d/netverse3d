@@ -1338,7 +1338,7 @@ paths:
       tags:
         - deliveries
 info:
-  title: media
+  title: notification
   description: ''
   version: 0.1.0
   contact: {}

@@ -83,14 +83,14 @@ describe('cấu hình môi trường', () => {
     expect(() => parseEnv(source)).not.toThrow('hunter2');
   });
 
-  it('tắt swagger mặc định ở production, bật được khi khai rõ', () => {
+  it('chỉ bật swagger ngoài production dù biến cấu hình yêu cầu bật', () => {
     expect(new AppConfig(parseEnv({ ...valid, NODE_ENV: 'production' })).swagger.enabled).toBe(
       false,
     );
     expect(
       new AppConfig(parseEnv({ ...valid, NODE_ENV: 'production', SWAGGER_ENABLED: 'true' })).swagger
         .enabled,
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('dùng endpoint nội bộ làm endpoint công khai khi không khai riêng', () => {

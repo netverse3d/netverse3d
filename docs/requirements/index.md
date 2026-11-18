@@ -18,6 +18,8 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-003 | Tạo và chỉnh nhân vật | Nháp | Bắt buộc | `web-3d` |
 | REQ-004 | Web 3D chạy trên máy tính và điện thoại | Đã chốt | Bắt buộc | `web-3d` |
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
+| REQ-047 | Client chỉ gọi hệ thống qua một cổng vào | Đã chốt | Bắt buộc | `infra` |
+| REQ-048 | Chạy toàn hệ thống trên Kubernetes local và trong CI | Đã chốt | Bắt buộc | `infra` |
 
 ## M2 · Lát cắt đầu
 
@@ -247,7 +249,7 @@ Nguồn: `mentor-architecture-full`
 
 ### REQ-026: Triển khai production trên Kubernetes
 
-Hệ thống chạy trên Kubernetes, có Kafka cho sự kiện và hàng đợi việc nền.
+Hệ thống chạy trên Kubernetes, có Kafka cho sự kiện và hàng đợi việc nền. Nền móng chạy local và CI ở REQ-048.
 
 Nguồn: `mentor-architecture-full`, `team-decision`
 
@@ -368,5 +370,17 @@ Nguồn: `team-decision`, `mentor-backend-sample`, `mentor-architecture-full`
 ### REQ-046: Service gọi service bằng định danh riêng
 
 Một service gọi service khác bằng token của chính nó do identity cấp, không dùng token của người dùng và không mượn quyền quản trị. Token của service ngắn hạn, mang quyền do nền tảng cấp, và chỉ dùng được ở những route khai quyền đó. Sự việc đi qua Kafka, mệnh lệnh đi qua gRPC, theo ADR-0028.
+
+Nguồn: `team-decision`
+
+### REQ-047: Client chỉ gọi hệ thống qua một cổng vào
+
+Mọi yêu cầu HTTP và WebSocket từ client đi qua một cổng theo `/api/<service>/v1` và `/ws`; cổng không chứa nghiệp vụ, chặn đường nội bộ, giới hạn tần suất và cỡ yêu cầu; service tự xác thực. Môi trường phát triển có một giao diện `/docs` để chọn tài liệu API công khai của từng service và thử API qua cổng; staging và production không phục vụ giao diện hoặc đặc tả này, theo ADR-0034.
+
+Nguồn: `mentor-architecture-full`, `team-decision`
+
+### REQ-048: Chạy toàn hệ thống trên Kubernetes local và trong CI
+
+Cụm k3d chạy cổng Traefik theo Gateway API, các service, PostgreSQL bằng CloudNativePG, Kafka bằng Strimzi và object storage; manifest đóng gói bằng Kustomize; CI dựng cụm và chạy bộ kiểm cổng cùng kịch bản xuyên service, theo ADR-0035.
 
 Nguồn: `team-decision`

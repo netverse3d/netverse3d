@@ -110,7 +110,7 @@ const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
     ground: '#120c24',
     ambient: 0.5,
     points: ['#a66bff', '#5ce1ff'],
-    bloom: 0.8,
+    bloom: 0.35,
     exposure: 1,
   },
   dim: {
@@ -118,7 +118,7 @@ const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
     ground: '#06100f',
     ambient: 0.35,
     points: ['#1ee8d2', '#0aa0ff'],
-    bloom: 0.55,
+    bloom: 0.3,
     exposure: 0.9,
   },
   warm: {
@@ -126,7 +126,7 @@ const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
     ground: '#1a110a',
     ambient: 0.7,
     points: ['#ff9f1c', '#ff6f3c'],
-    bloom: 0.35,
+    bloom: 0.15,
     exposure: 1.05,
   },
   daylight: {
@@ -134,7 +134,7 @@ const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
     ground: '#8899aa',
     ambient: 1.4,
     points: ['#ffffff', '#ffffff'],
-    bloom: 0.12,
+    bloom: 0.05,
     exposure: 1.1,
   },
 };
@@ -238,7 +238,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   );
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.8, 0.6, 0.72);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.35, 0.4, 0.85);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   const content = new THREE.Group();

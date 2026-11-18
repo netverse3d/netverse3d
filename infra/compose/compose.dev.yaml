@@ -1,0 +1,14 @@
+services:
+  api-docs:
+    profiles: [apps]
+    image: netverse/api-docs:dev
+    build:
+      context: ../..
+      dockerfile: infra/gateway/docs-ui/Dockerfile
+
+  gateway:
+    volumes:
+      - ../gateway/compose/dynamic-dev.yaml:/etc/traefik/dynamic.yaml:ro
+    depends_on:
+      api-docs:
+        condition: service_started

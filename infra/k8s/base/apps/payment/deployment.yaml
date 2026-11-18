@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+  labels: &a1
+    app.kubernetes.io/name: payment
+    app.kubernetes.io/part-of: netverse
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: payment
+  template:
+    metadata:
+      labels: *a1
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      initContainers:
+        - name: migrate
+          image: netverse/payment:local
+          imagePullPolicy: IfNotPresent
+          command:
+            - node_modules/.bin/prisma
+            - migrate
+            - deploy
+          env:
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-payment
+                  key: username
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-payment
+                  key: password
+            - name: DATABASE_URL
+              value: postgresql://$(PG_USER):$(PG_PASSWORD)@netverse-pg-rw.netverse-data.svc:5432/payment
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          securityContext: &a2
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: app
+          image: netverse/payment:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: payment-config
+            - secretRef:
+                name: payment-secrets
+          env:
+            - name: PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-payment
+                  key: username
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-payment
+                  key: password
+            - name: DATABASE_URL
+              value: postgresql://$(PG_USER):$(PG_PASSWORD)@netverse-pg-rw.netverse-data.svc:5432/payment
+          startupProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 2
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              memory: 512Mi
+          securityContext: *a2
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

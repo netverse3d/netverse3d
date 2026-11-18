@@ -1,4 +1,43 @@
+import {
+  EMISSIVE_SCALE,
+  LIGHT_BUDGET,
+  STANDARD_BLOOM,
+  clampEmissiveIntensity,
+  isWithinEmissiveScale,
+} from './lighting.mjs';
 import { YAW, snap } from './shop-look.mjs';
+import {
+  TRANSITION_PROBABILITIES,
+  WEATHER_CONFIG,
+  WEATHER_STATES,
+  applyQualityLevel,
+  calculateRoadRoughness,
+  createRainSystem,
+  getWeatherAtTime,
+  getWeatherSequence,
+  hashSeed,
+  interpolateWeather,
+  pickNextWeather,
+} from './weather.mjs';
+
+export {
+  EMISSIVE_SCALE,
+  LIGHT_BUDGET,
+  STANDARD_BLOOM,
+  clampEmissiveIntensity,
+  isWithinEmissiveScale,
+  TRANSITION_PROBABILITIES,
+  WEATHER_CONFIG,
+  WEATHER_STATES,
+  applyQualityLevel,
+  calculateRoadRoughness,
+  createRainSystem,
+  getWeatherAtTime,
+  getWeatherSequence,
+  hashSeed,
+  interpolateWeather,
+  pickNextWeather,
+};
 
 export const STREET_CELL = 4;
 export const STOREY_HEIGHT = 3.8;
@@ -31,9 +70,9 @@ export const OUTDOOR_LIGHTING = {
   },
   exposure: 1.0,
   bloom: {
-    strength: 0.35,
-    radius: 0.4,
-    threshold: 0.85,
+    strength: STANDARD_BLOOM.strength,
+    radius: STANDARD_BLOOM.radius,
+    threshold: STANDARD_BLOOM.threshold,
   },
   environmentIntensity: 0.45,
 };
@@ -318,4 +357,25 @@ export function setupOutdoorEnvironment(THREE, scene, renderer, options = {}) {
     scene.add(hemisphere, moon);
   }
   return { skyTexture, envTexture, pmrem, hemisphere, moon };
+}
+
+export function applyWeatherToOutdoor(scene, weather, options = {}) {
+  if (!weather || !scene) return;
+  if (scene.fog && weather.fog) {
+    if (scene.fog.color && typeof scene.fog.color.set === 'function') {
+      scene.fog.color.set(weather.fog.color);
+    }
+    if (typeof weather.fog.near === 'number') scene.fog.near = weather.fog.near;
+    if (typeof weather.fog.far === 'number') scene.fog.far = weather.fog.far;
+  }
+  if (typeof weather.environmentIntensity === 'number') {
+    scene.environmentIntensity = weather.environmentIntensity;
+  }
+  if (options.renderer && typeof weather.exposure === 'number') {
+    options.renderer.toneMappingExposure = weather.exposure;
+  }
+  if (options.materials?.surface && typeof weather.wetness === 'number') {
+    const base = options.baseRoughness ?? 0.85;
+    options.materials.surface.roughness = calculateRoadRoughness(base, weather.wetness);
+  }
 }

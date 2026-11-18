@@ -5,7 +5,7 @@ Dùng lúc cần biết các service chạy thật được cùng nhau: sau khi 
 Cần Docker đang chạy và Node 22 trên máy. Các lệnh chạy từ gốc repo. Để ngắn, đặt:
 
 ```
-COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml --profile apps"
+COMPOSE="docker compose --env-file .env.example -f infra/compose/compose.yaml -f infra/compose/compose.dev.yaml --profile apps"
 ```
 
 ## 1. Bật hạ tầng
@@ -19,20 +19,24 @@ Kết quả mong đợi: lệnh kết thúc với mã 0. `curl http://127.0.0.1:
 ## 2. Dựng và chạy các service
 
 ```
-$COMPOSE up -d --build --wait identity media notification
+$COMPOSE up -d --build --wait
 ```
 
-Lệnh dựng image từ gốc repo, chạy migration của từng service vào database riêng, chạy `identity` rồi tới `media` và `notification`. Hai service sau chỉ khởi động sau lúc `identity` khoẻ, vì chúng lấy khoá công khai từ `identity` để kiểm token. `notification` chạy consumer group `notification` trên Kafka để nhận sự kiện xác minh email từ `identity`.
+Lệnh dựng image từ gốc repo, chạy migration của từng service vào database riêng, chạy `identity` rồi tới `media`, `notification` và `payment`, dựng ứng dụng web và cuối cùng là cổng vào `gateway`. Client chỉ đi qua cổng, theo [vận hành cổng vào](./gateway.md). Hai service sau chỉ khởi động sau lúc `identity` khoẻ, vì chúng lấy khoá công khai từ `identity` để kiểm token. `notification` chạy consumer group `notification` trên Kafka để nhận sự kiện xác minh email từ `identity`.
 
 Kết quả mong đợi:
 
-| Kiểm                                                                 | Kết quả                                             |
-| -------------------------------------------------------------------- | --------------------------------------------------- |
-| `curl http://127.0.0.1:53002/healthz`                                | 200                                                 |
-| `curl http://127.0.0.1:53002/.well-known/jwks.json`                  | 200, có ít nhất một khoá                            |
-| `curl http://127.0.0.1:53001/healthz`                                | 200, tức đã nối được database và kho                |
-| `curl http://127.0.0.1:53003/healthz`                                | 200, tức cả máy chủ gRPC của notification đang nghe |
-| `$COMPOSE ps -a identity-migrate media-migrate notification-migrate` | cả ba `Exited (0)`                                  |
+| Kiểm                                                                                 | Kết quả                                             |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `curl http://127.0.0.1:53002/healthz`                                                | 200                                                 |
+| `curl http://127.0.0.1:53002/.well-known/jwks.json`                                  | 200, có ít nhất một khoá                            |
+| `curl http://127.0.0.1:53001/healthz`                                                | 200, tức đã nối được database và kho                |
+| `curl http://127.0.0.1:53003/healthz`                                                | 200, tức cả máy chủ gRPC của notification đang nghe |
+| `curl http://127.0.0.1:53004/healthz`                                                | 200, payment đã nối được database                   |
+| `curl http://127.0.0.1:58080/api/identity/v1/auth/providers`                         | 200, cổng vào chuyển được tới identity              |
+| `curl http://127.0.0.1:58080/docs/config.json`                                       | 200, chọn được Identity, Media, Notification        |
+| `curl http://127.0.0.1:58080/api/identity/healthz`                                   | 404, cổng không mở đường nội bộ                     |
+| `$COMPOSE ps -a identity-migrate media-migrate notification-migrate payment-migrate` | cả bốn `Exited (0)`                                 |
 
 Một service không lên thì xem `$COMPOSE logs` kèm tên service đó.
 
@@ -42,7 +46,15 @@ Một service không lên thì xem `$COMPOSE logs` kèm tên service đó.
 pnpm smoke:stack
 ```
 
-Kịch bản `tests/e2e/stack-smoke.mjs` chạy trên máy thật, như một client ở ngoài mạng Docker. Nó đọc mã xác minh email từ hộp thư giả lập, nơi `notification` gửi mã thay cho `identity`, và tải tệp qua URL ký sẵn trỏ tới `localhost:58333`.
+Kịch bản `tests/e2e/stack-smoke.mjs` chạy trên máy thật, như một client ở ngoài mạng Docker, và gọi mọi API **qua cổng** `http://127.0.0.1:58080/api/<service>`. Nó đọc mã xác minh email từ hộp thư giả lập, nơi `notification` gửi mã thay cho `identity`, và tải tệp qua URL ký sẵn trỏ tới cổng storage `localhost:58334`. Lệnh gRPC, Kafka và hộp thư vẫn gọi thẳng, vì đó là kênh giữa các service và công cụ dev. Đặt `SMOKE_GATEWAY_URL` để chạy với cổng khác.
+
+Sau smoke, chạy bộ kiểm cổng:
+
+```
+GATEWAY_WS_PROBE=1 pnpm test:gateway
+```
+
+Kết quả mong đợi: `# fail 0`, `# skipped 0`.
 
 Kịch bản làm lần lượt:
 

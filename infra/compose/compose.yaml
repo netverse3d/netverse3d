@@ -88,6 +88,7 @@ services:
 
   identity-migrate:
     profiles: [apps]
+    image: netverse/identity:local
     build:
       context: ../..
       dockerfile: services/identity/Dockerfile
@@ -100,6 +101,7 @@ services:
 
   identity:
     profiles: [apps]
+    image: netverse/identity:local
     build:
       context: ../..
       dockerfile: services/identity/Dockerfile
@@ -109,12 +111,13 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: identity
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/identity
       AUTH_JWKS_URL: http://127.0.0.1:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000
       AUTH_AUDIENCE: identity
       KAFKA_BROKERS: kafka:19092
-      TOKEN_AUDIENCES: media,notification
+      TOKEN_AUDIENCES: media,notification,payment
       KEY_ENCRYPTION_SECRET: ${IDENTITY_KEY_ENCRYPTION_SECRET:-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff}
       OTP_HASH_SECRET: ${IDENTITY_OTP_HASH_SECRET:-local-development-otp-hash-secret-value}
       OTP_DELIVERY: notification
@@ -136,6 +139,7 @@ services:
 
   media-migrate:
     profiles: [apps]
+    image: netverse/media:local
     build:
       context: ../..
       dockerfile: services/media/Dockerfile
@@ -148,6 +152,7 @@ services:
 
   media:
     profiles: [apps]
+    image: netverse/media:local
     build:
       context: ../..
       dockerfile: services/media/Dockerfile
@@ -157,13 +162,14 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: media
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/media
       S3_ENDPOINT: object-store
       S3_PORT: 8333
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-netverse-local}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-change-me-local-only}
       S3_PUBLIC_ENDPOINT: ${MEDIA_S3_PUBLIC_ENDPOINT:-localhost}
-      S3_PUBLIC_PORT: ${MEDIA_S3_PUBLIC_PORT:-58333}
+      S3_PUBLIC_PORT: ${MEDIA_S3_PUBLIC_PORT:-58334}
       AUTH_JWKS_URL: ${MEDIA_AUTH_JWKS_URL:-http://identity:3000/.well-known/jwks.json}
       AUTH_ISSUER: ${MEDIA_AUTH_ISSUER:-http://identity:3000}
       AUTH_AUDIENCE: media
@@ -187,6 +193,7 @@ services:
 
   notification-migrate:
     profiles: [apps]
+    image: netverse/notification:local
     build:
       context: ../..
       dockerfile: services/notification/Dockerfile
@@ -199,6 +206,7 @@ services:
 
   notification:
     profiles: [apps]
+    image: netverse/notification:local
     build:
       context: ../..
       dockerfile: services/notification/Dockerfile
@@ -208,6 +216,7 @@ services:
       NODE_ENV: ${APP_ENV:-development}
       LOG_PRETTY: 'false'
       SERVICE_NAME: notification
+      TRUST_PROXY_HOPS: '1'
       DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/notification
       AUTH_JWKS_URL: http://identity:3000/.well-known/jwks.json
       AUTH_ISSUER: http://identity:3000
@@ -237,6 +246,92 @@ services:
         condition: service_healthy
       mailbox:
         condition: service_healthy
+
+  payment-migrate:
+    profiles: [apps]
+    image: netverse/payment:local
+    build:
+      context: ../..
+      dockerfile: services/payment/Dockerfile
+    command: [node_modules/.bin/prisma, migrate, deploy]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/payment
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payment:
+    profiles: [apps]
+    image: netverse/payment:local
+    build:
+      context: ../..
+      dockerfile: services/payment/Dockerfile
+    env_file:
+      - ../../services/payment/.env.example
+    environment:
+      NODE_ENV: ${APP_ENV:-development}
+      LOG_PRETTY: 'false'
+      SERVICE_NAME: payment
+      TRUST_PROXY_HOPS: '1'
+      DATABASE_URL: postgresql://${POSTGRES_USER:?}:${POSTGRES_PASSWORD:?}@postgres:5432/payment
+      AUTH_JWKS_URL: http://identity:3000/.well-known/jwks.json
+      AUTH_ISSUER: http://identity:3000
+      AUTH_AUDIENCE: payment
+    ports:
+      - 127.0.0.1:${PAYMENT_PORT:-53004}:3000
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1:3000/healthz || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      payment-migrate:
+        condition: service_completed_successfully
+      identity:
+        condition: service_healthy
+
+  web-3d:
+    profiles: [apps]
+    image: netverse/web-3d:local
+    build:
+      context: ../..
+      dockerfile: apps/web-3d/Dockerfile
+    healthcheck:
+      test: [CMD-SHELL, wget -qO- http://127.0.0.1/ > /dev/null || exit 1]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  gateway:
+    image: traefik:v3.7.17
+    profiles: [apps]
+    command: [--configFile=/etc/traefik/traefik.yaml]
+    volumes:
+      - ../gateway/compose/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ../gateway/compose/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+    ports:
+      - 127.0.0.1:${GATEWAY_PORT:-58080}:8000
+      - 127.0.0.1:${GATEWAY_STORAGE_PORT:-58334}:8333
+    healthcheck:
+      test: [CMD, traefik, healthcheck, --ping, --configFile=/etc/traefik/traefik.yaml]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      identity:
+        condition: service_healthy
+      media:
+        condition: service_healthy
+      notification:
+        condition: service_healthy
+      payment:
+        condition: service_healthy
+      web-3d:
+        condition: service_healthy
+
+  gateway-probe:
+    image: traefik/whoami:v1.12.0
+    profiles: [apps]
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.131.0

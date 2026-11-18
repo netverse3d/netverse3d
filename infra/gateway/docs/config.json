@@ -1,0 +1,8 @@
+{
+  "urls": [
+    { "url": "/docs/identity.json", "name": "Identity Service" },
+    { "url": "/docs/media.json", "name": "Media Service" },
+    { "url": "/docs/notification.json", "name": "Notification Service" }
+  ],
+  "validatorUrl": "none"
+}

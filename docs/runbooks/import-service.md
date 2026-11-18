@@ -76,6 +76,7 @@ Xoá khỏi bản nhập: giấy phép riêng, workflow CI, cấu hình lint và
 - Tài liệu API sinh theo OpenAPI 3.1; bản công bố nằm ở `packages/contracts/openapi/v1/<id>.yaml` và có test buộc nó trùng với bản service sinh ra.
 - Sự kiện gửi ra theo vỏ chung `events/v1/envelope`; phần `data` có hợp đồng riêng trong `packages/contracts/events/v1`. Tên loại sự kiện chỉ gồm chữ thường, dấu chấm và gạch ngang.
 - Dịch vụ hạ tầng mới thêm vào `infra/compose` và vào danh sách của `pnpm infra:smoke`. Service chạy dưới profile `apps`.
+- Thêm đường công khai vào `infra/gateway/routes.yaml`, chạy `pnpm gateway:render` và commit cấu hình được sinh. Thêm manifest service vào `infra/k8s/base/apps/<id>` và overlay cần dùng, rồi chạy `pnpm k8s:check`.
 - Có một runbook chạy thử service trên hạ tầng dev, như [chạy thử identity và media](./stack-smoke.md).
 
 ### 5.6. Sổ sách

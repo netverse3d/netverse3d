@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
-const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? 'http://127.0.0.1:53002';
-const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? 'http://127.0.0.1:53001';
-const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? 'http://127.0.0.1:53003';
+const GATEWAY_URL = process.env.SMOKE_GATEWAY_URL ?? 'http://127.0.0.1:58080';
+const IDENTITY_URL = process.env.SMOKE_IDENTITY_URL ?? `${GATEWAY_URL}/api/identity`;
+const MEDIA_URL = process.env.SMOKE_MEDIA_URL ?? `${GATEWAY_URL}/api/media`;
+const NOTIFICATION_URL = process.env.SMOKE_NOTIFICATION_URL ?? `${GATEWAY_URL}/api/notification`;
 const KAFKA_BROKERS = (process.env.SMOKE_KAFKA_BROKERS ?? '127.0.0.1:59092').split(',');
 const NOTIFICATION_GRPC = process.env.SMOKE_NOTIFICATION_GRPC ?? '127.0.0.1:53103';
 const MAILBOX_URL = process.env.SMOKE_MAILBOX_URL ?? 'http://127.0.0.1:58025';

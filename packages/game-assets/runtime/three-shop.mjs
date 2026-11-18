@@ -1,4 +1,7 @@
+import { EMISSIVE_SCALE } from './lighting.mjs';
 import { instanceGroups, paletteImage } from './shop-look.mjs';
+
+export { EMISSIVE_SCALE };
 
 export function paletteTexture(THREE, image) {
   const texture = new THREE.DataTexture(image.data, image.width, image.height, THREE.RGBAFormat);
@@ -48,7 +51,7 @@ export function shopMaterials(
   rows,
   {
     roughness = 0.62,
-    glowBoost = 1.2,
+    glowBoost = EMISSIVE_SCALE.neon.default,
     lightmap = null,
     lightmapIntensity = 1,
     legends = null,
@@ -181,7 +184,13 @@ export function showcaseMaterials(
   THREE,
   recipe,
   rows,
-  { base, spill, ambient = 6, spillStrength = [8, 6, 6], glowBoost = 1.2 } = {},
+  {
+    base,
+    spill,
+    ambient = 6,
+    spillStrength = [8, 6, 6],
+    glowBoost = EMISSIVE_SCALE.neon.default,
+  } = {},
 ) {
   const materials = shopMaterials(THREE, recipe, rows, { glowBoost });
   materials.surface.dispose();
