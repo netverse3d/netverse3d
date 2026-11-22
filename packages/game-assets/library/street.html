@@ -321,13 +321,14 @@
         sidewalkWaypoints,
         streetPlan,
       } from '../runtime/street-look.mjs';
-      import { buildShop, kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
       import {
         createTrafficLane,
         parkedVehiclePlacements,
         wheelSpinAngle,
       } from '../runtime/traffic.mjs';
       import { createVehicle } from '../runtime/vehicle-look.mjs';
+      import { buildStreet } from '../runtime/street-instancing.mjs';
 
       const $ = (id) => document.getElementById(id);
       const BLOCKS = ['hem-mau'];
@@ -397,7 +398,16 @@
         renderer,
         new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
       );
-      composer.addPass(new RenderPass(scene, camera));
+      const scenePass = new RenderPass(scene, camera);
+      const renderScene = scenePass.render.bind(scenePass);
+      let sceneCalls = 0;
+      let sceneTriangles = 0;
+      scenePass.render = (...args) => {
+        renderScene(...args);
+        sceneCalls = renderer.info.render.calls;
+        sceneTriangles = renderer.info.render.triangles;
+      };
+      composer.addPass(scenePass);
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(1, 1),
         OUTDOOR_LIGHTING.bloom.strength,
@@ -416,6 +426,7 @@
       scene.add(rain.mesh);
 
       const urlParams = new URLSearchParams(window.location.search);
+      const instanceStreet = urlParams.get('assembly') !== 'clones';
       const dateParam = urlParams.get('date');
       const testDate = dateParam ? new Date(dateParam) : new Date();
       const autoFireworks = isHolidayFireworks(testDate) || urlParams.get('fireworks') === '1';
@@ -451,7 +462,8 @@
       function disposeGroup(group) {
         group.traverse((object) => {
           if (object.isInstancedMesh) object.dispose();
-          else if (object.isMesh || object.isLine) {
+          else if (object.userData.ownedMaterial) object.material.dispose();
+          else if (group === helperGroup && (object.isMesh || object.isLine)) {
             object.geometry.dispose();
             object.material.dispose();
           }
@@ -592,7 +604,9 @@
         disposeGroup(streetGroup);
         const block = blocks[state.blockId];
         plan = streetPlan(block);
-        streetGroup.add(buildShop(THREE, kit.scene, plan, materials));
+        streetGroup.add(
+          buildStreet(THREE, kit.scene, plan, materials, { instance: instanceStreet }),
+        );
         rebuildVehicles(block);
         helperLayer();
         $('sCells').textContent = `${block.cells[0]} × ${block.cells[1]} ô 4 m`;
@@ -749,8 +763,8 @@
 
         controls.update();
         composer.render();
-        $('mCalls').textContent = String(renderer.info.render.calls);
-        $('mTris').textContent = renderer.info.render.triangles.toLocaleString('vi-VN');
+        $('mCalls').textContent = String(sceneCalls);
+        $('mTris').textContent = sceneTriangles.toLocaleString('vi-VN');
       });
     </script>
   </body>

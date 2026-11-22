@@ -17,7 +17,30 @@ import {
   isLfsPointer,
   readGlb,
   stampPath,
+  validateKitLod,
 } from './lib.mjs';
+
+test('LOD tùy chọn hợp lệ và từ chối hậu tố hoặc khoảng cách sai', () => {
+  assert.deepEqual(validateKitLod({ slots: { storey: { variants: ['a'] } } }), []);
+  assert.deepEqual(
+    validateKitLod({
+      slots: { storey: { variants: ['a'], lod: { suffix: 'low', distance: 32 } } },
+    }),
+    [],
+  );
+  assert.match(
+    validateKitLod({
+      slots: { storey: { variants: ['a'], lod: { suffix: '', distance: -1 } } },
+    }).join('\n'),
+    /storey/,
+  );
+  assert.match(
+    validateKitLod({
+      slots: { storey: { variants: ['a', 'a_low'], lod: { suffix: 'low', distance: 32 } } },
+    }).join('\n'),
+    /collision/,
+  );
+});
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

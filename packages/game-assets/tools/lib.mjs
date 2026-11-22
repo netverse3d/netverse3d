@@ -31,6 +31,24 @@ export function loadConfig(root) {
   return JSON.parse(readFileSync(join(root, CONFIG_FILE), 'utf8'));
 }
 
+export function validateKitLod(kit) {
+  const errors = [];
+  for (const [slot, spec] of Object.entries(kit.slots ?? {})) {
+    if (spec.lod === undefined) continue;
+    const { suffix, distance } = spec.lod ?? {};
+    if (typeof suffix !== 'string' || !/^[a-z][a-z0-9]*$/.test(suffix))
+      errors.push(`${slot} has an invalid LOD suffix`);
+    if (!Number.isFinite(distance) || distance <= 0)
+      errors.push(`${slot} has an invalid LOD distance`);
+    if (
+      typeof suffix === 'string' &&
+      spec.variants.some((variant) => spec.variants.includes(`${variant}_${suffix}`))
+    )
+      errors.push(`${slot} has a LOD name collision`);
+  }
+  return errors;
+}
+
 function matchPointer(buffer) {
   if (buffer.length > MAX_POINTER_SIZE) return null;
   return buffer.toString('utf8').match(LFS_POINTER);
@@ -629,12 +647,25 @@ function checkContent(root, config, requireContent) {
 export function checkAssets(root, { requireContent = false } = {}) {
   const config = loadConfig(root);
   const { errors, skipped } = checkContent(root, config, requireContent);
-  return { errors: [...new Set([...checkStamp(root, config), ...errors])], skipped };
+  return {
+    errors: [
+      ...new Set([
+        ...(config.kits ?? []).flatMap(validateKitLod),
+        ...checkStamp(root, config),
+        ...errors,
+      ]),
+    ],
+    skipped,
+  };
 }
 
 export function finishExport(root) {
   const config = loadConfig(root);
-  const errors = [...listUndeclared(root, config), ...checkContent(root, config, true).errors];
+  const errors = [
+    ...(config.kits ?? []).flatMap(validateKitLod),
+    ...listUndeclared(root, config),
+    ...checkContent(root, config, true).errors,
+  ];
   if (errors.length === 0) {
     writeFileSync(stampPath(root), `${JSON.stringify(buildStamp(root, config), null, 2)}\n`);
   }

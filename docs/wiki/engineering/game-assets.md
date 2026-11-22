@@ -2,6 +2,8 @@
 
 Nhân vật và đồ vật nằm ở `packages/game-assets`. Lý do chọn cách làm này ở [ADR-0015](../../decisions/ADR-0015-blender-sources-as-master.md).
 
+Ngân sách cho hẻm và khu thành phố, phép đo instancing và quy ước LOD nằm ở [ngân sách hiệu năng thành phố](./performance-budget.md).
+
 ## Xem những gì đã có
 
 [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) cho xem nhân vật với 24 hành động, 12 biểu cảm, bản có và không phụ kiện, con hẻm Sài Gòn, bộ sưu tập các hướng đã thử và tiệm mẫu. Xem tại máy bằng `pnpm assets:library`, rồi mở `http://localhost:4173/library/`. Máy cần có mạng vì trang tải three.js và phông chữ từ CDN.

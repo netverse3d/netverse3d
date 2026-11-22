@@ -92,7 +92,13 @@ export function shopMaterials(
   return { surface, glow, display, decal, legend };
 }
 
-export function buildShop(THREE, kitScene, plan, materials) {
+export function buildShop(
+  THREE,
+  kitScene,
+  plan,
+  materials,
+  { individualPrimitive = () => false, instance = true } = {},
+) {
   const group = new THREE.Group();
   const matrix = new THREE.Matrix4();
   const local = new THREE.Matrix4();
@@ -110,6 +116,19 @@ export function buildShop(THREE, kitScene, plan, materials) {
       if (!material)
         throw new Error(`${part} uses material ${mesh.material.name} without a shop material`);
       local.copy(source.matrixWorld).invert().multiply(mesh.matrixWorld);
+      if (!instance || individualPrimitive(part, mesh.name)) {
+        for (const placement of placements) {
+          rotation.setFromAxisAngle(up, placement.yaw);
+          position.set(...placement.position);
+          const individual = mesh.clone(false);
+          individual.material = material.clone();
+          individual.matrixAutoUpdate = false;
+          individual.matrix.copy(matrix.compose(position, rotation, unit).multiply(local));
+          individual.userData.ownedMaterial = true;
+          group.add(individual);
+        }
+        return;
+      }
       const instanced = new THREE.InstancedMesh(mesh.geometry, material, placements.length);
       placements.forEach((placement, index) => {
         rotation.setFromAxisAngle(up, placement.yaw);
