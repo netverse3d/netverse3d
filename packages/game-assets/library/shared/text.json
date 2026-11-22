@@ -38,9 +38,19 @@
       "room-kit.glb": "Module phòng",
       "skyline-parts.glb": "Đường chân trời",
       "traffic-parts.glb": "Giao thông",
-      "vehicle-parts.glb": "Xe cộ"
+      "vehicle-parts.glb": "Xe cộ",
+      "furniture-parts.glb": "Tiện ích phố"
     },
     "slots": {
+      "shelter": "Trạm chờ xe buýt",
+      "bench": "Ghế dài vỉa hè",
+      "railing": "Lan can vỉa hè",
+      "bollard": "Cột chắn xe",
+      "binpair": "Thùng rác đôi",
+      "cabinet": "Tủ điện hạ thế",
+      "hydrant": "Trụ cứu hoả",
+      "manhole": "Nắp hố ga vỉa hè",
+      "adpillar": "Trụ quảng cáo",
       "signal": "Đèn tín hiệu",
       "walk": "Đèn đi bộ",
       "roadsign": "Biển báo giao thông",

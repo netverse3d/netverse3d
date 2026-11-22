@@ -68,7 +68,8 @@
       "stall-parts.glb",
       "skyline-parts.glb",
       "vehicle-parts.glb",
-      "traffic-parts.glb"
+      "traffic-parts.glb",
+      "furniture-parts.glb"
     ],
     "pages": [
       {

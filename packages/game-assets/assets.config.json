@@ -567,6 +567,67 @@
           "anchors": ["collision_main"]
         }
       }
+    },
+    {
+      "file": "furniture-parts.glb",
+      "source": "parts-furniture.blend",
+      "generator": "pipeline/make_furniture_kit.py",
+      "lightmap": true,
+      "slots": {
+        "shelter": {
+          "variants": ["a"],
+          "maxTriangles": 2000,
+          "size": [3.8, 2.7, 1.8],
+          "anchors": ["collision_main"]
+        },
+        "bench": {
+          "variants": ["a"],
+          "maxTriangles": 1300,
+          "size": [2.1, 0.95, 0.75],
+          "anchors": ["collision_main"]
+        },
+        "railing": {
+          "variants": ["a"],
+          "maxTriangles": 1300,
+          "size": [2.05, 1.05, 0.25],
+          "anchors": ["collision_main"]
+        },
+        "bollard": {
+          "variants": ["a"],
+          "maxTriangles": 650,
+          "size": [0.35, 1.0, 0.35],
+          "anchors": ["collision_main"]
+        },
+        "binpair": {
+          "variants": ["a"],
+          "maxTriangles": 1000,
+          "size": [1.05, 1.15, 0.55],
+          "anchors": ["collision_main"]
+        },
+        "cabinet": {
+          "variants": ["a"],
+          "maxTriangles": 700,
+          "size": [0.95, 1.45, 0.6],
+          "anchors": ["collision_main"]
+        },
+        "hydrant": {
+          "variants": ["a"],
+          "maxTriangles": 1000,
+          "size": [0.7, 0.92, 0.6],
+          "anchors": ["collision_main"]
+        },
+        "manhole": {
+          "variants": ["a"],
+          "maxTriangles": 1000,
+          "size": [1.05, 0.08, 1.05]
+        },
+        "adpillar": {
+          "variants": ["a"],
+          "maxTriangles": 900,
+          "size": [1.35, 3.1, 0.5],
+          "anchors": ["collision_main"]
+        }
+      }
     }
   ],
   "scenes": [

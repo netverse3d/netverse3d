@@ -192,6 +192,8 @@
         <div class="list" id="streetList"></div>
         <h2>Giao thông</h2>
         <div class="list" id="trafficList"></div>
+        <h2>Tiện ích phố</h2>
+        <div class="list" id="furnitureList"></div>
         <h2>Ghép thử mối nối</h2>
         <div class="list" id="setList"></div>
       </nav>
@@ -305,7 +307,6 @@
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
-      import { createActorLook } from '../runtime/actor-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -424,6 +425,26 @@
           ['motorbike_a', [1.2, 0, -1.25], Math.PI * 0.72],
           ['motorbike_b', [-0.8, 0, -1.1], -Math.PI / 2],
           ['player', [0.3, 0.15, -2.25], 0],
+        ],
+        'Tiện ích phố lớn': [
+          ['road_a', [-6, 0, 0], 0],
+          ['road_a', [-2, 0, 0], 0],
+          ['road_a', [2, 0, 0], 0],
+          ['road_a', [6, 0, 0], 0],
+          ['sidewalk_a', [-6, 0, -2.5], 0],
+          ['sidewalk_a', [-2, 0, -2.5], 0],
+          ['sidewalk_a', [2, 0, -2.5], 0],
+          ['sidewalk_a', [6, 0, -2.5], 0],
+          ['adpillar_a', [-6.2, 0.15, -2.5], 0],
+          ['shelter_a', [-3.2, 0.15, -2.65], 0],
+          ['manhole_a', [-1.1, 0.15, -2.5], 0],
+          ['player', [-0.4, 0.15, -2.4], 0],
+          ['bollard_a', [0.3, 0.15, -2.1], 0],
+          ['bench_a', [1.2, 0.15, -2.6], 0],
+          ['hydrant_a', [2.5, 0.15, -2.15], 0],
+          ['binpair_a', [3.8, 0.15, -2.6], 0],
+          ['cabinet_a', [5.2, 0.15, -2.65], 0],
+          ['railing_a', [6.0, 0.15, -2.05], 0],
         ],
       };
 
@@ -853,6 +874,7 @@
         const lounge = $('loungeList');
         const street = $('streetList');
         const traffic = $('trafficList');
+        const furniture = $('furnitureList');
         for (const [name, info] of Object.entries(slotOf)) {
           const button = document.createElement('button');
           button.textContent = name;
@@ -868,6 +890,7 @@
               'street-parts.glb': street,
               'traffic-parts.glb': traffic,
               'vehicle-parts.glb': street,
+              'furniture-parts.glb': furniture,
             }[info.kit] ?? lounge;
           list.append(button);
         }

@@ -71,7 +71,16 @@
     "streetlight": "a",
     "camera": "a",
     "motorbike": "b",
-    "car": "b"
+    "car": "b",
+    "shelter": "a",
+    "bench": "a",
+    "railing": "a",
+    "bollard": "a",
+    "binpair": "a",
+    "cabinet": "a",
+    "hydrant": "a",
+    "manhole": "a",
+    "adpillar": "a"
   },
   "layout": {
     "cells": [3, 4],
