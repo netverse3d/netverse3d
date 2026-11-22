@@ -1,3 +1,21 @@
+import {
+  DEFAULT_SHOP_VIEWPOINTS,
+  catmullRomDerivative,
+  catmullRomPoint,
+  createCameraTrack,
+  getShopViewpoints,
+  normalizeVector,
+} from './camera-track.mjs';
+
+export {
+  DEFAULT_SHOP_VIEWPOINTS,
+  catmullRomDerivative,
+  catmullRomPoint,
+  createCameraTrack,
+  getShopViewpoints,
+  normalizeVector,
+};
+
 export const PALETTE_WIDTH = 128;
 const CELL_SIZE = 2;
 const LIGHT_HEIGHT = 3.47;

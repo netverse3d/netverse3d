@@ -2,7 +2,7 @@
 
 - Trạng thái: accepted
 - Ngày: 2026-11-07
-- Xem thêm: [ADR-0022](./ADR-0022-per-component-release-tags.md) thay dạng tag chung bằng tag theo từng thành phần và đổi phạm vi so nội dung của tag production
+- Xem thêm: [ADR-0022](./ADR-0022-per-component-release-tags.md) thay dạng tag chung bằng tag theo từng thành phần và đổi phạm vi so nội dung của tag production; [ADR-0036](./ADR-0036-pr-merge-policy.md) chốt điều kiện merge PR
 
 ## Bối cảnh
 
@@ -25,5 +25,5 @@ Nhóm cần một nơi test ổn định trước production. Merge và phát h�
 
 - Việc chưa xong trong `staging` phải ẩn sau feature flag, vì promote mang theo toàn bộ.
 - Không có luồng riêng cho sửa gấp. Sửa gấp là một `fix`, cũng lên `staging` rồi mới tới production, nên không cần nhánh `hotfix/*` và không có merge từ `main` về `staging`.
-- Khi tổ chức mới có một người, tạm để 0 approval và cho tự duyệt; có thành viên thì bật lại.
+- Điều kiện merge PR theo tiêu chí issue và pipeline, không bắt approval, được chốt ở [ADR-0036](./ADR-0036-pr-merge-policy.md).
 - Chủ tổ chức vẫn sửa được cấu hình trong trường hợp khẩn cấp, nên việc này được ghi lại trong audit log.

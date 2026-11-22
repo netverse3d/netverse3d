@@ -34,24 +34,46 @@ export function readAccessor(gltf, bin, index) {
   });
 }
 
-export function partTriangles(gltf, bin, name) {
-  const node = (gltf.nodes ?? []).find((candidate) => candidate.name === name);
+function meshTriangles(gltf, bin, node, offset = [0, 0, 0]) {
   const triangles = [];
-  if (!node || node.mesh === undefined) return triangles;
   const hasData = (index) => index !== undefined && gltf.accessors[index].bufferView !== undefined;
-  for (const primitive of gltf.meshes[node.mesh].primitives) {
-    if (!hasData(primitive.attributes.POSITION)) continue;
-    if (primitive.indices !== undefined && !hasData(primitive.indices)) continue;
-    const positions = readAccessor(gltf, bin, primitive.attributes.POSITION);
-    const indices =
-      primitive.indices === undefined
-        ? positions.map((_, index) => index)
-        : readAccessor(gltf, bin, primitive.indices);
-    for (let i = 0; i + 2 < indices.length; i += 3) {
-      triangles.push([positions[indices[i]], positions[indices[i + 1]], positions[indices[i + 2]]]);
+  if (node.mesh !== undefined) {
+    for (const primitive of gltf.meshes[node.mesh].primitives) {
+      if (!hasData(primitive.attributes.POSITION)) continue;
+      if (primitive.indices !== undefined && !hasData(primitive.indices)) continue;
+      const positions = readAccessor(gltf, bin, primitive.attributes.POSITION).map(([x, y, z]) => [
+        x + offset[0],
+        y + offset[1],
+        z + offset[2],
+      ]);
+      const indices =
+        primitive.indices === undefined
+          ? positions.map((_, index) => index)
+          : readAccessor(gltf, bin, primitive.indices);
+      for (let i = 0; i + 2 < indices.length; i += 3) {
+        triangles.push([
+          positions[indices[i]],
+          positions[indices[i + 1]],
+          positions[indices[i + 2]],
+        ]);
+      }
     }
   }
+  for (const childIndex of node.children ?? []) {
+    const child = (gltf.nodes ?? [])[childIndex];
+    if (!child || child.mesh === undefined) continue;
+    const t = child.translation ?? [0, 0, 0];
+    triangles.push(
+      ...meshTriangles(gltf, bin, child, [offset[0] + t[0], offset[1] + t[1], offset[2] + t[2]]),
+    );
+  }
   return triangles;
+}
+
+export function partTriangles(gltf, bin, name) {
+  const node = (gltf.nodes ?? []).find((candidate) => candidate.name === name);
+  if (!node || node.mesh === undefined) return [];
+  return meshTriangles(gltf, bin, node);
 }
 
 export function placeTriangles(triangles, [tx, ty, tz], yaw) {

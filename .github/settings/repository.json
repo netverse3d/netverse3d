@@ -1,5 +1,4 @@
 {
-  "approvals": 0,
   "preventSelfReview": false,
   "releaseReviewers": [{ "type": "User", "login": "baodhg" }],
   "releaseAppIds": { "staging": null, "production": null },

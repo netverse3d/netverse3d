@@ -5,10 +5,13 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { isLfsPointer, loadConfig, readGlb } from '../tools/lib.mjs';
 import {
+  DEFAULT_SHOP_VIEWPOINTS,
   PALETTE_WIDTH,
   colorAt,
+  createCameraTrack,
   doorwayCell,
   drawCalls,
+  getShopViewpoints,
   instanceGroups,
   kitAnchors,
   paletteImage,
@@ -412,4 +415,12 @@ test('bộ máy khai ba mẫu ghế, mỗi mẫu có điểm ngồi và hộp va
   }
   assert.deepEqual(seats[1], seats[0]);
   assert.deepEqual(seats[2], seats[0]);
+});
+
+test('shop-look tái xuất các hàm và điểm nhìn camera track cho tiệm mẫu', () => {
+  assert.equal(typeof createCameraTrack, 'function');
+  assert.equal(typeof getShopViewpoints, 'function');
+  assert.ok(DEFAULT_SHOP_VIEWPOINTS['tim-neon'].length >= 3);
+  const track = createCameraTrack(getShopViewpoints('tim-neon'));
+  assert.equal(typeof track.sample, 'function');
 });

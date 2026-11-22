@@ -19,6 +19,9 @@ import {
   roadLane,
   setupOutdoorEnvironment,
   applyWeatherToOutdoor,
+  createFireworksSystem,
+  getHolidayEvent,
+  isHolidayFireworks,
   sidewalkPlacements,
   sidewalkWaypoints,
   streetPlan,
@@ -326,4 +329,11 @@ test('applyWeatherToOutdoor cập nhật sương, phơi sáng và độ nhám m�
   assert.equal(scene.environmentIntensity, 0.35);
   assert.equal(renderer.toneMappingExposure, 0.88);
   assert.equal(materials.surface.roughness, 0.15);
+});
+
+test('street-look tái xuất các hàm pháo hoa và lịch sự kiện lễ Tết', () => {
+  assert.equal(typeof createFireworksSystem, 'function');
+  assert.equal(typeof getHolidayEvent, 'function');
+  assert.equal(typeof isHolidayFireworks, 'function');
+  assert.ok(isHolidayFireworks('2026-02-16'));
 });

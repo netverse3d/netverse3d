@@ -248,7 +248,7 @@ def add_walk_figure_stop(part, y_back, z_center, row):
     box(part, (0.0, y_torso, z_center + 0.018), (0.044, 0.016, 0.068), row)
     for side in (-1, 1):
         box(part, (side * 0.032, y_limb, z_center + 0.014), (0.016, 0.012, 0.064), row)
-        box(part, (side * 0.014, y_limb, z_center - 0.046), (0.017, 0.012, 0.072), row)
+        box(part, (side * 0.012, y_torso, z_center - 0.046), (0.015, 0.012, 0.072), row)
 
 
 def tilted_bar(part, x0, z0, x1, z1, half_w, y0, y1, row):

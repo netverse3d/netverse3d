@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildShowcasePlan } from '../pipeline/showcase_plan.mjs';
+import { buildShowcasePlan, buildStreetShowcasePlan } from '../pipeline/showcase_plan.mjs';
 import { runBlender } from './blender.mjs';
 import { loadConfig } from './lib.mjs';
 
@@ -29,7 +29,9 @@ export function generatorTargets(config) {
     kind: 'scene',
     name: scene.id,
     source: scene.source,
+    block: scene.block,
     recipe: scene.recipe,
+    images: scene.images,
     kits: scene.kits,
     generator: scene.generator,
   }));
@@ -44,7 +46,13 @@ function argumentsFor(target, config) {
   const output = join(root, 'source', target.source);
   if (target.kind === 'kit') return [output];
   const plan = join(root, 'pipeline', 'showcase-plan.json');
-  writeFileSync(plan, JSON.stringify(buildShowcasePlan(root, target.recipe), null, 2));
+  const planData = target.block
+    ? buildStreetShowcasePlan(root, target.block, target.recipe)
+    : buildShowcasePlan(root, target.recipe);
+  if (target.images) {
+    planData.images = target.images;
+  }
+  writeFileSync(plan, JSON.stringify(planData, null, 2));
   const kitSources = (target.kits ?? []).map((file) => {
     const kit = config.kits.find((entry) => entry.file === file);
     if (!kit) throw new Error(`${target.source}: scene uses unknown kit ${file}`);

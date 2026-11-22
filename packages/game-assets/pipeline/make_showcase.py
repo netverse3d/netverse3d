@@ -7,7 +7,10 @@ import bpy
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hero_kit import LIGHTMAP_UV, PALETTE_UV, ROWS, finish_lightmap_uv, prepare_lightmap_uv, select_objects
 
-PLAN, STATION_BLEND, ROOM_BLEND, OUTPUT = sys.argv[sys.argv.index('--') + 1:]
+CLI_ARGS = sys.argv[sys.argv.index('--') + 1:]
+PLAN = CLI_ARGS[0]
+KIT_BLENDS = CLI_ARGS[1:-1]
+OUTPUT = CLI_ARGS[-1]
 SIZE = int(os.environ.get('SHOWCASE_SIZE', '2048'))
 SPILL_SIZE = int(os.environ.get('SHOWCASE_SPILL_SIZE', '1024'))
 SAMPLES = int(os.environ.get('SHOWCASE_SAMPLES', '96'))
@@ -97,9 +100,23 @@ def scene_image(name, black=False, size=SIZE):
     return image
 
 
-def add_lamps(collection, cells):
+def add_lamps(collection, plan):
+    if plan.get('lamps'):
+        lamps = []
+        for item in plan['lamps']:
+            data = bpy.data.lights.new(item['name'], item.get('type', 'POINT'))
+            data.energy = item.get('energy', 300.0)
+            data.color = tuple(item.get('color', (1.0, 0.9, 0.8)))
+            if 'size' in item and hasattr(data, 'size'):
+                data.size = item['size']
+            ob = bpy.data.objects.new(data.name, data)
+            x, y, z = item['position']
+            ob.location = (x, -z, y)
+            collection.objects.link(ob)
+            lamps.append(ob)
+        return lamps
     lamps = []
-    width, depth = cells
+    width, depth = plan['cells']
     for ix in range(width):
         for iz in range(depth):
             data = bpy.data.lights.new('lamp_{}_{}'.format(ix, iz), 'AREA')
@@ -154,10 +171,13 @@ def main():
     world.node_tree.nodes['Background'].inputs['Color'].default_value = (1.0, 1.0, 1.0, 1.0)
     scene.world = world
     plan = json.load(open(PLAN, encoding='utf-8'))
-    placements = plan['room'] + plan['stations']
+    placements = plan.get('placements') or (plan.get('room', []) + plan.get('stations', []))
     wanted = sorted({item['part'] for item in placements})
-    templates = append_templates(STATION_BLEND, wanted)
-    templates.update(append_templates(ROOM_BLEND, [name for name in wanted if name not in templates]))
+    templates = {}
+    for blend_path in KIT_BLENDS:
+        needed = [name for name in wanted if name not in templates]
+        if needed:
+            templates.update(append_templates(blend_path, needed))
     objects = []
     for index, item in enumerate(placements):
         template = templates[item['part']]
@@ -168,13 +188,15 @@ def main():
     for ob in objects:
         tag_emitters(ob)
     originals = {ob.name: [slot.material for slot in ob.material_slots] for ob in objects}
-    base = scene_image('showcase-base')
-    spill = scene_image('showcase-spill', black=True, size=SPILL_SIZE)
+    base_name = plan.get('images', {}).get('base', 'showcase-base')
+    spill_name = plan.get('images', {}).get('spill', 'showcase-spill')
+    base = scene_image(base_name)
+    spill = scene_image(spill_name, black=True, size=SPILL_SIZE)
     material, emission, target = bake_material(base)
     for ob in objects:
         for slot in ob.material_slots:
             slot.material = material
-    lamps = add_lamps(collection, plan['cells'])
+    lamps = add_lamps(collection, plan)
     configure_bake(scene)
     bake_pass(scene, objects, material, emission, target, base, lamps, lit=True)
     bake_pass(scene, objects, material, emission, target, spill, lamps, lit=False)

@@ -192,8 +192,8 @@
         <div class="brand">
           <h1>Hẻm mẫu</h1>
           <p>
-            Lắp một khối phố từ dữ liệu: mặt hẻm, vỉa hè, lô tiệm với mặt tiền xếp tầng, cột điện và
-            đồ vỉa hè. <a href="index.html">Về thư viện</a> ·
+            Lắp một khối phố từ dữ liệu: mặt hẻm, vỉa hè, lô tiệm, xe đậu trước cửa và xe chạy theo
+            làn. <a href="index.html">Về thư viện</a> ·
             <a href="lab.html?part=road_a">Phòng lab</a>
           </p>
         </div>
@@ -203,6 +203,9 @@
           <button data-toggle="bloom" aria-pressed="true">Bloom</button>
           <button data-toggle="ao" aria-pressed="true">AO nướng</button>
           <button data-toggle="fog" aria-pressed="true">Sương</button>
+          <button data-toggle="fireworks" id="fireworksToggle" aria-pressed="false">
+            Pháo hoa
+          </button>
         </div>
         <div id="meter">
           <span>món<b id="mParts">0</b></span>
@@ -252,6 +255,27 @@
           </dl>
         </section>
         <section>
+          <h2>Sự kiện lễ Tết <small>REQ-039</small></h2>
+          <div class="row">
+            <span>Dịp lễ</span>
+            <select id="holidaySelect">
+              <option value="auto">Tự động (theo ngày)</option>
+              <option value="2026-02-16">Giao thừa 2026 (16/02)</option>
+              <option value="2026-02-17">Mùng 1 Tết 2026 (17/02)</option>
+              <option value="2026-04-30">Giải phóng 30/04</option>
+              <option value="2026-09-02">Quốc khánh 02/09</option>
+              <option value="2026-12-31">Giao thừa DL 31/12</option>
+              <option value="custom">Bật thử nghiệm</option>
+            </select>
+          </div>
+          <dl style="margin-top: 8px">
+            <dt>Sự kiện</dt>
+            <dd id="hEvent">Không có</dd>
+            <dt>Pháo hoa</dt>
+            <dd id="hFireworks">Tắt</dd>
+          </dl>
+        </section>
+        <section>
           <h2>Số liệu</h2>
           <dl>
             <dt>Ô</dt>
@@ -287,14 +311,23 @@
         WEATHER_STATES,
         applyQualityLevel,
         applyWeatherToOutdoor,
+        createFireworksSystem,
         createRainSystem,
+        getHolidayEvent,
         getWeatherAtTime,
+        isHolidayFireworks,
         roadLane,
         setupOutdoorEnvironment,
         sidewalkWaypoints,
         streetPlan,
       } from '../runtime/street-look.mjs';
       import { buildShop, kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
+      import {
+        createTrafficLane,
+        parkedVehiclePlacements,
+        wheelSpinAngle,
+      } from '../runtime/traffic.mjs';
+      import { createVehicle } from '../runtime/vehicle-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const BLOCKS = ['hem-mau'];
@@ -350,6 +383,7 @@
       );
       const loader = new GLTFLoader();
       const kit = await loader.loadAsync('../exported/street-parts.glb');
+      const vehicleKit = await loader.loadAsync('../exported/vehicle-parts.glb');
       const anchors = kitAnchors(kit.parser.json);
 
       const scene = new THREE.Scene();
@@ -374,11 +408,25 @@
       composer.addPass(new OutputPass());
 
       const streetGroup = new THREE.Group();
+      const vehicleGroup = new THREE.Group();
       const helperGroup = new THREE.Group();
-      scene.add(streetGroup, helperGroup);
+      scene.add(streetGroup, vehicleGroup, helperGroup);
 
       const rain = createRainSystem(THREE);
       scene.add(rain.mesh);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const dateParam = urlParams.get('date');
+      const testDate = dateParam ? new Date(dateParam) : new Date();
+      const autoFireworks = isHolidayFireworks(testDate) || urlParams.get('fireworks') === '1';
+
+      const fireworks = createFireworksSystem(THREE, {
+        enabled: autoFireworks,
+        maxParticles: 2400,
+        size: 0.55,
+        bloomBoost: 2.2,
+      });
+      scene.add(fireworks.mesh);
 
       const state = {
         blockId: BLOCKS[0],
@@ -390,8 +438,12 @@
         fog: true,
         weatherMode: 'auto',
         quality: 'high',
+        fireworks: autoFireworks,
       };
       let materials = null;
+      let vehicleMaterials = null;
+      let trafficLane = null;
+      let movingVehicles = [];
       let plan = [];
       const clock = new THREE.Clock();
       let currentWeather = WEATHER_STATES.clear;
@@ -409,11 +461,81 @@
 
       function repaint() {
         if (materials) for (const material of Object.values(materials)) material.dispose();
+        if (vehicleMaterials) {
+          for (const material of Object.values(vehicleMaterials)) material.dispose();
+          vehicleMaterials.surface.map.dispose();
+          vehicleMaterials.surface.emissiveMap.dispose();
+        }
         materials = shopMaterials(THREE, recipes[state.recipeId], rows, {
           glowBoost: EMISSIVE_SCALE.neon.default,
           lightmap: kitLightmap(kit.scene),
           lightmapIntensity: state.ao ? 1 : 0,
         });
+        vehicleMaterials = shopMaterials(THREE, recipes[state.recipeId], rows, {
+          glowBoost: EMISSIVE_SCALE.neon.default,
+          lightmap: kitLightmap(vehicleKit.scene),
+          lightmapIntensity: state.ao ? 1 : 0,
+          roughness: 0.35,
+        });
+      }
+
+      function rebuildVehicles(block) {
+        for (const vehicle of vehicleGroup.children) vehicle.userData.disposeVehicle();
+        vehicleGroup.clear();
+        movingVehicles = [];
+        const parked = parkedVehiclePlacements(block);
+        for (const item of parked) {
+          const vehicle = createVehicle(
+            THREE,
+            vehicleKit.scene,
+            item.part,
+            vehicleMaterials,
+            recipes[state.recipeId],
+            rows,
+            item.id,
+          );
+          vehicle.position.set(...item.position);
+          vehicle.rotation.y = item.yaw;
+          vehicleGroup.add(vehicle);
+        }
+        trafficLane = createTrafficLane(block, {
+          duration: 16,
+          count: 2,
+          lateralOffset: 0.55,
+        });
+        for (const [index, part] of ['car_a', 'motorbike_b'].entries()) {
+          const vehicle = createVehicle(
+            THREE,
+            vehicleKit.scene,
+            part,
+            vehicleMaterials,
+            recipes[state.recipeId],
+            rows,
+            `${block.id}:moving-${index}`,
+          );
+          vehicleGroup.add(vehicle);
+          const wheels = [];
+          vehicle.traverse((mesh) => {
+            if (mesh.isMesh && mesh.name.includes('_wheel_')) wheels.push(mesh);
+          });
+          movingVehicles.push({
+            vehicle,
+            wheels,
+            radius: part === 'car_a' ? 0.31 : 0.24,
+            sample: { position: [0, 0, 0] },
+          });
+        }
+      }
+
+      function updateTraffic(elapsed) {
+        for (let index = 0; index < movingVehicles.length; index += 1) {
+          const moving = movingVehicles[index];
+          const sample = trafficLane.positionAt(elapsed, index, moving.sample);
+          moving.vehicle.position.set(sample.position[0], sample.position[1], sample.position[2]);
+          moving.vehicle.rotation.y = sample.yaw;
+          const angle = wheelSpinAngle(sample.travelled, moving.radius);
+          for (const wheel of moving.wheels) wheel.rotation.x = angle;
+        }
       }
 
       function helperLayer() {
@@ -471,12 +593,13 @@
         const block = blocks[state.blockId];
         plan = streetPlan(block);
         streetGroup.add(buildShop(THREE, kit.scene, plan, materials));
+        rebuildVehicles(block);
         helperLayer();
         $('sCells').textContent = `${block.cells[0]} × ${block.cells[1]} ô 4 m`;
         $('sLots').textContent = String((block.lots ?? []).length);
         $('sRoads').textContent = String((block.roads ?? []).length);
         $('sWaypoints').textContent = String(sidewalkWaypoints(block).length);
-        $('mParts').textContent = String(plan.length);
+        $('mParts').textContent = String(plan.length + vehicleGroup.children.length);
         $('blockOut').textContent = JSON.stringify(block, null, 2);
       }
 
@@ -525,7 +648,10 @@
         state[name] = !state[name];
         button.setAttribute('aria-pressed', String(state[name]));
         if (name === 'bloom') bloom.enabled = state.bloom;
-        if (name === 'ao') materials.surface.aoMapIntensity = state.ao ? 1 : 0;
+        if (name === 'ao') {
+          materials.surface.aoMapIntensity = state.ao ? 1 : 0;
+          vehicleMaterials.surface.aoMapIntensity = state.ao ? 1 : 0;
+        }
         if (name === 'fog') {
           scene.fog = state.fog
             ? new THREE.Fog(
@@ -535,8 +661,53 @@
               )
             : null;
         }
+        if (name === 'fireworks') {
+          fireworks.setEnabled(state.fireworks);
+          updateFireworksUI();
+        }
         helperLayer();
       });
+
+      function updateFireworksUI() {
+        const active = fireworks.isEnabled;
+        state.fireworks = active;
+        const toggle = $('fireworksToggle');
+        if (toggle) toggle.setAttribute('aria-pressed', String(active));
+        const select = $('holidaySelect');
+        const val = select ? select.value : 'auto';
+        let eventInfo = null;
+        if (val === 'custom') {
+          eventInfo = { name: 'Thử nghiệm pháo hoa' };
+        } else if (val === 'auto') {
+          eventInfo = getHolidayEvent(testDate);
+        } else {
+          eventInfo = getHolidayEvent(val);
+        }
+        if ($('hEvent')) $('hEvent').textContent = eventInfo ? eventInfo.name : 'Không có';
+        if ($('hFireworks')) $('hFireworks').textContent = active ? 'Đang bắn' : 'Tắt';
+      }
+
+      if ($('holidaySelect')) {
+        $('holidaySelect').addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val === 'custom') {
+            fireworks.setEnabled(true);
+          } else if (val === 'auto') {
+            fireworks.setEnabled(
+              isHolidayFireworks(new Date()) || urlParams.get('fireworks') === '1',
+            );
+          } else {
+            fireworks.setEnabled(isHolidayFireworks(val));
+          }
+          updateFireworksUI();
+        });
+        if (dateParam) {
+          $('holidaySelect').value = dateParam;
+        } else if (urlParams.get('fireworks') === '1') {
+          $('holidaySelect').value = 'custom';
+        }
+      }
+      updateFireworksUI();
 
       function resize() {
         const { clientWidth, clientHeight } = canvas;
@@ -569,6 +740,8 @@
 
         applyWeatherToOutdoor(scene, currentWeather, { renderer, materials });
         rain.update(camera, delta, currentWeather);
+        if (fireworks) fireworks.update(delta);
+        updateTraffic(elapsed);
 
         $('wName').textContent = currentWeather.name ?? state.weatherMode;
         $('wRain').textContent = String(currentWeather.rainCount);

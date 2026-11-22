@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { buildShowcasePlan } from '../pipeline/showcase_plan.mjs';
+import { buildShowcasePlan, buildStreetShowcasePlan } from '../pipeline/showcase_plan.mjs';
 import { blenderEnvironment, generateOptions } from './generate.mjs';
 import { isLfsPointer, loadConfig } from './lib.mjs';
 
@@ -57,3 +57,15 @@ test(
     assert.ok(plan.room.every((p) => !['ceiling', 'light', 'door'].includes(p.slot)));
   },
 );
+
+test('kế hoạch hẻm giới thiệu đặt các khối phố, biển hiệu và đèn đường', () => {
+  const plan = buildStreetShowcasePlan(ROOT, 'hem-mau', 'tim-neon');
+  assert.equal(plan.kind, 'street');
+  assert.equal(plan.id, 'showcase-hem-mau');
+  assert.equal(plan.block, 'hem-mau');
+  assert.deepEqual(plan.cells, [4, 3]);
+  assert.ok(plan.placements.length > 20);
+  assert.ok(plan.placements.some((p) => p.slot === 'road'));
+  assert.ok(plan.placements.some((p) => p.slot === 'sign'));
+  assert.ok(plan.lamps.length >= 2);
+});

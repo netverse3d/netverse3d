@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tiệm giới thiệu Netverse</title>
+    <title>Cảnh giới thiệu Netverse</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
@@ -40,7 +40,7 @@
       </header>
       <div class="bench" id="app">
         <div class="bench-view shop-view" id="stage">
-          <canvas id="gl" aria-label="Tiệm giới thiệu với ánh sáng nướng sẵn"></canvas>
+          <canvas id="gl" aria-label="Cảnh giới thiệu với ánh sáng nướng sẵn"></canvas>
           <p id="noGL" hidden>
             Trình duyệt này chưa bật WebGL 2 nên chưa vẽ được. Nếu Chrome vừa mất GPU, gõ
             chrome://restart vào thanh địa chỉ rồi thử lại.
@@ -52,6 +52,38 @@
           </div>
         </div>
         <aside class="bench-panel shop-panel" id="panel">
+          <h2>Cảnh giới thiệu</h2>
+          <div class="row">
+            <span>Cảnh</span>
+            <select id="sceneSelect">
+              <option value="showcase-tim-neon">Tiệm mẫu (Phòng nướng)</option>
+              <option value="showcase-hem-mau">Hẻm đêm mưa (Phố nướng)</option>
+            </select>
+          </div>
+          <div class="row" id="flyRow" hidden>
+            <span>Camera</span>
+            <button id="flyToggle" type="button" aria-pressed="false">Bay qua hẻm</button>
+          </div>
+          <div class="row" id="rainRow" hidden>
+            <span>Độ ướt</span>
+            <input id="wetness" type="range" min="0" max="1" step="0.05" value="1" />
+            <output for="wetness">1.00</output>
+          </div>
+          <div class="row" id="fireworksRow">
+            <span>Pháo hoa</span>
+            <button id="fireworksToggle" type="button" aria-pressed="false">Pháo hoa: Tắt</button>
+          </div>
+          <div class="row" id="holidayRow">
+            <span>Dịp lễ</span>
+            <select id="holidaySelect">
+              <option value="auto">Theo lịch thật</option>
+              <option value="2026-02-16">Giao thừa Tết Nguyên Đán</option>
+              <option value="2026-01-01">Tết Dương Lịch</option>
+              <option value="2026-04-30">Giải phóng 30/4</option>
+              <option value="2026-09-02">Quốc khánh 2/9</option>
+              <option value="custom">Bật thử nghiệm</option>
+            </select>
+          </div>
           <h2>Lớp ánh sáng</h2>
           <div class="row">
             <span>Nền nướng</span>
@@ -95,8 +127,8 @@
             <option value="spill">Chỉ lan sáng</option>
           </select>
           <p class="note">
-            Cảnh dùng đúng bộ máy và module phòng của thư viện; hai ảnh nướng trong Blender: ánh
-            sáng nền với albedo trắng và mặt nạ lan sáng ba kênh cho dải, màn hình, điểm nhấn.
+            Cảnh nướng sẵn ánh sáng thuần và mặt nạ lan sáng trong Blender Cycles, kết hợp với mưa
+            rơi, đường bay camera tầm mắt và độ nhám mặt đường ướt phản chiếu neon.
           </p>
         </aside>
       </div>
@@ -110,8 +142,21 @@
       import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
       import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-      import { paletteRows } from '../runtime/shop-look.mjs';
+      import {
+        DEFAULT_SHOP_VIEWPOINTS,
+        createCameraTrack,
+        getShopViewpoints,
+        paletteRows,
+      } from '../runtime/shop-look.mjs';
       import { recolorShowcase, showcaseMaterials } from '../runtime/three-shop.mjs';
+      import {
+        calculateRoadRoughness,
+        createFireworksSystem,
+        createRainSystem,
+        getHolidayEvent,
+        isHolidayFireworks,
+        roadLane,
+      } from '../runtime/street-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const canvas = $('gl');
@@ -133,7 +178,46 @@
         fetch('../assets.config.json').then((r) => r.json()),
         fetch('../recipes/index.json').then((r) => r.json()),
       ]);
-      const scene3d = config.scenes[0];
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedScene = urlParams.get('scene');
+      const defaultSceneId = config.scenes[0].id;
+      const sceneId = requestedScene ?? defaultSceneId;
+      const scene3d =
+        config.scenes.find((s) => s.id === sceneId || s.id.includes(sceneId)) ?? config.scenes[0];
+      const isStreet = Boolean(scene3d.block || scene3d.id.includes('hem'));
+
+      $('sceneSelect').value = scene3d.id;
+      $('sceneSelect').addEventListener('change', (event) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('scene', event.target.value);
+        window.location.href = url.toString();
+      });
+
+      $('flyRow').hidden = false;
+      if (isStreet) {
+        $('page-title').textContent = 'Hẻm đêm mưa';
+        $('page-summary').textContent =
+          'Khối phố hẻm Sài Gòn nướng sẵn ánh sáng với đèn đường, biển neon, mưa rơi và phản chiếu mặt đường ướt.';
+        canvas.setAttribute('aria-label', 'Hẻm đêm mưa giới thiệu với ánh sáng nướng sẵn');
+        $('rainRow').hidden = false;
+      }
+
+      let flyCurve = null;
+      if (isStreet) {
+        const block = await fetch(`../blocks/${scene3d.block ?? 'hem-mau'}.json`).then((r) =>
+          r.json(),
+        );
+        const lanePoints = roadLane(block).map(([x, z]) => new THREE.Vector3(x, 1.6, z));
+        flyCurve = new THREE.CatmullRomCurve3(lanePoints, false, 'catmullrom', 0.2);
+      }
+      let shopTrack = !isStreet
+        ? createCameraTrack(getShopViewpoints(scene3d.recipe ?? 'tim-neon'), {
+            duration: 18,
+            loop: false,
+          })
+        : null;
+
       const rows = paletteRows(config.palette);
       const recipes = Object.fromEntries(
         await Promise.all(
@@ -154,19 +238,28 @@
       ]);
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#0b0a12');
-      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 80);
+      scene.background = new THREE.Color('#080614');
+      const camera = new THREE.PerspectiveCamera(isStreet ? 42 : 35, 1, 0.1, 100);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
-      controls.minAzimuthAngle = 0.12;
-      controls.maxAzimuthAngle = Math.PI / 2 - 0.12;
-      controls.minPolarAngle = Math.PI * 0.12;
-      controls.maxPolarAngle = Math.PI * 0.46;
-      controls.minDistance = 3;
-      controls.maxDistance = 16;
-      controls.target.set(-0.6, 0.9, -0.4);
-      camera.position.set(6.8, 4.6, 6.8);
+      if (isStreet) {
+        controls.target.set(0, 1.6, 3.5);
+        camera.position.set(0, 2.4, 12.0);
+        controls.minDistance = 2;
+        controls.maxDistance = 40;
+        controls.maxPolarAngle = Math.PI * 0.49;
+      } else {
+        controls.minAzimuthAngle = 0.12;
+        controls.maxAzimuthAngle = Math.PI / 2 - 0.12;
+        controls.minPolarAngle = Math.PI * 0.12;
+        controls.maxPolarAngle = Math.PI * 0.46;
+        controls.minDistance = 3;
+        controls.maxDistance = 16;
+        controls.target.set(-0.6, 0.9, -0.4);
+        camera.position.set(6.8, 4.6, 6.8);
+      }
       controls.update();
+
       const composer = new EffectComposer(
         renderer,
         new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
@@ -176,6 +269,23 @@
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
 
+      const rain = isStreet
+        ? createRainSystem(THREE, { maxDrops: 1800, areaSize: [36, 20, 24] })
+        : null;
+      if (rain) scene.add(rain.mesh);
+
+      const dateParam = urlParams.get('date');
+      const testDate = dateParam ? new Date(dateParam) : new Date();
+      const autoFireworks = isHolidayFireworks(testDate) || urlParams.get('fireworks') === '1';
+
+      const fireworks = createFireworksSystem(THREE, {
+        enabled: autoFireworks,
+        maxParticles: 2400,
+        size: 0.5,
+        bloomBoost: 2.2,
+      });
+      scene.add(fireworks.mesh);
+
       const state = {
         id: scene3d.recipe,
         ambient: 6,
@@ -184,14 +294,19 @@
         accent: 6,
         glow: 1.2,
         layer: 'all',
+        wetness: isStreet ? 1.0 : 0.0,
       };
+
       const materials = showcaseMaterials(THREE, recipes[state.id], rows, {
         base,
         spill,
         ambient: state.ambient,
         spillStrength: [state.strip, state.screen, state.accent],
         glowBoost: state.glow,
+        wetness: state.wetness,
+        roughness: calculateRoadRoughness(0.85, state.wetness),
       });
+
       let triangles = 0;
       gltf.scene.traverse((mesh) => {
         if (!mesh.isMesh) return;
@@ -218,6 +333,86 @@
         materials.glow.visible = combined || state.layer === 'spill';
         materials.glow.color.setScalar(state.glow);
       }
+
+      function applyWetness() {
+        const roughness = calculateRoadRoughness(0.85, state.wetness);
+        materials.surface.roughness = roughness;
+        if (materials.surface.uniforms?.wetness) {
+          materials.surface.uniforms.wetness.value = state.wetness;
+          materials.surface.uniforms.roughness.value = roughness;
+        }
+      }
+
+      let flying = urlParams.get('fly') === '1';
+      let flyProgress = 0;
+      let flyElapsed = 0;
+      const flySpeed = 0.05;
+      function setFlying(active) {
+        flying = active;
+        const button = $('flyToggle');
+        if (button) {
+          button.setAttribute('aria-pressed', String(flying));
+          const idleLabel = isStreet ? 'Bay qua hẻm' : 'Bay quanh tiệm';
+          button.textContent = flying ? 'Tạm dừng' : idleLabel;
+        }
+        controls.enabled = !flying;
+        if (!flying) {
+          controls.update();
+        }
+      }
+      if ($('flyToggle')) {
+        $('flyToggle').addEventListener('click', () => {
+          if (!flying && !isStreet) {
+            flyElapsed = 0;
+          }
+          setFlying(!flying);
+        });
+        if (flying) setFlying(true);
+      }
+
+      if ($('wetness')) {
+        $('wetness').addEventListener('input', () => {
+          state.wetness = Number($('wetness').value);
+          document.querySelector('output[for="wetness"]').textContent = state.wetness.toFixed(2);
+          applyWetness();
+        });
+      }
+
+      function updateFireworksUI() {
+        const toggle = $('fireworksToggle');
+        const active = fireworks.isEnabled;
+        toggle.setAttribute('aria-pressed', String(active));
+        toggle.textContent = active ? 'Pháo hoa: Bật' : 'Pháo hoa: Tắt';
+      }
+
+      if ($('fireworksToggle')) {
+        $('fireworksToggle').addEventListener('click', () => {
+          fireworks.setEnabled(!fireworks.isEnabled);
+          updateFireworksUI();
+        });
+      }
+
+      if ($('holidaySelect')) {
+        $('holidaySelect').addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val === 'custom') {
+            fireworks.setEnabled(true);
+          } else if (val === 'auto') {
+            fireworks.setEnabled(
+              isHolidayFireworks(new Date()) || urlParams.get('fireworks') === '1',
+            );
+          } else {
+            fireworks.setEnabled(isHolidayFireworks(val));
+          }
+          updateFireworksUI();
+        });
+        if (dateParam) {
+          $('holidaySelect').value = dateParam;
+        } else if (urlParams.get('fireworks') === '1') {
+          $('holidaySelect').value = 'custom';
+        }
+      }
+      updateFireworksUI();
 
       const sliders = {
         ambient: (v) => (state.ambient = v),
@@ -251,6 +446,12 @@
         button.addEventListener('click', () => {
           state.id = id;
           recolorShowcase(THREE, materials, recipes[id], rows);
+          if (!isStreet) {
+            shopTrack = createCameraTrack(getShopViewpoints(state.id), {
+              duration: 18,
+              loop: false,
+            });
+          }
           for (const other of bar.children)
             other.setAttribute('aria-pressed', String(other === button));
         });
@@ -269,9 +470,40 @@
       applyLayers();
       $('mTris').textContent = Math.round(triangles).toLocaleString('vi-VN');
 
+      const clock = new THREE.Clock();
       renderer.info.autoReset = false;
       renderer.setAnimationLoop(() => {
-        controls.update();
+        const delta = clock.getDelta();
+        if (flying) {
+          if (isStreet && flyCurve) {
+            flyProgress = (flyProgress + delta * flySpeed) % 1;
+            const pos = flyCurve.getPointAt(flyProgress);
+            const ahead = flyCurve.getPointAt((flyProgress + 0.03) % 1);
+            camera.position.copy(pos);
+            camera.lookAt(ahead.x, 1.6, ahead.z);
+          } else if (!isStreet && shopTrack) {
+            flyElapsed += delta;
+            const sample = shopTrack.sample(flyElapsed);
+            camera.position.set(...sample.position);
+            camera.lookAt(...sample.target);
+            controls.target.set(...sample.target);
+            if (sample.done) {
+              setFlying(false);
+              flyElapsed = 0;
+            }
+          }
+        } else {
+          controls.update();
+        }
+        if (rain && state.wetness > 0) {
+          rain.update(camera, delta, {
+            rainCount: Math.round(1800 * state.wetness),
+            rainSpeed: 20 * state.wetness,
+            windAngle: 0.18,
+            wetness: state.wetness,
+          });
+        }
+        if (fireworks) fireworks.update(delta);
         renderer.info.reset();
         composer.render();
         $('mCalls').textContent = renderer.info.render.calls;

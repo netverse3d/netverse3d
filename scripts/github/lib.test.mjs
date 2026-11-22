@@ -10,7 +10,6 @@ import {
 } from './lib.mjs';
 
 const settings = {
-  approvals: 0,
   preventSelfReview: false,
   releaseAppIds: { staging: null, production: null },
   requiredChecks: ['verify', 'trace', 'secrets'],
@@ -52,14 +51,18 @@ test('không bắt buộc đúng code owner duyệt để không phụ thuộc n
   assert.equal(parameters.require_code_owner_review, false);
 });
 
-test('có thành viên thì yêu cầu một người duyệt và duyệt lại khi có commit mới', () => {
-  const parameters = rule(
-    byName(buildRulesets({ ...settings, approvals: 1 }), 'staging'),
-    'pull_request',
-  ).parameters;
-  assert.equal(parameters.required_approving_review_count, 1);
-  assert.equal(parameters.require_last_push_approval, true);
-  assert.equal(parameters.dismiss_stale_reviews_on_push, true);
+test('nhánh không yêu cầu approval hoặc xử lý review kể cả khi cấu hình cũ có approvals', () => {
+  const rulesets = buildRulesets({ ...settings, approvals: 1 });
+  for (const name of ['staging', 'main']) {
+    const parameters = rule(byName(rulesets, name), 'pull_request').parameters;
+    assert.equal(parameters.required_approving_review_count, 0, name);
+    assert.equal(parameters.require_code_owner_review, false, name);
+    assert.equal(parameters.require_last_push_approval, false, name);
+    assert.equal(parameters.required_review_thread_resolution, false, name);
+    assert.equal(parameters.dismiss_stale_reviews_on_push, false, name);
+    assert.equal(parameters.require_extra_approval_for_unattributed_changes, false, name);
+    assert.deepEqual(parameters.dismissal_restriction, { enabled: false, allowed_actors: [] });
+  }
 });
 
 test('không ai sửa hoặc xoá được tag phát hành', () => {

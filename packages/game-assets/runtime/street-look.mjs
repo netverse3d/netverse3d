@@ -7,6 +7,13 @@ import {
 } from './lighting.mjs';
 import { YAW, snap } from './shop-look.mjs';
 import {
+  FIREWORK_COLORS,
+  HOLIDAY_SCHEDULE,
+  createFireworksSystem,
+  getHolidayEvent,
+  isHolidayFireworks,
+} from './fireworks.mjs';
+import {
   TRANSITION_PROBABILITIES,
   WEATHER_CONFIG,
   WEATHER_STATES,
@@ -26,6 +33,11 @@ export {
   STANDARD_BLOOM,
   clampEmissiveIntensity,
   isWithinEmissiveScale,
+  FIREWORK_COLORS,
+  HOLIDAY_SCHEDULE,
+  createFireworksSystem,
+  getHolidayEvent,
+  isHolidayFireworks,
   TRANSITION_PROBABILITIES,
   WEATHER_CONFIG,
   WEATHER_STATES,

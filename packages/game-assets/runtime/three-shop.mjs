@@ -131,11 +131,15 @@ const SHOWCASE_VERTEX = `
 attribute vec2 uv1;
 varying vec2 vPalette;
 varying vec2 vLightmap;
+varying vec3 vViewPosition;
+varying vec3 vWorldNormal;
 void main() {
   vPalette = uv;
   vLightmap = uv1;
   #include <begin_vertex>
   #include <project_vertex>
+  vViewPosition = -mvPosition.xyz;
+  vWorldNormal = normalize(mat3(modelMatrix) * normal);
 }`;
 
 const SHOWCASE_FRAGMENT = `
@@ -147,8 +151,12 @@ uniform vec3 stripColor;
 uniform vec3 screenColor;
 uniform vec3 accentColor;
 uniform vec3 spillStrength;
+uniform float wetness;
+uniform float roughness;
 varying vec2 vPalette;
 varying vec2 vLightmap;
+varying vec3 vViewPosition;
+varying vec3 vWorldNormal;
 void main() {
   vec3 albedo = texture2D(palette, vPalette).rgb;
   vec3 masks = texture2D(spill, vLightmap).rgb;
@@ -156,7 +164,16 @@ void main() {
     + masks.r * stripColor * spillStrength.x
     + masks.g * screenColor * spillStrength.y
     + masks.b * accentColor * spillStrength.z;
-  gl_FragColor = vec4(albedo * light, 1.0);
+  vec3 color = albedo * light;
+  if (wetness > 0.0) {
+    float gloss = clamp((1.0 - roughness) * wetness, 0.0, 1.0);
+    vec3 neonReflection = (masks.r * stripColor + masks.b * accentColor) * gloss * 1.6;
+    vec3 viewDir = normalize(vViewPosition);
+    float fresnel = pow(1.0 - max(dot(viewDir, vWorldNormal), 0.0), 3.0) * gloss * 0.45;
+    vec3 skyReflection = vec3(0.08, 0.06, 0.16) * fresnel;
+    color += neonReflection + skyReflection;
+  }
+  gl_FragColor = vec4(color, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
@@ -190,6 +207,8 @@ export function showcaseMaterials(
     ambient = 6,
     spillStrength = [8, 6, 6],
     glowBoost = EMISSIVE_SCALE.neon.default,
+    wetness = 0,
+    roughness = 0.85,
   } = {},
 ) {
   const materials = shopMaterials(THREE, recipe, rows, { glowBoost });
@@ -204,10 +223,13 @@ export function showcaseMaterials(
       screenColor: { value: rowColor(THREE, recipe, 'screen') },
       accentColor: { value: rowColor(THREE, recipe, 'accent') },
       spillStrength: { value: new THREE.Vector3(...spillStrength) },
+      wetness: { value: wetness },
+      roughness: { value: roughness },
     },
     vertexShader: SHOWCASE_VERTEX,
     fragmentShader: SHOWCASE_FRAGMENT,
   });
+  materials.surface.roughness = roughness;
   return materials;
 }
 

@@ -80,30 +80,87 @@ function compareNames(kind, actual, expected, fail) {
   for (const name of actualSet) if (!expectedSet.has(name)) fail(`unexpected ${kind}: ${name}`);
 }
 
-function checkMeshes(gltf, nodes, expected, fail) {
-  const childMap = expected.children ?? {};
-  const allChildNames = Object.values(childMap).flat();
+function hasChildTransform(node) {
+  return (
+    isIdentity(node.matrix ?? IDENTITY_MATRIX, IDENTITY_MATRIX) &&
+    isIdentity(node.rotation ?? IDENTITY_TRANSFORM.rotation, IDENTITY_TRANSFORM.rotation) &&
+    isIdentity(node.scale ?? IDENTITY_TRANSFORM.scale, IDENTITY_TRANSFORM.scale)
+  );
+}
+
+function parentIndexes(gltf) {
+  const parents = new Map();
+  (gltf.nodes ?? []).forEach((node, index) => {
+    for (const child of node.children ?? []) parents.set(child, index);
+  });
+  return parents;
+}
+
+function meshHierarchy(gltf, nodes, expected) {
+  const parents = parentIndexes(gltf);
+  const gltfNodes = gltf.nodes ?? [];
+  const expectedNames = new Set(Object.keys(expected.meshes));
+  const groups = new Map();
+  const rootNodes = [];
+  const childNodes = new Set();
+  const childRoots = new Map();
+  for (const node of nodes) {
+    let root = null;
+    if (!node.name.includes(ANCHOR_SEPARATOR)) {
+      let current = parents.get(gltfNodes.indexOf(node));
+      while (current !== undefined) {
+        const candidate = gltfNodes[current];
+        if (candidate.mesh !== undefined && expectedNames.has(candidate.name)) {
+          root = candidate;
+          break;
+        }
+        current = parents.get(current);
+      }
+    }
+    if (root) {
+      childNodes.add(node);
+      childRoots.set(node, root);
+      if (!groups.has(root)) groups.set(root, []);
+      groups.get(root).push(node);
+    } else {
+      rootNodes.push(node);
+      if (!groups.has(node)) groups.set(node, []);
+    }
+  }
+  return { parents, rootNodes, childNodes, childRoots, groups };
+}
+
+function childOffset(gltf, parents, node, root) {
+  const gltfNodes = gltf.nodes ?? [];
+  const offset = [0, 0, 0];
+  let current = gltfNodes.indexOf(node);
+  const rootIndex = gltfNodes.indexOf(root);
+  while (current !== undefined && current !== rootIndex) {
+    const translation = gltfNodes[current].translation ?? IDENTITY_TRANSFORM.translation;
+    offset[0] += translation[0];
+    offset[1] += translation[1];
+    offset[2] += translation[2];
+    current = parents.get(current);
+  }
+  return offset;
+}
+
+function checkMeshes(gltf, nodes, expected, fail, hierarchy) {
+  const { rootNodes, groups } = hierarchy;
   compareNames(
     'mesh',
-    nodes.map((node) => node.name),
-    [...Object.keys(expected.meshes), ...allChildNames],
+    rootNodes.map((node) => node.name),
+    Object.keys(expected.meshes),
     fail,
   );
-  const byName = new Map(nodes.map((node) => [node.name, node]));
-  for (const node of nodes) {
+  for (const node of rootNodes) {
     const limit = expected.meshes[node.name];
     if (limit === undefined) continue;
-    const childNames = childMap[node.name] ?? [];
-    const childIndices = new Set(node.children ?? []);
-    let triangles = triangleCount(gltf, gltf.meshes[node.mesh]);
-    for (const childName of childNames) {
-      const child = byName.get(childName);
-      if (!child) continue;
-      if (!childIndices.has(gltf.nodes.indexOf(child))) {
-        fail(`${node.name} is missing child mesh ${childName}`);
-      }
-      triangles += triangleCount(gltf, gltf.meshes[child.mesh]);
-    }
+    const partNodes = [node, ...(groups.get(node) ?? [])];
+    const triangles = partNodes.reduce(
+      (total, entry) => total + triangleCount(gltf, gltf.meshes[entry.mesh]),
+      0,
+    );
     if (triangles > limit) fail(`${node.name} has ${triangles} triangles, limit ${limit}`);
   }
 }
@@ -167,22 +224,22 @@ function hasAppliedTransform(node) {
   );
 }
 
-function parentIndexes(gltf) {
-  const parents = new Map();
-  (gltf.nodes ?? []).forEach((node, index) => {
-    for (const child of node.children ?? []) parents.set(child, index);
-  });
-  return parents;
-}
-
-function checkTransforms(gltf, nodes, fail) {
-  const parents = parentIndexes(gltf);
+function checkTransforms(gltf, nodes, fail, hierarchy) {
+  const { parents, childNodes, childRoots } = hierarchy;
   for (const node of nodes) {
-    if (!hasAppliedTransform(node)) fail(`${node.name} has an unapplied transform`);
+    const isChild = childNodes.has(node);
+    const ok = isChild ? hasChildTransform(node) : hasAppliedTransform(node);
+    if (!ok) fail(`${node.name} has an unapplied transform`);
+    const stop = isChild ? childRoots.get(node) : null;
     let parent = parents.get(gltf.nodes.indexOf(node));
     while (parent !== undefined) {
       const ancestor = gltf.nodes[parent];
-      if (!hasAppliedTransform(ancestor)) {
+      if (ancestor === stop) break;
+      const ancestorOk =
+        isChild && childNodes.has(ancestor)
+          ? hasChildTransform(ancestor)
+          : hasAppliedTransform(ancestor);
+      if (!ancestorOk) {
         fail(`${node.name} inherits an unapplied transform from ${ancestor.name}`);
       }
       parent = parents.get(parent);
@@ -273,20 +330,26 @@ function meshBounds(gltf, mesh) {
   }));
 }
 
-function checkSizes(gltf, nodes, sizes, children, fail) {
-  const byName = new Map(nodes.map((node) => [node.name, node]));
-  for (const node of nodes) {
+function combinedBounds(gltf, parents, node, children) {
+  const base = meshBounds(gltf, gltf.meshes[node.mesh]);
+  for (const child of children) {
+    const offset = childOffset(gltf, parents, child, node);
+    const bounds = meshBounds(gltf, gltf.meshes[child.mesh]);
+    for (const axis of [0, 1, 2]) {
+      base[axis].min = Math.min(base[axis].min, bounds[axis].min + offset[axis]);
+      base[axis].max = Math.max(base[axis].max, bounds[axis].max + offset[axis]);
+    }
+  }
+  return base;
+}
+
+function checkSizes(gltf, nodes, sizes, fail, hierarchy) {
+  const { parents, rootNodes, groups } = hierarchy;
+  for (const node of rootNodes) {
     const limit = sizes[node.name];
     if (limit === undefined) continue;
-    const parts = [
-      node,
-      ...(children[node.name] ?? []).map((name) => byName.get(name)).filter(Boolean),
-    ];
-    const allBounds = parts.map((part) => meshBounds(gltf, gltf.meshes[part.mesh]));
-    const extent = [0, 1, 2].map(
-      (axis) =>
-        Math.max(...allBounds.map((bounds) => bounds[axis].max)) -
-        Math.min(...allBounds.map((bounds) => bounds[axis].min)),
+    const extent = combinedBounds(gltf, parents, node, groups.get(node) ?? []).map(
+      ({ min, max }) => max - min,
     );
     if (extent.some((value, axis) => value > limit[axis])) {
       const measured = extent.map((value) => value.toFixed(3)).join(' x ');
@@ -355,8 +418,9 @@ export function checkModel(file, gltf, expected, bin) {
   const errors = [];
   const fail = (message) => errors.push(`${file}: ${message}`);
   const meshNodes = (gltf.nodes ?? []).filter((node) => node.mesh !== undefined);
-  checkMeshes(gltf, meshNodes, expected, fail);
-  checkTransforms(gltf, meshNodes, fail);
+  const hierarchy = meshHierarchy(gltf, meshNodes, expected);
+  checkMeshes(gltf, meshNodes, expected, fail, hierarchy);
+  checkTransforms(gltf, meshNodes, fail, hierarchy);
   for (const material of gltf.materials ?? []) {
     if (NUMBERED_COPY.test(material.name)) fail(`duplicated material: ${material.name}`);
   }
@@ -364,7 +428,7 @@ export function checkModel(file, gltf, expected, bin) {
   checkClips(gltf, expected.clips ?? [], fail);
   checkAttributes(gltf, meshNodes, expected.attributes ?? {}, fail);
   checkAnchors(gltf, meshNodes, expected.anchors ?? {}, fail);
-  checkSizes(gltf, meshNodes, expected.sizes ?? {}, expected.children ?? {}, fail);
+  checkSizes(gltf, meshNodes, expected.sizes ?? {}, fail, hierarchy);
   checkGrid(gltf, meshNodes, expected.grids ?? {}, fail);
   if (expected.palette) checkPalette(gltf, bin, meshNodes, expected.palette, fail);
   else if (expected.kit) fail('kits need a palette in the config');
@@ -417,26 +481,12 @@ function kitParts(kit) {
 function kitExpectation(kit, palette) {
   const parts = kitParts(kit);
   const perPart = (pick) => Object.fromEntries(parts.map(({ name, spec }) => [name, pick(spec)]));
-  const children = Object.fromEntries(
-    parts
-      .filter(({ spec }) => (spec.children ?? []).length > 0)
-      .map(({ name, spec }) => [name, spec.children.map((child) => `${name}_${child}`)]),
-  );
-  const allChildNames = Object.values(children).flat();
-  const attributes =
-    kit.lightmap === true
-      ? {
-          ...perPart(() => [LIGHTMAP_ATTRIBUTE]),
-          ...Object.fromEntries(allChildNames.map((name) => [name, [LIGHTMAP_ATTRIBUTE]])),
-        }
-      : {};
   return {
     file: kit.file,
     kit: true,
     lightmap: kit.lightmap === true,
     meshes: perPart((spec) => spec.maxTriangles),
-    children,
-    attributes,
+    attributes: kit.lightmap === true ? perPart(() => [LIGHTMAP_ATTRIBUTE]) : {},
     anchors: perPart((spec) => spec.anchors ?? []),
     sizes: perPart((spec) => spec.size),
     grids: perPart((spec) => spec.grid),

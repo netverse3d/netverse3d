@@ -53,6 +53,11 @@
     "bin": "a",
     "planter": "a",
     "board": "a",
+    "cart": "a",
+    "stool": "a",
+    "lowtable": "a",
+    "parasol": "a",
+    "cooler": "a",
     "shopfront": "a",
     "storey": "a",
     "roof": "a",
@@ -67,7 +72,9 @@
     "walk": "a",
     "roadsign": "a",
     "streetlight": "a",
-    "camera": "a"
+    "camera": "a",
+    "motorbike": "a",
+    "car": "a"
   },
   "layout": {
     "cells": [4, 3],
