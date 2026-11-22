@@ -80,7 +80,14 @@
     "cabinet": "a",
     "hydrant": "a",
     "manhole": "a",
-    "adpillar": "a"
+    "adpillar": "a",
+    "water": "a",
+    "quay": "a",
+    "quaystep": "a",
+    "pier": "a",
+    "deck": "a",
+    "pylon": "a",
+    "ramp": "a"
   },
   "layout": {
     "cells": [3, 3],

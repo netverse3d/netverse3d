@@ -39,9 +39,17 @@
       "skyline-parts.glb": "Đường chân trời",
       "traffic-parts.glb": "Giao thông",
       "vehicle-parts.glb": "Xe cộ",
-      "furniture-parts.glb": "Tiện ích phố"
+      "furniture-parts.glb": "Tiện ích phố",
+      "river-parts.glb": "Sông và cầu"
     },
     "slots": {
+      "water": "Mặt nước",
+      "quay": "Bờ kè sông",
+      "quaystep": "Bậc bến sông",
+      "pier": "Bến thuyền",
+      "deck": "Cầu dây văng",
+      "pylon": "Trụ tháp cầu",
+      "ramp": "Đoạn dẫn lên cầu",
       "shelter": "Trạm chờ xe buýt",
       "bench": "Ghế dài vỉa hè",
       "railing": "Lan can vỉa hè",

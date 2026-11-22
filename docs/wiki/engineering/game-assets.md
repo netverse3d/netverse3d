@@ -35,20 +35,21 @@ Trang cũ nhiều tab giờ là `library/studio.html`. Tab Hành động của n
 
 ## Tệp gốc
 
-| Tệp                     | Chứa                                                                                                               | Mở khi cần                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
-| `character-base.blend`  | Bộ xương `rig`, thân `body`                                                                                        | Sửa dáng người, áo, quần, giày, mặt            |
-| `clips.blend`           | 36 clip chuyển động                                                                                                | Sửa hoặc thêm chuyển động                      |
-| `hair-default.blend`    | Tóc `hair`                                                                                                         | Nặn lại tóc                                    |
-| `accessories.blend`     | `glasses`, `headset`, `backpack`, `cup`, `crate`                                                                   | Sửa phụ kiện và đồ cầm tay                     |
-| `props-station.blend`   | Bàn máy liền khối `station`, bản cũ còn dùng cho thư viện                                                          | Không sửa nữa, sẽ thay bằng bộ ô đồ            |
-| `parts-station.blend`   | Mười ô đồ của bàn máy: `desk`, `monitor`, `keyboard`, `mouse`, `mat`, `headset`, `mic`, `speaker`, `chair`, `case` | Sửa một món hoặc thêm biến thể                 |
-| `environment-kit.blend` | Module phòng: `floor`, `wall`, `corner`, `door`, `window`, `ceiling`, `light`, `marker`                            | Sửa hoặc thêm module phòng                     |
-| `parts-signs.blend`     | Bộ biển hiệu: biển ngang `sign`, biển vẫy `blade`, biển dọc `tower`, biển nóc nhà `rooftop`                        | Sửa hoặc thêm biển hiệu (REQ-040)              |
-| `parts-skyline.blend`   | Đường chân trời gợi hình TP.HCM làm nền xa: `landmark_a`, `bridge_a`, `highrise_a`, `highrise_b`, `highrise_c`     | Sửa mô hình nền xa (REQ-039, ADR-0014)         |
-| `parts-vehicles.blend`  | Bộ xe cộ Sài Gòn: xe máy `motorbike` (`a` xe số, `b` xe ga) và ô tô `car` (`a` sedan, `b` MPV 7 chỗ)               | Sửa hoặc thêm xe cộ (REQ-039)                  |
-| `parts-traffic.blend`   | Bộ giao thông: `signal`, `walk`, `roadsign` (`a`, `b`, `c`), `streetlight` (`a`, `b`), `camera`                    | Sửa hoặc thêm hạ tầng giao thông (REQ-042)     |
-| `parts-furniture.blend` | Bộ tiện ích phố: `shelter`, `bench`, `railing`, `bollard`, `binpair`, `cabinet`, `hydrant`, `manhole`, `adpillar`  | Sửa hoặc thêm tiện ích đường phố lớn (REQ-042) |
+| Tệp                     | Chứa                                                                                                               | Mở khi cần                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `character-base.blend`  | Bộ xương `rig`, thân `body`                                                                                        | Sửa dáng người, áo, quần, giày, mặt                     |
+| `clips.blend`           | 36 clip chuyển động                                                                                                | Sửa hoặc thêm chuyển động                               |
+| `hair-default.blend`    | Tóc `hair`                                                                                                         | Nặn lại tóc                                             |
+| `accessories.blend`     | `glasses`, `headset`, `backpack`, `cup`, `crate`                                                                   | Sửa phụ kiện và đồ cầm tay                              |
+| `props-station.blend`   | Bàn máy liền khối `station`, bản cũ còn dùng cho thư viện                                                          | Không sửa nữa, sẽ thay bằng bộ ô đồ                     |
+| `parts-station.blend`   | Mười ô đồ của bàn máy: `desk`, `monitor`, `keyboard`, `mouse`, `mat`, `headset`, `mic`, `speaker`, `chair`, `case` | Sửa một món hoặc thêm biến thể                          |
+| `environment-kit.blend` | Module phòng: `floor`, `wall`, `corner`, `door`, `window`, `ceiling`, `light`, `marker`                            | Sửa hoặc thêm module phòng                              |
+| `parts-signs.blend`     | Bộ biển hiệu: biển ngang `sign`, biển vẫy `blade`, biển dọc `tower`, biển nóc nhà `rooftop`                        | Sửa hoặc thêm biển hiệu (REQ-040)                       |
+| `parts-skyline.blend`   | Đường chân trời gợi hình TP.HCM làm nền xa: `landmark_a`, `bridge_a`, `highrise_a`, `highrise_b`, `highrise_c`     | Sửa mô hình nền xa (REQ-039, ADR-0014)                  |
+| `parts-vehicles.blend`  | Bộ xe cộ Sài Gòn: xe máy `motorbike` (`a` xe số, `b` xe ga) và ô tô `car` (`a` sedan, `b` MPV 7 chỗ)               | Sửa hoặc thêm xe cộ (REQ-039)                           |
+| `parts-traffic.blend`   | Bộ giao thông: `signal`, `walk`, `roadsign` (`a`, `b`, `c`), `streetlight` (`a`, `b`), `camera`                    | Sửa hoặc thêm hạ tầng giao thông (REQ-042)              |
+| `parts-furniture.blend` | Bộ tiện ích phố: `shelter`, `bench`, `railing`, `bollard`, `binpair`, `cabinet`, `hydrant`, `manhole`, `adpillar`  | Sửa hoặc thêm tiện ích đường phố lớn (REQ-042)          |
+| `parts-river.blend`     | Bộ sông và cầu: `water`, `quay`, `quaystep`, `pier`, `deck`, `pylon`, `ramp`                                       | Sửa hoặc thêm hạ tầng sông và cầu (REQ-042, Issue #254) |
 
 Đối tượng tên `guide_...` là khung dây để canh khoảng cách. Chúng không được xuất ra.
 
@@ -63,6 +64,7 @@ Có hai loại tệp gốc (ADR-0018). Nhân vật, clip, tóc, phụ kiện và
 | `parts-vehicles.blend`    | `pipeline/make_vehicle_kit.py`   | `hero_vehicles.py`, `hero_kit.py`                                                                                   |
 | `parts-traffic.blend`     | `pipeline/make_traffic_kit.py`   | `hero_traffic.py`, `hero_kit.py`                                                                                    |
 | `parts-furniture.blend`   | `pipeline/make_furniture_kit.py` | `hero_furniture.py`, `hero_kit.py`                                                                                  |
+| `parts-river.blend`       | `pipeline/make_river_kit.py`     | `hero_river.py`, `hero_solid.py`, `hero_kit.py`                                                                     |
 | `showcase-tim-neon.blend` | `pipeline/make_showcase.py`      | `pipeline/showcase_plan.mjs` sinh `showcase-plan.json` từ công thức và điểm neo của hai bộ đã xuất                  |
 
 `pnpm assets:generate` chạy mọi generator theo thứ tự trong config; thêm tên tệp gốc để chạy một cái, ví dụ `pnpm assets:generate environment-kit`. Lệnh ghi `.blend` vào `source/`, sau đó vẫn phải `pnpm assets:export`. Script trong `pipeline/` không được chứa đường dẫn tuyệt đối tới máy ai (có test chặn), không mang ảnh hay mô hình tham chiếu của bên khác vào repo, và theo cùng luật không chú thích như mã khác. `pipeline/render_part.py` render một món từ tệp `.blend` ra bốn góc để nghiệm thu ngoài trình duyệt.
@@ -183,6 +185,37 @@ Làn có vạch dừng được mô phỏng theo bước 0,1 giây và chỉ gi�
 Bộ ô đồ `furniture-parts.glb` (sinh từ `pipeline/make_furniture_kit.py` và `hero_furniture.py`, tệp nguồn `source/parts-furniture.blend`) bổ sung hạ tầng tiện ích đường phố lớn Sài Gòn hiện đại cho REQ-042 và thuộc mục Phố trong thư viện 3D. Chín ô của bộ mang tên riêng biệt không trùng lặp: `shelter` (trạm chờ xe buýt hiện đại với mái kính cường lực, đèn trần hắt sáng, ghế chờ tích hợp bên trong và bảng thông tin lộ trình phát sáng hàng `screen`, trần 2.200 tam giác), `bench` (ghế dài vỉa hè ba chân thép đúc uốn công thái học kèm tay vịn, nan gỗ bo viền hàng `top` và thanh giằng chịu lực, trần 1.200 tam giác), `railing` (lan can bảo vệ vỉa hè module 2 m liên tiếp, tay vịn bo tròn, thanh chân, nan đứng và huy hiệu trang trí hình học hàng `trim`, trần 900 tam giác), `bollard` (cột chắn xe vỉa hè inox hình trụ với đế mặt bích bốn bu lông, dải phản quang viền rãnh hàng `strip` và đỉnh nắp vòm, trần 600 tam giác), `binpair` (thùng rác đôi phân loại rác tái chế và rác vô cơ gắn trên một khung chân chung, hai thân thùng vát góc có khe cửa dịch vụ, nắp che mưa tích hợp khay gạt tàn thuốc và nhãn phân loại màu sắc hàng `trim` và `soft`, trần 1.400 tam giác), `cabinet` (tủ điện hạ thế vỉa hè đặt trên bệ bê tông hàng `top`, vỏ kim loại hai cánh cửa có khe chia âm, bản lề nổi, khoá xoay, các cụm nan thông gió dập nổi và biển báo nguy hiểm hàng `trim`, trần 1.200 tam giác), `hydrant` (trụ cứu hoả ba họng thân trụ sơn đỏ hàng `top` trên mặt bích sáu bu lông, họng cấp chính phía trước và hai họng phụ hai bên có nắp xích kim loại treo hàng `metal` và đai ốc thao tác năm cạnh trên đỉnh, trần 1.400 tam giác), `manhole` (nắp hố ga vỉa hè nâng nhẹ 4 cm trên mặt vỉa hè, khung vuông vát mép tiếp giáp, nắp tròn có gờ ma sát chống trượt dạng lưới trám nổi, hai lỗ móc nâng và biển định danh, trần 800 tam giác), và `adpillar` (trụ quảng cáo đứng đa lớp gồm đế bệ thép, hai cột chịu lực, hộp đèn chiếu sau, mặt hiển thị hai phía dùng vật liệu `decal` với toạ độ UV 0..1 phát sáng hàng `screen` và nắp che thời tiết trên đỉnh kèm đèn rọi hắt, trần 1.500 tam giác).
 
 Mọi món đặt gốc toạ độ tại chân đế (cao độ mặt vỉa hè Z = 0) và các món cản trở di chuyển đều mang hộp va chạm `collision_main` (ngoại trừ nắp hố ga là bề mặt người chơi đi lên được). Cường độ phát sáng của bảng thông tin và trụ quảng cáo tuân thủ thang `EMISSIVE_SCALE.screen` (mức 1,0). Bộ ghép "Tiện ích phố lớn" trong `library/lab.html` tái sử dụng `road_a` và `sidewalk_a` để tái hiện 16 m vỉa hè đường lớn trưng bày đầy đủ chín món tiện ích cùng nhân vật `player` để đối chiếu tỷ lệ thực tế.
+
+### Bộ sông và cầu
+
+Bộ ô đồ `river-parts.glb` (sinh từ `pipeline/make_river_kit.py` và `hero_river.py`, tệp nguồn `source/parts-river.blend`) bổ sung hạ tầng sông nước, bờ kè, bến thuyền và cầu dây văng hiện đại cho REQ-042 (Issue #254) và thuộc mục Phố trong thư viện 3D. Để đảm bảo tính độc nhất của tên ô đồ trong toàn bộ dự án (ô `bridge` đã thuộc bộ `skyline-parts.glb`), bảy ô đồ của bộ mang tên kỹ thuật riêng biệt:
+
+- `water` (mặt nước: tấm phẳng module 16 m, đặt trên hàng `floor` tối màu của vật liệu `surface`, trần 400 tam giác).
+- `quay` (bờ kè sông: module 4 m gồm tường kè đá vát xiên, vỉa hè đi dạo, lan can an toàn và cặp đèn bollard inox gắn bu lông phát sáng hàng `accent`, trần 1.800 tam giác).
+- `quaystep` (bậc bến sông: module 4 m hạ độ cao từ bờ kè xuống mặt nước với khối bậc thang đúc liền, mũi bậc chống trượt kim loại, tường cánh hai bên tích hợp đèn rãnh hắt sáng hàng `strip` và lan can dốc, trần 1.800 tam giác).
+- `pier` (bến thuyền: sàn pontoon nổi với hệ đệm cao su D-fender giảm chấn, cọc bích buộc tàu đôi, hai trụ dẫn hướng hoa tiêu có đèn báo hiệu đỉnh hàng `accent` và trạm phao cứu sinh, trần 2.000 tam giác).
+- `deck` (nhịp cầu dây văng: dầm hộp khí động học module 16 m gồm 4 m làn xe cơ giới khớp cao độ và bề rộng `road_a`, vỉa hè người đi bộ hai bên rộng 1,25 m khớp cao độ `sidewalk_a`, lan can hai bên có dải LED gầm hàng `strip`, gờ phân cách bê tông và các vấu neo cáp chịu lực, trần 2.800 tam giác).
+- `pylon` (trụ tháp cầu: một thân tháp đơn liền khối vuốt thon nghiêng 13 độ ngả về phía sau nhịp chính, cao 28 m với tiết diện bát giác vát mép, bệ móng trụ đặc đặt dưới lòng sông, đỉnh tháp có đài tựa yên cáp và cột thu lôi đèn báo hiệu hàng không hàng `strip`, hệ cáp văng rẻ quạt gồm 4 dây văng tới các đế neo trên gờ dầm cầu và 4 dây neo giữ về khối neo móng sau bờ sông, trần 4.500 tam giác).
+- `ramp` (đoạn dẫn lên cầu: dầm dốc 16 m độ dốc 7,5% chuyển tiếp liên tục không bậc từ cao độ mặt đường Z = 0 lên cao độ dầm cầu Z = 1,20 m cho làn xe và từ Z = 0,15 m lên Z = 1,35 m cho vỉa hè hai bên, lan can nối tiếp liền mạch ở cao độ Z = 1,20 m đến Z = 2,40 m, trần 2.800 tam giác).
+
+Mọi món đặt gốc toạ độ tại chân đế (Z = 0) và các món cản trở di chuyển đều mang hộp va chạm `collision_main`.
+
+**Mức phát sáng và chiếu sáng**: Các nguồn sáng tuân thủ nghiêm ngặt chuẩn `runtime/lighting.mjs` và [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md):
+
+- Cáp dây văng và dải LED gầm lan can sử dụng hàng `strip` tuân theo thang `neon` (mặc định 2,2; cho phép 1,8 – 2,8), đủ rực rỡ tạo vệt sáng phản chiếu trong sương đêm mà không làm mờ chi tiết kim loại.
+- Đèn bollard bờ kè và đèn hoa tiêu/phao bến thuyền sử dụng hàng `accent` tuân theo thang `streetLamp` (mặc định 3,0; cho phép 2,5 – 3,5).
+
+**Đề xuất thông số phản chiếu mặt nước (Water Reflection Proposal)**:
+Theo tiêu chuẩn mỹ thuật một chuẩn render và năm vật liệu chung ([ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md)), tấm mặt nước `water_a` hiện dùng vật liệu `surface` với hàng `floor` tối màu nhất trong palette hiện có (không bổ sung hàng màu hay vật liệu riêng lúc xuất). Để nâng cao chất lượng thị giác cho mặt nước trong tương lai khi mở rộng shader thành phố, đề xuất bộ thông số phản chiếu mặt nước như sau:
+
+1. Độ nhám bề mặt (`roughness`): 0,05 – 0,08 (bề mặt nước phẳng lặng ban đêm).
+2. Hệ số phản xạ gương (`metalness`): 0,1, kết hợp phản xạ Fresnel F0 = 0,02 (chiết suất nước n = 1,333).
+3. Bản đồ sóng động (`normal map`): Bản đồ pháp tuyến gợn sóng lăn tăn hai lớp (flow-map với chu kỳ sóng 4,2 s và biên độ 0,02 m) trượt ngược chiều nhẹ để mô phỏng dòng chảy sông Sài Gòn.
+4. Nguồn phản chiếu: Tận dụng bản đồ môi trường PMREM của bầu trời đêm kết hợp Screen-Space Reflections (SSR) hoặc Planar Reflection từ camera gương phụ để phản chiếu quầng sáng neon của cầu dây văng và bờ kè lên mặt sông.
+
+**Tên gọi cầu**: Hiện tại mô hình sử dụng định danh kỹ thuật `deck` cho nhịp cầu và tên hiển thị tiếng Việt trung tính "Cầu dây văng" trong `library/shared/text.json`. Tên thương hiệu riêng của Netverse đang chờ mentor phê duyệt.
+
+Bộ ghép "Sông và cầu" trong `library/lab.html` tái hiện khúc sông dài 48 m (3 tấm `water_a` 16 m) với bờ kè hai bên (gồm cả bậc bến và bến thuyền) cùng cầu dây văng vắt ngang (đoạn dẫn nam, nhịp cầu, trụ tháp, đoạn dẫn bắc) và nhân vật `player` để đối chiếu tỷ lệ.
 
 ### Bầu trời đêm, sương và bản đồ môi trường ngoài trời
 

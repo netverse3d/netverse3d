@@ -628,6 +628,59 @@
           "anchors": ["collision_main"]
         }
       }
+    },
+    {
+      "file": "river-parts.glb",
+      "source": "parts-river.blend",
+      "generator": "pipeline/make_river_kit.py",
+      "lightmap": true,
+      "slots": {
+        "water": {
+          "variants": ["a"],
+          "maxTriangles": 400,
+          "size": [16.1, 0.25, 16.1],
+          "grid": {
+            "size": 16,
+            "axes": [0, 2]
+          }
+        },
+        "quay": {
+          "variants": ["a"],
+          "maxTriangles": 1800,
+          "size": [4.1, 2.8, 3.1],
+          "anchors": ["collision_main"]
+        },
+        "quaystep": {
+          "variants": ["a"],
+          "maxTriangles": 1800,
+          "size": [4.2, 2.7, 3.1],
+          "anchors": ["collision_main"]
+        },
+        "pier": {
+          "variants": ["a"],
+          "maxTriangles": 2000,
+          "size": [6.2, 3.5, 3.7],
+          "anchors": ["collision_main"]
+        },
+        "deck": {
+          "variants": ["a"],
+          "maxTriangles": 2800,
+          "size": [16.1, 2.6, 7.2],
+          "anchors": ["collision_main"]
+        },
+        "pylon": {
+          "variants": ["a"],
+          "maxTriangles": 4500,
+          "size": [16.8, 28.5, 5.2],
+          "anchors": ["collision_main"]
+        },
+        "ramp": {
+          "variants": ["a"],
+          "maxTriangles": 2800,
+          "size": [16.1, 2.6, 7.2],
+          "anchors": ["collision_main"]
+        }
+      }
     }
   ],
   "scenes": [

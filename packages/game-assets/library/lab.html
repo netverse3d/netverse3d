@@ -194,6 +194,8 @@
         <div class="list" id="trafficList"></div>
         <h2>Tiện ích phố</h2>
         <div class="list" id="furnitureList"></div>
+        <h2>Sông và cầu</h2>
+        <div class="list" id="riverList"></div>
         <h2>Ghép thử mối nối</h2>
         <div class="list" id="setList"></div>
       </nav>
@@ -445,6 +447,38 @@
           ['binpair_a', [3.8, 0.15, -2.6], 0],
           ['cabinet_a', [5.2, 0.15, -2.65], 0],
           ['railing_a', [6.0, 0.15, -2.05], 0],
+        ],
+        'Sông và cầu': [
+          ['water_a', [-16, 0, 0], 0],
+          ['water_a', [0, 0, 0], 0],
+          ['water_a', [16, 0, 0], 0],
+          ['quay_a', [-22, 0, -8], 0],
+          ['quay_a', [-18, 0, -8], 0],
+          ['quay_a', [-14, 0, -8], 0],
+          ['quay_a', [-10, 0, -8], 0],
+          ['quaystep_a', [-6, 0, -8], 0],
+          ['pier_a', [-6, 0, -6], Math.PI],
+          ['quay_a', [6, 0, -8], 0],
+          ['quay_a', [10, 0, -8], 0],
+          ['quay_a', [14, 0, -8], 0],
+          ['quay_a', [18, 0, -8], 0],
+          ['quay_a', [22, 0, -8], 0],
+          ['quay_a', [-22, 0, 8], Math.PI],
+          ['quay_a', [-18, 0, 8], Math.PI],
+          ['quay_a', [-14, 0, 8], Math.PI],
+          ['quay_a', [-10, 0, 8], Math.PI],
+          ['quay_a', [-6, 0, 8], Math.PI],
+          ['quay_a', [6, 0, 8], Math.PI],
+          ['quay_a', [10, 0, 8], Math.PI],
+          ['quay_a', [14, 0, 8], Math.PI],
+          ['quay_a', [18, 0, 8], Math.PI],
+          ['quay_a', [22, 0, 8], Math.PI],
+          ['ramp_a', [0, 0, -16], -Math.PI / 2],
+          ['deck_a', [0, 0, 0], Math.PI / 2],
+          ['pylon_a', [0, 0, 0], Math.PI / 2],
+          ['ramp_a', [0, 0, 16], Math.PI / 2],
+          ['player', [2.7, 1.35, 2.0], Math.PI / 2],
+          ['player', [-6, 0.4, -4.5], 0],
         ],
       };
 
@@ -875,6 +909,7 @@
         const street = $('streetList');
         const traffic = $('trafficList');
         const furniture = $('furnitureList');
+        const river = $('riverList');
         for (const [name, info] of Object.entries(slotOf)) {
           const button = document.createElement('button');
           button.textContent = name;
@@ -891,6 +926,7 @@
               'traffic-parts.glb': traffic,
               'vehicle-parts.glb': street,
               'furniture-parts.glb': furniture,
+              'river-parts.glb': river,
             }[info.kit] ?? lounge;
           list.append(button);
         }
