@@ -3,7 +3,7 @@ import { buildShop } from './three-shop.mjs';
 
 export const STREET_INDIVIDUAL_RULES = [
   { part: /^(car|motorbike)_/, primitive: /.*/ },
-  { part: /^signal_/, primitive: /_bulb_/ },
+  { part: /^signal_/, primitive: /(_bulb_|_countdown$)/ },
   { part: /^walk_/, primitive: /_(stop|go)$/ },
 ];
 

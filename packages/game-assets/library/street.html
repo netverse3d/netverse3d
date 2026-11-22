@@ -329,6 +329,8 @@
       } from '../runtime/traffic.mjs';
       import { createVehicle } from '../runtime/vehicle-look.mjs';
       import { buildStreet } from '../runtime/street-instancing.mjs';
+      import { createJunctionPlan, signalStateAt } from '../runtime/signal-phases.mjs';
+      import { createSignalLook } from '../runtime/signal-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const BLOCKS = ['hem-mau'];
@@ -385,6 +387,7 @@
       const loader = new GLTFLoader();
       const kit = await loader.loadAsync('../exported/street-parts.glb');
       const vehicleKit = await loader.loadAsync('../exported/vehicle-parts.glb');
+      const trafficKit = await loader.loadAsync('../exported/traffic-parts.glb');
       const anchors = kitAnchors(kit.parser.json);
 
       const scene = new THREE.Scene();
@@ -456,6 +459,14 @@
       let trafficLane = null;
       let movingVehicles = [];
       let plan = [];
+      let signalLooks = [];
+      const junctionPlan = createJunctionPlan({
+        arms: ['west', 'north'],
+        green: 8,
+        yellow: 2,
+        allRed: 3,
+        crossings: [{ id: 'west', conflictingArms: ['west'] }],
+      });
       const clock = new THREE.Clock();
       let currentWeather = WEATHER_STATES.clear;
 
@@ -514,6 +525,7 @@
           duration: 16,
           count: 2,
           lateralOffset: 0.55,
+          stopLines: [{ distance: 10, arm: 'west', plan: junctionPlan }],
         });
         for (const [index, part] of ['car_a', 'motorbike_b'].entries()) {
           const vehicle = createVehicle(
@@ -540,6 +552,8 @@
       }
 
       function updateTraffic(elapsed) {
+        const phase = signalStateAt(junctionPlan, elapsed).arms.west;
+        for (const look of signalLooks) look.update(phase);
         for (let index = 0; index < movingVehicles.length; index += 1) {
           const moving = movingVehicles[index];
           const sample = trafficLane.positionAt(elapsed, index, moving.sample);
@@ -601,12 +615,39 @@
       }
 
       function rebuild() {
+        for (const look of signalLooks) look.dispose();
+        signalLooks = [];
         disposeGroup(streetGroup);
         const block = blocks[state.blockId];
         plan = streetPlan(block);
         streetGroup.add(
           buildStreet(THREE, kit.scene, plan, materials, { instance: instanceStreet }),
         );
+        streetGroup.add(
+          buildStreet(
+            THREE,
+            kit.scene,
+            [
+              { part: 'road_a', position: [10, 0, 4], yaw: 0 },
+              { part: 'road_a', position: [10, 0, 0], yaw: Math.PI / 2 },
+              { part: 'road_a', position: [10, 0, 8], yaw: Math.PI / 2 },
+            ],
+            materials,
+            { instance: instanceStreet },
+          ),
+        );
+        const signal = buildStreet(
+          THREE,
+          trafficKit.scene,
+          [
+            { part: 'signal_a', position: [4.6, 0.15, 1.9], yaw: -Math.PI / 2 },
+            { part: 'walk_a', position: [3.1, 0.15, 1.9], yaw: 0 },
+          ],
+          materials,
+          { instance: instanceStreet },
+        );
+        streetGroup.add(signal);
+        signalLooks = [createSignalLook(THREE, signal)];
         rebuildVehicles(block);
         helperLayer();
         $('sCells').textContent = `${block.cells[0]} × ${block.cells[1]} ô 4 m`;
@@ -620,8 +661,13 @@
       function frameBlock() {
         const block = blocks[state.blockId];
         const radius = Math.max(block.cells[0], block.cells[1]) * 2;
-        controls.target.set(0, 2, 0);
-        camera.position.set(radius * 0.8, radius * 0.9 + 4, radius * 1.6);
+        if (urlParams.get('view') === 'junction') {
+          controls.target.set(4.4, 3.2, 3.2);
+          camera.position.set(-3.5, 2.4, 4.6);
+        } else {
+          controls.target.set(0, 2, 0);
+          camera.position.set(radius * 0.8, radius * 0.9 + 4, radius * 1.6);
+        }
         controls.update();
       }
 

@@ -6,7 +6,12 @@ import {
   streetAssemblyPlan,
   streetDrawCounts,
   selectStreetLod,
+  streetPrimitiveMode,
 } from './street-instancing.mjs';
+
+test('hộp đếm ngược giữ lưới riêng để đổi sáng theo pha', () => {
+  assert.equal(streetPrimitiveMode('signal_a', 'signal_a_countdown'), 'individual');
+});
 
 const primitives = {
   road_a: ['road_a', 'road_a_marking'],
