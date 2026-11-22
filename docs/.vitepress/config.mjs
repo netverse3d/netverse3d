@@ -36,6 +36,7 @@ export default withMermaid(
             { text: 'Luồng nghiệp vụ', link: '/wiki/product/business-flows' },
             { text: 'Thuật ngữ', link: '/wiki/product/glossary' },
             { text: 'Ảnh đích thành phố', link: '/wiki/product/city-targets' },
+            { text: 'Tiêu chí mỹ thuật', link: '/wiki/product/art-criteria' },
             { text: 'Câu hỏi mở', link: '/wiki/open-questions' },
           ],
         },

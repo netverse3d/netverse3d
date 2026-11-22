@@ -2,7 +2,7 @@
 
 Nhân vật và đồ vật nằm ở `packages/game-assets`. Lý do chọn cách làm này ở [ADR-0015](../../decisions/ADR-0015-blender-sources-as-master.md).
 
-Ngân sách cho hẻm và khu thành phố, phép đo instancing và quy ước LOD nằm ở [ngân sách hiệu năng thành phố](./performance-budget.md).
+Ngân sách cho hẻm và khu thành phố, phép đo instancing và quy ước LOD nằm ở [ngân sách hiệu năng thành phố](./performance-budget.md). Tiêu chí mỹ thuật cho hình khối, vật liệu, ánh sáng, mặt đường, xe và thời tiết nằm ở [tiêu chí mỹ thuật thành phố](../product/art-criteria.md) (kèm bảng kiểm duyệt mô hình và cảnh).
 
 ## Xem những gì đã có
 

@@ -1,6 +1,6 @@
 # Ảnh đích cho thành phố
 
-Mỗi ảnh dưới đây là đích để đối chiếu khi làm một việc trong [đợt dựng thành phố](https://github.com/netverse3d/netverse3d/issues/231). Bảng tiêu chí đi kèm nằm ở [issue 258](https://github.com/netverse3d/netverse3d/issues/258).
+Mỗi ảnh dưới đây là đích để đối chiếu khi làm một việc trong [đợt dựng thành phố](https://github.com/netverse3d/netverse3d/issues/231). Bảng tiêu chí đi kèm nằm ở [tiêu chí mỹ thuật thành phố](./art-criteria.md) (nguồn gốc từ [issue 258](https://github.com/netverse3d/netverse3d/issues/258)).
 
 ## Đọc ảnh thế nào
 
