@@ -214,7 +214,7 @@ export async function launchChrome({ width, height }) {
     screenshot: async (path) => {
       const reply = await devtools.send('Page.captureScreenshot', {
         format: 'png',
-        captureBeyondViewport: true,
+        captureBeyondViewport: false,
       });
       writeFileSync(path, Buffer.from(reply.data, 'base64'));
     },
