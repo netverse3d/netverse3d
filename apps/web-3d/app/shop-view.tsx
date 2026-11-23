@@ -35,8 +35,14 @@ const ROOM_MODE = process.env.NEXT_PUBLIC_ROOM;
 
 async function connectRoom(seats: readonly Seat[]) {
   if (ROOM_MODE !== 'fake') return null;
+  const requestedSeconds = Number(new URLSearchParams(window.location.search).get('session'));
+  const sessionSeconds =
+    Number.isSafeInteger(requestedSeconds) && requestedSeconds > 0 ? requestedSeconds : undefined;
   const { createFakeRoom } = await import('../dev/fake-room.ts');
-  return createFakeRoom(seats.map(({ seatId, footprint }) => ({ seatId, footprint }))).connect();
+  return createFakeRoom(
+    seats.map(({ seatId, footprint }) => ({ seatId, footprint })),
+    sessionSeconds === undefined ? {} : { sessionSeconds },
+  ).createConnection();
 }
 
 function guestTicket(): string {

@@ -9,13 +9,20 @@ export interface FakeSeat {
 }
 
 export interface FakeRoom {
-  connect(): RoomConnection;
+  createConnection(): RoomConnection;
+}
+
+export interface FakeRoomOptions {
+  readonly sessionSeconds?: number;
+  readonly now?: () => number;
+  readonly schedule?: (callback: () => void, delayMs: number) => () => void;
 }
 
 interface Guest {
   readonly playerId: string;
   position: FloorPoint & { yaw: number };
   seatId: string | null;
+  cancelSessionTimer: (() => void) | null;
 }
 
 interface Line {
@@ -76,7 +83,22 @@ function wireOf(guest: Guest): Wire {
   };
 }
 
-export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
+export function createFakeRoom(
+  seats: readonly FakeSeat[],
+  options: FakeRoomOptions = {},
+): FakeRoom {
+  const sessionSeconds = options.sessionSeconds ?? 1_800;
+  const now = options.now ?? Date.now;
+  const schedule =
+    options.schedule ??
+    ((callback: () => void, delayMs: number) => {
+      const timer = setTimeout(callback, delayMs);
+      timer.unref?.();
+      return () => clearTimeout(timer);
+    });
+  if (!Number.isSafeInteger(sessionSeconds) || sessionSeconds <= 0) {
+    throw new TypeError('Session duration must be a positive integer');
+  }
   const lines = new Set<Line>();
   const footprints = new Map(seats.map((seat) => [seat.seatId, seat.footprint]));
   if (footprints.size !== seats.length) throw new TypeError('Seat ids must be unique');
@@ -109,6 +131,16 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
     tellJoined({ kind: 'delta', tick, changed: [wireOf(guest)] }, except);
   }
 
+  function endSession(line: Line, guest: Guest, reason: 'expired' | 'left'): void {
+    const seatId = guest.seatId;
+    if (seatId === null) return;
+    guest.cancelSessionTimer?.();
+    guest.cancelSessionTimer = null;
+    guest.seatId = null;
+    tell(line, { kind: 'seat.ended', seatId, reason });
+    shareChange(guest);
+  }
+
   function refuse(line: Line, code: string): void {
     tell(line, { kind: 'error', code });
   }
@@ -116,7 +148,12 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
   function join(line: Line, ticket: string): void {
     if (line.guest) return refuse(line, 'already_joined');
     if (guests().some((guest) => guest.playerId === ticket)) return refuse(line, 'ticket_in_use');
-    const guest: Guest = { playerId: ticket, position: DOORSTEP, seatId: null };
+    const guest: Guest = {
+      playerId: ticket,
+      position: DOORSTEP,
+      seatId: null,
+      cancelSessionTimer: null,
+    };
     line.guest = guest;
     if (guests().length > 1) shareChange(guest, line);
     tell(line, { kind: 'snapshot', tick, players: guests().map(wireOf) });
@@ -132,12 +169,30 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
     if (!withinSeatReach(guest.position, footprint)) {
       return tell(line, { kind: 'seat.denied', seatId, reason: 'too_far' });
     }
+    const serverTime = now();
+    if (!Number.isSafeInteger(serverTime) || serverTime < 0) {
+      throw new TypeError('Room time must be a non-negative safe integer');
+    }
+    const durationMs = sessionSeconds * 1_000;
+    const endsAt = serverTime + durationMs;
+    if (!Number.isSafeInteger(durationMs) || !Number.isSafeInteger(endsAt)) {
+      throw new TypeError('Session end time must be a safe integer');
+    }
     guest.seatId = seatId;
-    tellJoined({ kind: 'seat.granted', seatId, playerId: guest.playerId });
+    try {
+      guest.cancelSessionTimer = schedule(() => {
+        if (!line.open || line.guest !== guest || guest.seatId !== seatId) return;
+        endSession(line, guest, 'expired');
+      }, durationMs);
+    } catch (failure) {
+      guest.seatId = null;
+      throw failure;
+    }
+    tellJoined({ kind: 'seat.granted', seatId, playerId: guest.playerId, endsAt, serverTime });
     shareChange(guest);
   }
 
-  function receive(line: Line, text: string): void {
+  function handleClientMessage(line: Line, text: string): void {
     const message = readClientMessage(text);
     if (!message) return refuse(line, 'bad_message');
     if (message.kind === 'join') return join(line, message.ticket);
@@ -149,9 +204,7 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
       return shareChange(guest);
     }
     if (message.kind === 'seat.request') return settleSeat(line, guest, message.seatId);
-    if (guest.seatId === null) return;
-    guest.seatId = null;
-    shareChange(guest);
+    endSession(line, guest, 'left');
   }
 
   function leave(line: Line): void {
@@ -160,18 +213,20 @@ export function createFakeRoom(seats: readonly FakeSeat[]): FakeRoom {
     lines.delete(line);
     line.listeners.clear();
     if (!line.guest) return;
+    line.guest.cancelSessionTimer?.();
+    line.guest.cancelSessionTimer = null;
     tick += 1;
     tellJoined({ kind: 'delta', tick, left: [line.guest.playerId] });
   }
 
   return {
-    connect() {
+    createConnection() {
       const line: Line = { listeners: new Set(), guest: null, open: true };
       lines.add(line);
       return {
         send(text) {
           if (!line.open) throw new Error(CLOSED_MESSAGE);
-          receive(line, text);
+          handleClientMessage(line, text);
         },
         listen(onText) {
           if (!line.open) throw new Error(CLOSED_MESSAGE);

@@ -25,6 +25,37 @@ const BESIDE_FIRST = { x: 0, z: 1.6, yaw: 0 };
 const BESIDE_SECOND = { x: 5, z: 1.6, yaw: 0 };
 const FAR_AWAY = { x: 0, z: -4, yaw: 0 };
 
+interface ManualClock {
+  now(): number;
+  schedule(callback: () => void, delayMs: number): () => void;
+  advance(milliseconds: number): void;
+}
+
+function manualClock(startAt: number): ManualClock {
+  let current = startAt;
+  let nextId = 0;
+  const timers = new Map<number, { dueAt: number; callback: () => void }>();
+  return {
+    now: () => current,
+    schedule(callback, delayMs) {
+      const id = nextId;
+      nextId += 1;
+      timers.set(id, { dueAt: current + delayMs, callback });
+      return () => timers.delete(id);
+    },
+    advance(milliseconds) {
+      current += milliseconds;
+      const due = [...timers.entries()]
+        .filter(([, timer]) => timer.dueAt <= current)
+        .sort((first, second) => first[1].dueAt - second[1].dueAt);
+      for (const [id, timer] of due) {
+        timers.delete(id);
+        timer.callback();
+      }
+    },
+  };
+}
+
 interface Guest {
   client: RoomClient;
   connection: RoomConnection;
@@ -36,7 +67,7 @@ function settle(): Promise<void> {
 }
 
 function guest(room: FakeRoom): Guest {
-  const connection = room.connect();
+  const connection = room.createConnection();
   const heard: unknown[] = [];
   connection.listen((text) => heard.push(JSON.parse(text)));
   return { client: createRoomClient(connection), connection, heard };
@@ -96,6 +127,70 @@ test('đứng cạnh máy trống mà xin thì được cấp máy', async () =>
   assert.equal(first.client.room().seats.get('seat-1'), 'guest-1');
   assert.equal(first.client.room().players.get('guest-1')?.seatId, 'seat-1');
   assert.equal(first.client.room().denied, null);
+});
+
+test('phiên thuê mặc định dài ba mươi phút theo giờ của phòng', async () => {
+  const clock = manualClock(1_000);
+  const room = createFakeRoom(SEATS, { now: clock.now, schedule: clock.schedule });
+  const first = await joined(room, 'guest-1');
+  first.client.requestSeat('seat-1');
+  await settle();
+  const grant = first.heard.find(
+    (message) => (message as { kind: string }).kind === 'seat.granted',
+  ) as { endsAt?: number; serverTime?: number } | undefined;
+  assert.deepEqual([grant?.endsAt, grant?.serverTime], [1_801_000, 1_000]);
+});
+
+test('hết phiên thì phòng báo expired và cho thuê lại máy', async () => {
+  const clock = manualClock(1_000);
+  const room = createFakeRoom(SEATS, {
+    sessionSeconds: 2,
+    now: clock.now,
+    schedule: clock.schedule,
+  });
+  const first = await joined(room, 'guest-1');
+  const second = await joined(room, 'guest-2');
+  first.client.requestSeat('seat-1');
+  await settle();
+  clock.advance(1_999);
+  await settle();
+  assert.equal(first.client.room().seats.get('seat-1'), 'guest-1');
+  clock.advance(1);
+  await settle();
+  assert.ok(
+    first.heard.some(
+      (message) =>
+        (message as { kind?: string }).kind === 'seat.ended' &&
+        (message as { reason?: string }).reason === 'expired',
+    ),
+  );
+  assert.equal(first.client.room().seats.size, 0);
+  second.client.requestSeat('seat-1');
+  await settle();
+  assert.equal(second.client.room().seats.get('seat-1'), 'guest-2');
+});
+
+test('rời máy báo left và huỷ lịch hết giờ', async () => {
+  const clock = manualClock(1_000);
+  const room = createFakeRoom(SEATS, {
+    sessionSeconds: 2,
+    now: clock.now,
+    schedule: clock.schedule,
+  });
+  const first = await joined(room, 'guest-1');
+  first.client.requestSeat('seat-1');
+  await settle();
+  first.client.leaveSeat();
+  await settle();
+  clock.advance(2_000);
+  await settle();
+  assert.deepEqual(
+    first.heard
+      .filter((message) => (message as { kind?: string }).kind === 'seat.ended')
+      .map((message) => (message as { reason: string }).reason),
+    ['left'],
+  );
+  assert.equal(first.client.room().seats.size, 0);
 });
 
 test('hai người xin cùng một máy thì người xin sau bị từ chối vì máy bận', async () => {
@@ -291,7 +386,7 @@ test('mọi thông điệp phòng gửi ra đều đúng schema của giao thứ
   await settle();
   const sent = [...first.heard, ...second.heard];
   const kinds = new Set(sent.map((message) => (message as { kind: string }).kind));
-  for (const kind of ['snapshot', 'delta', 'seat.granted', 'seat.denied', 'error']) {
+  for (const kind of ['snapshot', 'delta', 'seat.granted', 'seat.ended', 'seat.denied', 'error']) {
     assert.ok(kinds.has(kind), `no ${kind} was sent`);
   }
   for (const message of sent) {
@@ -416,7 +511,7 @@ test('được cấp máy thì mọi người trong phòng nhận cả tin cấp
 
 test('một người nghe ném lỗi thì các người nghe khác trên cùng kết nối vẫn nhận thông điệp', async () => {
   const room = createFakeRoom(SEATS);
-  const connection = room.connect();
+  const connection = room.createConnection();
   const heard: string[] = [];
   const originalError = console.error;
   console.error = () => {};
@@ -435,7 +530,7 @@ test('một người nghe ném lỗi thì các người nghe khác trên cùng k
 
 test('người nghe bị gỡ giữa lúc phát thì không nhận thông điệp đang phát', async () => {
   const room = createFakeRoom(SEATS);
-  const connection = room.connect();
+  const connection = room.createConnection();
   const heard: string[] = [];
   let stopLate = (): void => {};
   connection.listen(() => stopLate());
@@ -447,7 +542,7 @@ test('người nghe bị gỡ giữa lúc phát thì không nhận thông điệ
 
 test('kết nối đã đóng thì không đăng ký nghe được nữa', () => {
   const room = createFakeRoom(SEATS);
-  const connection = room.connect();
+  const connection = room.createConnection();
   connection.close();
   assert.throws(() => connection.listen(() => {}), /closed/);
 });
