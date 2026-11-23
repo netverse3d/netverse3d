@@ -7,6 +7,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import {
   applyLighting,
+  createBloomPass,
   lightingFor,
   type LightingHandle,
 } from '@netverse/game-assets/runtime/lighting.mjs';
@@ -206,7 +207,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   );
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0, 0, 1);
+  const bloom = createBloomPass(THREE, UnrealBloomPass);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   const content = new THREE.Group();

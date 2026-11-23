@@ -306,6 +306,23 @@ test('mọi giá trị enum lighting của hợp đồng tiệm ánh xạ đư�
   }
 });
 
+test('createBloomPass khởi tạo thông số bloom từ preset được đặt tên', () => {
+  const args = [];
+  class FakeBloomPass {
+    constructor(...values) {
+      args.push(...values);
+    }
+  }
+  const pass = lighting.createBloomPass(THREE, FakeBloomPass, 'shop-neon');
+  assert.ok(pass instanceof FakeBloomPass);
+  assert.deepEqual(args[0].toArray(), [1, 1]);
+  assert.deepEqual(args.slice(1), [
+    lighting.LIGHTING_PRESETS['shop-neon'].bloom.strength,
+    lighting.LIGHTING_PRESETS['shop-neon'].bloom.radius,
+    lighting.LIGHTING_PRESETS['shop-neon'].bloom.threshold,
+  ]);
+});
+
 test('ngưỡng bloom của mọi preset khớp chuẩn chung', () => {
   const presets = lighting.LIGHTING_PRESETS ?? {};
   for (const preset of Object.values(presets)) {

@@ -23,6 +23,18 @@ declare module '@netverse/game-assets/runtime/lighting.mjs' {
   }
 
   export function lightingFor(name: string): LightingPreset;
+  export function createBloomPass<
+    TPass extends { strength: number; radius: number; threshold: number },
+  >(
+    THREE: typeof import('three'),
+    BloomPass: new (
+      resolution: import('three').Vector2,
+      strength: number,
+      radius: number,
+      threshold: number,
+    ) => TPass,
+    presetName?: string,
+  ): TPass;
   export function applyLighting(
     THREE: typeof import('three'),
     options: {

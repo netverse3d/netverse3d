@@ -186,6 +186,13 @@ export function lightingFor(name) {
   return preset;
 }
 
+export function createBloomPass(THREE, BloomPass, presetName = 'shop-neon') {
+  if (typeof BloomPass !== 'function') throw new TypeError('BloomPass constructor is required');
+  if (!THREE.Vector2) throw new TypeError('THREE.Vector2 is required to create a bloom pass');
+  const bloom = lightingFor(presetName).bloom;
+  return new BloomPass(new THREE.Vector2(1, 1), bloom.strength, bloom.radius, bloom.threshold);
+}
+
 function mergeLightingConfig(base, patch) {
   const result = { ...base, ...patch };
   for (const [key, value] of Object.entries(patch)) {
