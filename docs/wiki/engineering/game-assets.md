@@ -229,13 +229,13 @@ Lô trống trong bộ Đồ hẻm ghép bốn tấm `plot_a` thành nền 8 × 
 
 ### Bầu trời đêm, sương và bản đồ môi trường ngoài trời
 
-Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md), thế giới ngoài tiệm dùng chung một chuẩn ánh sáng, bầu trời và sương khai báo tập trung tại `packages/game-assets/runtime/street-look.mjs` thay vì tự đặt đèn riêng lẻ ở từng cảnh:
+Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md), thế giới ngoài tiệm dùng chung một chuẩn ánh sáng, bầu trời và sương khai báo tại `packages/game-assets/runtime/lighting.mjs`, không tự đặt đèn riêng lẻ ở từng cảnh. Xem [chuẩn ánh sáng dùng chung](./lighting.md) để biết preset, đơn vị, quy ước màu và cổng kiểm. `runtime/street-look.mjs` giữ các hàm tiện ích riêng cho cảnh ngoài trời và re-export các hàm tương thích:
 
 - **Vòm trời đêm (`NIGHT_SKY`)**: Phối màu chuyển sắc từ đỉnh trời (`zenith: #080614`) qua vùng trung gian (`mid: #140f2d`), quầng sáng thành phố ở chân trời (`glow: #342258`), đường chân trời (`horizon: #24193d`) và nền đất (`nadir: #0c0a18`). Dải chuyển sắc được vẽ lên canvas tỉ lệ equirectangular qua `renderNightSkyCanvas` và `createNightSkyTexture`.
 - **Bản đồ môi trường ngoài trời**: Sinh động từ chính texture vòm trời equirectangular qua `THREE.PMREMGenerator.fromEquirectangular(skyTexture)`, thay thế cho bản đồ môi trường căn phòng (`RoomEnvironment`) khi ở ngoài trời. Nhờ đó, phản chiếu trên kính nhà, xe cộ và mặt đường ướt đồng bộ 100% với màu trời đêm thực tế.
 - **Sương theo khoảng cách (distance fog)**: Sử dụng màu sương trùng khớp với màu chân trời (`#24193d`), khoảng bắt đầu `near: 16 m`, khoảng kết thúc `far: 90 m` (`density: 0.018`). Nhờ cùng màu chân trời, các khối nhà, cột điện và công trình ở xa chìm dần vào đường chân trời một cách tự nhiên, không lộ đường cắt mép.
 - **Đăng ký thành phần**: Khai báo trong `assets.config.json` dưới mục `"environments" -> "night-sky"` để quản lý tập trung theo chuẩn ADR-0019.
-- **Hàm tiện ích `setupOutdoorEnvironment(THREE, scene, renderer, options)`**: Tự động cấu hình `scene.background`, `scene.environment`, `scene.environmentIntensity` (0,45), `scene.fog`, độ phơi sáng `renderer.toneMappingExposure` (1,0) cùng đèn bán cầu `HemisphereLight` (`#3c2e74` / `#120c24`) và đèn mặt trăng `DirectionalLight` (`#9fb4ff`). Trang `library/street.html` áp dụng trực tiếp hàm này, đồng thời hỗ trợ nút bật/tắt sương (`Sương`) trên thanh hiển thị.
+- **Hàm tiện ích `setupOutdoorEnvironment(THREE, scene, renderer, options)`** trong `runtime/lighting.mjs`: Tự động cấu hình `scene.background`, `scene.environment`, `scene.environmentIntensity` (0,45), `scene.fog`, độ phơi sáng `renderer.toneMappingExposure` (1,0) cùng đèn bán cầu `HemisphereLight` (`#3c2e74` / `#120c24`) và đèn mặt trăng `DirectionalLight` (`#9fb4ff`). Trang `library/street.html` áp dụng trực tiếp hàm này, đồng thời hỗ trợ nút bật/tắt sương (`Sương`) trên thanh hiển thị.
 
 ### Thang phát sáng và mức bloom chung
 
