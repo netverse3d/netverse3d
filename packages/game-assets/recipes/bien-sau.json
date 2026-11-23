@@ -111,7 +111,10 @@
     "crescent_shaft": "a",
     "crescent_podium": "a",
     "bundled_shaft": "a",
-    "bundled_podium": "a"
+    "bundled_podium": "a",
+    "midrise_floor": "b",
+    "midrise_ground": "a",
+    "midrise_roof": "a"
   },
   "layout": {
     "cells": [3, 4],

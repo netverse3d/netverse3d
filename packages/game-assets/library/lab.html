@@ -202,6 +202,8 @@
         <div class="list" id="alleyList"></div>
         <h2>Tháp điểm nhấn</h2>
         <div class="list" id="landmarkList"></div>
+        <h2>Nhà tầm trung</h2>
+        <div class="list" id="midriseList"></div>
         <h2>Ghép thử mối nối</h2>
         <div class="list" id="setList"></div>
       </nav>
@@ -323,8 +325,14 @@
         VACANT_PLOT_EXHIBIT,
         vacancyNoticeMaterial,
       } from '../runtime/alley-look.mjs';
+      import { MIDRISE_RECIPES, midrisePlan } from '../runtime/midrise-look.mjs';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
-      import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
+      import {
+        buildShop,
+        kitLightmap,
+        previewKitFiles,
+        shopMaterials,
+      } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
@@ -536,6 +544,10 @@
           ['bundled_podium_a', [0, 0, 0], 0],
           ['bundled_shaft_a', [0, 4.45, 0], 0],
         ],
+        'Dãy nhà tầm trung': [
+          ...MIDRISE_RECIPES.flatMap(midrisePlan),
+          ['player', [0, 0, 6.4], Math.PI],
+        ],
       };
 
       const canvas = $('gl');
@@ -661,6 +673,7 @@
       };
       let materials = null;
       let materialSets = {};
+      let midriseMaterials = {};
       let display = null;
       let decal = null;
       const roadsignDecals = {};
@@ -736,6 +749,7 @@
 
       function disposeGroup(group) {
         group.traverse((object) => {
+          if (object.isInstancedMesh) object.dispose();
           if (object.isMesh && object.userData.lab) {
             object.geometry.dispose();
             object.material.dispose();
@@ -745,7 +759,7 @@
       }
 
       function eachMaterial(apply) {
-        for (const set of Object.values(materialSets)) {
+        for (const set of [...Object.values(materialSets), ...Object.values(midriseMaterials)]) {
           for (const material of Object.values(set)) apply(material, set);
         }
       }
@@ -769,6 +783,17 @@
           ]),
         );
         applyLandmarkGlow(materialSets['landmark-parts.glb']?.glow, rows);
+        const midriseLightmap = kitLightmap(kits['midrise-parts.glb'].scene);
+        midriseMaterials = Object.fromEntries(
+          MIDRISE_RECIPES.map(({ palette }) => [
+            palette,
+            shopMaterials(THREE, recipes[palette], rows, {
+              glowBoost: state.glow,
+              lightmap: midriseLightmap,
+              lightmapIntensity: state.ao ? 1 : 0,
+            }),
+          ]),
+        );
         materials = Object.values(materialSets)[0];
         display = materials.display;
         decal = materials.decal;
@@ -810,9 +835,10 @@
         object.traverse((mesh) => {
           if (!mesh.isMesh) return;
           const geometry = mesh.geometry;
-          total += geometry.index
+          const triangles = geometry.index
             ? geometry.index.count / 3
             : geometry.attributes.position.count / 3;
+          total += triangles * (mesh.isInstancedMesh ? mesh.count : 1);
         });
         return Math.round(total);
       }
@@ -901,7 +927,14 @@
       function show() {
         disposeGroup(stageGroup);
         stageGroup.rotation.y = 0;
-        for (const [name, position, yaw] of placements()) {
+        const midriseByPalette = new Map();
+        for (const [name, position, yaw, recipeId] of placements()) {
+          if (recipeId && slotOf[name]?.kit === 'midrise-parts.glb') {
+            const plan = midriseByPalette.get(recipeId) ?? [];
+            plan.push({ part: name, position, yaw });
+            midriseByPalette.set(recipeId, plan);
+            continue;
+          }
           const model = partClone(name);
           const lod = state.selection.kind === 'set' ? slotOf[name]?.spec.lod : null;
           const clone = lod ? new THREE.LOD() : model;
@@ -912,6 +945,11 @@
           clone.position.set(...position);
           clone.rotation.y = yaw;
           stageGroup.add(clone);
+        }
+        for (const [recipeId, plan] of midriseByPalette) {
+          stageGroup.add(
+            buildShop(THREE, kits['midrise-parts.glb'].scene, plan, midriseMaterials[recipeId]),
+          );
         }
         describe(stageGroup);
         helperLayer();
@@ -988,6 +1026,7 @@
         const park = $('parkList');
         const alley = $('alleyList');
         const landmark = $('landmarkList');
+        const midrise = $('midriseList');
         for (const [name, info] of Object.entries(slotOf)) {
           const button = document.createElement('button');
           button.textContent = name;
@@ -1008,6 +1047,7 @@
               'park-parts.glb': park,
               'alley-parts.glb': alley,
               'landmark-parts.glb': landmark,
+              'midrise-parts.glb': midrise,
             }[info.kit] ?? lounge;
           list.append(button);
         }
@@ -1045,6 +1085,7 @@
           state.glow = v;
           for (const [file, set] of Object.entries(materialSets))
             set.glow.color.setScalar(kitGlowBoost(file, v));
+          for (const set of Object.values(midriseMaterials)) set.glow.color.setScalar(v);
         },
         bloomStrength: (v) => (bloom.strength = v),
         bloomThreshold: (v) => (bloom.threshold = v),
@@ -1072,8 +1113,9 @@
           });
         }
         if (name === 'ao') {
-          for (const set of Object.values(materialSets))
-            set.surface.aoMapIntensity = state.ao ? 1 : 0;
+          eachMaterial((material, set) => {
+            if (material === set.surface) material.aoMapIntensity = state.ao ? 1 : 0;
+          });
         }
         if (name === 'grid') grid.visible = state.grid;
         if (name === 'bloom') bloom.enabled = state.bloom;

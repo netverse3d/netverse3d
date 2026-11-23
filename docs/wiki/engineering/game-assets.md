@@ -227,6 +227,8 @@ Lô trống trong bộ Đồ hẻm ghép bốn tấm `plot_a` thành nền 8 × 
 
 Đồ lặt vặt trong hẻm gồm chồng ba két nhựa `crate_a`, bình gas có van và quai `gas_a` và gương cầu trên trụ `mirror_a`. Mặt gương dùng hàng `screen`, cả ba món có hộp va chạm. Trụ nước và cọc chắn trong mẫu ghép dùng lại `hydrant_a` và `bollard_a` của bộ tiện ích phố.
 
+`midrise-parts.glb` có tầng chung cư ban công và lồng phơi, tầng văn phòng băng kính, tầng trệt cửa hàng và lối xuống hầm, mái kỹ thuật và sân phơi. Module ngang và cao 4 m theo giao diện đã đề xuất ở #251. Bộ này đứng riêng trong lúc chờ `tower-parts.glb` để nhóm có thể kiểm mẫu tại lab. `midrise-look.mjs` lắp ba tòa 6, 9 và 12 tầng với nhịp mặt đứng và bộ màu khác nhau.
+
 ### Bầu trời đêm, sương và bản đồ môi trường ngoài trời
 
 Theo [ADR-0019](../../decisions/ADR-0019-registered-parts-and-one-render-standard.md), thế giới ngoài tiệm dùng chung một chuẩn ánh sáng, bầu trời và sương khai báo tập trung tại `packages/game-assets/runtime/street-look.mjs` thay vì tự đặt đèn riêng lẻ ở từng cảnh:

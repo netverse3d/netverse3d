@@ -43,7 +43,8 @@
       "river-parts.glb": "Sông và cầu",
       "park-parts.glb": "Công viên và quảng trường",
       "landmark-parts.glb": "Hai tháp điểm nhấn",
-      "alley-parts.glb": "Đồ hẻm"
+      "alley-parts.glb": "Đồ hẻm",
+      "midrise-parts.glb": "Module nhà tầm trung"
     },
     "slots": {
       "tree": "Cây đường phố",
@@ -136,7 +137,10 @@
       "crescent_shaft": "Thân tháp Vành Mây",
       "crescent_podium": "Chân tháp Vành Mây",
       "bundled_shaft": "Thân tháp Nhịp Trời",
-      "bundled_podium": "Chân tháp Nhịp Trời"
+      "bundled_podium": "Chân tháp Nhịp Trời",
+      "midrise_floor": "Tầng chung cư và văn phòng",
+      "midrise_ground": "Tầng trệt và lối xuống hầm",
+      "midrise_roof": "Mái kỹ thuật và sân phơi"
     },
     "variantNames": {
       "cart_a": "Xe bánh mì",
