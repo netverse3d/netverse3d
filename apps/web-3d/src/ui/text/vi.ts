@@ -83,6 +83,13 @@ export const vi = {
     cancel: 'Hủy',
     sessionLabel: 'Phiên đang mở',
     endSession: 'Kết thúc phiên',
+    expiredNotice: 'Phiên thuê đã hết giờ, máy đã được trả lại.',
+    leftNotice: 'Bạn đã kết thúc phiên thuê, máy đã được trả lại.',
+    machine: (seatId: string) => `Máy ${seatId.replace(/^seat-/, '')}`,
+    desktopLabel: (machine: string) => `Màn hình điều khiển ${machine}`,
+    minimizeDesktop: 'Thu nhỏ màn hình điều khiển',
+    restoreDesktop: (machine: string) => `Mở ${machine}`,
+    comingSoon: 'Sắp có',
     denied: {
       occupied: 'Máy này đang có người ngồi',
       too_far: 'Đứng gần máy hơn rồi thử lại',

@@ -112,16 +112,22 @@ export function buildShop(
     source.updateWorldMatrix(true, true);
     source.traverse((mesh) => {
       if (!mesh.isMesh) return;
-      const material = materials[mesh.material.name];
-      if (!material)
+      const sharedMaterial = materials[mesh.material.name];
+      if (!sharedMaterial)
         throw new Error(`${part} uses material ${mesh.material.name} without a shop material`);
+      const monitorDisplay = part.startsWith('monitor_') && mesh.material.name === 'display';
+      const ownedMaterial = () => {
+        const material = sharedMaterial.clone();
+        if (monitorDisplay) material.color.set('#ffffff');
+        return material;
+      };
       local.copy(source.matrixWorld).invert().multiply(mesh.matrixWorld);
       if (!instance || individualPrimitive(part, mesh.name)) {
         for (const placement of placements) {
           rotation.setFromAxisAngle(up, placement.yaw);
           position.set(...placement.position);
           const individual = mesh.clone(false);
-          individual.material = material.clone();
+          individual.material = ownedMaterial();
           individual.matrixAutoUpdate = false;
           individual.matrix.copy(matrix.compose(position, rotation, unit).multiply(local));
           individual.userData.ownedMaterial = true;
@@ -129,7 +135,11 @@ export function buildShop(
         }
         return;
       }
-      const instanced = new THREE.InstancedMesh(mesh.geometry, material, placements.length);
+      const instanced = new THREE.InstancedMesh(
+        mesh.geometry,
+        monitorDisplay ? ownedMaterial() : sharedMaterial,
+        placements.length,
+      );
       placements.forEach((placement, index) => {
         rotation.setFromAxisAngle(up, placement.yaw);
         position.set(...placement.position);
@@ -138,6 +148,8 @@ export function buildShop(
       instanced.instanceMatrix.needsUpdate = true;
       instanced.frustumCulled = false;
       instanced.userData.part = part;
+      instanced.userData.material = mesh.material.name;
+      instanced.userData.ownedMaterial = monitorDisplay;
       instanced.userData.local = local.clone();
       group.add(instanced);
     });

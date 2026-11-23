@@ -24,6 +24,7 @@ export interface SceneState {
   lost: boolean;
   ready: boolean;
   face: boolean;
+  seatReady: boolean;
 }
 
 export interface RecipeOption {
@@ -49,6 +50,14 @@ export interface RentalRequest {
   readonly from: PlayerState;
 }
 
+export interface SeatSession {
+  readonly seatId: string;
+  readonly endsAt: number;
+  readonly offset: number;
+}
+
+export type SessionEndReason = 'expired' | 'left';
+
 export const NO_ROOM: SeatingState = {
   available: false,
   seated: null,
@@ -65,9 +74,15 @@ export interface ShopState {
   nearbySeat: string | null;
   seating: SeatingState;
   rentalConfirmation: RentalRequest | null;
+  session: SeatSession | null;
+  sessionNotice: SessionEndReason | null;
 }
 
 export const DEFAULT_RECIPE = 'tim-neon';
+
+export function remainingSeconds(endsAt: number, now: number, offset: number): number {
+  return Math.max(0, Math.floor((endsAt - now - offset) / 1000));
+}
 
 export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
   return {
@@ -81,12 +96,15 @@ export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
       lost: false,
       ready: false,
       face: false,
+      seatReady: false,
     },
     recipes: [],
     error: null,
     nearbySeat: null,
     seating: NO_ROOM,
     rentalConfirmation: null,
+    session: null,
+    sessionNotice: null,
   };
 }
 
@@ -121,6 +139,17 @@ export const shopSlice = createSlice({
     rentalConfirmationCancelled(state) {
       state.rentalConfirmation = null;
     },
+    sessionChanged(state, action: PayloadAction<SeatSession | null>) {
+      state.session = action.payload;
+      if (action.payload) state.sessionNotice = null;
+    },
+    sessionEnded(state, action: PayloadAction<SessionEndReason>) {
+      state.session = null;
+      state.sessionNotice = action.payload;
+    },
+    sessionNoticeCleared(state) {
+      state.sessionNotice = null;
+    },
     rentalConfirmationAccepted: {
       reducer(state) {
         state.rentalConfirmation = null;
@@ -149,6 +178,9 @@ export const {
   rentalConfirmationRequested,
   rentalConfirmationCancelled,
   rentalConfirmationAccepted,
+  sessionChanged,
+  sessionEnded,
+  sessionNoticeCleared,
   useRequested,
   recipeRequested,
   qualityRequested,

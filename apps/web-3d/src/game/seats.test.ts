@@ -60,6 +60,7 @@ function seatAt(seatId: string, x: number, z: number): Seat {
   return {
     seatId,
     mount: mountAt(x, z),
+    monitor: { part: 'monitor_a', index: Number(seatId.replace('seat-', '')) - 1 },
     chair: { x, z },
     footprint: { minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5 },
     sit: { x, z, yaw: 0 },
@@ -180,6 +181,7 @@ test('máy được gợi ý là máy có ghế gần hơn, không phải máy c
   const wide: Seat = {
     seatId: 'seat-1',
     mount: mountAt(-3, 0),
+    monitor: { part: 'monitor_a', index: 0 },
     chair: { x: -3, z: 0 },
     footprint: { minX: -4, maxX: 0, minZ: -0.5, maxZ: 0.5 },
     sit: { x: -3, z: 0, yaw: 0 },
@@ -187,6 +189,7 @@ test('máy được gợi ý là máy có ghế gần hơn, không phải máy c
   const narrow: Seat = {
     seatId: 'seat-2',
     mount: mountAt(0.6, 0),
+    monitor: { part: 'monitor_a', index: 1 },
     chair: { x: 0.6, z: 0 },
     footprint: { minX: 0.3, maxX: 1, minZ: -0.5, maxZ: 0.5 },
     sit: { x: 0.6, z: 0, yaw: 0 },
@@ -221,8 +224,10 @@ test('mỗi chỗ ngồi biết chiếc ghế của nó là instance thứ mấy
     [
       part(0, 'desk', 'desk_a', 0, 0),
       part(0, 'chair', 'chair_a', 0, -0.24),
+      part(0, 'monitor', 'monitor_a', 0, 0),
       part(1, 'desk', 'desk_a', 4, 0, EAST),
       part(1, 'chair', 'chair_a', 3.76, 0, EAST),
+      part(1, 'monitor', 'monitor_a', 4, 0, EAST),
     ],
     ANCHORS,
   );
@@ -234,4 +239,11 @@ test('mỗi chỗ ngồi biết chiếc ghế của nó là instance thứ mấy
     ],
   );
   assert.deepEqual(seats[1]?.mount.position, [3.76, 0, 0]);
+  assert.deepEqual(
+    seats.map((seat) => seat.monitor),
+    [
+      { part: 'monitor_a', index: 0 },
+      { part: 'monitor_a', index: 1 },
+    ],
+  );
 });

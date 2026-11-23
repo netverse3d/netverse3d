@@ -21,6 +21,7 @@ export interface ChairMount {
 export interface Seat {
   readonly seatId: string;
   readonly mount: ChairMount;
+  readonly monitor: { readonly part: string; readonly index: number };
   readonly chair: FloorPoint;
   readonly footprint: FloorBox;
   readonly sit: PlayerState;
@@ -52,6 +53,8 @@ export function shopSeats(stations: readonly StationPart[], anchors: KitAnchors)
       const parts = stations.filter((placed) => placed.station === station);
       const chair = parts.find((placed) => placed.slot === CHAIR_SLOT);
       if (!chair) throw new TypeError(`${part} has no chair in its station`);
+      const monitor = parts.find((placed) => placed.slot === 'monitor');
+      if (!monitor) throw new TypeError(`${part} has no monitor in its station`);
       const footprint = around(collisionBoxes(parts, anchors), part);
       const [x = 0, , z = 0] = chair.position;
       const hip = anchors[chair.part]?.[SIT_ANCHOR];
@@ -63,7 +66,20 @@ export function shopSeats(stations: readonly StationPart[], anchors: KitAnchors)
         position: chair.position,
         yaw: chair.yaw,
       };
-      return { seatId: seatIdOf(station), mount, chair: { x, z }, footprint, sit };
+      const monitorMount = {
+        part: monitor.part,
+        index: stations
+          .filter((placed) => placed.slot === 'monitor' && placed.part === monitor.part)
+          .indexOf(monitor),
+      };
+      return {
+        seatId: seatIdOf(station),
+        mount,
+        monitor: monitorMount,
+        chair: { x, z },
+        footprint,
+        sit,
+      };
     });
 }
 

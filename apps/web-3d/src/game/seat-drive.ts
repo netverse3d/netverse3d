@@ -26,6 +26,7 @@ export interface SeatDrive<T extends SeatSpot> {
   seat(seat: T): void;
   stand(): void;
   seated(): boolean;
+  ready(): boolean;
   step(delta: number, player: PlayerState): SeatFrame<T>;
 }
 
@@ -89,6 +90,9 @@ export function createSeatDrive<T extends SeatSpot>(clips: SeatClipLengths): Sea
     },
     seated() {
       return phase === 'seated' || phase === 'sitting';
+    },
+    ready() {
+      return phase === 'seated';
     },
     step(delta, player) {
       if (!seat || !origin || phase === 'free') return idle();

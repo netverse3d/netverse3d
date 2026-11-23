@@ -15,7 +15,14 @@ interface Wire {
 
 const ME = 'guest-1';
 const OTHER = 'guest-2';
-const EMPTY: SeatingView = { seated: null, taken: [], denied: null, error: null };
+const EMPTY: SeatingView = {
+  seated: null,
+  taken: [],
+  denied: null,
+  error: null,
+  session: null,
+  ended: null,
+};
 
 function wire(): Wire {
   const listeners = new Set<(text: string) => void>();
@@ -46,12 +53,13 @@ function player(playerId: string, seatId: string | null = null) {
   return { playerId, position: { x: 0, y: 0, z: 0 }, yaw: 0, seatId };
 }
 
-function open(line: Wire) {
+function open(line: Wire, now = Date.now) {
   const views: SeatingView[] = [];
   const session = createRoomSession({
     connection: line.connection,
     shopId: 'tim-neon',
     ticket: ME,
+    now,
     onChange: (view) => views.push(view),
   });
   return { session, views };
@@ -86,6 +94,29 @@ test('được cấp máy thì báo mình đang ngồi máy đó, máy của mì
   line.deliver({ kind: 'snapshot', tick: 0, players: [player(ME)] });
   line.deliver({ kind: 'seat.granted', seatId: 'seat-2', playerId: ME });
   assert.deepEqual(views.at(-1), { ...EMPTY, seated: 'seat-2' });
+});
+
+test('nhận mốc hết giờ theo đồng hồ phòng và phát sự kiện khi phiên kết thúc', () => {
+  const line = wire();
+  const { views } = open(line, () => 9_000);
+  line.deliver({ kind: 'snapshot', tick: 0, players: [player(ME)] });
+  line.deliver({
+    kind: 'seat.granted',
+    seatId: 'seat-2',
+    playerId: ME,
+    endsAt: 31_000,
+    serverTime: 11_000,
+  });
+  assert.deepEqual(views.at(-1), {
+    ...EMPTY,
+    seated: 'seat-2',
+    session: { seatId: 'seat-2', endsAt: 31_000, offset: 2_000 },
+  });
+  line.deliver({ kind: 'seat.ended', seatId: 'seat-2', reason: 'expired' });
+  assert.deepEqual(views.at(-1), {
+    ...EMPTY,
+    ended: { seatId: 'seat-2', reason: 'expired' },
+  });
 });
 
 test('máy người khác đang ngồi được báo là bận, theo thứ tự tên máy', () => {

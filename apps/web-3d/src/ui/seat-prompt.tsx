@@ -5,45 +5,62 @@ import { useEffect, useState } from 'react';
 import {
   rentalConfirmationAccepted,
   rentalConfirmationCancelled,
+  remainingSeconds,
+  sessionNoticeCleared,
   useRequested,
 } from '../state/shop-slice.ts';
 import type { AppDispatch, RootState } from '../state/store.ts';
+import { formatSessionDuration } from './session-time.ts';
 import styles from './seat-prompt.module.css';
 import { vi } from './text/vi.ts';
-
-function formatDuration(milliseconds: number): string {
-  const totalSeconds = Math.floor(Math.max(0, milliseconds) / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
-  }
-  return [Math.floor(totalSeconds / 60), seconds]
-    .map((value) => String(value).padStart(2, '0'))
-    .join(':');
-}
 
 export default function SeatPrompt() {
   const dispatch = useDispatch<AppDispatch>();
   const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
   const seating = useSelector((state: RootState) => state.shop.seating);
   const rentalConfirmation = useSelector((state: RootState) => state.shop.rentalConfirmation);
+  const session = useSelector((state: RootState) => state.shop.session);
+  const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
   const ready = useSelector((state: RootState) => state.shop.scene.ready);
-  const [elapsed, setElapsed] = useState(0);
+  const seatReady = useSelector((state: RootState) => state.shop.scene.seatReady);
+  const [now, setNow] = useState(Date.now);
   const seatId = seating.seated ?? nearbySeat;
-  const seatedAt = seating.seated;
   useEffect(() => {
-    if (!seatedAt) {
-      setElapsed(0);
-      return;
-    }
-    const startedAt = Date.now();
-    const update = () => setElapsed(Date.now() - startedAt);
-    update();
-    const interval = window.setInterval(update, 1000);
+    if (!session || seatReady) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
-  }, [seatedAt]);
+  }, [seatReady, session]);
+  useEffect(() => {
+    if (!sessionNotice) return;
+    const timeout = window.setTimeout(() => dispatch(sessionNoticeCleared()), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [dispatch, sessionNotice]);
+  useEffect(() => {
+    if (!rentalConfirmation) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (event.target instanceof Element && event.target.closest('[data-rental-cancel]')) {
+          dispatch(rentalConfirmationCancelled());
+          return;
+        }
+        document.querySelector<HTMLFormElement>('[data-rental-confirmation] form')?.requestSubmit();
+        return;
+      }
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      dispatch(rentalConfirmationCancelled());
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [dispatch, rentalConfirmation]);
+
+  const notice = sessionNotice ? (
+    <div className={styles.sessionNotice} role="status" aria-live="polite" data-session-notice>
+      {sessionNotice === 'expired' ? vi.seat.expiredNotice : vi.seat.leftNotice}
+    </div>
+  ) : null;
 
   if (rentalConfirmation) {
     return (
@@ -61,68 +78,92 @@ export default function SeatPrompt() {
           </h2>
           <p className={styles.message}>{vi.seat.rentMessage}</p>
           <strong className={styles.price}>{vi.seat.freePrice}</strong>
-          <div className={styles.actions}>
+          <form
+            className={styles.actions}
+            onSubmit={(event) => {
+              event.preventDefault();
+              dispatch(rentalConfirmationAccepted(rentalConfirmation));
+            }}
+          >
             <button
               type="button"
               className={styles.cancelButton}
+              data-rental-cancel
               onClick={() => dispatch(rentalConfirmationCancelled())}
             >
               {vi.seat.cancel}
             </button>
-            <button
-              type="button"
-              className={styles.confirmButton}
-              onClick={() => dispatch(rentalConfirmationAccepted(rentalConfirmation))}
-            >
+            <button type="submit" className={styles.confirmButton} autoFocus>
               {vi.seat.rentConfirm}
             </button>
-          </div>
+          </form>
         </section>
       </div>
     );
   }
 
-  if (!ready || !seating.available || !seatId) return null;
+  if (!ready || !seating.available || !seatId) return notice;
   const seated = seating.seated !== null;
   if (seated) {
+    if (seatReady) return notice;
     return (
-      <section
-        className={styles.session}
-        data-seat={seatId}
-        data-seated="true"
-        aria-label={vi.seat.sessionLabel}
-      >
-        <div className={styles.sessionDetails}>
-          <span className={styles.sessionLabel}>{vi.seat.sessionLabel}</span>
-          <time className={styles.timer} data-session-timer>
-            {formatDuration(elapsed)}
-          </time>
-        </div>
-        <button type="button" className={styles.endButton} onClick={() => dispatch(useRequested())}>
-          {vi.seat.endSession}
-        </button>
-      </section>
+      <>
+        {notice}
+        <section
+          className={styles.session}
+          data-seat={seatId}
+          data-seated="true"
+          aria-label={vi.seat.sessionLabel}
+        >
+          <div className={styles.sessionDetails}>
+            <span className={styles.sessionLabel}>{vi.seat.sessionLabel}</span>
+            <time
+              className={
+                session && remainingSeconds(session.endsAt, now, session.offset) < 60
+                  ? styles.timerWarning
+                  : styles.timer
+              }
+              data-session-timer
+              aria-live="polite"
+            >
+              {formatSessionDuration(
+                session ? remainingSeconds(session.endsAt, now, session.offset) : 0,
+              )}
+            </time>
+          </div>
+          <button
+            type="button"
+            className={styles.endButton}
+            onClick={() => dispatch(useRequested())}
+          >
+            {vi.seat.endSession}
+          </button>
+        </section>
+      </>
     );
   }
   return (
-    <div className={styles.prompt} data-seat={seatId} data-seated={String(seated)}>
-      {!seated && seating.denied?.seatId === seatId && (
-        <span className={styles.denied} role="alert">
-          {vi.seat.denied[seating.denied.reason]}
+    <>
+      {notice}
+      <div className={styles.prompt} data-seat={seatId} data-seated={String(seated)}>
+        {!seated && seating.denied?.seatId === seatId && (
+          <span className={styles.denied} role="alert">
+            {vi.seat.denied[seating.denied.reason]}
+          </span>
+        )}
+        {seating.error && (
+          <span className={styles.denied} role="alert">
+            {vi.seat.roomError}
+          </span>
+        )}
+        <span className={styles.hint} aria-live="polite">
+          <kbd className={styles.key}>{vi.seat.key}</kbd>
+          {vi.seat.prompt}
         </span>
-      )}
-      {seating.error && (
-        <span className={styles.denied} role="alert">
-          {vi.seat.roomError}
-        </span>
-      )}
-      <span className={styles.hint} aria-live="polite">
-        <kbd className={styles.key}>{vi.seat.key}</kbd>
-        {vi.seat.prompt}
-      </span>
-      <button type="button" className={styles.button} onClick={() => dispatch(useRequested())}>
-        {vi.seat.sit}
-      </button>
-    </div>
+        <button type="button" className={styles.button} onClick={() => dispatch(useRequested())}>
+          {vi.seat.sit}
+        </button>
+      </div>
+    </>
   );
 }

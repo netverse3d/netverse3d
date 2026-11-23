@@ -129,7 +129,16 @@ test('mỗi primitive thành một InstancedMesh với số instance bằng số
   );
   assert.equal(meshes[0].material, materials.surface);
   assert.equal(meshes[1].material, materials.glow);
-  assert.equal(meshes[2].material, materials.display);
+  assert.notEqual(meshes[2].material, materials.display);
+  assert.equal(meshes[2].material.color.getHexString(), 'ffffff');
+  assert.deepEqual(
+    meshes.map((mesh) => [mesh.userData.part, mesh.userData.material]),
+    [
+      ['desk_a', 'surface'],
+      ['desk_a', 'glow'],
+      ['monitor_a', 'display'],
+    ],
+  );
 });
 
 test('instance giữ vị trí, góc quay và transform cục bộ của mesh con', () => {

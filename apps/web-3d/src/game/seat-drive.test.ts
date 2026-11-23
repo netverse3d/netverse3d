@@ -55,11 +55,15 @@ test('ghế ra hết thì người chơi đứng ở chỗ đã lùi, quay mặt
 test('ngồi xong thì ghế và người chơi về sát bàn, giữ nguyên ở đó và gõ phím', () => {
   const drive = createSeatDrive(CLIPS);
   drive.sit(SEAT, BESIDE);
+  assert.equal(drive.ready(), false);
   const done = drive.step(seatMotionLength('sit', CLIPS) + 0.01, BESIDE);
   assert.deepEqual(done, { seat: SEAT, chair: 0, hold: SEAT.sit, clip: 'typing' });
   const later = drive.step(1, BESIDE);
   assert.deepEqual(later, { seat: SEAT, chair: 0, hold: SEAT.sit, clip: null });
   assert.equal(drive.seated(), true);
+  assert.equal(drive.ready(), true);
+  drive.stand();
+  assert.equal(drive.ready(), false);
 });
 
 test('rời máy: trượt ra cùng ghế, đứng dậy ở chỗ đã lùi, rồi bước về chỗ đứng cũ', () => {

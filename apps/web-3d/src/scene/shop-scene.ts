@@ -31,6 +31,7 @@ import {
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { FloorBox, PlayerState } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
+import { setActiveMonitorScreens } from '../game/monitor-displays.ts';
 import { createSeatDrive, type SeatDrive } from '../game/seat-drive.ts';
 import { nearestSeat, shopSeats, type Seat } from '../game/seats.ts';
 import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
@@ -178,7 +179,14 @@ export async function loadShopAssets(base: string): Promise<ShopAssets> {
 function disposeGroup(group: THREE.Group): void {
   group.traverse((object) => {
     if ((object as THREE.InstancedMesh).isInstancedMesh) {
-      (object as THREE.InstancedMesh).dispose();
+      const instanced = object as THREE.InstancedMesh;
+      instanced.dispose();
+      if (instanced.userData.ownedMaterial) {
+        const materials = Array.isArray(instanced.material)
+          ? instanced.material
+          : [instanced.material];
+        materials.forEach((material) => material.dispose());
+      }
     } else if ((object as THREE.Mesh).isMesh && !(object as THREE.SkinnedMesh).isSkinnedMesh) {
       const mesh = object as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
       mesh.geometry.dispose();
@@ -254,6 +262,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     lost: false,
     ready: false,
     face: false,
+    seatReady: false,
   };
   let pmrem: THREE.PMREMGenerator | null = null;
   let materialSets: ShopMaterials[] = [];
@@ -361,6 +370,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   function driveSeat(delta: number): void {
     if (!seatDrive || !player) return;
     const frame = seatDrive.step(delta, walk.position());
+    const seatReady = seatDrive.ready();
+    if (state.seatReady !== seatReady) {
+      state.seatReady = seatReady;
+      emit();
+    }
     if (frame.hold) walk.hold(frame.hold);
     else walk.release();
     if (frame.clip) player.playClip(frame.clip);
@@ -379,6 +393,10 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     if (!seat) seatDrive.stand();
     else if (resumed) seatDrive.seat(seat);
     else if (!seatDrive.seated()) seatDrive.sit(seat, standing);
+  }
+
+  function applyMonitorEmissive(activeSeatId: string | null): void {
+    if (stationGroup) setActiveMonitorScreens(stationGroup, seats, activeSeatId);
   }
 
   function clearContent(): void {
@@ -446,7 +464,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
       stand_up: lengthOf(SEAT_CLIPS[1]),
     });
     chairOut = 0;
+    state.seatReady = false;
     applySeating(true);
+    applyMonitorEmissive(seatedAt);
     openFloor = shopOpenFloor(recipe.layout.cells);
     doorWall = recipe.layout.door.wall;
     if (!resume) orbit = { ...DEFAULT_ORBIT, yaw: spawn.yaw + CORNER_VIEW_TURN };
@@ -570,6 +590,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
       seatedAt = seated;
       takenSeats = new Set(taken);
       applySeating();
+      applyMonitorEmissive(seated);
     },
     use,
     simulateContextLoss() {

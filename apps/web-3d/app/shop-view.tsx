@@ -18,6 +18,8 @@ import {
   recipesLoaded,
   sceneChanged,
   seatingChanged,
+  sessionChanged,
+  sessionEnded,
   useRequested,
   statsReported,
 } from '../src/state/shop-slice.ts';
@@ -26,6 +28,7 @@ import type { Seat } from '../src/game/seats.ts';
 import { createRoomSession, type RoomSession } from '../src/net/room-session.ts';
 import Hud from '../src/ui/hud.tsx';
 import SeatPrompt from '../src/ui/seat-prompt.tsx';
+import SeatDesktop from '../src/ui/seat-desktop.tsx';
 import { vi } from '../src/ui/text/vi.ts';
 import styles from './shop-view.module.css';
 
@@ -60,6 +63,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
   const scene = useSelector((state: RootState) => state.shop.scene);
   const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
   const seating = useSelector((state: RootState) => state.shop.seating);
+  const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
 
   useEffect(() => {
     const { store, listener } = app;
@@ -89,7 +93,17 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
         shopId: store.getState().shop.scene.recipeId,
         ticket,
         onChange: (view) => {
-          store.dispatch(seatingChanged({ ...view, available: true, taken: [...view.taken] }));
+          store.dispatch(
+            seatingChanged({
+              available: true,
+              seated: view.seated,
+              taken: [...view.taken],
+              denied: view.denied,
+              error: view.error,
+            }),
+          );
+          store.dispatch(sessionChanged(view.session));
+          if (view.ended) store.dispatch(sessionEnded(view.ended.reason));
           shop?.setSeating(view.seated, view.taken);
         },
       });
@@ -183,6 +197,8 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       data-nearby-seat={nearbySeat ?? ''}
       data-room-available={String(seating.available)}
       data-session-seat={seating.seated ?? ''}
+      data-session-notice-reason={sessionNotice ?? ''}
+      data-seat-ready={String(scene.seatReady)}
       data-rebuilds={scene.rebuilds}
       data-frames={scene.frames}
       data-restored={String(scene.restored)}
@@ -191,6 +207,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       <canvas id="gl" className={styles.canvas} ref={canvasRef} aria-label={vi.app.stageLabel} />
       <Hud />
       <SeatPrompt />
+      <SeatDesktop />
     </div>
   );
 }

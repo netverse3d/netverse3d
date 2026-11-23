@@ -12,6 +12,7 @@ import {
   seatingChanged,
   useRequested,
   statsReported,
+  shopSlice,
 } from './shop-slice.ts';
 import { createAppStore } from './store.ts';
 
@@ -111,4 +112,19 @@ test('chưa có phòng thì chuyện ngồi máy ở trạng thái tắt; phòng
   store.dispatch(seatingChanged(seated));
   assert.deepEqual(store.getState().shop.seating, seated);
   assert.deepEqual(JSON.parse(JSON.stringify(store.getState().shop)), store.getState().shop);
+});
+
+test('hết phiên xoá dữ liệu thuê và giữ lý do để giao diện báo', () => {
+  const initial = initialShopState();
+  const active = {
+    ...initial,
+    session: { seatId: 'seat-2', endsAt: 31_000, offset: 2_000 },
+    sessionNotice: null,
+  };
+  const ended = shopSlice.reducer(active, {
+    type: 'shop/sessionEnded',
+    payload: 'expired',
+  });
+  assert.equal(ended.session, null);
+  assert.equal(ended.sessionNotice, 'expired');
 });

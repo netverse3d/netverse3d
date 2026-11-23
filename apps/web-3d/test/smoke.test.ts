@@ -183,8 +183,8 @@ class Devtools {
     return reply.result.value;
   }
 
-  async waitFor(expression: string) {
-    const deadline = Date.now() + 15000;
+  async waitFor(expression: string, timeout = 15000) {
+    const deadline = Date.now() + timeout;
     while (Date.now() < deadline) {
       if (await this.evaluate<boolean>(`Boolean(${expression})`).catch(() => false)) return;
       await sleep(100);
@@ -318,7 +318,7 @@ function browserReady(context: TestContext, needsModels = true): boolean {
 }
 
 async function pressKey(browser: Devtools, code: string, key: string, hold = 40) {
-  const keyCode = key.toUpperCase().charCodeAt(0);
+  const keyCode = key === 'Enter' ? 13 : key === 'Escape' ? 27 : key.toUpperCase().charCodeAt(0);
   await browser.send('Input.dispatchKeyEvent', {
     type: 'keyDown',
     key,
@@ -607,14 +607,25 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       const dialogText = await browser.evaluate<string>(`${dialog}.textContent`);
       assert.match(dialogText, /miễn phí/i);
       await capture('01-rental-confirmation');
-      await browser.evaluate(
-        `([...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Hủy'))?.click()`,
-      );
+      await browser.evaluate(`(() => {
+        [...document.querySelectorAll('button')]
+          .find(button => button.textContent?.trim() === 'Hủy')?.focus();
+      })()`);
+      await pressKey(browser, 'Enter', 'Enter');
       await browser.waitFor(`!${dialog}`);
+      assert.equal(
+        await browser.evaluate<boolean>(`Boolean(${dialog})`),
+        false,
+        'Enter khi nút Hủy đang được focus phải huỷ xác nhận',
+      );
       assert.equal(
         await browser.evaluate<boolean>(`Boolean(document.querySelector('[data-seated="true"]'))`),
         false,
       );
+      await pressKey(browser, 'KeyE', 'e');
+      await browser.waitFor(`Boolean(${dialog})`);
+      await pressKey(browser, 'Escape', 'Escape');
+      await browser.waitFor(`!${dialog}`);
       await pressKey(browser, 'KeyE', 'e');
       await browser.waitFor(`Boolean(${dialog})`);
       const requestedSeat = await browser.evaluate<string>(
@@ -630,20 +641,81 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       await walkToNearbySeat(browser);
       await pressKey(browser, 'KeyE', 'e');
       await browser.waitFor(`Boolean(${dialog})`);
-      await browser.evaluate(
-        `([...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Thuê miễn phí'))?.click()`,
+      await browser.evaluate(`(() => {
+        window.__rentalSubmitCount = 0;
+        document.querySelector('[data-rental-confirmation] button[type="submit"]')?.focus();
+        document.querySelector('[data-rental-confirmation] form')?.addEventListener('submit', () => {
+          window.__rentalSubmitCount += 1;
+        });
+      })()`);
+      await pressKey(browser, 'Enter', 'Enter');
+      await browser.waitFor(`!${dialog}`);
+      assert.equal(
+        await browser.evaluate<number>(`window.__rentalSubmitCount`),
+        1,
+        'Enter trên nút Thuê phải gửi đúng một lần qua form',
       );
       await browser.waitFor(`document.querySelector('[data-seated="true"]')`);
       await browser.waitFor(`document.querySelector('[data-session-timer]')`);
+      assert.equal(
+        await browser.evaluate<string>(`document.querySelector('#stage')?.dataset.seatReady ?? ''`),
+        'false',
+      );
+      assert.equal(
+        await browser.evaluate<boolean>(`Boolean(document.querySelector('[data-seat-desktop]'))`),
+        false,
+      );
+      await browser.waitFor(`document.querySelector('#stage')?.dataset.seatReady === 'true'`);
+      await browser.waitFor(`document.querySelector('[data-seat-desktop]')`);
+      const desktop = await browser.evaluate<{
+        seat: string;
+        label: string;
+        timer: string;
+        timerClass: string;
+        timerLive: string;
+        disabledTiles: number;
+        allDisabled: boolean;
+      }>(`(() => {
+        const panel = document.querySelector('[data-seat-desktop]');
+        const timer = panel?.querySelector('[data-session-timer]');
+        const tiles = [...(panel?.querySelectorAll('button[aria-disabled="true"]') ?? [])];
+        return {
+          seat: panel?.getAttribute('data-seat') ?? '',
+          label: panel?.getAttribute('aria-label') ?? '',
+          timer: timer?.textContent?.trim() ?? '',
+          timerClass: timer?.className ?? '',
+          timerLive: timer?.getAttribute('aria-live') ?? '',
+          disabledTiles: tiles.length,
+          allDisabled: tiles.every(button => button.disabled),
+        };
+      })()`);
+      assert.match(desktop.label, /Máy/);
+      assert.match(desktop.seat, /^seat-/);
+      assert.ok(Number(desktop.timer.split(':').at(-1)) >= 0);
+      assert.match(desktop.timerClass, /timer/);
+      assert.equal(desktop.timerLive, 'polite');
+      assert.equal(desktop.disabledTiles, 3);
+      assert.equal(desktop.allDisabled, true);
+      await pressKey(browser, 'Escape', 'Escape');
+      await browser.waitFor(`document.querySelector('[data-desktop-restore]')`);
+      await browser.evaluate(`document.querySelector('[data-desktop-restore]')?.click()`);
+      await browser.waitFor(`document.querySelector('[data-seat-desktop]')`);
       await sleep(2200);
-      const elapsed = await browser.evaluate<string>(
+      const remaining = await browser.evaluate<string>(
         `document.querySelector('[data-session-timer]')?.textContent ?? ''`,
       );
-      const elapsedSeconds = elapsed
+      const remainingSeconds = remaining
         .split(':')
         .map(Number)
         .reduce((total, part) => total * 60 + part, 0);
-      assert.ok(elapsedSeconds >= 2, `đồng hồ phiên phải đạt ít nhất 00:02: ${elapsed}`);
+      const initialSeconds = desktop.timer
+        .split(':')
+        .map(Number)
+        .reduce((total, part) => total * 60 + part, 0);
+      assert.ok(
+        remainingSeconds > 0 && remainingSeconds < initialSeconds,
+        `đồng hồ phải đếm ngược: ${remaining}`,
+      );
       await capture('02-active-session');
       await browser.send('Emulation.setDeviceMetricsOverride', {
         width: 390,
@@ -664,11 +736,12 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
         top: number;
         bottom: number;
         buttonHeight: number;
+        buttonName: string;
         pwaPresent: boolean;
         pwaOverlapArea: number;
       }>(`(() => {
-        const panel = document.querySelector('[data-session-timer]')?.closest('[data-seated="true"]');
-        const button = panel?.querySelector('button');
+        const panel = document.querySelector('[data-seat-desktop]');
+        const button = panel?.querySelector('[data-end-session]');
         const bounds = panel?.getBoundingClientRect();
         const pwa = [...document.querySelectorAll('button')].find(candidate =>
           /^(Cài ứng dụng|Cập nhật ứng dụng)$/.test(candidate.textContent?.trim() ?? '')
@@ -688,6 +761,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
           top: bounds?.top ?? -1,
           bottom: bounds?.bottom ?? -1,
           buttonHeight: button?.getBoundingClientRect().height ?? 0,
+          buttonName: button?.textContent?.trim() ?? '',
           pwaPresent: Boolean(pwa),
           pwaOverlapArea: overlapWidth * overlapHeight,
         };
@@ -699,19 +773,141 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       assert.equal(mobileLayout.pwaPresent, true);
       assert.equal(mobileLayout.pwaOverlapArea, 0);
       await capture('04-mobile-active-session');
+      await pressKey(browser, 'Escape', 'Escape');
+      await browser.waitFor(`document.querySelector('[data-desktop-restore]')`);
+      const minimizedBounds = await browser.evaluate<{
+        left: number;
+        right: number;
+        height: number;
+      }>(
+        `(() => {
+          const bounds = document.querySelector('[data-desktop-restore]')?.getBoundingClientRect();
+          return { left: bounds?.left ?? -1, right: bounds?.right ?? -1, height: bounds?.height ?? 0 };
+        })()`,
+      );
+      assert.ok(minimizedBounds.left >= mobileLayout.width / 2);
+      assert.ok(minimizedBounds.height >= 44);
+      await browser.evaluate(`document.querySelector('[data-desktop-restore]')?.click()`);
+      await browser.waitFor(`document.querySelector('[data-seat-desktop]')`);
       await browser.send('Emulation.clearDeviceMetricsOverride');
       await browser.send('Emulation.setTouchEmulationEnabled', { enabled: false });
-      await browser.evaluate(
-        `([...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Kết thúc phiên'))?.click()`,
+      await browser.evaluate(`document.querySelector('[data-end-session]')?.click()`);
+      await browser.waitFor(
+        `document.querySelector('#stage')?.dataset.sessionNoticeReason === 'left'`,
       );
-      await browser.waitFor(`!document.querySelector('[data-session-timer]')`);
-      await browser.waitFor(`document.querySelector('[data-seat][data-seated="false"]')`);
-      await sleep(2200);
-      await capture('03-session-ended');
+      await browser.waitFor(`document.querySelector('[data-session-notice]')`);
+      const endedState = await browser.evaluate<{
+        stage: Record<string, string>;
+        timerVisible: boolean;
+      }>(`({
+        stage: { ...(document.querySelector('#stage')?.dataset ?? {}) },
+        timerVisible: Boolean(document.querySelector('[data-session-timer]')),
+      })`);
+      assert.equal(endedState.stage.sessionNoticeReason, 'left', JSON.stringify(endedState));
+      const endedNotice = await browser.evaluate<{
+        text: string;
+        top: number;
+        height: number;
+        width: number;
+        display: string;
+        visibility: string;
+        opacity: string;
+      }>(`(() => {
+        const notice = document.querySelector('[data-session-notice]');
+        const bounds = notice?.getBoundingClientRect();
+        const style = notice ? getComputedStyle(notice) : null;
+        return {
+          text: notice?.textContent ?? '',
+          top: bounds?.top ?? -1,
+          height: bounds?.height ?? 0,
+          width: bounds?.width ?? 0,
+          display: style?.display ?? 'none',
+          visibility: style?.visibility ?? 'hidden',
+          opacity: style?.opacity ?? '0',
+        };
+      })()`);
+      assert.match(endedNotice.text, /đã kết thúc/i);
+      assert.ok(endedNotice.top >= 0 && endedNotice.top < 100);
+      assert.ok(endedNotice.width > 0 && endedNotice.height > 0);
+      assert.notEqual(endedNotice.display, 'none');
+      assert.equal(endedNotice.visibility, 'visible');
+      assert.ok(Number(endedNotice.opacity) > 0);
+      assert.equal(endedState.stage.sessionSeat, '');
+      assert.equal(endedState.timerVisible, false);
+      await capture('03-session-ended-notice');
+      await browser.waitFor(`!document.querySelector('[data-session-notice]')`, 4000);
+      await capture('06-session-ended-actor-standing');
       await pressKey(browser, 'KeyE', 'e');
       await browser.waitFor(`Boolean(${dialog})`);
       await browser.evaluate(
         `([...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Hủy'))?.click()`,
+      );
+    },
+  );
+  assert.deepEqual(page.consoleErrors, []);
+});
+
+test('hết giờ theo đồng hồ phòng thì máy trống, actor đứng dậy và báo kết thúc', async (context) => {
+  if (process.env.NEXT_PUBLIC_ROOM !== 'fake') {
+    context.skip('cần bản build room giả để thử hết phiên');
+    return;
+  }
+  if (!browserReady(context)) return;
+  const page = await renderPage(
+    '/?session=20',
+    (state) => state.ready === 'true' && Number(state.frames) >= 1,
+    async (browser) => {
+      await browser.waitFor(`document.querySelector('#stage')?.dataset.roomAvailable === 'true'`);
+      await walkToNearbySeat(browser);
+      const dialog = `document.querySelector('[data-rental-confirmation][role="dialog"][aria-modal="true"]')`;
+      await pressKey(browser, 'KeyE', 'e');
+      await browser.waitFor(`Boolean(${dialog})`);
+      await browser.evaluate(
+        `([...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Thuê miễn phí'))?.click()`,
+      );
+      await browser.waitFor(`document.querySelector('#stage')?.dataset.sessionSeat`);
+      await browser.waitFor(`document.querySelector('#stage')?.dataset.seatReady === 'true'`);
+      await browser.waitFor(`document.querySelector('[data-session-timer]')`);
+      assert.equal(
+        await browser.evaluate<string>(
+          `document.querySelector('#stage')?.dataset.sessionNoticeReason ?? ''`,
+        ),
+        '',
+      );
+      assert.match(
+        await browser.evaluate<string>(
+          `document.querySelector('[data-session-timer]')?.className ?? ''`,
+        ),
+        /timerWarning/,
+      );
+      await browser.waitFor(`document.querySelector('[data-session-notice]')`, 25000);
+      const result = await browser.evaluate<{
+        seat: string;
+        notice: string;
+        timerVisible: boolean;
+        desktopVisible: boolean;
+      }>(`(() => ({
+        seat: document.querySelector('#stage')?.dataset.sessionSeat ?? '',
+        notice: document.querySelector('[data-session-notice]')?.textContent?.trim() ?? '',
+        timerVisible: Boolean(document.querySelector('[data-session-timer]')),
+        desktopVisible: Boolean(document.querySelector('[data-seat-desktop]')),
+      }))()`);
+      assert.equal(result.seat, '');
+      assert.match(result.notice, /hết giờ/i);
+      assert.equal(result.timerVisible, false);
+      assert.equal(result.desktopVisible, false);
+      await sleep(1800);
+      const { data } = (await browser.send('Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: false,
+      })) as { data: string };
+      const directory = join(ROOT, '..', '..', '.flow', 'handoff', 'session-overlay');
+      mkdirSync(directory, { recursive: true });
+      writeFileSync(join(directory, '05-session-expired.png'), Buffer.from(data, 'base64'));
+      await sleep(1400);
+      assert.equal(
+        await browser.evaluate<boolean>(`Boolean(document.querySelector('[data-session-notice]'))`),
+        false,
       );
     },
   );
