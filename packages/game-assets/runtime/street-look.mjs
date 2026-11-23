@@ -1,6 +1,8 @@
 import {
   EMISSIVE_SCALE,
   LIGHT_BUDGET,
+  NIGHT_SKY,
+  OUTDOOR_LIGHTING,
   STANDARD_BLOOM,
   clampEmissiveIntensity,
   isWithinEmissiveScale,
@@ -30,6 +32,8 @@ import {
 export {
   EMISSIVE_SCALE,
   LIGHT_BUDGET,
+  NIGHT_SKY,
+  OUTDOOR_LIGHTING,
   STANDARD_BLOOM,
   clampEmissiveIntensity,
   isWithinEmissiveScale,
@@ -55,39 +59,6 @@ export const STREET_CELL = 4;
 export const STOREY_HEIGHT = 3.8;
 export const LOT_CELLS = 2;
 export const SIDEWALK_TOP = 0.15;
-export const NIGHT_SKY = {
-  zenith: '#080614',
-  mid: '#140f2d',
-  horizon: '#24193d',
-  glow: '#342258',
-  nadir: '#0c0a18',
-};
-export const OUTDOOR_LIGHTING = {
-  sky: NIGHT_SKY,
-  fog: {
-    color: NIGHT_SKY.horizon,
-    near: 16,
-    far: 90,
-    density: 0.018,
-  },
-  hemisphere: {
-    sky: '#3c2e74',
-    ground: '#120c24',
-    intensity: 0.85,
-  },
-  moon: {
-    color: '#9fb4ff',
-    intensity: 1.1,
-    position: [10, 20, 8],
-  },
-  exposure: 1.0,
-  bloom: {
-    strength: STANDARD_BLOOM.strength,
-    radius: STANDARD_BLOOM.radius,
-    threshold: STANDARD_BLOOM.threshold,
-  },
-  environmentIntensity: 0.45,
-};
 const SIDEWALK_DEPTH = 1;
 const ROAD_VARIANT = { straight: 'a', corner: 'b', tee: 'c' };
 const OUTWARD = { south: [0, 1], north: [0, -1], east: [1, 0], west: [-1, 0] };

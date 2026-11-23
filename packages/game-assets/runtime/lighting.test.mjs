@@ -10,6 +10,7 @@ import {
   STANDARD_BLOOM,
   isWithinEmissiveScale,
 } from './lighting.mjs';
+import * as lighting from './lighting.mjs';
 import { shopMaterials } from './three-shop.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -45,6 +46,16 @@ const RECIPE = {
     accent: ['#ff007f'],
   },
 };
+const PRESET_IDS = [
+  'studio',
+  'shop-neon',
+  'shop-dim',
+  'shop-warm',
+  'shop-daylight',
+  'street-night',
+  'showcase-baked',
+];
+const SHOP_LOOK_SCHEMA = readJson(join(ROOT, '../contracts/world/v1/shop-look.schema.json'));
 
 test('thang phát sáng định nghĩa đủ các loại nguồn phát sáng theo chuẩn ADR-0019', () => {
   const expectedTypes = [
@@ -112,6 +123,84 @@ test('cấu hình assets.config.json đăng ký thang phát sáng và mức bloo
     LIGHT_BUDGET.maxDynamicLightsPerBlock,
   );
   assert.equal(CONFIG.lighting.budget.bakeBouncedLight, LIGHT_BUDGET.bakeBouncedLight);
+});
+
+test('bảy bộ ánh sáng có đủ trường của chuẩn dựng hình', () => {
+  const presets = lighting.LIGHTING_PRESETS ?? {};
+  assert.deepEqual(Object.keys(presets).sort(), [...PRESET_IDS].sort());
+  for (const [id, preset] of Object.entries(presets)) {
+    assert.equal(preset.id, id);
+    assert.ok(['indoor', 'outdoor', 'studio', 'baked'].includes(preset.kind));
+    assert.equal(preset.toneMapping, 'aces');
+    assert.equal(typeof preset.exposure, 'number');
+    assert.ok(preset.background === 'night-sky' || /^#[0-9a-f]{6}$/i.test(preset.background));
+    assert.ok(['room', 'night-sky', 'none'].includes(preset.environment?.source));
+    assert.equal(typeof preset.environment.intensity, 'number');
+    assert.equal(typeof preset.environment.blur, 'number');
+    assert.ok(
+      preset.fog === null ||
+        (typeof preset.fog.color === 'string' &&
+          typeof preset.fog.near === 'number' &&
+          typeof preset.fog.far === 'number'),
+    );
+    assert.ok(
+      preset.hemisphere === null ||
+        (typeof preset.hemisphere.sky === 'string' &&
+          typeof preset.hemisphere.ground === 'string' &&
+          typeof preset.hemisphere.intensity === 'number'),
+    );
+    assert.ok(Array.isArray(preset.directional));
+    assert.ok(Array.isArray(preset.points));
+    assert.ok(
+      preset.directional.every(
+        (light) =>
+          typeof light.color === 'string' &&
+          typeof light.intensity === 'number' &&
+          Array.isArray(light.position) &&
+          light.position.length === 3,
+      ),
+    );
+    assert.ok(
+      preset.points.every(
+        (light) =>
+          typeof light.color === 'string' &&
+          typeof light.intensity === 'number' &&
+          typeof light.distance === 'number' &&
+          typeof light.decay === 'number' &&
+          (light.placement === 'room-corners' || Array.isArray(light.placement)),
+      ),
+    );
+    assert.equal(typeof preset.bloom.strength, 'number');
+    assert.equal(typeof preset.bloom.radius, 'number');
+    assert.equal(typeof preset.bloom.threshold, 'number');
+  }
+});
+
+test('lightingFor ánh xạ enum tiệm và báo lỗi với bộ không biết', () => {
+  assert.equal(typeof lighting.lightingFor, 'function');
+  assert.equal(lighting.lightingFor('neon').id, 'shop-neon');
+  assert.throws(
+    () => lighting.lightingFor('unknown'),
+    (error) => {
+      assert.ok(error instanceof RangeError);
+      assert.match(error.message, /unknown/);
+      return true;
+    },
+  );
+});
+
+test('mọi giá trị enum lighting của hợp đồng tiệm ánh xạ được', () => {
+  assert.equal(typeof lighting.lightingFor, 'function');
+  for (const value of SHOP_LOOK_SCHEMA.properties.lighting.enum) {
+    assert.ok(lighting.lightingFor(value), `Thiếu preset cho enum ${value}`);
+  }
+});
+
+test('ngưỡng bloom của mọi preset khớp chuẩn chung', () => {
+  const presets = lighting.LIGHTING_PRESETS ?? {};
+  for (const preset of Object.values(presets)) {
+    assert.equal(preset.bloom.threshold, STANDARD_BLOOM.threshold, preset.id);
+  }
 });
 
 test('shopMaterials tạo vật liệu phát sáng neon nằm trong thang EMISSIVE_SCALE.neon', () => {
