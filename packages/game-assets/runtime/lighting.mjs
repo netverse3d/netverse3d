@@ -1,3 +1,5 @@
+import { calculateRoadRoughness } from './weather.mjs';
+
 export const STANDARD_BLOOM = {
   strength: 0.35,
   radius: 0.4,
@@ -182,6 +184,363 @@ export function lightingFor(name) {
   const preset = LIGHTING_PRESETS[id];
   if (!preset) throw new RangeError(`unknown lighting preset: ${name}`);
   return preset;
+}
+
+function mergeLightingConfig(base, patch) {
+  const result = { ...base, ...patch };
+  for (const [key, value] of Object.entries(patch)) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      base[key] &&
+      typeof base[key] === 'object' &&
+      !Array.isArray(base[key])
+    ) {
+      result[key] = { ...base[key], ...value };
+    }
+  }
+  return result;
+}
+
+function presetAfterUpdate(current, next) {
+  if (typeof next === 'string') return lightingFor(next);
+  if (!next || typeof next !== 'object')
+    throw new TypeError('lighting update must be a preset or object');
+  const base = next.id && LIGHTING_PRESETS[next.id] ? LIGHTING_PRESETS[next.id] : current;
+  return mergeLightingConfig(base, next);
+}
+
+export function nightSkyGradientStops(sky = NIGHT_SKY) {
+  return [
+    { offset: 0.0, color: sky.zenith },
+    { offset: 0.32, color: sky.mid },
+    { offset: 0.46, color: sky.glow },
+    { offset: 0.5, color: sky.horizon },
+    { offset: 0.58, color: sky.nadir },
+    { offset: 1.0, color: sky.nadir },
+  ];
+}
+
+export function renderNightSkyCanvas(canvas, sky = NIGHT_SKY) {
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  for (const { offset, color } of nightSkyGradientStops(sky)) {
+    gradient.addColorStop(offset, color);
+  }
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
+export function createNightSkyTexture(THREE, options = {}) {
+  const width = options.width ?? 512;
+  const height = options.height ?? 256;
+  const canvas =
+    options.canvas ??
+    (typeof globalThis.document !== 'undefined'
+      ? globalThis.document.createElement('canvas')
+      : null);
+  if (!canvas) throw new Error('canvas is required to create sky texture');
+  canvas.width = width;
+  canvas.height = height;
+  renderNightSkyCanvas(canvas, options.sky ?? NIGHT_SKY);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+export function applyLighting(THREE, options) {
+  const { scene, renderer, bloomPass, room, RoomEnvironment } = options;
+  if (!scene) throw new TypeError('scene is required to apply lighting');
+  let activePreset = presetAfterUpdate({}, options.preset);
+  const lights = [];
+  let pmrem = options.pmrem ?? null;
+  const ownsPmrem = !options.pmrem;
+  let ownsSkyTexture = !options.skyTexture;
+  let environmentTarget = null;
+  let skyTexture = null;
+  let backgroundColor = null;
+  let backgroundValue = null;
+  let fog = null;
+  let fogKey = null;
+  let environmentKey = null;
+  let lightsKey = null;
+  let disposed = false;
+
+  function ensurePmrem() {
+    if (!pmrem && THREE.PMREMGenerator) pmrem = new THREE.PMREMGenerator(renderer);
+    return pmrem;
+  }
+
+  function removeEnvironment() {
+    const texture = environmentTarget?.texture;
+    if (scene.environment === texture) scene.environment = null;
+    environmentTarget?.dispose?.();
+    environmentTarget = null;
+    environmentKey = null;
+  }
+
+  function releaseSkyTexture() {
+    if (scene.background === skyTexture) scene.background = null;
+    if (ownsSkyTexture) skyTexture?.dispose?.();
+    skyTexture = null;
+    ownsSkyTexture = true;
+  }
+
+  function setBackground() {
+    if (activePreset.background === 'night-sky') {
+      if (!skyTexture) {
+        skyTexture = options.skyTexture ?? createNightSkyTexture(THREE, options);
+        ownsSkyTexture = !options.skyTexture;
+      }
+      scene.background = skyTexture;
+      backgroundColor = null;
+      backgroundValue = 'night-sky';
+      return;
+    }
+    if (backgroundValue === activePreset.background && backgroundColor) {
+      scene.background = backgroundColor;
+      return;
+    }
+    releaseSkyTexture();
+    backgroundColor = THREE.Color
+      ? new THREE.Color(activePreset.background)
+      : activePreset.background;
+    scene.background = backgroundColor;
+    backgroundValue = activePreset.background;
+  }
+
+  function setEnvironment() {
+    const environment = activePreset.environment;
+    const source = environment?.source ?? 'none';
+    scene.environmentIntensity = environment?.intensity ?? 0;
+    if (source === 'none') {
+      removeEnvironment();
+      scene.environment = null;
+      if (activePreset.background !== 'night-sky') releaseSkyTexture();
+      return;
+    }
+    const key = `${source}:${environment.blur ?? 0}`;
+    if (environmentKey === key) return;
+    removeEnvironment();
+    const generator = ensurePmrem();
+    if (source === 'night-sky' && generator?.fromEquirectangular) {
+      const texture = skyTexture ?? options.skyTexture ?? createNightSkyTexture(THREE, options);
+      ownsSkyTexture = !options.skyTexture;
+      skyTexture = texture;
+      environmentTarget = generator.fromEquirectangular(texture);
+    } else if (source === 'room' && RoomEnvironment && generator?.fromScene) {
+      const roomScene = new RoomEnvironment();
+      environmentTarget = generator.fromScene(roomScene, environment.blur ?? 0);
+      roomScene.dispose?.();
+    }
+    if (environmentTarget) scene.environment = environmentTarget.texture;
+    else scene.environment = null;
+    environmentKey = key;
+  }
+
+  function applyRenderer() {
+    if (!renderer) return;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping ?? 'ACESFilmicToneMapping';
+    if (options.setExposure !== false) renderer.toneMappingExposure = activePreset.exposure;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+  }
+
+  function applyBloom() {
+    if (!bloomPass || !activePreset.bloom) return;
+    bloomPass.strength = activePreset.bloom.strength;
+    bloomPass.radius = activePreset.bloom.radius;
+    bloomPass.threshold = activePreset.bloom.threshold;
+  }
+
+  function positionFor(light, index) {
+    if (light.placement === 'room-corners') {
+      const width = room?.width ?? 1;
+      const depth = room?.depth ?? 1;
+      const side = index ? 1 : -1;
+      return [side * (width - 0.5), 2.6, -side * (depth - 0.5)];
+    }
+    return light.position ?? [0, 0, 0];
+  }
+
+  function addLight(light) {
+    scene.add(light);
+    lights.push(light);
+  }
+
+  function setLights() {
+    const nextKey = JSON.stringify([
+      options.addLights !== false,
+      room?.width,
+      room?.depth,
+      activePreset.hemisphere,
+      activePreset.directional,
+      activePreset.points,
+    ]);
+    if (lightsKey === nextKey) return;
+    for (const light of lights) scene.remove?.(light);
+    lights.length = 0;
+    lightsKey = nextKey;
+    if (options.addLights === false) return;
+    if (activePreset.hemisphere) {
+      addLight(
+        new THREE.HemisphereLight(
+          activePreset.hemisphere.sky,
+          activePreset.hemisphere.ground,
+          activePreset.hemisphere.intensity,
+        ),
+      );
+    }
+    for (const [index, spec] of activePreset.directional.entries()) {
+      const light = new THREE.DirectionalLight(spec.color, spec.intensity);
+      light.position.set(...positionFor(spec, index));
+      addLight(light);
+    }
+    for (const [index, spec] of activePreset.points.entries()) {
+      const light = new THREE.PointLight(spec.color, spec.intensity, spec.distance, spec.decay);
+      light.position.set(...positionFor(spec, index));
+      addLight(light);
+    }
+  }
+
+  function setFog() {
+    const nextFog = activePreset.fog;
+    const nextKey = nextFog ? JSON.stringify(nextFog) : 'none';
+    if (fogKey === nextKey && scene.fog === fog) return;
+    if (!nextFog) {
+      scene.fog = null;
+      fog = null;
+      fogKey = nextKey;
+      return;
+    }
+    if (fog && typeof fog.color?.set === 'function') {
+      fog.color.set(nextFog.color);
+      fog.near = nextFog.near;
+      fog.far = nextFog.far;
+    } else {
+      fog = new THREE.Fog(nextFog.color, nextFog.near, nextFog.far);
+    }
+    scene.fog = fog;
+    fogKey = nextKey;
+  }
+
+  function applyPreset() {
+    if (disposed) throw new Error('lighting handle has been disposed');
+    setBackground();
+    setFog();
+    setEnvironment();
+    applyRenderer();
+    applyBloom();
+    setLights();
+  }
+
+  const handle = {
+    get preset() {
+      return activePreset;
+    },
+    get lights() {
+      return lights;
+    },
+    get pmrem() {
+      return pmrem;
+    },
+    get skyTexture() {
+      return skyTexture;
+    },
+    get envTexture() {
+      return environmentTarget?.texture ?? null;
+    },
+    update(next) {
+      activePreset = presetAfterUpdate(activePreset, next);
+      applyPreset();
+      return handle;
+    },
+    setExposure(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) {
+        throw new TypeError('exposure must be a finite number');
+      }
+      activePreset = mergeLightingConfig(activePreset, { exposure: value });
+      applyRenderer();
+      return handle;
+    },
+    dispose() {
+      if (disposed) return;
+      for (const light of lights) scene.remove?.(light);
+      lights.length = 0;
+      lightsKey = null;
+      if (scene.background === skyTexture || scene.background === backgroundColor)
+        scene.background = null;
+      if (scene.fog === fog) scene.fog = null;
+      if (scene.environment === environmentTarget?.texture) scene.environment = null;
+      environmentTarget?.dispose?.();
+      environmentTarget = null;
+      if (ownsSkyTexture) skyTexture?.dispose?.();
+      skyTexture = null;
+      if (ownsPmrem) pmrem?.dispose?.();
+      disposed = true;
+    },
+  };
+
+  applyPreset();
+  return handle;
+}
+
+export function setupOutdoorEnvironment(THREE, scene, renderer, options = {}) {
+  const lighting = options.lighting ?? OUTDOOR_LIGHTING;
+  const preset = {
+    ...lightingFor('street-night'),
+    exposure: lighting.exposure,
+    environment: {
+      ...lightingFor('street-night').environment,
+      intensity: lighting.environmentIntensity,
+    },
+    fog: lighting.fog,
+    hemisphere: lighting.hemisphere,
+    directional: [
+      {
+        color: lighting.moon.color,
+        intensity: lighting.moon.intensity,
+        position: lighting.moon.position,
+      },
+    ],
+    bloom: lighting.bloom ?? lightingFor('street-night').bloom,
+  };
+  const handle = applyLighting(THREE, {
+    scene,
+    renderer,
+    preset,
+    skyTexture: options.skyTexture,
+    canvas: options.canvas,
+    pmrem: options.pmrem,
+    addLights: options.addLights,
+    setExposure: options.setExposure,
+  });
+  return {
+    ...handle,
+    handle,
+    skyTexture: handle.skyTexture,
+    envTexture: handle.envTexture,
+    pmrem: handle.pmrem,
+    hemisphere: handle.lights.find((light) => light instanceof THREE.HemisphereLight) ?? null,
+    moon: handle.lights.find((light) => light instanceof THREE.DirectionalLight) ?? null,
+  };
+}
+
+export function applyWeatherToOutdoor(handle, weather, options = {}) {
+  if (!weather || !handle?.update) return;
+  const change = {};
+  if (weather.fog) change.fog = weather.fog;
+  if (typeof weather.environmentIntensity === 'number') {
+    change.environment = { intensity: weather.environmentIntensity };
+  }
+  if (typeof weather.exposure === 'number') change.exposure = weather.exposure;
+  if (Object.keys(change).length) handle.update(change);
+  if (options.materials?.surface && typeof weather.wetness === 'number') {
+    const base = options.baseRoughness ?? 0.85;
+    options.materials.surface.roughness = calculateRoadRoughness(base, weather.wetness);
+  }
 }
 
 export const EMISSIVE_SCALE = {

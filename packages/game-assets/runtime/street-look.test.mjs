@@ -300,16 +300,9 @@ test('setupOutdoorEnvironment gán nền, sương và môi trường phản chi�
   assert.ok(result.moon);
 });
 
-test('applyWeatherToOutdoor cập nhật sương, phơi sáng và độ nhám mặt đường', () => {
-  const scene = {
-    fog: {
-      color: { set: (c) => (scene.fog.colorHex = c) },
-      near: 16,
-      far: 90,
-    },
-    environmentIntensity: 0.45,
-  };
-  const renderer = { toneMappingExposure: 1.0 };
+test('applyWeatherToOutdoor gửi bộ thay đổi qua handle và cập nhật độ nhám mặt đường', () => {
+  let change;
+  const handle = { update: (next) => (change = next) };
   const materials = {
     surface: { roughness: 0.85 },
   };
@@ -321,13 +314,13 @@ test('applyWeatherToOutdoor cập nhật sương, phơi sáng và độ nhám m�
     wetness: 1.0,
   };
 
-  applyWeatherToOutdoor(scene, weather, { renderer, materials });
+  applyWeatherToOutdoor(handle, weather, { materials });
 
-  assert.equal(scene.fog.colorHex, '#1a122c');
-  assert.equal(scene.fog.near, 8);
-  assert.equal(scene.fog.far, 55);
-  assert.equal(scene.environmentIntensity, 0.35);
-  assert.equal(renderer.toneMappingExposure, 0.88);
+  assert.deepEqual(change, {
+    fog: weather.fog,
+    environment: { intensity: weather.environmentIntensity },
+    exposure: weather.exposure,
+  });
   assert.equal(materials.surface.roughness, 0.15);
 });
 

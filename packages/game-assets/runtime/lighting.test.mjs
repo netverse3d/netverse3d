@@ -57,6 +57,116 @@ const PRESET_IDS = [
 ];
 const SHOP_LOOK_SCHEMA = readJson(join(ROOT, '../contracts/world/v1/shop-look.schema.json'));
 
+function fakeThree() {
+  class Color {
+    constructor(value) {
+      this.value = value;
+    }
+
+    set(value) {
+      this.value = value;
+    }
+  }
+
+  class Fog {
+    constructor(color, near, far) {
+      this.color = new Color(color);
+      this.near = near;
+      this.far = far;
+    }
+  }
+
+  class Light {
+    constructor(color, intensity, distance, decay) {
+      this.color = color;
+      this.intensity = intensity;
+      this.distance = distance;
+      this.decay = decay;
+      this.position = {
+        set: (x, y, z) => Object.assign(this.position, { x, y, z }),
+      };
+    }
+  }
+
+  class HemisphereLight extends Light {
+    constructor(sky, ground, intensity) {
+      super(sky, intensity);
+      this.ground = ground;
+    }
+  }
+
+  class DirectionalLight extends Light {}
+
+  class PointLight extends Light {}
+
+  class CanvasTexture {
+    constructor(canvas) {
+      this.canvas = canvas;
+    }
+  }
+
+  class PMREMGenerator {
+    constructor() {
+      this.targets = [];
+    }
+
+    fromScene() {
+      const target = {
+        texture: { isEnvironment: true },
+        disposed: false,
+        dispose() {
+          this.disposed = true;
+        },
+      };
+      this.targets.push(target);
+      return target;
+    }
+
+    fromEquirectangular() {
+      return this.fromScene();
+    }
+
+    dispose() {
+      this.disposed = true;
+    }
+  }
+
+  return {
+    ACESFilmicToneMapping: 'aces',
+    EquirectangularReflectionMapping: 'equirectangular',
+    PMREMGenerator,
+    SRGBColorSpace: 'srgb',
+    CanvasTexture,
+    Color,
+    DirectionalLight,
+    Fog,
+    HemisphereLight,
+    PointLight,
+  };
+}
+
+function fakeCanvas() {
+  return {
+    getContext: () => ({
+      createLinearGradient: () => ({ addColorStop: () => {} }),
+      fillRect: () => {},
+      fillStyle: null,
+    }),
+  };
+}
+
+function fakeScene() {
+  return {
+    children: [],
+    add(...objects) {
+      this.children.push(...objects);
+    },
+    remove(object) {
+      this.children = this.children.filter((child) => child !== object);
+    },
+  };
+}
+
 test('thang phát sáng định nghĩa đủ các loại nguồn phát sáng theo chuẩn ADR-0019', () => {
   const expectedTypes = [
     'neon',
@@ -201,6 +311,104 @@ test('ngưỡng bloom của mọi preset khớp chuẩn chung', () => {
   for (const preset of Object.values(presets)) {
     assert.equal(preset.bloom.threshold, STANDARD_BLOOM.threshold, preset.id);
   }
+});
+
+test('applyLighting đặt hai đèn shop-neon ở góc phòng và giữ đúng chiều cao', () => {
+  const THREE = fakeThree();
+  const scene = fakeScene();
+  const renderer = {};
+  const bloomPass = {};
+  const handle = lighting.applyLighting(THREE, {
+    scene,
+    renderer,
+    bloomPass,
+    preset: 'shop-neon',
+    room: { width: 8, depth: 6 },
+    RoomEnvironment: class {},
+  });
+  const hemisphere = scene.children.filter((light) => light instanceof THREE.HemisphereLight);
+  const points = scene.children.filter((light) => light instanceof THREE.PointLight);
+  assert.equal(hemisphere.length, 1);
+  assert.equal(points.length, 2);
+  assert.deepEqual(
+    points.map(({ position }) => [position.x, position.y, position.z]),
+    [
+      [-7.5, 2.6, 5.5],
+      [7.5, 2.6, -5.5],
+    ],
+  );
+  assert.equal(renderer.toneMapping, THREE.ACESFilmicToneMapping);
+  assert.equal(renderer.outputColorSpace, THREE.SRGBColorSpace);
+  assert.equal(bloomPass.strength, lighting.LIGHTING_PRESETS['shop-neon'].bloom.strength);
+  assert.equal(bloomPass.radius, lighting.LIGHTING_PRESETS['shop-neon'].bloom.radius);
+  assert.equal(bloomPass.threshold, STANDARD_BLOOM.threshold);
+  assert.ok(scene.environment.isEnvironment);
+  assert.equal(handle.preset.id, 'shop-neon');
+});
+
+test('applyLighting đổi bộ ánh sáng mà không nhân đôi đèn trong cảnh', () => {
+  const THREE = fakeThree();
+  const scene = fakeScene();
+  const renderer = {};
+  const handle = lighting.applyLighting(THREE, {
+    scene,
+    renderer,
+    preset: 'shop-neon',
+    room: { width: 8, depth: 6 },
+    RoomEnvironment: class {},
+  });
+  handle.update('shop-dim');
+  const points = scene.children.filter((light) => light instanceof THREE.PointLight);
+  assert.equal(scene.children.length, 3);
+  assert.equal(points.length, 2);
+  assert.deepEqual(
+    points.map((light) => light.intensity),
+    [5, 5],
+  );
+  assert.equal(handle.preset.id, 'shop-dim');
+  assert.equal(renderer.toneMappingExposure, 0.9);
+  handle.update({ environment: { intensity: 0.2 } });
+  assert.equal(scene.environmentIntensity, 0.2);
+  handle.setExposure(0.75);
+  assert.equal(renderer.toneMappingExposure, 0.75);
+});
+
+test('applyLighting dispose gỡ đèn và giải phóng mục tiêu PMREM', () => {
+  const THREE = fakeThree();
+  const scene = fakeScene();
+  const pmrem = new THREE.PMREMGenerator();
+  const handle = lighting.applyLighting(THREE, {
+    scene,
+    renderer: {},
+    preset: 'shop-neon',
+    room: { width: 8, depth: 6 },
+    RoomEnvironment: class {},
+    pmrem,
+  });
+  const target = pmrem.targets[0];
+  handle.dispose();
+  assert.equal(scene.children.length, 0);
+  assert.equal(target.disposed, true);
+  assert.equal(pmrem.disposed, undefined);
+});
+
+test('applyLighting dựng sương và đèn trăng cho street-night', () => {
+  const THREE = fakeThree();
+  const scene = fakeScene();
+  const handle = lighting.applyLighting(THREE, {
+    scene,
+    renderer: {},
+    preset: 'street-night',
+    canvas: fakeCanvas(),
+  });
+  assert.equal(scene.fog.color.value, '#24193d');
+  assert.equal(scene.fog.near, 16);
+  assert.equal(scene.fog.far, 90);
+  assert.equal(handle.lights.filter((light) => light instanceof THREE.DirectionalLight).length, 1);
+  assert.equal(
+    handle.lights.find((light) => light instanceof THREE.DirectionalLight).intensity,
+    1.1,
+  );
 });
 
 test('shopMaterials tạo vật liệu phát sáng neon nằm trong thang EMISSIVE_SCALE.neon', () => {

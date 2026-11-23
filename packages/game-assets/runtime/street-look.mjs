@@ -4,8 +4,14 @@ import {
   NIGHT_SKY,
   OUTDOOR_LIGHTING,
   STANDARD_BLOOM,
+  applyLighting,
+  applyWeatherToOutdoor,
   clampEmissiveIntensity,
+  createNightSkyTexture,
   isWithinEmissiveScale,
+  nightSkyGradientStops,
+  renderNightSkyCanvas,
+  setupOutdoorEnvironment,
 } from './lighting.mjs';
 import { YAW, snap } from './shop-look.mjs';
 import {
@@ -35,8 +41,14 @@ export {
   NIGHT_SKY,
   OUTDOOR_LIGHTING,
   STANDARD_BLOOM,
+  applyLighting,
+  applyWeatherToOutdoor,
   clampEmissiveIntensity,
+  createNightSkyTexture,
   isWithinEmissiveScale,
+  nightSkyGradientStops,
+  renderNightSkyCanvas,
+  setupOutdoorEnvironment,
   FIREWORK_COLORS,
   HOLIDAY_SCHEDULE,
   createFireworksSystem,
@@ -273,92 +285,4 @@ export function missingParts(plan, kit) {
     ),
   );
   return [...new Set(plan.map((item) => item.part))].filter((part) => !known.has(part));
-}
-
-export function nightSkyGradientStops(sky = NIGHT_SKY) {
-  return [
-    { offset: 0.0, color: sky.zenith },
-    { offset: 0.32, color: sky.mid },
-    { offset: 0.46, color: sky.glow },
-    { offset: 0.5, color: sky.horizon },
-    { offset: 0.58, color: sky.nadir },
-    { offset: 1.0, color: sky.nadir },
-  ];
-}
-
-export function renderNightSkyCanvas(canvas, sky = NIGHT_SKY) {
-  const ctx = canvas.getContext('2d');
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  for (const { offset, color } of nightSkyGradientStops(sky)) {
-    gradient.addColorStop(offset, color);
-  }
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  return canvas;
-}
-
-export function createNightSkyTexture(THREE, options = {}) {
-  const width = options.width ?? 512;
-  const height = options.height ?? 256;
-  const canvas =
-    options.canvas ??
-    (typeof globalThis.document !== 'undefined'
-      ? globalThis.document.createElement('canvas')
-      : null);
-  if (!canvas) throw new Error('canvas is required to create sky texture');
-  canvas.width = width;
-  canvas.height = height;
-  renderNightSkyCanvas(canvas, options.sky ?? NIGHT_SKY);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.mapping = THREE.EquirectangularReflectionMapping;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-export function setupOutdoorEnvironment(THREE, scene, renderer, options = {}) {
-  const lighting = options.lighting ?? OUTDOOR_LIGHTING;
-  const skyTexture = options.skyTexture ?? createNightSkyTexture(THREE, options);
-  scene.background = skyTexture;
-  const pmrem = options.pmrem ?? new THREE.PMREMGenerator(renderer);
-  const envTexture = pmrem.fromEquirectangular(skyTexture).texture;
-  scene.environment = envTexture;
-  scene.environmentIntensity = lighting.environmentIntensity;
-  scene.fog = new THREE.Fog(lighting.fog.color, lighting.fog.near, lighting.fog.far);
-  if (renderer && options.setExposure !== false) {
-    renderer.toneMappingExposure = lighting.exposure;
-  }
-  let hemisphere = null;
-  let moon = null;
-  if (options.addLights !== false) {
-    hemisphere = new THREE.HemisphereLight(
-      lighting.hemisphere.sky,
-      lighting.hemisphere.ground,
-      lighting.hemisphere.intensity,
-    );
-    moon = new THREE.DirectionalLight(lighting.moon.color, lighting.moon.intensity);
-    moon.position.set(...lighting.moon.position);
-    scene.add(hemisphere, moon);
-  }
-  return { skyTexture, envTexture, pmrem, hemisphere, moon };
-}
-
-export function applyWeatherToOutdoor(scene, weather, options = {}) {
-  if (!weather || !scene) return;
-  if (scene.fog && weather.fog) {
-    if (scene.fog.color && typeof scene.fog.color.set === 'function') {
-      scene.fog.color.set(weather.fog.color);
-    }
-    if (typeof weather.fog.near === 'number') scene.fog.near = weather.fog.near;
-    if (typeof weather.fog.far === 'number') scene.fog.far = weather.fog.far;
-  }
-  if (typeof weather.environmentIntensity === 'number') {
-    scene.environmentIntensity = weather.environmentIntensity;
-  }
-  if (options.renderer && typeof weather.exposure === 'number') {
-    options.renderer.toneMappingExposure = weather.exposure;
-  }
-  if (options.materials?.surface && typeof weather.wetness === 'number') {
-    const base = options.baseRoughness ?? 0.85;
-    options.materials.surface.roughness = calculateRoadRoughness(base, weather.wetness);
-  }
 }
