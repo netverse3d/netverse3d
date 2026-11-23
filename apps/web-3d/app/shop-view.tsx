@@ -64,6 +64,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
   const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
   const seating = useSelector((state: RootState) => state.shop.seating);
   const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
+  const [lightingId, setLightingId] = useState('');
 
   useEffect(() => {
     const { store, listener } = app;
@@ -113,6 +114,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       effect: (action) => {
         const before = store.getState().shop.scene.recipeId;
         shop?.setRecipe(action.payload);
+        setLightingId(shop?.lightingPresetId() ?? '');
         if (store.getState().shop.scene.recipeId === before) return;
         openRoom().catch((reason: unknown) => {
           store.dispatch(errorRaised(reason instanceof Error ? reason.message : String(reason)));
@@ -154,6 +156,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
           },
           onLeaveRequest: () => session?.leaveSeat(),
         });
+        setLightingId(shop.lightingPresetId());
         const requested = params.get('quality');
         shop.setQuality(
           isQualityLevel(requested)
@@ -199,6 +202,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       data-session-seat={seating.seated ?? ''}
       data-session-notice-reason={sessionNotice ?? ''}
       data-seat-ready={String(scene.seatReady)}
+      data-lighting={lightingId}
       data-rebuilds={scene.rebuilds}
       data-frames={scene.frames}
       data-restored={String(scene.restored)}

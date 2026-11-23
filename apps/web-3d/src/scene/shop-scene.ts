@@ -6,6 +6,11 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import {
+  applyLighting,
+  lightingFor,
+  type LightingHandle,
+} from '@netverse/game-assets/runtime/lighting.mjs';
+import {
   doorwayCell,
   kitAnchors,
   paletteRows,
@@ -70,6 +75,7 @@ export interface ShopAssets {
 export interface ShopScene {
   setRecipe(id: string): void;
   setQuality(level: QualityLevel): void;
+  lightingPresetId(): string;
   rendererName(): string;
   simulateContextLoss(): boolean;
   seats(): readonly Seat[];
@@ -91,54 +97,10 @@ export interface ShopSceneOptions {
   onLeaveRequest?: () => void;
 }
 
-interface LightPreset {
-  sky: string;
-  ground: string;
-  ambient: number;
-  points: [string, string];
-  bloom: number;
-  exposure: number;
-}
-
 const YAW = { south: 0, east: Math.PI / 2, north: Math.PI, west: -Math.PI / 2 } as const;
 const CONTEXT_RESTORE_DELAY = 400;
 const SEAT_CLIPS = ['sit_down', 'stand_up'] as const;
 const STATS_INTERVAL = 0.5;
-const ENVIRONMENT_BLUR = 0.04;
-const LIGHTING: Record<ShopRecipe['lighting'], LightPreset> = {
-  neon: {
-    sky: '#4a36b8',
-    ground: '#120c24',
-    ambient: 0.5,
-    points: ['#a66bff', '#5ce1ff'],
-    bloom: 0.35,
-    exposure: 1,
-  },
-  dim: {
-    sky: '#1f3a44',
-    ground: '#06100f',
-    ambient: 0.35,
-    points: ['#1ee8d2', '#0aa0ff'],
-    bloom: 0.3,
-    exposure: 0.9,
-  },
-  warm: {
-    sky: '#ffb347',
-    ground: '#1a110a',
-    ambient: 0.7,
-    points: ['#ff9f1c', '#ff6f3c'],
-    bloom: 0.15,
-    exposure: 1.05,
-  },
-  daylight: {
-    sky: '#ffffff',
-    ground: '#8899aa',
-    ambient: 1.4,
-    points: ['#ffffff', '#ffffff'],
-    bloom: 0.05,
-    exposure: 1.1,
-  },
-};
 
 export async function loadShopAssets(base: string): Promise<ShopAssets> {
   const json = async <T>(path: string): Promise<T> => {
@@ -235,10 +197,8 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     antialias: true,
     powerPreference: 'high-performance',
   });
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.info.autoReset = false;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0d0a18');
   renderer.localClippingEnabled = true;
   const camera = new THREE.PerspectiveCamera(FAR_FIELD_OF_VIEW, 1, 0.1, 80);
   const cutPlanes = cutaways([0, 0, 0], { minX: 0, maxX: 0, minZ: 0, maxZ: 0 }).map(
@@ -246,12 +206,11 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
   );
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.35, 0.4, 0.85);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0, 0, 1);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   const content = new THREE.Group();
-  const lights = new THREE.Group();
-  scene.add(content, lights);
+  scene.add(content);
   const clock = new THREE.Clock();
   const state: SceneState = {
     recipeId: options.recipeId,
@@ -264,7 +223,7 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     face: false,
     seatReady: false,
   };
-  let pmrem: THREE.PMREMGenerator | null = null;
+  let lightingHandle: LightingHandle | null = null;
   let materialSets: ShopMaterials[] = [];
   let player: Player | null = null;
   const controls = createControls(canvas, window);
@@ -287,13 +246,6 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
 
   const emit = () => onState({ ...state });
 
-  function buildEnvironment(): void {
-    scene.environment?.dispose();
-    pmrem?.dispose();
-    pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), ENVIRONMENT_BLUR).texture;
-  }
-
   function resize(): void {
     const host = canvas.parentElement ?? canvas;
     const width = host.clientWidth;
@@ -310,24 +262,28 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     const ratio = pixelRatioFor(state.quality, window.devicePixelRatio);
     renderer.setPixelRatio(ratio);
     composer.setPixelRatio(ratio);
-    scene.environmentIntensity = preset.environmentIntensity;
+    const recipe = assets.recipes[state.recipeId];
+    if (lightingHandle && recipe) {
+      const baseIntensity = lightingFor(recipe.lighting).environment.intensity;
+      lightingHandle.update({
+        environment: { intensity: baseIntensity * preset.environmentIntensity },
+      });
+    }
     bloom.enabled = preset.bloom;
     resize();
   }
 
   function relight(recipe: ShopRecipe): void {
-    const preset = LIGHTING[recipe.lighting] ?? LIGHTING.neon;
-    lights.clear();
-    lights.add(new THREE.HemisphereLight(preset.sky, preset.ground, preset.ambient));
-    const [width, depth] = recipe.layout.cells;
-    preset.points.forEach((color, index) => {
-      const light = new THREE.PointLight(color, 18, 12, 1.6);
-      const side = index ? 1 : -1;
-      light.position.set(side * (width - 0.5), 3.1, -side * (depth - 0.5));
-      lights.add(light);
+    lightingHandle?.dispose();
+    lightingHandle = applyLighting(THREE, {
+      scene,
+      renderer,
+      bloomPass: bloom,
+      preset: lightingFor(recipe.lighting),
+      room: { width: recipe.layout.cells[0], depth: recipe.layout.cells[1] },
+      RoomEnvironment,
     });
-    bloom.strength = preset.bloom;
-    renderer.toneMappingExposure = preset.exposure;
+    applyQuality();
   }
 
   function play(delta: number): void {
@@ -517,16 +473,13 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     state.lost = true;
     state.ready = false;
     clearContent();
-    scene.environment?.dispose();
-    scene.environment = null;
-    pmrem?.dispose();
-    pmrem = null;
+    lightingHandle?.dispose();
+    lightingHandle = null;
     emit();
   };
   const onContextRestored = () => {
     state.lost = false;
     state.restored = true;
-    buildEnvironment();
     resize();
     controls.takeTurn();
     controls.takeZoom();
@@ -547,15 +500,14 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
     canvas.removeEventListener('webglcontextlost', onContextLost);
     canvas.removeEventListener('webglcontextrestored', onContextRestored);
     clearContent();
-    scene.environment?.dispose();
-    pmrem?.dispose();
+    lightingHandle?.dispose();
+    lightingHandle = null;
     composer.dispose();
     renderer.dispose();
     renderer.forceContextLoss();
   }
 
   try {
-    buildEnvironment();
     applyQuality();
     build();
   } catch (reason) {
@@ -575,6 +527,9 @@ export function createShopScene(options: ShopSceneOptions): ShopScene {
       state.quality = level;
       applyQuality();
       emit();
+    },
+    lightingPresetId() {
+      return lightingHandle?.preset.id ?? '';
     },
     rendererName() {
       const gl = renderer.getContext();

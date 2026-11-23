@@ -266,8 +266,88 @@ test('trang thử có canvas và nhân vật có mặt, không lỗi console', a
   assert.equal(page.attribute('ready'), 'true', JSON.stringify(page.state));
   assert.equal(page.attribute('face'), 'true');
   assert.equal(page.attribute('recipe'), 'tim-neon');
+  assert.equal(page.attribute('lighting'), 'shop-neon');
   assert.ok(Number(page.attribute('frames')) >= 1, `frames=${page.attribute('frames')}`);
   assert.deepEqual(page.consoleErrors, []);
+});
+
+test('recipe không tồn tại quay về tiệm mặc định và preset shop-neon', async (context) => {
+  if (!browserReady(context)) return;
+  const page = await renderPage(
+    '/?shop=not-a-recipe',
+    (state) => state.ready === 'true' && Number(state.frames) >= 1,
+  );
+  assert.equal(page.attribute('recipe'), 'tim-neon');
+  assert.equal(page.attribute('lighting'), 'shop-neon');
+  assert.deepEqual(page.consoleErrors, []);
+});
+
+test('tiệm biển sâu chọn preset ánh sáng shop-dim', async (context) => {
+  if (!browserReady(context)) return;
+  const page = await renderPage(
+    '/?shop=bien-sau',
+    (state) => state.ready === 'true' && Number(state.frames) >= 1,
+  );
+  assert.equal(page.attribute('ready'), 'true', JSON.stringify(page.state));
+  assert.equal(page.attribute('recipe'), 'bien-sau');
+  assert.equal(page.attribute('lighting'), 'shop-dim');
+  assert.deepEqual(page.consoleErrors, []);
+});
+
+test('đổi tiệm cập nhật preset ánh sáng theo cả hai chiều', async (context) => {
+  if (!browserReady(context)) return;
+  const browser = await launchChrome({ width: 1280, height: 720 });
+  try {
+    await browser.openPage(origin);
+    const waitForStage = async (settled: (state: StageState) => boolean) => {
+      let state: StageState = {};
+      const deadline = Date.now() + PAGE_TIMEOUT;
+      while (Date.now() < deadline) {
+        state = await browser
+          .evaluate(STAGE_STATE)
+          .then((json) => JSON.parse(json as string) as StageState)
+          .catch(() => state);
+        if (settled(state)) return state;
+        await sleep(POLL_INTERVAL);
+      }
+      return state;
+    };
+    const initial = await waitForStage(
+      (state) => state.ready === 'true' && Number(state.frames) >= 1,
+    );
+    assert.equal(initial.lighting, 'shop-neon');
+    const selected = await browser.evaluate(`(() => {
+      const select = [...document.querySelectorAll('select')].find((item) =>
+        [...item.options].some((option) => option.value === 'bien-sau'),
+      );
+      if (!select) return null;
+      select.value = 'bien-sau';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return select.value;
+    })()`);
+    assert.equal(selected, 'bien-sau');
+    const dim = await waitForStage(
+      (state) => state.recipe === 'bien-sau' && state.lighting === 'shop-dim',
+    );
+    assert.equal(dim.ready, 'true', JSON.stringify(dim));
+    const restored = await browser.evaluate(`(() => {
+      const select = [...document.querySelectorAll('select')].find((item) =>
+        [...item.options].some((option) => option.value === 'tim-neon'),
+      );
+      if (!select) return null;
+      select.value = 'tim-neon';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return select.value;
+    })()`);
+    assert.equal(restored, 'tim-neon');
+    const neon = await waitForStage(
+      (state) => state.recipe === 'tim-neon' && state.lighting === 'shop-neon',
+    );
+    assert.equal(neon.ready, 'true', JSON.stringify(neon));
+    assert.deepEqual(consoleErrorsOf(browser.stderr), []);
+  } finally {
+    await browser.close();
+  }
 });
 
 test('mất ngữ cảnh WebGL rồi khôi phục thì cảnh dựng lại, không trắng màn hình', async (context) => {

@@ -1,3 +1,41 @@
+declare module '@netverse/game-assets/runtime/lighting.mjs' {
+  import type { Light, Scene, WebGLRenderer } from 'three';
+
+  export interface LightingPreset {
+    id: string;
+    exposure: number;
+    environment: {
+      source: string;
+      intensity: number;
+      blur: number;
+    };
+  }
+
+  export interface LightingHandle {
+    readonly preset: LightingPreset;
+    readonly lights: Light[];
+    update(
+      next:
+        string | { [key: string]: unknown; environment?: Partial<LightingPreset['environment']> },
+    ): LightingHandle;
+    setExposure(value: number): LightingHandle;
+    dispose(): void;
+  }
+
+  export function lightingFor(name: string): LightingPreset;
+  export function applyLighting(
+    THREE: typeof import('three'),
+    options: {
+      scene: Scene;
+      renderer: WebGLRenderer;
+      bloomPass?: { strength: number; radius: number; threshold: number };
+      preset: string | LightingPreset;
+      room?: { width: number; depth: number };
+      RoomEnvironment?: new () => Scene;
+    },
+  ): LightingHandle;
+}
+
 declare module '@netverse/game-assets/runtime/shop-look.mjs' {
   export type Wall = 'north' | 'south' | 'east' | 'west';
   export type Vector3Tuple = [number, number, number];
