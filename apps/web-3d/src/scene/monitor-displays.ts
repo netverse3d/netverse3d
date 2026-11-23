@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Seat } from './seats.ts';
+import type { Seat } from '../game/seats.ts';
 
 type MonitorSeat = Pick<Seat, 'seatId' | 'monitor'>;
 

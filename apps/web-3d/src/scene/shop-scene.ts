@@ -31,7 +31,7 @@ import {
 import { collisionBoxes } from '@netverse/game-shared/collision';
 import type { FloorBox, PlayerState } from '@netverse/game-shared/movement';
 import { createControls } from '../game/controls.ts';
-import { setActiveMonitorScreens } from '../game/monitor-displays.ts';
+import { setActiveMonitorScreens } from './monitor-displays.ts';
 import { createSeatDrive, type SeatDrive } from '../game/seat-drive.ts';
 import { nearestSeat, shopSeats, type Seat } from '../game/seats.ts';
 import { CELL_SIZE, shopOpenFloor, shopPerimeter } from '../game/shop-bounds.ts';
