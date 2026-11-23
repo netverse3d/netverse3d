@@ -57,6 +57,18 @@ test('duyệt một thư mục không đệ quy khi root yêu cầu', () => {
   }
 });
 
+test('báo root nguồn không tồn tại thay vì coi phạm vi thiếu là sạch', () => {
+  const root = fixture({ 'present/a.mjs': 'export const a = true;' });
+  try {
+    assert.throws(
+      () => listSourceFiles([join(root, 'missing')], { extensions: ['.mjs'] }),
+      /source root does not exist:.*missing/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('trả đúng tệp, dòng, luật và đoạn khớp', () => {
   const root = fixture({
     'scene.mjs': ['const scene = {};', 'new THREE.PointLight(0xffffff, 1);'].join('\n'),

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { extname, isAbsolute, join, posix, resolve } from 'node:path';
 
 const SKIPPED_DIRECTORIES = new Set(['.git', 'build', 'coverage', 'dist', 'node_modules', 'out']);
@@ -46,7 +46,10 @@ export function listSourceFiles(roots, { extensions = [], skip } = {}) {
     const { path, recursive } = rootOptions(root);
     const absoluteRoot = resolve(path);
     const displayRoot = normalizedPath(isAbsolute(path) ? absoluteRoot : path);
-    if (!existsSync(absoluteRoot) || shouldSkip(displayRoot, skipRules)) continue;
+    if (shouldSkip(displayRoot, skipRules)) continue;
+    if (!existsSync(absoluteRoot)) throw new Error(`source root does not exist: ${displayRoot}`);
+    if (!statSync(absoluteRoot).isDirectory())
+      throw new Error(`source root is not a directory: ${displayRoot}`);
 
     function walkSourceTree(absoluteDirectory, displayDirectory) {
       const entries = readdirSync(absoluteDirectory, { withFileTypes: true });
