@@ -1,6 +1,19 @@
 import type { PlayerState } from './movement.ts';
 
 export type SeatDenialReason = 'occupied' | 'too_far' | 'no_balance';
+export type SeatEndReason = 'expired' | 'left';
+
+export interface SeatGrant {
+  readonly seatId: string;
+  readonly playerId: string;
+  readonly endsAt?: number;
+  readonly serverTime?: number;
+}
+
+export interface SeatEnded {
+  readonly seatId: string;
+  readonly reason: SeatEndReason;
+}
 
 interface WirePosition {
   readonly x: number;
@@ -34,7 +47,14 @@ export type ServerMessage =
       readonly changed?: readonly WirePlayer[];
       readonly left?: readonly string[];
     }
-  | { readonly kind: 'seat.granted'; readonly seatId: string; readonly playerId: string }
+  | {
+      readonly kind: 'seat.granted';
+      readonly seatId: string;
+      readonly playerId: string;
+      readonly endsAt?: number;
+      readonly serverTime?: number;
+    }
+  | { readonly kind: 'seat.ended'; readonly seatId: string; readonly reason: SeatEndReason }
   | { readonly kind: 'seat.denied'; readonly seatId: string; readonly reason: SeatDenialReason }
   | { readonly kind: 'error'; readonly code: string; readonly message?: string };
 
@@ -59,6 +79,8 @@ export interface RoomState {
   readonly seats: ReadonlyMap<string, string>;
   readonly denied: SeatDenial | null;
   readonly error: RoomError | null;
+  readonly grant: SeatGrant | null;
+  readonly ended: SeatEnded | null;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -138,6 +160,10 @@ function isOptionalList(value: unknown, isItem: (item: unknown) => boolean): boo
   return value === undefined || (Array.isArray(value) && value.every(isItem));
 }
 
+function isOptionalTimestamp(value: unknown): boolean {
+  return value === undefined || (Number.isInteger(value) && (value as number) >= 0);
+}
+
 const SERVER_SHAPES: ReadonlyMap<unknown, (message: UnknownRecord) => boolean> = new Map([
   [
     'snapshot',
@@ -151,7 +177,19 @@ const SERVER_SHAPES: ReadonlyMap<unknown, (message: UnknownRecord) => boolean> =
       isOptionalList(message.changed, isPlayer) &&
       isOptionalList(message.left, isText),
   ],
-  ['seat.granted', (message: UnknownRecord) => isText(message.seatId) && isText(message.playerId)],
+  [
+    'seat.granted',
+    (message: UnknownRecord) =>
+      isText(message.seatId) &&
+      isText(message.playerId) &&
+      isOptionalTimestamp(message.endsAt) &&
+      isOptionalTimestamp(message.serverTime),
+  ],
+  [
+    'seat.ended',
+    (message: UnknownRecord) =>
+      isText(message.seatId) && ['expired', 'left'].includes(String(message.reason)),
+  ],
   [
     'seat.denied',
     (message: UnknownRecord) => isText(message.seatId) && DENIAL_REASONS.has(message.reason),
@@ -176,7 +214,15 @@ export function readServerMessage(text: string): ServerMessage | null {
 }
 
 export function emptyRoom(): RoomState {
-  return { tick: -1, players: new Map(), seats: new Map(), denied: null, error: null };
+  return {
+    tick: -1,
+    players: new Map(),
+    seats: new Map(),
+    denied: null,
+    error: null,
+    grant: null,
+    ended: null,
+  };
 }
 
 function vacateSeat(players: Map<string, RoomPlayer>, seatId: string, keeperId: string): void {
@@ -223,24 +269,57 @@ export function applyServerMessage(room: RoomState, message: ServerMessage): Roo
     case 'snapshot': {
       const players = new Map<string, RoomPlayer>();
       for (const wire of message.players) placePlayer(players, roomPlayer(wire));
-      return { ...withPlayers(room, players), tick: message.tick, error: null };
+      return {
+        ...withPlayers(room, players),
+        tick: message.tick,
+        error: null,
+        grant: null,
+        ended: null,
+      };
     }
     case 'delta': {
       if (message.tick < room.tick) return room;
       const players = new Map(room.players);
       for (const wire of message.changed ?? []) placePlayer(players, roomPlayer(wire));
       for (const playerId of message.left ?? []) players.delete(playerId);
-      return { ...withPlayers(room, players), tick: message.tick };
+      return { ...withPlayers(room, players), tick: message.tick, grant: null, ended: null };
     }
     case 'seat.granted': {
       const holder = room.players.get(message.playerId);
       if (!holder) return room;
       const players = new Map(room.players);
       placePlayer(players, { ...holder, seatId: message.seatId });
-      return withPlayers(room, players);
+      return {
+        ...withPlayers(room, players),
+        grant: {
+          seatId: message.seatId,
+          playerId: message.playerId,
+          ...(message.endsAt === undefined ? {} : { endsAt: message.endsAt }),
+          ...(message.serverTime === undefined ? {} : { serverTime: message.serverTime }),
+        },
+        ended: null,
+      };
+    }
+    case 'seat.ended': {
+      const playerId = room.seats.get(message.seatId);
+      const players = new Map(room.players);
+      if (playerId) {
+        const player = players.get(playerId);
+        if (player) players.set(playerId, { ...player, seatId: null });
+      }
+      return {
+        ...withPlayers(room, players),
+        grant: null,
+        ended: { seatId: message.seatId, reason: message.reason },
+      };
     }
     case 'seat.denied':
-      return { ...room, denied: { seatId: message.seatId, reason: message.reason } };
+      return {
+        ...room,
+        denied: { seatId: message.seatId, reason: message.reason },
+        grant: null,
+        ended: null,
+      };
     case 'error':
       return {
         ...room,
@@ -248,6 +327,8 @@ export function applyServerMessage(room: RoomState, message: ServerMessage): Roo
           message.message === undefined
             ? { code: message.code }
             : { code: message.code, message: message.message },
+        grant: null,
+        ended: null,
       };
   }
 }

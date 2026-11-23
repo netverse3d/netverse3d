@@ -12,6 +12,7 @@ import {
   seatLeaveMessage,
   seatRequestMessage,
   withoutDenial,
+  type ServerMessage,
   type RoomState,
 } from './room-protocol.ts';
 
@@ -83,12 +84,47 @@ test('các thông điệp server mẫu đều đúng giao thức nháp và đọ
     snapshot(1, [AN, BINH]),
     { kind: 'delta', tick: 2, changed: [AN], left: ['binh'] },
     { kind: 'seat.granted', seatId: 'seat-1', playerId: 'an' },
+    {
+      kind: 'seat.granted',
+      seatId: 'seat-1',
+      playerId: 'an',
+      endsAt: 1_800_000,
+      serverTime: 1_000,
+    },
+    { kind: 'seat.ended', seatId: 'seat-1', reason: 'expired' },
     { kind: 'seat.denied', seatId: 'seat-1', reason: 'occupied' },
     { kind: 'error', code: 'room_full', message: 'Room is full' },
   ];
   for (const message of messages) {
     assert.ok(matchesProtocol(message), JSON.stringify(matchesProtocol.errors));
     assert.deepEqual(readServerMessage(JSON.stringify(message)), message);
+  }
+});
+
+test('seat.granted giữ được giờ hết hạn tuỳ chọn và seat.ended nhận hai lý do', () => {
+  const legacy: ServerMessage = { kind: 'seat.granted', seatId: 'seat-1', playerId: 'an' };
+  const timed: ServerMessage = {
+    kind: 'seat.granted',
+    seatId: 'seat-1',
+    playerId: 'an',
+    endsAt: 1_800_000,
+    serverTime: 1_000,
+  };
+  const ended = [
+    { kind: 'seat.ended', seatId: 'seat-1', reason: 'expired' },
+    { kind: 'seat.ended', seatId: 'seat-1', reason: 'left' },
+  ];
+  for (const message of [legacy, timed, ...ended]) {
+    assert.ok(matchesProtocol(message), JSON.stringify(matchesProtocol.errors));
+    assert.deepEqual(readServerMessage(JSON.stringify(message)), message);
+  }
+  for (const message of [
+    { kind: 'seat.granted', seatId: 'seat-1', playerId: 'an', endsAt: -1 },
+    { kind: 'seat.granted', seatId: 'seat-1', playerId: 'an', serverTime: 1.5 },
+    { kind: 'seat.ended', seatId: 'seat-1', reason: 'cancelled' },
+  ]) {
+    assert.equal(matchesProtocol(message), false, JSON.stringify(message));
+    assert.equal(readServerMessage(JSON.stringify(message)), null, JSON.stringify(message));
   }
 });
 
@@ -256,7 +292,7 @@ test('văn bản hỏng hoặc thông điệp sai hình dạng thì bị từ ch
 });
 
 function isServerKind(value: unknown): boolean {
-  const kinds = ['snapshot', 'delta', 'seat.granted', 'seat.denied', 'error'];
+  const kinds = ['snapshot', 'delta', 'seat.granted', 'seat.ended', 'seat.denied', 'error'];
   return (
     typeof value === 'object' && value !== null && kinds.includes((value as { kind: string }).kind)
   );

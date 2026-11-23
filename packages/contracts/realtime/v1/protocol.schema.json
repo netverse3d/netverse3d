@@ -12,6 +12,7 @@
     { "$ref": "#/$defs/snapshot" },
     { "$ref": "#/$defs/delta" },
     { "$ref": "#/$defs/seatGranted" },
+    { "$ref": "#/$defs/seatEnded" },
     { "$ref": "#/$defs/seatDenied" },
     { "$ref": "#/$defs/error" }
   ],
@@ -94,7 +95,18 @@
       "properties": {
         "kind": { "const": "seat.granted" },
         "seatId": { "type": "string" },
-        "playerId": { "type": "string" }
+        "playerId": { "type": "string" },
+        "endsAt": { "type": "integer", "minimum": 0 },
+        "serverTime": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "seatEnded": {
+      "type": "object",
+      "required": ["kind", "seatId", "reason"],
+      "properties": {
+        "kind": { "const": "seat.ended" },
+        "seatId": { "type": "string" },
+        "reason": { "enum": ["expired", "left"] }
       }
     },
     "seatDenied": {

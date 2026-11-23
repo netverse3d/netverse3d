@@ -102,6 +102,21 @@ test('thông điệp từ server cập nhật trạng thái phòng và báo cho 
   assert.deepEqual(seen, [0, 1]);
 });
 
+test('seat.ended phát sự kiện cho người nghe và giải phóng máy', () => {
+  const { deliver, connection } = fakeConnection();
+  const client = createRoomClient(connection);
+  const ended: { seatId: string; reason: string }[] = [];
+  client.subscribe((room) => {
+    if (room.ended) ended.push(room.ended);
+  });
+  deliver(snapshot(1));
+  deliver({ kind: 'seat.granted', seatId: 'seat-1', playerId: 'an' });
+  deliver({ kind: 'seat.ended', seatId: 'seat-1', reason: 'expired' });
+  assert.deepEqual(ended, [{ seatId: 'seat-1', reason: 'expired' }]);
+  assert.equal(client.room().players.get('an')?.seatId, null);
+  assert.equal(client.room().seats.size, 0);
+});
+
 test('thông điệp không làm đổi phòng thì không báo người nghe', () => {
   const { deliver, connection } = fakeConnection();
   const client = createRoomClient(connection);
