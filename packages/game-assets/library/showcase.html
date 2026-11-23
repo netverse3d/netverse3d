@@ -143,6 +143,7 @@
       import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { createAlleyTrack } from '../runtime/alley-showcase.mjs';
+      import { applyLighting, lightingFor } from '../runtime/lighting.mjs';
       import {
         DEFAULT_SHOP_VIEWPOINTS,
         createCameraTrack,
@@ -175,7 +176,6 @@
         $('noGL').hidden = false;
         throw new Error('WebGL 2 is not available');
       }
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
       const [config, ids] = await Promise.all([
@@ -236,7 +236,6 @@
       ]);
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#080614');
       const camera = new THREE.PerspectiveCamera(isStreet ? 42 : 35, 1, 0.1, 100);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
@@ -263,10 +262,22 @@
         new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
       );
       composer.addPass(new RenderPass(scene, camera));
+      const bakedPreset = lightingFor('showcase-baked');
       const cameraEffects = isStreet ? createAlleyCameraEffects(scene, camera, composer) : null;
-      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.4, 0.9);
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(1, 1),
+        bakedPreset.bloom.strength,
+        bakedPreset.bloom.radius,
+        bakedPreset.bloom.threshold,
+      );
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
+      const lightingHandle = applyLighting(THREE, {
+        scene,
+        renderer,
+        bloomPass: bloom,
+        preset: bakedPreset,
+      });
 
       const rain = isStreet
         ? createRainSystem(THREE, { maxDrops: 1800, areaSize: [36, 20, 24] })
@@ -419,7 +430,7 @@
         screen: (v) => (state.screen = v),
         accent: (v) => (state.accent = v),
         glow: (v) => (state.glow = v),
-        exposure: (v) => (renderer.toneMappingExposure = v),
+        exposure: (v) => lightingHandle.setExposure(v),
         bloom: (v) => (bloom.strength = v),
       };
       for (const [id, apply] of Object.entries(sliders)) {

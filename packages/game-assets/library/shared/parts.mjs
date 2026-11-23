@@ -29,7 +29,7 @@ const SPIN_SPEED = 0.35;
 const byId = (id) => document.getElementById(id);
 const count = (value) => value.toLocaleString('vi-VN');
 
-function partStage(source, environment) {
+function partStage(source, renderer) {
   const group = new THREE.Group();
   const model = source.clone(true);
   model.traverse((mesh) => {
@@ -39,7 +39,7 @@ function partStage(source, environment) {
   });
   group.add(model);
   const scene = new THREE.Scene();
-  studioLights(THREE, scene, environment);
+  studioLights(THREE, scene, renderer);
   scene.add(group);
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
@@ -100,7 +100,6 @@ async function main() {
     document.body.dataset.ready = 'failed';
     return;
   }
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   const [config, recipeIds, keyboards] = await Promise.all([
@@ -127,11 +126,6 @@ async function main() {
     ),
   );
   const rows = paletteRows(config.palette);
-  const environment = new THREE.PMREMGenerator(renderer).fromScene(
-    new RoomEnvironment(),
-    0.04,
-  ).texture;
-
   const query = new URLSearchParams(window.location.search);
   const state = {
     recipeId: recipeIds.includes(query.get('recipe')) ? query.get('recipe') : recipeIds[0],
@@ -153,7 +147,7 @@ async function main() {
       for (const part of slot.parts) {
         const source = kits[group.kit].scene.getObjectByName(part.name);
         if (!source) continue;
-        const stage = partStage(source, environment);
+        const stage = partStage(source, renderer);
         const shops = shopsUsing(recipes, recipeIds, part.slot, part.variant);
         const view = element('div', { class: 'part-view' });
         const node = element('article', { class: 'part', 'data-part': part.name }, [

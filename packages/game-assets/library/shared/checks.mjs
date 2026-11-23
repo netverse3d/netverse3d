@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { BACKPACK_NODE, createActorLook, wearsBackpack } from '../../runtime/actor-look.mjs';
 import { legendTextures } from '../../runtime/keyboard-legends.mjs';
@@ -80,7 +79,6 @@ async function main() {
     document.body.dataset.ready = 'failed';
     return;
   }
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor('#141026');
 
@@ -106,11 +104,7 @@ async function main() {
   const clips = seatedClips(actor.animations.map((animation) => animation.name));
 
   const scene = new THREE.Scene();
-  studioLights(
-    THREE,
-    scene,
-    new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture,
-  );
+  studioLights(THREE, scene, renderer);
   const floor = new THREE.GridHelper(6, 12, '#3b3160', '#2a2244');
   scene.add(floor);
   const camera = new THREE.PerspectiveCamera(36, 1, 0.05, 60);

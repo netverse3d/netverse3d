@@ -135,6 +135,7 @@
       import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
       import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
       import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+      import { applyLighting, lightingFor } from '../runtime/lighting.mjs';
       import {
         kitAnchors,
         paletteImage,
@@ -152,44 +153,6 @@
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
 
       const $ = (id) => document.getElementById(id);
-      const LIGHTING = {
-        neon: {
-          sky: '#4a36b8',
-          ground: '#120c24',
-          ambient: 0.5,
-          points: ['#a66bff', '#5ce1ff'],
-          point: 7,
-          bloom: 0.35,
-          exposure: 1.0,
-        },
-        dim: {
-          sky: '#1f3a44',
-          ground: '#06100f',
-          ambient: 0.3,
-          points: ['#1ee8d2', '#0aa0ff'],
-          point: 5,
-          bloom: 0.3,
-          exposure: 0.9,
-        },
-        warm: {
-          sky: '#ffb347',
-          ground: '#1a110a',
-          ambient: 0.6,
-          points: ['#ff9f1c', '#ff6f3c'],
-          point: 7,
-          bloom: 0.15,
-          exposure: 1.0,
-        },
-        daylight: {
-          sky: '#ffffff',
-          ground: '#8899aa',
-          ambient: 1.2,
-          points: ['#ffffff', '#ffffff'],
-          point: 3,
-          bloom: 0.05,
-          exposure: 1.05,
-        },
-      };
       const LIGHT_SLIDERS = [
         'exposure',
         'ambient',
@@ -212,7 +175,6 @@
         $('noGL').hidden = false;
         throw new Error('WebGL 2 is not available');
       }
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
       const [config, ids, keyboards] = await Promise.all([
@@ -236,10 +198,7 @@
       const anchors = { ...kitAnchors(stationKit.parser.json), ...kitAnchors(roomKit.parser.json) };
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#0d0a18');
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-      scene.environmentIntensity = 0.3;
+      const initialLighting = lightingFor(recipes[ids[0]].lighting);
       const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 80);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
@@ -249,12 +208,16 @@
         new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
       );
       composer.addPass(new RenderPass(scene, camera));
-      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.35, 0.4, 0.85);
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(1, 1),
+        initialLighting.bloom.strength,
+        initialLighting.bloom.radius,
+        initialLighting.bloom.threshold,
+      );
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
 
-      const lightRig = new THREE.Group();
-      scene.add(lightRig);
+      let lightingHandle = null;
       const shopGroup = new THREE.Group();
       scene.add(shopGroup);
       const helperGroup = new THREE.Group();
@@ -324,15 +287,20 @@
 
       function applyLight() {
         const light = state.light;
-        renderer.toneMappingExposure = light.exposure;
+        const preset = lightingFor(state.recipe.lighting);
+        lightingHandle.update({
+          exposure: light.exposure,
+          hemisphere: { ...preset.hemisphere, intensity: light.ambient },
+          points: preset.points.map((point) => ({ ...point, intensity: light.point })),
+          bloom: {
+            ...preset.bloom,
+            strength: state.bloom ? light.bloomStrength : 0,
+            threshold: light.bloomThreshold,
+          },
+        });
         for (const set of materialSets) {
           set.glow.color.setScalar(light.glow);
           set.surface.aoMapIntensity = state.ao ? 1 : 0;
-        }
-        bloom.strength = state.bloom ? light.bloomStrength : 0;
-        bloom.threshold = light.bloomThreshold;
-        for (const source of lightRig.children) {
-          source.intensity = source.isPointLight ? light.point : light.ambient;
         }
         for (const id of LIGHT_SLIDERS) {
           $(id).value = light[id];
@@ -341,26 +309,23 @@
       }
 
       function relight() {
-        const preset = LIGHTING[state.recipe.lighting] ?? LIGHTING.neon;
-        lightRig.clear();
-        lightRig.add(new THREE.HemisphereLight(preset.sky, preset.ground, preset.ambient));
-        const [width, depth] = state.recipe.layout.cells;
-        preset.points.forEach((color, index) => {
-          const light = new THREE.PointLight(color, preset.point, 12, 1.6);
-          light.position.set(
-            (index ? 1 : -1) * (width - 0.5),
-            2.6,
-            (index ? -1 : 1) * (depth - 0.5),
-          );
-          lightRig.add(light);
+        lightingHandle?.dispose();
+        const preset = lightingFor(state.recipe.lighting);
+        lightingHandle = applyLighting(THREE, {
+          scene,
+          renderer,
+          bloomPass: bloom,
+          preset,
+          room: { width: state.recipe.layout.cells[0], depth: state.recipe.layout.cells[1] },
+          RoomEnvironment,
         });
         state.light = {
           exposure: preset.exposure,
-          ambient: preset.ambient,
-          point: preset.point,
+          ambient: preset.hemisphere.intensity,
+          point: preset.points[0].intensity,
           glow: GLOW_DEFAULT,
-          bloomStrength: preset.bloom,
-          bloomThreshold: 0.85,
+          bloomStrength: preset.bloom.strength,
+          bloomThreshold: preset.bloom.threshold,
         };
         applyLight();
       }

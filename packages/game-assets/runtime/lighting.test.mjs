@@ -392,6 +392,34 @@ test('applyLighting dispose gỡ đèn và giải phóng mục tiêu PMREM', () 
   assert.equal(pmrem.disposed, undefined);
 });
 
+test('applyLighting dùng lại môi trường studio được chia sẻ mà không giải phóng nó', () => {
+  const THREE = fakeThree();
+  const sourceScene = fakeScene();
+  const source = lighting.applyLighting(THREE, {
+    scene: sourceScene,
+    renderer: {},
+    preset: 'studio',
+    RoomEnvironment: class {},
+  });
+  const sharedEnvironment = source.envTexture;
+  const sourceTarget = source.pmrem.targets[0];
+  const cardScene = fakeScene();
+  const card = lighting.applyLighting(THREE, {
+    scene: cardScene,
+    renderer: {},
+    preset: 'studio',
+    environmentTexture: sharedEnvironment,
+  });
+  assert.equal(cardScene.environment, sharedEnvironment);
+  assert.equal(card.envTexture, sharedEnvironment);
+  assert.equal(card.pmrem, null);
+  card.dispose();
+  assert.equal(cardScene.environment, null);
+  assert.equal(sharedEnvironment.disposed, undefined);
+  source.dispose();
+  assert.equal(sourceTarget.disposed, true);
+});
+
 test('applyLighting dựng sương và đèn trăng cho street-night', () => {
   const THREE = fakeThree();
   const scene = fakeScene();

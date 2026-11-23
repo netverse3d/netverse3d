@@ -305,8 +305,6 @@
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import {
         EMISSIVE_SCALE,
-        NIGHT_SKY,
-        OUTDOOR_LIGHTING,
         WEATHER_CONFIG,
         WEATHER_STATES,
         applyQualityLevel,
@@ -317,10 +315,10 @@
         getWeatherAtTime,
         isHolidayFireworks,
         roadLane,
-        setupOutdoorEnvironment,
         sidewalkWaypoints,
         streetPlan,
       } from '../runtime/street-look.mjs';
+      import { applyLighting, lightingFor } from '../runtime/lighting.mjs';
       import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
       import {
         createTrafficLane,
@@ -342,9 +340,6 @@
         $('noGL').hidden = false;
         throw new Error('WebGL unavailable');
       }
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
-
       async function fetchJson(url) {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`${url} returned ${response.status}`);
@@ -391,8 +386,6 @@
       const anchors = kitAnchors(kit.parser.json);
 
       const scene = new THREE.Scene();
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      setupOutdoorEnvironment(THREE, scene, renderer, { pmrem });
       const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
@@ -411,14 +404,21 @@
         sceneTriangles = renderer.info.render.triangles;
       };
       composer.addPass(scenePass);
+      const streetPreset = lightingFor('street-night');
       const bloom = new UnrealBloomPass(
         new THREE.Vector2(1, 1),
-        OUTDOOR_LIGHTING.bloom.strength,
-        OUTDOOR_LIGHTING.bloom.radius,
-        OUTDOOR_LIGHTING.bloom.threshold,
+        streetPreset.bloom.strength,
+        streetPreset.bloom.radius,
+        streetPreset.bloom.threshold,
       );
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
+      const lightingHandle = applyLighting(THREE, {
+        scene,
+        renderer,
+        preset: streetPreset,
+        bloomPass: bloom,
+      });
 
       const streetGroup = new THREE.Group();
       const vehicleGroup = new THREE.Group();
@@ -713,13 +713,7 @@
           vehicleMaterials.surface.aoMapIntensity = state.ao ? 1 : 0;
         }
         if (name === 'fog') {
-          scene.fog = state.fog
-            ? new THREE.Fog(
-                OUTDOOR_LIGHTING.fog.color,
-                OUTDOOR_LIGHTING.fog.near,
-                OUTDOOR_LIGHTING.fog.far,
-              )
-            : null;
+          lightingHandle.update({ fog: state.fog ? (currentWeather.fog ?? null) : null });
         }
         if (name === 'fireworks') {
           fireworks.setEnabled(state.fireworks);
@@ -798,7 +792,9 @@
           currentWeather = applyQualityLevel(target, state.quality);
         }
 
-        applyWeatherToOutdoor(scene, currentWeather, { renderer, materials });
+        const weatherLighting = state.fog ? currentWeather : { ...currentWeather, fog: null };
+        lightingHandle.update({ fog: weatherLighting.fog ?? null });
+        applyWeatherToOutdoor(lightingHandle, weatherLighting, { materials });
         rain.update(camera, delta, currentWeather);
         if (fireworks) fireworks.update(delta);
         updateTraffic(elapsed);

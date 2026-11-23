@@ -317,12 +317,13 @@
         applyLandmarkGlow,
         kitGlowBoost,
       } from '../runtime/landmark-look.mjs';
-      import { PARK_EXHIBIT } from '../runtime/park-look.mjs';
       import {
         ALLEY_PROPS_EXHIBIT,
         VACANT_PLOT_EXHIBIT,
         vacancyNoticeMaterial,
       } from '../runtime/alley-look.mjs';
+      import { applyLighting, lightingFor } from '../runtime/lighting.mjs';
+      import { PARK_EXHIBIT, parkRecipe } from '../runtime/park-look.mjs';
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
@@ -550,7 +551,6 @@
         $('noGL').hidden = false;
         throw new Error('WebGL 2 is not available');
       }
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.info.autoReset = false;
 
@@ -608,9 +608,6 @@
       }
 
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#141418');
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
       const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 60);
       const controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
@@ -619,19 +616,25 @@
         new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }),
       );
       composer.addPass(new RenderPass(scene, camera));
-      const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.4, 0.85);
+      const studioPreset = lightingFor('studio');
+      const bloom = new UnrealBloomPass(
+        new THREE.Vector2(1, 1),
+        studioPreset.bloom.strength,
+        studioPreset.bloom.radius,
+        studioPreset.bloom.threshold,
+      );
       bloom.enabled = false;
       composer.addPass(bloom);
       composer.addPass(new OutputPass());
 
-      const key = new THREE.DirectionalLight('#fff4e6', 1.2);
-      key.position.set(3, 5, 4);
-      const fill = new THREE.DirectionalLight('#dbe6ff', 0.8);
-      fill.position.set(-4, 2.5, 2);
-      const rim = new THREE.DirectionalLight('#ffffff', 0.9);
-      rim.position.set(-1, 3.5, -5);
-      const hemi = new THREE.HemisphereLight('#ffffff', '#2a2a33', 0.7);
-      scene.add(key, fill, rim, hemi);
+      const lightingHandle = applyLighting(THREE, {
+        scene,
+        renderer,
+        bloomPass: bloom,
+        preset: studioPreset,
+        RoomEnvironment,
+      });
+      const key = lightingHandle.lights.find((light) => light.isDirectionalLight);
       const floor = new THREE.Mesh(
         new THREE.CircleGeometry(12, 64),
         new THREE.MeshStandardMaterial({ color: '#17171c', roughness: 0.95, metalness: 0 }),
@@ -1039,8 +1042,8 @@
 
       const sliders = {
         key: (v) => (key.intensity = v),
-        env: (v) => (scene.environmentIntensity = v),
-        exposure: (v) => (renderer.toneMappingExposure = v),
+        env: (v) => lightingHandle.update({ environment: { intensity: v } }),
+        exposure: (v) => lightingHandle.setExposure(v),
         glow: (v) => {
           state.glow = v;
           for (const [file, set] of Object.entries(materialSets))
@@ -1093,7 +1096,6 @@
       }
       addEventListener('resize', resize);
 
-      scene.environmentIntensity = 0.8;
       rebuildMaterials();
       renderLists();
       resize();

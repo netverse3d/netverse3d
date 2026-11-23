@@ -258,6 +258,7 @@ export function applyLighting(THREE, options) {
   const lights = [];
   let pmrem = options.pmrem ?? null;
   const ownsPmrem = !options.pmrem;
+  const sharedEnvironment = options.environmentTexture ?? null;
   let ownsSkyTexture = !options.skyTexture;
   let environmentTarget = null;
   let skyTexture = null;
@@ -276,7 +277,8 @@ export function applyLighting(THREE, options) {
 
   function removeEnvironment() {
     const texture = environmentTarget?.texture;
-    if (scene.environment === texture) scene.environment = null;
+    if (scene.environment === texture || scene.environment === sharedEnvironment)
+      scene.environment = null;
     environmentTarget?.dispose?.();
     environmentTarget = null;
     environmentKey = null;
@@ -325,6 +327,11 @@ export function applyLighting(THREE, options) {
     const key = `${source}:${environment.blur ?? 0}`;
     if (environmentKey === key) return;
     removeEnvironment();
+    if (source === 'room' && sharedEnvironment) {
+      scene.environment = sharedEnvironment;
+      environmentKey = key;
+      return;
+    }
     const generator = ensurePmrem();
     if (source === 'night-sky' && generator?.fromEquirectangular) {
       const texture = skyTexture ?? options.skyTexture ?? createNightSkyTexture(THREE, options);
@@ -450,7 +457,7 @@ export function applyLighting(THREE, options) {
       return skyTexture;
     },
     get envTexture() {
-      return environmentTarget?.texture ?? null;
+      return environmentTarget?.texture ?? sharedEnvironment;
     },
     update(next) {
       activePreset = presetAfterUpdate(activePreset, next);
@@ -473,7 +480,11 @@ export function applyLighting(THREE, options) {
       if (scene.background === skyTexture || scene.background === backgroundColor)
         scene.background = null;
       if (scene.fog === fog) scene.fog = null;
-      if (scene.environment === environmentTarget?.texture) scene.environment = null;
+      if (
+        scene.environment === environmentTarget?.texture ||
+        scene.environment === sharedEnvironment
+      )
+        scene.environment = null;
       environmentTarget?.dispose?.();
       environmentTarget = null;
       if (ownsSkyTexture) skyTexture?.dispose?.();
