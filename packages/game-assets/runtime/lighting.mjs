@@ -540,12 +540,10 @@ export function setupOutdoorEnvironment(THREE, scene, renderer, options = {}) {
       return handle.lights.find((light) => light instanceof THREE.DirectionalLight) ?? null;
     },
     update(next) {
-      handle.update(next);
-      return result;
+      return handle.update(next);
     },
     setExposure(value) {
-      handle.setExposure(value);
-      return result;
+      return handle.setExposure(value);
     },
     dispose() {
       handle.dispose();
