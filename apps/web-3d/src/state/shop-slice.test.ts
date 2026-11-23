@@ -6,6 +6,7 @@ import {
   isQualityLevel,
   nearbySeatChanged,
   qualityRequested,
+  rentalConfirmationRequested,
   recipeRequested,
   sceneChanged,
   seatingChanged,
@@ -61,6 +62,18 @@ test('máy trong tầm với được ghi vào kho và gỡ đi khi người ch�
   assert.equal(store.getState().shop.nearbySeat, 'seat-3');
   store.dispatch(nearbySeatChanged(null));
   assert.equal(store.getState().shop.nearbySeat, null);
+});
+
+test('rời khỏi ghế đang thuê thì hộp xác nhận tự đóng', () => {
+  const { store } = createAppStore();
+  store.dispatch(
+    seatingChanged({ available: true, seated: null, taken: [], denied: null, error: null }),
+  );
+  store.dispatch(nearbySeatChanged('seat-1'));
+  store.dispatch(rentalConfirmationRequested({ seatId: 'seat-1', from: { x: 0, z: 0, yaw: 0 } }));
+  assert.equal(store.getState().shop.rentalConfirmation?.seatId, 'seat-1');
+  store.dispatch(nearbySeatChanged(null));
+  assert.equal(store.getState().shop.rentalConfirmation, null);
 });
 
 test('lệnh dùng máy từ giao diện không đổi kho, lớp ứng dụng nhận qua listener', () => {

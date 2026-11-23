@@ -11,6 +11,9 @@ import {
   isQualityLevel,
   nearbySeatChanged,
   qualityRequested,
+  rentalConfirmationAccepted,
+  rentalConfirmationCancelled,
+  rentalConfirmationRequested,
   recipeRequested,
   recipesLoaded,
   sceneChanged,
@@ -49,6 +52,8 @@ function pickRecipe(ids: string[], requested: string | null): string {
 function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useSelector((state: RootState) => state.shop.scene);
+  const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
+  const seating = useSelector((state: RootState) => state.shop.seating);
 
   useEffect(() => {
     const { store, listener } = app;
@@ -62,6 +67,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       const turn = roomTurn;
       session?.close();
       session = null;
+      store.dispatch(rentalConfirmationCancelled());
       store.dispatch(seatingChanged(NO_ROOM));
       shop?.setSeating(null, []);
       if (!shop) return;
@@ -97,6 +103,10 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       actionCreator: useRequested,
       effect: () => shop?.use(),
     });
+    const stopRentalConfirmation = listener.startListening({
+      actionCreator: rentalConfirmationAccepted,
+      effect: (action) => session?.requestSeat(action.payload.seatId, action.payload.from),
+    });
     const stopQuality = listener.startListening({
       actionCreator: qualityRequested,
       effect: (action) => shop?.setQuality(action.payload),
@@ -119,7 +129,9 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
           onState: (state) => store.dispatch(sceneChanged(state)),
           onError: (message) => store.dispatch(errorRaised(message)),
           onNearbySeat: (seatId) => store.dispatch(nearbySeatChanged(seatId)),
-          onSeatRequest: (seatId, from) => session?.requestSeat(seatId, from),
+          onSeatRequest: (seatId, from) => {
+            if (session) store.dispatch(rentalConfirmationRequested({ seatId, from }));
+          },
           onLeaveRequest: () => session?.leaveSeat(),
         });
         const requested = params.get('quality');
@@ -146,6 +158,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       stopRecipe();
       stopQuality();
       stopUse();
+      stopRentalConfirmation();
       roomTurn += 1;
       session?.close();
       session = null;
@@ -161,6 +174,9 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       data-ready={String(scene.ready)}
       data-face={String(scene.face)}
       data-recipe={scene.recipeId}
+      data-nearby-seat={nearbySeat ?? ''}
+      data-room-available={String(seating.available)}
+      data-session-seat={seating.seated ?? ''}
       data-rebuilds={scene.rebuilds}
       data-frames={scene.frames}
       data-restored={String(scene.restored)}

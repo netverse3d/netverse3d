@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { PlayerState } from '@netverse/game-shared/movement';
 
 export type QualityLevel = 'low' | 'medium' | 'high';
 
@@ -43,6 +44,11 @@ export interface SeatingState {
   error: string | null;
 }
 
+export interface RentalRequest {
+  readonly seatId: string;
+  readonly from: PlayerState;
+}
+
 export const NO_ROOM: SeatingState = {
   available: false,
   seated: null,
@@ -58,6 +64,7 @@ export interface ShopState {
   error: string | null;
   nearbySeat: string | null;
   seating: SeatingState;
+  rentalConfirmation: RentalRequest | null;
 }
 
 export const DEFAULT_RECIPE = 'tim-neon';
@@ -79,6 +86,7 @@ export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
     error: null,
     nearbySeat: null,
     seating: NO_ROOM,
+    rentalConfirmation: null,
   };
 }
 
@@ -100,9 +108,24 @@ export const shopSlice = createSlice({
     },
     nearbySeatChanged(state, action: PayloadAction<string | null>) {
       state.nearbySeat = action.payload;
+      if (state.rentalConfirmation && state.rentalConfirmation.seatId !== action.payload) {
+        state.rentalConfirmation = null;
+      }
     },
     seatingChanged(state, action: PayloadAction<SeatingState>) {
       state.seating = action.payload;
+    },
+    rentalConfirmationRequested(state, action: PayloadAction<RentalRequest>) {
+      state.rentalConfirmation = action.payload;
+    },
+    rentalConfirmationCancelled(state) {
+      state.rentalConfirmation = null;
+    },
+    rentalConfirmationAccepted: {
+      reducer(state) {
+        state.rentalConfirmation = null;
+      },
+      prepare: (request: RentalRequest) => ({ payload: request }),
     },
     useRequested() {},
     recipeRequested: {
@@ -123,6 +146,9 @@ export const {
   errorRaised,
   nearbySeatChanged,
   seatingChanged,
+  rentalConfirmationRequested,
+  rentalConfirmationCancelled,
+  rentalConfirmationAccepted,
   useRequested,
   recipeRequested,
   qualityRequested,
