@@ -517,15 +517,42 @@ export function setupOutdoorEnvironment(THREE, scene, renderer, options = {}) {
     addLights: options.addLights,
     setExposure: options.setExposure,
   });
-  return {
-    ...handle,
+  const result = {
+    get preset() {
+      return handle.preset;
+    },
+    get lights() {
+      return handle.lights;
+    },
+    get pmrem() {
+      return handle.pmrem;
+    },
+    get skyTexture() {
+      return handle.skyTexture;
+    },
+    get envTexture() {
+      return handle.envTexture;
+    },
+    get hemisphere() {
+      return handle.lights.find((light) => light instanceof THREE.HemisphereLight) ?? null;
+    },
+    get moon() {
+      return handle.lights.find((light) => light instanceof THREE.DirectionalLight) ?? null;
+    },
+    update(next) {
+      handle.update(next);
+      return result;
+    },
+    setExposure(value) {
+      handle.setExposure(value);
+      return result;
+    },
+    dispose() {
+      handle.dispose();
+    },
     handle,
-    skyTexture: handle.skyTexture,
-    envTexture: handle.envTexture,
-    pmrem: handle.pmrem,
-    hemisphere: handle.lights.find((light) => light instanceof THREE.HemisphereLight) ?? null,
-    moon: handle.lights.find((light) => light instanceof THREE.DirectionalLight) ?? null,
   };
+  return result;
 }
 
 export function applyWeatherToOutdoor(handle, weather, options = {}) {

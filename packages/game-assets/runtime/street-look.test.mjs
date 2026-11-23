@@ -298,6 +298,10 @@ test('setupOutdoorEnvironment gán nền, sương và môi trường phản chi�
   assert.equal(renderer.toneMappingExposure, OUTDOOR_LIGHTING.exposure);
   assert.ok(result.hemisphere);
   assert.ok(result.moon);
+  result.update({ environment: { source: 'none', intensity: 0 } });
+  assert.equal(result.preset.environment.source, 'none');
+  assert.equal(result.envTexture, null);
+  assert.equal(scene.environment, null);
 });
 
 test('applyWeatherToOutdoor gửi bộ thay đổi qua handle và cập nhật độ nhám mặt đường', () => {
