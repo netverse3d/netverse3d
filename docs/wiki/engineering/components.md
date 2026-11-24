@@ -34,7 +34,7 @@ Trang này được sinh từ `docs/catalog.yaml`.
 | `workers/jobs` | worker | Chưa chốt | Gia hạn, dọn dữ liệu, thống kê định kỳ | M3 |
 | `packages/contracts` | package | OpenAPI, JSON Schema | Hợp đồng HTTP, sự kiện Kafka và giao thức realtime | M0 |
 | `packages/game-shared` | package | TypeScript | Luật di chuyển và va chạm dùng chung giữa client và game server | M2 |
-| `packages/ui` | package | CSS, React | Token, thành phần và thư viện giao diện Saigon Soft-Future | M1 |
+| `packages/ui` | package | React | Thành phần giao diện dùng chung | M1 |
 | `packages/config` | package | TypeScript | Cấu hình dùng chung cho lint, TypeScript | M1 |
 | `packages/game-assets` | package | Blender, glTF | Tệp Blender gốc, mô hình xuất ra và bộ kiểm của nhân vật, đồ vật | M1 |
 | `packages/nest-kit` | package | NestJS | Bộ khung dùng chung của các service NestJS, gồm response, lỗi, phân trang, xác thực, log | M1 |

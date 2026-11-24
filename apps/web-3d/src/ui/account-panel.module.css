@@ -1,13 +1,13 @@
 .accountBar {
   position: absolute;
-  z-index: var(--ui-layer-hud);
-  top: var(--ui-space-3);
-  right: var(--ui-space-3);
+  z-index: 1;
+  top: var(--space-3);
+  right: var(--space-3);
   display: flex;
   align-items: center;
-  gap: var(--ui-space-2);
+  gap: var(--space-2);
   max-width: min(48vw, 400px);
-  font-size: var(--ui-text-sm);
+  font-size: var(--text-sm);
 }
 
 .accountName {
@@ -15,10 +15,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--ui-panel);
-  backdrop-filter: var(--ui-panel-filter);
-  border-radius: var(--ui-radius-1);
-  padding: var(--ui-space-1) var(--ui-space-2);
+  background: var(--panel);
+  border-radius: var(--radius-1);
+  padding: var(--space-1) var(--space-2);
 }
 
 .outline,
@@ -34,14 +33,14 @@
 .outline,
 .close,
 .primary {
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-1);
-  background: var(--ui-action-neutral);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  background: var(--control);
 }
 
 .outline,
 .primary {
-  padding: var(--ui-space-2) var(--ui-space-3);
+  padding: var(--space-2) var(--space-3);
   font-weight: 650;
 }
 
@@ -51,27 +50,27 @@
 
 .dialog {
   box-sizing: border-box;
-  width: min(calc(100% - 2 * var(--ui-space-3)), 440px);
-  max-height: calc(100dvh - 2 * var(--ui-space-3));
+  width: min(calc(100% - 2 * var(--space-3)), 440px);
+  max-height: calc(100dvh - 2 * var(--space-3));
   overflow: auto;
   padding: clamp(16px, 5vw, 28px);
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-2);
-  background: var(--ui-canvas);
-  color: var(--ui-text);
-  box-shadow: 0 18px 65px var(--ui-shadow);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2);
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 18px 65px #0008;
 }
 
 .dialog::backdrop {
-  background: var(--ui-scrim);
+  background: #090614b8;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--ui-space-3);
-  margin-bottom: calc(var(--ui-space-3) * 1.5);
+  gap: var(--space-3);
+  margin-bottom: calc(var(--space-3) * 1.5);
 }
 
 .header h1 {
@@ -90,41 +89,41 @@
 }
 
 .form {
-  gap: var(--ui-space-3);
+  gap: var(--space-3);
 }
 
 .field {
-  gap: var(--ui-space-1);
-  font-size: var(--ui-text-sm);
+  gap: var(--space-1);
+  font-size: var(--text-sm);
 }
 
 .field input {
   box-sizing: border-box;
   width: 100%;
   min-height: 44px;
-  padding: var(--ui-space-2) var(--ui-space-3);
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-1);
-  color: var(--ui-text);
-  background: var(--ui-action-neutral);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-1);
+  color: var(--ink);
+  background: var(--control);
   font-family: inherit;
   font-size: 1rem;
 }
 
 .field span,
 .links button {
-  color: var(--ui-text-muted);
+  color: var(--muted);
 }
 
 .dialog :focus-visible,
 .outline:focus-visible {
-  outline: 2px solid var(--ui-focus);
+  outline: 2px solid var(--cyan);
   outline-offset: 2px;
 }
 
 .primary {
-  color: var(--ui-on-action);
-  background: var(--ui-action-primary);
+  color: var(--bg);
+  background: var(--cyan);
 }
 
 .outline:disabled,
@@ -136,24 +135,24 @@
 .error,
 .notice {
   margin: 0;
-  font-size: var(--ui-text-sm);
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 
 .error {
-  color: var(--ui-warning);
+  color: var(--warn);
 }
 
 .notice {
-  color: var(--ui-info);
+  color: var(--cyan);
 }
 
 .links {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0 var(--ui-space-3);
-  margin-top: var(--ui-space-2);
+  gap: 0 var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .links button {
@@ -166,8 +165,8 @@
 @media (max-width: 520px) {
   .accountBar {
     top: auto;
-    bottom: var(--ui-space-3);
-    max-width: calc(100% - 2 * var(--ui-space-3));
+    bottom: var(--space-3);
+    max-width: calc(100% - 2 * var(--space-3));
   }
 
   .accountName {
@@ -179,6 +178,6 @@
   }
 
   .outline {
-    padding-inline: var(--ui-space-2);
+    padding-inline: var(--space-2);
   }
 }
