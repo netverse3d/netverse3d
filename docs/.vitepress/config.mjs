@@ -49,6 +49,7 @@ export default withMermaid(
             { text: 'Chuẩn thành phần', link: '/wiki/engineering/component-standard' },
             { text: 'Client game', link: '/wiki/engineering/web-client' },
             { text: 'Tài sản 3D', link: '/wiki/engineering/game-assets' },
+            { text: 'Hệ thiết kế giao diện', link: '/wiki/engineering/design-system' },
             { text: 'Chuẩn ánh sáng', link: '/wiki/engineering/lighting' },
             { text: 'Ngân sách hiệu năng', link: '/wiki/engineering/performance-budget' },
             {
