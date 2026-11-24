@@ -143,8 +143,6 @@ Kho trạng thái dùng Redux Toolkit.
 
 ## CSS
 
-Giao diện 2D dùng hệ thiết kế Saigon Soft-Future theo [ADR-0040](../../decisions/ADR-0040-saigon-soft-future-ui.md). Khi viết CSS Modules, dùng token theo [hệ thiết kế giao diện](./design-system.md) và đối chiếu [tiêu chí kiểm duyệt](../product/ui-criteria.md).
-
 - Mỗi component một tệp `.module.css` đặt cạnh nó.
 - Màu, cỡ chữ, khoảng cách lấy từ biến CSS khai ở `app/globals.css`, không ghi số màu trong component.
 - `globals.css` chỉ chứa biến và phần đặt lại mặc định của trình duyệt.

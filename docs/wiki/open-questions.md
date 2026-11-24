@@ -2,18 +2,6 @@
 
 Những điều chưa chốt. Có câu trả lời thì cập nhật REQ hoặc ADR, rồi xoá dòng ở đây. Hướng tạm của nhóm nằm ở các ADR đang ở mức đề xuất.
 
-## Tính năng đề xuất từ tham chiếu giao diện 2D
-
-| Issue                                                                 | Câu hỏi                                                                                                                             | Ai trả lời   |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| [#420](https://github.com/netverse3d/netverse3d/issues/420) · REQ-053 | Ai đặt nhiệm vụ, sự kiện nào xác nhận tiến độ và phần thưởng dùng điểm thành tích hay phút miễn phí? Quy tắc Xèng vẫn theo REQ-028. | Nhóm, mentor |
-| [#421](https://github.com/netverse3d/netverse3d/issues/421) · REQ-054 | Bản đồ nhỏ lấy dữ liệu nào từ #242, hiển thị điểm nào và dùng ngân sách vẽ nào trên máy yếu?                                        | Nhóm, mentor |
-| [#422](https://github.com/netverse3d/netverse3d/issues/422) · REQ-055 | Phân biệt thư với thông báo REQ-008 thế nào? Có thư giữa người chơi, kiểm duyệt hoặc vật phẩm đính kèm không?                       | Nhóm, mentor |
-| [#423](https://github.com/netverse3d/netverse3d/issues/423) · REQ-056 | Túi chứa nhóm vật phẩm nào, sở hữu theo tài khoản hay tiệm, và có cho trao đổi không?                                               | Nhóm, mentor |
-| [#424](https://github.com/netverse3d/netverse3d/issues/424) · REQ-057 | Mở khoá món bằng gì, máy chủ kiểm quyền ở đâu và giao dịch nào cần hoá đơn?                                                         | Nhóm, mentor |
-
-## Các câu hỏi khác
-
 | #   | Câu hỏi                                                                                                                                                                                                                                                                                                                                | Ai trả lời   | Ảnh hưởng                                                               |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------------------------------------------- |
 | 1   | Game core khi nào bàn giao? Bản mẫu của mentor (2026-11-07) viết bằng Go, dùng WebSocket và JSON; bản bàn giao có giữ như vậy không?                                                                                                                                                                                                   | Mentor       | REQ-017 đến REQ-021, `services/game`, giao thức realtime                |

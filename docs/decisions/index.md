@@ -40,4 +40,3 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0034](./ADR-0034-api-gateway.md) | Cổng vào duy nhất bằng Traefik, định tuyến theo tên service | Đã chốt |
 | [ADR-0035](./ADR-0035-kubernetes-platform.md) | Chạy hệ thống trên Kubernetes local bằng k3d, Kustomize và operator dữ liệu | Đã chốt |
 | [ADR-0036](./ADR-0036-pr-merge-policy.md) | Gộp PR theo tiêu chí issue và pipeline, không bắt approval | Đã chốt |
-| [ADR-0040](./ADR-0040-saigon-soft-future-ui.md) | Giao diện 2D dùng hệ thiết kế Saigon Soft-Future | Đã chốt |
