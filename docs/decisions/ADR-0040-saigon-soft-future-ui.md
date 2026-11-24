@@ -71,7 +71,7 @@ Người dẫn dắt nhóm đã xem ảnh tham chiếu Style Direction 04 "Saigo
 - Đổi bộ màu chỉ sửa tầng gốc; thêm màu tiệm không chạm component.
 - `globals.css` của `apps/web-3d` chỉ còn nạp token và đặt lại mặc định. Mọi `.module.css` đổi sang tên ngữ nghĩa trong một lần.
 - Thêm component mới tốn thêm một bước: thêm vào Thư viện giao diện với đủ trạng thái.
-- Kính mờ trên canvas WebGL tốn GPU. #417 đo số khung hình trong tiệm 50 máy khi bật và tắt kính; nếu máy tối thiểu của ADR-0017 tụt dưới 30 khung hình mỗi giây thì nền đặc thành mặc định ở cả mức `medium`.
+- Kính mờ trên canvas WebGL tốn GPU và chưa được đo trên máy tối thiểu của ADR-0017. Nếu đo thấy tụt dưới 30 khung hình mỗi giây trong tiệm 50 máy thì nền đặc thành mặc định ở cả mức `medium`.
 - Desktop tối thiểu khi thuê máy và hộp thư thông báo chuyển sang component chung ở #418. Màn tạo nhân vật (REQ-003) và phần còn lại của màn hình máy (REQ-032) dùng hệ này ngay khi được làm.
 
 Liên quan: REQ-052, REQ-018, REQ-004, REQ-008, REQ-028, REQ-053, REQ-054, REQ-055, REQ-056, REQ-057, REQ-058, REQ-059.
