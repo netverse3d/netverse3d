@@ -393,7 +393,7 @@ requirements:
     sources: [team-decision]
   - id: REQ-052
     title: Giao diện thống nhất theo hệ thiết kế
-    description: Mọi màn hình 2D của người chơi và chủ tiệm dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
+    description: Mọi màn hình 2D của người chơi, chủ tiệm và quản trị dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
     status: accepted
     priority: must
     milestone: M1
@@ -416,8 +416,8 @@ requirements:
     area: web-3d
     sources: [team-decision]
   - id: REQ-055
-    title: Hộp thư của người chơi
-    description: Người chơi đọc lại thư quan trọng ở một chỗ, tách khỏi thông báo tức thời. Quan hệ với thông báo trong ứng dụng của REQ-008, thư giữa người chơi và việc đính kèm còn ở câu hỏi mở; không được dùng thư để chuyển Xèng.
+    title: Thư giữa người chơi
+    description: Người chơi gửi và nhận thư với người chơi khác, đọc lại trong hộp thư. Hộp thư thông báo của hệ thống đã thuộc REQ-008. Ai được gửi cho ai, duyệt nội dung theo REQ-015, chặn và báo cáo, việc đính kèm còn ở câu hỏi mở; không được dùng thư để chuyển Xèng.
     status: draft
     priority: could
     milestone: M3
@@ -438,4 +438,20 @@ requirements:
     priority: could
     milestone: M3
     area: web-3d
+    sources: [team-decision]
+  - id: REQ-058
+    title: Cấp độ người chơi
+    description: Người chơi có cấp độ và thanh tiến độ hiện cạnh ảnh đại diện. Điểm kinh nghiệm đến từ đâu, cấp độ mở ra gì, có liên quan danh tiếng tiệm ở REQ-016 hay không còn ở câu hỏi mở; cấp độ không được quy đổi ra Xèng.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-059
+    title: Sự kiện cộng đồng
+    description: Người chơi xem và tham gia các sự kiện do hệ thống hoặc chủ tiệm tổ chức, như giải đấu nhỏ hay buổi gặp mặt trong tiệm. Ai được tạo sự kiện, sự kiện có thưởng gì, liên hệ với giao lưu ở REQ-020 còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M4
+    area: shop
     sources: [team-decision]
