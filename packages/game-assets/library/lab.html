@@ -1049,8 +1049,8 @@
           for (const [file, set] of Object.entries(materialSets))
             set.glow.color.setScalar(kitGlowBoost(file, v));
         },
-        bloomStrength: (v) => (bloom.strength = v),
-        bloomThreshold: (v) => (bloom.threshold = v),
+        bloomStrength: (v) => lightingHandle.update({ bloom: { strength: v } }),
+        bloomThreshold: (v) => lightingHandle.update({ bloom: { threshold: v } }),
       };
       for (const [id, apply] of Object.entries(sliders)) {
         const input = $(id);

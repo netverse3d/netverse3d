@@ -363,6 +363,24 @@ test('applyLighting đặt hai đèn shop-neon ở góc phòng và giữ đúng 
   assert.equal(handle.preset.id, 'shop-neon');
 });
 
+test('applyLighting đặt đèn theo tọa độ placement tùy chỉnh', () => {
+  const scene = new THREE.Scene();
+  const preset = {
+    ...lighting.LIGHTING_PRESETS['shop-neon'],
+    environment: { source: 'none', intensity: 0, blur: 0 },
+    points: [
+      {
+        ...lighting.LIGHTING_PRESETS['shop-neon'].points[0],
+        placement: [3, 4, 5],
+      },
+    ],
+  };
+  const handle = lighting.applyLighting(THREE, { scene, renderer: {}, preset });
+  const point = scene.children.find((light) => light.isPointLight);
+  assert.deepEqual(point.position.toArray(), [3, 4, 5]);
+  handle.dispose();
+});
+
 test('applyLighting đổi bộ ánh sáng mà không nhân đôi đèn trong cảnh', () => {
   const THREE = fakeThree();
   const scene = fakeScene();

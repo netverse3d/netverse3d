@@ -370,6 +370,7 @@ export function applyLighting(THREE, options) {
   }
 
   function positionFor(light, index) {
+    if (Array.isArray(light.placement)) return light.placement;
     if (light.placement === 'room-corners') {
       const width = room?.width ?? 1;
       const depth = room?.depth ?? 1;
