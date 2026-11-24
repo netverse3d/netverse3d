@@ -21,7 +21,6 @@ export default [
       'apps/web-3d/next-env.d.ts',
       'workers/**',
       'packages/config/**',
-      'packages/ui/**',
     ],
   },
   js.configs.recommended,
@@ -34,7 +33,7 @@ export default [
     },
   },
   {
-    files: ['packages/game-assets/library/**/*.mjs'],
+    files: ['packages/game-assets/library/**/*.mjs', 'packages/ui/library/**/*.mjs'],
     languageOptions: {
       globals: globals.browser,
     },

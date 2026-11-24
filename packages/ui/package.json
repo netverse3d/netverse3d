@@ -1,0 +1,19 @@
+{
+  "name": "@netverse/ui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens/index.css",
+    "./accent": "./src/accent.mjs",
+    "./contrast": "./src/contrast.mjs",
+    "./tokens": "./src/tokens.mjs"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0"
+  }
+}
