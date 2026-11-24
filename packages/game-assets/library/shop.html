@@ -427,6 +427,7 @@
         const host = $('paletteRows');
         host.replaceChildren();
         for (const row of rows) {
+          if (!row) continue;
           const line = document.createElement('div');
           line.className = 'row';
           const label = document.createElement('span');
