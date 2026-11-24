@@ -15,7 +15,7 @@ HUD, hộp tài khoản và các nút trong trò chơi đang có cách đặt m�
 - Màu riêng của tiệm tác động qua accent. Màu trạng thái, lỗi và focus dùng giá trị chung của hệ thiết kế.
 - Be Vietnam Pro là phông chính. Thời lượng chuyển động lấy từ token. Khi bật giảm chuyển động, các thời lượng về 0. Panel kính luôn có nền đặc tương ứng, dùng ở mức chất lượng `low` hoặc khi người dùng chọn giảm trong suốt.
 - Trạng thái tương tác dùng `idle`, `pending`, `confirmed`, `denied` và `error`. `pending` khoá gửi lặp. `confirmed` chỉ đặt khi phòng hoặc máy chủ xác nhận. `denied` dùng cho từ chối từ nguồn có thẩm quyền, còn `error` dùng cho lỗi kỹ thuật.
-- Tham chiếu hình ảnh định hướng không khí, màu và bố cục. Nhóm thiết kế giao diện riêng. Chi tiết đồng kim cương bị loại theo REQ-028 và [ADR-0033](./ADR-0033-credit-rate-play-block-and-starter-points.md). Năm ý tưởng REQ-053 đến REQ-057 giữ ở mức đề xuất. Cập nhật 2026-11-24: hộp thư thông báo đã có theo REQ-008, nên REQ-055 thu hẹp thành thư giữa người chơi; cấp độ người chơi (REQ-058) và sự kiện cộng đồng (REQ-059) cũng ở mức đề xuất.
+- Tham chiếu hình ảnh định hướng không khí, màu và bố cục. Nhóm thiết kế giao diện riêng. Chi tiết đồng kim cương bị loại theo REQ-028 và [ADR-0033](./ADR-0033-credit-rate-play-block-and-starter-points.md). Năm ý tưởng REQ-053 đến REQ-057 giữ ở mức đề xuất.
 
 ## Hệ quả
 

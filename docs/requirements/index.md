@@ -48,7 +48,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 | REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
 | REQ-046 | Service gọi service bằng định danh riêng | Đã chốt | Bắt buộc | `identity` |
-| REQ-055 | Thư giữa người chơi | Nháp | Có thì tốt | `notification` |
+| REQ-055 | Hộp thư của người chơi | Nháp | Có thì tốt | `notification` |
 | REQ-057 | Món đồ nhân vật cần mở khoá | Nháp | Có thì tốt | `web-3d` |
 
 ## M4 · Chủ tiệm
@@ -65,7 +65,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-042 | Thành phố mở nhiều khu | Đã chốt | Nên có | `web-3d` |
 | REQ-043 | Thời tiết ngẫu nhiên trong thành phố | Đã chốt | Nên có | `web-3d` |
 | REQ-054 | Bản đồ nhỏ và định vị trong thành phố | Nháp | Có thì tốt | `web-3d` |
-| REQ-059 | Sự kiện cộng đồng | Nháp | Có thì tốt | `shop` |
 
 ## M5 · Tích hợp game core
 
@@ -81,7 +80,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
 | REQ-053 | Nhiệm vụ hằng ngày | Nháp | Có thì tốt | `game` |
 | REQ-056 | Túi đồ của người chơi | Nháp | Có thì tốt | `game` |
-| REQ-058 | Cấp độ người chơi | Nháp | Có thì tốt | `game` |
 
 ## M6 · Bot học tăng cường
 
@@ -418,9 +416,9 @@ Xem xét bản đồ nhỏ hiển thị vị trí người chơi và các điể
 
 Nguồn: `team-decision`
 
-### REQ-055: Thư giữa người chơi
+### REQ-055: Hộp thư của người chơi
 
-Người chơi gửi và nhận thư với người chơi khác, đọc lại trong hộp thư. Hộp thư thông báo của hệ thống đã thuộc REQ-008. Ai được gửi cho ai, duyệt nội dung theo REQ-015, chặn và báo cáo, việc đính kèm còn mở; không được dùng thư để chuyển Xèng.
+Xem xét cách lưu và đọc lại thư quan trọng. Quan hệ với thông báo trong ứng dụng, thư giữa người chơi và khả năng đính kèm còn mở.
 
 Nguồn: `team-decision`
 
@@ -433,17 +431,5 @@ Nguồn: `team-decision`
 ### REQ-057: Món đồ nhân vật cần mở khoá
 
 Xem xét biểu thị và mở khoá món đồ nhân vật chưa sở hữu. Điều kiện mở khoá, quyền sử dụng và cách ghi giao dịch còn mở.
-
-Nguồn: `team-decision`
-
-### REQ-058: Cấp độ người chơi
-
-Người chơi có cấp độ và thanh tiến độ hiện cạnh ảnh đại diện. Điểm kinh nghiệm đến từ đâu, cấp độ mở ra gì, có liên quan danh tiếng tiệm ở REQ-016 hay không còn mở; cấp độ không được quy đổi ra Xèng.
-
-Nguồn: `team-decision`
-
-### REQ-059: Sự kiện cộng đồng
-
-Người chơi xem và tham gia các sự kiện do hệ thống hoặc chủ tiệm tổ chức, như giải đấu nhỏ hay buổi gặp mặt trong tiệm. Ai được tạo sự kiện, sự kiện có thưởng gì, liên hệ với giao lưu ở REQ-020 còn mở.
 
 Nguồn: `team-decision`
