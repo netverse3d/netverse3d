@@ -399,3 +399,43 @@ requirements:
     milestone: M1
     area: ui
     sources: [team-decision]
+  - id: REQ-053
+    title: Nhiệm vụ hằng ngày
+    description: Người chơi có vài nhiệm vụ nhỏ mỗi ngày như đăng nhập, chơi một trận, ghé một chỗ trong thành phố, thấy tiến độ và nhận thưởng khi xong. Thưởng không được tạo Xèng ngoài luồng nạp. Cơ chế thưởng, người đặt nhiệm vụ và cách xác nhận sự kiện còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-054
+    title: Bản đồ nhỏ và định vị trong thành phố
+    description: Người chơi thấy vị trí của mình, hướng bắc, tiệm và điểm đáng chú ý trên bản đồ nhỏ ở góc màn hình, phóng to thu nhỏ được, để đi tới tiệm cần tới mà không lạc. Nguồn dữ liệu bản đồ, những gì được hiện và ngân sách hiệu năng còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M4
+    area: web-3d
+    sources: [team-decision]
+  - id: REQ-055
+    title: Hộp thư của người chơi
+    description: Người chơi đọc lại thư quan trọng ở một chỗ, tách khỏi thông báo tức thời. Quan hệ với thông báo trong ứng dụng của REQ-008, thư giữa người chơi và việc đính kèm còn ở câu hỏi mở; không được dùng thư để chuyển Xèng.
+    status: draft
+    priority: could
+    milestone: M3
+    area: notification
+    sources: [team-decision]
+  - id: REQ-056
+    title: Túi đồ của người chơi
+    description: Người chơi xem được những gì mình đang có và dùng lại chúng. Túi chứa gì, đồ thuộc tài khoản hay từng tiệm, có trao đổi hay tặng không còn ở câu hỏi mở; đồ không được trở thành kênh chuyển giá trị trái REQ-028.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-057
+    title: Món đồ nhân vật cần mở khoá
+    description: Màn tạo nhân vật cho thấy món nào đã có, món nào chưa và cách để có. Quyền dùng món được kiểm phía server, client không tự mở khoá. Mở khoá bằng Xèng, bằng cách chơi hay bằng sự kiện còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M3
+    area: web-3d
+    sources: [team-decision]

@@ -48,6 +48,8 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 | REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
 | REQ-046 | Service gọi service bằng định danh riêng | Đã chốt | Bắt buộc | `identity` |
+| REQ-055 | Hộp thư của người chơi | Nháp | Có thì tốt | `notification` |
+| REQ-057 | Món đồ nhân vật cần mở khoá | Nháp | Có thì tốt | `web-3d` |
 
 ## M4 · Chủ tiệm
 
@@ -62,6 +64,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `shop` |
 | REQ-042 | Thành phố mở nhiều khu | Đã chốt | Nên có | `web-3d` |
 | REQ-043 | Thời tiết ngẫu nhiên trong thành phố | Đã chốt | Nên có | `web-3d` |
+| REQ-054 | Bản đồ nhỏ và định vị trong thành phố | Nháp | Có thì tốt | `web-3d` |
 
 ## M5 · Tích hợp game core
 
@@ -75,6 +78,8 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-034 | Màn hình chung của tiệm | Nháp | Nên có | `game` |
 | REQ-037 | Biểu cảm nhân vật khi chơi | Nháp | Nên có | `web-3d` |
 | REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
+| REQ-053 | Nhiệm vụ hằng ngày | Nháp | Có thì tốt | `game` |
+| REQ-056 | Túi đồ của người chơi | Nháp | Có thì tốt | `game` |
 
 ## M6 · Bot học tăng cường
 
@@ -396,5 +401,35 @@ Nguồn: `team-decision`
 ### REQ-052: Giao diện thống nhất theo hệ thiết kế
 
 Mọi màn hình 2D của người chơi và chủ tiệm dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
+
+Nguồn: `team-decision`
+
+### REQ-053: Nhiệm vụ hằng ngày
+
+Người chơi có vài nhiệm vụ nhỏ mỗi ngày như đăng nhập, chơi một trận, ghé một chỗ trong thành phố, thấy tiến độ và nhận thưởng khi xong. Thưởng không được tạo Xèng ngoài luồng nạp. Cơ chế thưởng, người đặt nhiệm vụ và cách xác nhận sự kiện còn ở câu hỏi mở.
+
+Nguồn: `team-decision`
+
+### REQ-054: Bản đồ nhỏ và định vị trong thành phố
+
+Người chơi thấy vị trí của mình, hướng bắc, tiệm và điểm đáng chú ý trên bản đồ nhỏ ở góc màn hình, phóng to thu nhỏ được, để đi tới tiệm cần tới mà không lạc. Nguồn dữ liệu bản đồ, những gì được hiện và ngân sách hiệu năng còn ở câu hỏi mở.
+
+Nguồn: `team-decision`
+
+### REQ-055: Hộp thư của người chơi
+
+Người chơi đọc lại thư quan trọng ở một chỗ, tách khỏi thông báo tức thời. Quan hệ với thông báo trong ứng dụng của REQ-008, thư giữa người chơi và việc đính kèm còn ở câu hỏi mở; không được dùng thư để chuyển Xèng.
+
+Nguồn: `team-decision`
+
+### REQ-056: Túi đồ của người chơi
+
+Người chơi xem được những gì mình đang có và dùng lại chúng. Túi chứa gì, đồ thuộc tài khoản hay từng tiệm, có trao đổi hay tặng không còn ở câu hỏi mở; đồ không được trở thành kênh chuyển giá trị trái REQ-028.
+
+Nguồn: `team-decision`
+
+### REQ-057: Món đồ nhân vật cần mở khoá
+
+Màn tạo nhân vật cho thấy món nào đã có, món nào chưa và cách để có. Quyền dùng món được kiểm phía server, client không tự mở khoá. Mở khoá bằng Xèng, bằng cách chơi hay bằng sự kiện còn ở câu hỏi mở.
 
 Nguồn: `team-decision`
