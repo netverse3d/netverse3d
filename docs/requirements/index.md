@@ -21,6 +21,7 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
 | REQ-047 | Client chỉ gọi hệ thống qua một cổng vào | Đã chốt | Bắt buộc | `infra` |
 | REQ-048 | Chạy toàn hệ thống trên Kubernetes local và trong CI | Đã chốt | Bắt buộc | `infra` |
+| REQ-052 | Giao diện thống nhất theo hệ thiết kế | Đã chốt | Bắt buộc | `ui` |
 
 ## M2 · Lát cắt đầu
 
@@ -389,5 +390,11 @@ Nguồn: `team-decision`
 ### REQ-049: Gộp PR theo tiêu chí issue và pipeline, không bắt approval
 
 PR công việc vào staging phải đóng issue có REQ hoặc ADR và đáp ứng mục Xong khi nào của issue; người merge xác nhận chức năng đạt yêu cầu và mọi check bắt buộc xanh. PR promote staging lên main tuân theo điều kiện phát hành ở ADR-0007 và được miễn issue/REQ như quy định hiện có. Cả hai luồng PR đều không cần approval; review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue hoặc điều kiện promote cùng trạng thái pipeline. Approval của lần phát hành production vẫn bắt buộc theo ADR-0007.
+
+Nguồn: `team-decision`
+
+### REQ-052: Giao diện thống nhất theo hệ thiết kế
+
+Mọi màn hình 2D của người chơi và chủ tiệm dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
 
 Nguồn: `team-decision`
