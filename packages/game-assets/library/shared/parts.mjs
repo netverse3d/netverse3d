@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { vacancyNoticeMaterial } from '../../runtime/alley-look.mjs';
 import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { COLORWAYS, LED_MODES, keyboardOptions } from '../../runtime/keyboard-styles.mjs';
