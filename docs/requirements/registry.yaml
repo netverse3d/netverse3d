@@ -391,3 +391,67 @@ requirements:
     milestone: M0
     area: infra
     sources: [team-decision]
+  - id: REQ-052
+    title: Giao diện thống nhất theo hệ thiết kế
+    description: Mọi màn hình 2D của người chơi, chủ tiệm và quản trị dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
+    status: accepted
+    priority: must
+    milestone: M1
+    area: ui
+    sources: [team-decision]
+  - id: REQ-053
+    title: Nhiệm vụ hằng ngày
+    description: Người chơi có vài nhiệm vụ nhỏ mỗi ngày như đăng nhập, chơi một trận, ghé một chỗ trong thành phố, thấy tiến độ và nhận thưởng khi xong. Thưởng không được tạo Xèng ngoài luồng nạp. Cơ chế thưởng, người đặt nhiệm vụ và cách xác nhận sự kiện còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-054
+    title: Bản đồ nhỏ và định vị trong thành phố
+    description: Người chơi thấy vị trí của mình, hướng bắc, tiệm và điểm đáng chú ý trên bản đồ nhỏ ở góc màn hình, phóng to thu nhỏ được, để đi tới tiệm cần tới mà không lạc. Nguồn dữ liệu bản đồ, những gì được hiện và ngân sách hiệu năng còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M4
+    area: web-3d
+    sources: [team-decision]
+  - id: REQ-055
+    title: Thư giữa người chơi
+    description: Người chơi gửi và nhận thư với người chơi khác, đọc lại trong hộp thư. Hộp thư thông báo của hệ thống đã thuộc REQ-008. Ai được gửi cho ai, duyệt nội dung theo REQ-015, chặn và báo cáo, việc đính kèm còn ở câu hỏi mở; không được dùng thư để chuyển Xèng.
+    status: draft
+    priority: could
+    milestone: M3
+    area: notification
+    sources: [team-decision]
+  - id: REQ-056
+    title: Túi đồ của người chơi
+    description: Người chơi xem được những gì mình đang có và dùng lại chúng. Túi chứa gì, đồ thuộc tài khoản hay từng tiệm, có trao đổi hay tặng không còn ở câu hỏi mở; đồ không được trở thành kênh chuyển giá trị trái REQ-028.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-057
+    title: Món đồ nhân vật cần mở khoá
+    description: Màn tạo nhân vật cho thấy món nào đã có, món nào chưa và cách để có. Quyền dùng món được kiểm phía server, client không tự mở khoá. Mở khoá bằng Xèng, bằng cách chơi hay bằng sự kiện còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M3
+    area: web-3d
+    sources: [team-decision]
+  - id: REQ-058
+    title: Cấp độ người chơi
+    description: Người chơi có cấp độ và thanh tiến độ hiện cạnh ảnh đại diện. Điểm kinh nghiệm đến từ đâu, cấp độ mở ra gì, có liên quan danh tiếng tiệm ở REQ-016 hay không còn ở câu hỏi mở; cấp độ không được quy đổi ra Xèng.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-059
+    title: Sự kiện cộng đồng
+    description: Người chơi xem và tham gia các sự kiện do hệ thống hoặc chủ tiệm tổ chức, như giải đấu nhỏ hay buổi gặp mặt trong tiệm. Ai được tạo sự kiện, sự kiện có thưởng gì, liên hệ với giao lưu ở REQ-020 còn ở câu hỏi mở.
+    status: draft
+    priority: could
+    milestone: M4
+    area: shop
+    sources: [team-decision]
