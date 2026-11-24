@@ -391,3 +391,11 @@ requirements:
     milestone: M0
     area: infra
     sources: [team-decision]
+  - id: REQ-052
+    title: Giao diện thống nhất theo hệ thiết kế
+    description: Mọi màn hình 2D của người chơi và chủ tiệm dùng chung một bộ token và component trong packages/ui theo ngôn ngữ Saigon Soft-Future nền tối, và đạt các tiêu chí có mã ở trang tiêu chí giao diện. Màu riêng của tiệm chỉ đổi tầng accent, không làm mất tương phản hay ý nghĩa của màu trạng thái. Kính mờ luôn có bản nền đặc cho máy yếu, chuyển động có bản giảm. Token, component và trạng thái của chúng xem được ở Thư viện giao diện. Theo ADR-0040.
+    status: accepted
+    priority: must
+    milestone: M1
+    area: ui
+    sources: [team-decision]
