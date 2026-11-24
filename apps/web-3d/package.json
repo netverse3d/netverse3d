@@ -14,7 +14,6 @@
   "dependencies": {
     "@netverse/game-assets": "workspace:*",
     "@netverse/game-shared": "workspace:*",
-    "@netverse/ui": "workspace:*",
     "@reduxjs/toolkit": "^2.14.0",
     "next": "16.4.5",
     "react": "19.3.1",

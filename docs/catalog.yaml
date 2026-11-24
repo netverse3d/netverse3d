@@ -100,8 +100,8 @@ components:
   - id: ui
     path: packages/ui
     kind: package
-    stack: CSS, React
-    summary: Token, thành phần và thư viện giao diện Saigon Soft-Future
+    stack: React
+    summary: Thành phần giao diện dùng chung
     milestone: M1
   - id: config
     path: packages/config

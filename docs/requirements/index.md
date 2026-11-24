@@ -21,7 +21,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-005 | Trang quản trị hệ thống | Nháp | Bắt buộc | `admin` |
 | REQ-047 | Client chỉ gọi hệ thống qua một cổng vào | Đã chốt | Bắt buộc | `infra` |
 | REQ-048 | Chạy toàn hệ thống trên Kubernetes local và trong CI | Đã chốt | Bắt buộc | `infra` |
-| REQ-052 | Giao diện thống nhất theo hệ thiết kế | Đã chốt | Bắt buộc | `ui` |
 
 ## M2 · Lát cắt đầu
 
@@ -48,8 +47,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-031 | Phút miễn phí hằng ngày do hệ thống cấp | Nháp | Có thì tốt | `payment` |
 | REQ-045 | License máy cho chủ tiệm | Đã chốt | Bắt buộc | `payment` |
 | REQ-046 | Service gọi service bằng định danh riêng | Đã chốt | Bắt buộc | `identity` |
-| REQ-055 | Hộp thư của người chơi | Nháp | Có thì tốt | `notification` |
-| REQ-057 | Món đồ nhân vật cần mở khoá | Nháp | Có thì tốt | `web-3d` |
 
 ## M4 · Chủ tiệm
 
@@ -64,7 +61,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-030 | Điểm doanh thu của chủ tiệm | Nháp | Bắt buộc | `shop` |
 | REQ-042 | Thành phố mở nhiều khu | Đã chốt | Nên có | `web-3d` |
 | REQ-043 | Thời tiết ngẫu nhiên trong thành phố | Đã chốt | Nên có | `web-3d` |
-| REQ-054 | Bản đồ nhỏ và định vị trong thành phố | Nháp | Có thì tốt | `web-3d` |
 
 ## M5 · Tích hợp game core
 
@@ -78,8 +74,6 @@ Trang này được sinh từ `docs/requirements/registry.yaml`. Sửa trong t�
 | REQ-034 | Màn hình chung của tiệm | Nháp | Nên có | `game` |
 | REQ-037 | Biểu cảm nhân vật khi chơi | Nháp | Nên có | `web-3d` |
 | REQ-038 | Bot khách cho tiệm vắng | Nháp | Nên có | `game` |
-| REQ-053 | Nhiệm vụ hằng ngày | Nháp | Có thì tốt | `game` |
-| REQ-056 | Túi đồ của người chơi | Nháp | Có thì tốt | `game` |
 
 ## M6 · Bot học tăng cường
 
@@ -395,41 +389,5 @@ Nguồn: `team-decision`
 ### REQ-049: Gộp PR theo tiêu chí issue và pipeline, không bắt approval
 
 PR công việc vào staging phải đóng issue có REQ hoặc ADR và đáp ứng mục Xong khi nào của issue; người merge xác nhận chức năng đạt yêu cầu và mọi check bắt buộc xanh. PR promote staging lên main tuân theo điều kiện phát hành ở ADR-0007 và được miễn issue/REQ như quy định hiện có. Cả hai luồng PR đều không cần approval; review và bình luận là tùy chọn. Nếu review CHANGES_REQUESTED đang chặn theo quy tắc của GitHub, người merge được quyền dismiss sau khi kiểm tra tiêu chí issue hoặc điều kiện promote cùng trạng thái pipeline. Approval của lần phát hành production vẫn bắt buộc theo ADR-0007.
-
-Nguồn: `team-decision`
-
-### REQ-052: Giao diện thống nhất theo hệ thiết kế
-
-Giao diện 2D của trò chơi dùng chung hệ thiết kế Saigon Soft-Future, token ngữ nghĩa, thành phần và cách phản hồi thao tác theo ADR-0040. Kiểm tra được khả dụng bằng phím và chạm, tương phản, mức chất lượng thấp và tuỳ chọn giảm chuyển động.
-
-Nguồn: `team-decision`
-
-### REQ-053: Nhiệm vụ hằng ngày
-
-Xem xét danh sách hoạt động hằng ngày và tiến độ của từng hoạt động. Nguồn nhiệm vụ, cách xác nhận và phần thưởng còn mở. Phần thưởng phải tuân theo REQ-028 và ADR-0010.
-
-Nguồn: `team-decision`
-
-### REQ-054: Bản đồ nhỏ và định vị trong thành phố
-
-Xem xét bản đồ nhỏ hiển thị vị trí người chơi và các điểm đến theo dữ liệu thành phố. Nguồn dữ liệu, phạm vi hiển thị và ngân sách hiệu năng còn mở.
-
-Nguồn: `team-decision`
-
-### REQ-055: Hộp thư của người chơi
-
-Xem xét cách lưu và đọc lại thư quan trọng. Quan hệ với thông báo trong ứng dụng, thư giữa người chơi và khả năng đính kèm còn mở.
-
-Nguồn: `team-decision`
-
-### REQ-056: Túi đồ của người chơi
-
-Xem xét nơi người chơi xem và dùng vật phẩm đã có. Các loại vật phẩm, phạm vi sở hữu và quyền trao đổi còn mở.
-
-Nguồn: `team-decision`
-
-### REQ-057: Món đồ nhân vật cần mở khoá
-
-Xem xét biểu thị và mở khoá món đồ nhân vật chưa sở hữu. Điều kiện mở khoá, quyền sử dụng và cách ghi giao dịch còn mở.
 
 Nguồn: `team-decision`
