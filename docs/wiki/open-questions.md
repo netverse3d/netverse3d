@@ -4,13 +4,15 @@ Những điều chưa chốt. Có câu trả lời thì cập nhật REQ hoặc 
 
 ## Tính năng đề xuất từ tham chiếu giao diện 2D
 
-| Issue                                                                 | Câu hỏi                                                                                                                             | Ai trả lời   |
-| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| [#420](https://github.com/netverse3d/netverse3d/issues/420) · REQ-053 | Ai đặt nhiệm vụ, sự kiện nào xác nhận tiến độ và phần thưởng dùng điểm thành tích hay phút miễn phí? Quy tắc Xèng vẫn theo REQ-028. | Nhóm, mentor |
-| [#421](https://github.com/netverse3d/netverse3d/issues/421) · REQ-054 | Bản đồ nhỏ lấy dữ liệu nào từ #242, hiển thị điểm nào và dùng ngân sách vẽ nào trên máy yếu?                                        | Nhóm, mentor |
-| [#422](https://github.com/netverse3d/netverse3d/issues/422) · REQ-055 | Phân biệt thư với thông báo REQ-008 thế nào? Có thư giữa người chơi, kiểm duyệt hoặc vật phẩm đính kèm không?                       | Nhóm, mentor |
-| [#423](https://github.com/netverse3d/netverse3d/issues/423) · REQ-056 | Túi chứa nhóm vật phẩm nào, sở hữu theo tài khoản hay tiệm, và có cho trao đổi không?                                               | Nhóm, mentor |
-| [#424](https://github.com/netverse3d/netverse3d/issues/424) · REQ-057 | Mở khoá món bằng gì, máy chủ kiểm quyền ở đâu và giao dịch nào cần hoá đơn?                                                         | Nhóm, mentor |
+| Issue                                                                 | Câu hỏi                                                                                                                                                                              | Ai trả lời   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| [#420](https://github.com/netverse3d/netverse3d/issues/420) · REQ-053 | Ai đặt nhiệm vụ, sự kiện nào xác nhận tiến độ và phần thưởng dùng điểm thành tích hay phút miễn phí? Quy tắc Xèng vẫn theo REQ-028.                                                  | Nhóm, mentor |
+| [#421](https://github.com/netverse3d/netverse3d/issues/421) · REQ-054 | Bản đồ nhỏ lấy dữ liệu nào từ #242, hiển thị điểm nào và dùng ngân sách vẽ nào trên máy yếu?                                                                                         | Nhóm, mentor |
+| [#422](https://github.com/netverse3d/netverse3d/issues/422) · REQ-055 | Thư giữa người chơi: ai được gửi cho ai, duyệt nội dung theo REQ-015, chặn và báo cáo thế nào, có đính kèm vật phẩm không? Hộp thư thông báo của hệ thống đã có theo REQ-008 (#427). | Nhóm, mentor |
+| [#423](https://github.com/netverse3d/netverse3d/issues/423) · REQ-056 | Túi chứa nhóm vật phẩm nào, sở hữu theo tài khoản hay tiệm, và có cho trao đổi không?                                                                                                | Nhóm, mentor |
+| [#424](https://github.com/netverse3d/netverse3d/issues/424) · REQ-057 | Mở khoá món bằng gì, máy chủ kiểm quyền ở đâu và giao dịch nào cần hoá đơn?                                                                                                          | Nhóm, mentor |
+| [#429](https://github.com/netverse3d/netverse3d/issues/429) · REQ-058 | Cấp độ người chơi tính từ đâu (thời gian chơi, nhiệm vụ, trận thắng), mở ra gì, có liên quan danh tiếng tiệm ở REQ-016 không?                                                        | Nhóm, mentor |
+| [#430](https://github.com/netverse3d/netverse3d/issues/430) · REQ-059 | Sự kiện cộng đồng do ai tạo, có thưởng gì mà không phá REQ-028, gắn với một tiệm hay toàn thành phố?                                                                                 | Nhóm, mentor |
 
 ## Các câu hỏi khác
 
