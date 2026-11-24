@@ -416,8 +416,8 @@ requirements:
     area: web-3d
     sources: [team-decision]
   - id: REQ-055
-    title: Hộp thư của người chơi
-    description: Xem xét cách lưu và đọc lại thư quan trọng. Quan hệ với thông báo trong ứng dụng, thư giữa người chơi và khả năng đính kèm còn mở.
+    title: Thư giữa người chơi
+    description: Người chơi gửi và nhận thư với người chơi khác, đọc lại trong hộp thư. Hộp thư thông báo của hệ thống đã thuộc REQ-008. Ai được gửi cho ai, duyệt nội dung theo REQ-015, chặn và báo cáo, việc đính kèm còn mở; không được dùng thư để chuyển Xèng.
     status: draft
     priority: could
     milestone: M3
@@ -438,4 +438,20 @@ requirements:
     priority: could
     milestone: M3
     area: web-3d
+    sources: [team-decision]
+  - id: REQ-058
+    title: Cấp độ người chơi
+    description: Người chơi có cấp độ và thanh tiến độ hiện cạnh ảnh đại diện. Điểm kinh nghiệm đến từ đâu, cấp độ mở ra gì, có liên quan danh tiếng tiệm ở REQ-016 hay không còn mở; cấp độ không được quy đổi ra Xèng.
+    status: draft
+    priority: could
+    milestone: M5
+    area: game
+    sources: [team-decision]
+  - id: REQ-059
+    title: Sự kiện cộng đồng
+    description: Người chơi xem và tham gia các sự kiện do hệ thống hoặc chủ tiệm tổ chức, như giải đấu nhỏ hay buổi gặp mặt trong tiệm. Ai được tạo sự kiện, sự kiện có thưởng gì, liên hệ với giao lưu ở REQ-020 còn mở.
+    status: draft
+    priority: could
+    milestone: M4
+    area: shop
     sources: [team-decision]
