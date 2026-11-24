@@ -38,6 +38,7 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 | **N2** | Màu riêng của tiệm chỉ đổi màu nhấn. Chữ, viền focus và màu trạng thái giữ nguyên với mọi tiệm.                 | Test "đổi accent tiệm không đổi màu trạng thái lỗi" (#417).                   |
 | **N3** | Trạng thái không chỉ nói bằng màu: lỗi, cảnh báo, thành công luôn có chữ hoặc biểu tượng đi kèm.                | Thư viện.                                                                     |
 | **N4** | Nền panel tối ở mọi màn, kể cả màn toàn trang.                                                                  | Thư viện, chạy thử.                                                           |
+| **N5** | HUD và gợi ý đọc rõ trên mọi loại cảnh: hẻm tối, đường sáng đèn, mưa, nhiều neon; không cạnh tranh với cảnh 3D. | Chạy thử ở các cảnh đó.                                                       |
 
 ### T. Tương tác
 
@@ -59,6 +60,9 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 | **P4** | Thông báo nhanh không cắt ngang lúc chơi, không lấy focus, tự ẩn.                                        | Thư viện, chạy thử.                                                     |
 | **P5** | Phản hồi về một vật trong thế giới hiện ngay cạnh vật đó, ví dụ máy đã có người; không mở hộp thoại lớn. | Chạy thử.                                                               |
 | **P6** | Mất WebGL thì hiện lớp khôi phục, tài khoản vẫn đăng nhập, cảnh tự quay lại.                             | Smoke "mất WebGL hiện lớp khôi phục và tài khoản vẫn đăng nhập" (#419). |
+| **P7** | Không có nội dung thì nói rõ là trống và chỉ bước tiếp theo, ví dụ hộp thư chưa có thư.                  | Thư viện, chạy thử.                                                     |
+| **P8** | Mất kết nối phòng thì hiện trạng thái kết nối và cách thử lại; không âm thầm bỏ lệnh.                    | Chạy thử khi có thanh trạng thái kết nối (ngoài phạm vi #415).          |
+| **P9** | Có bản ứng dụng mới thì báo và để người chơi chọn lúc cập nhật; không tự tải lại giữa phiên thuê máy.    | Chạy thử với bản PWA.                                                   |
 
 ### K. Khả dụng
 

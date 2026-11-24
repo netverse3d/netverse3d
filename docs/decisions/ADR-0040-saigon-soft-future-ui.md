@@ -58,7 +58,7 @@ Người dẫn dắt nhóm đã xem ảnh tham chiếu Style Direction 04 "Saigo
 - Trạng thái tương tác dùng chung: `idle`, `pending`, `confirmed`, `denied`, `error`.
 - Đang `pending` thì component không gửi thêm cùng một lệnh. `confirmed` chỉ đến từ phòng hoặc server. Khoá ở giao diện không thay luật phía server: giữ chỗ máy vẫn theo REQ-018, giao dịch Xèng vẫn theo REQ-028 và ADR-0010.
 - Tải không có tiến độ thật thì không hiện phần trăm.
-- Mỗi trạng thái phản hồi có một mẫu riêng: skeleton, spinner, thông báo nhanh, banner, lỗi tại chỗ, lớp khôi phục. Không gộp thành một component tải hay một component lỗi.
+- Mỗi trạng thái phản hồi có một mẫu riêng: skeleton, spinner, thông báo nhanh, banner, lỗi tại chỗ, trạng thái rỗng, lớp khôi phục. Không gộp thành một component tải hay một component lỗi.
 
 **Nơi ghi và nơi xem**
 
