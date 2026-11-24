@@ -4,6 +4,8 @@ import { dirname, resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import * as THREE from 'three';
+import { applyLighting, LIGHTING_PRESETS } from '../runtime/lighting.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -12,15 +14,26 @@ test('thanh môi trường và bloom cùng cập nhật preset ánh sáng', () =
   const match = html.match(/const sliders = \{([\s\S]*?)\n {6}\};/);
   assert.ok(match, 'Không tìm thấy bộ thanh trượt ánh sáng');
   const updates = [];
-  const activeBloom = { strength: 0.35, radius: 0.4, threshold: 0.85 };
-  const bloom = { ...activeBloom };
+  const scene = new THREE.Scene();
+  const bloomPass = {};
+  const lighting = applyLighting(THREE, {
+    scene,
+    renderer: {},
+    bloomPass,
+    preset: {
+      ...LIGHTING_PRESETS['shop-neon'],
+      environment: { source: 'none', intensity: 0.3, blur: 0 },
+    },
+  });
   const sliders = runInNewContext(`({${match[1]}})`, {
-    bloom,
+    bloom: bloomPass,
     lightingHandle: {
       update(value) {
         updates.push(value);
-        if (value.bloom) Object.assign(activeBloom, value.bloom);
-        Object.assign(bloom, activeBloom);
+        lighting.update(value);
+      },
+      setExposure(value) {
+        lighting.setExposure(value);
       },
     },
   });
@@ -34,6 +47,8 @@ test('thanh môi trường và bloom cùng cập nhật preset ánh sáng', () =
     { bloom: { threshold: 0.2 } },
     { environment: { intensity: 0.2 } },
   ]);
-  assert.equal(bloom.strength, 1.2);
-  assert.equal(bloom.threshold, 0.2);
+  assert.equal(bloomPass.strength, 1.2);
+  assert.equal(bloomPass.threshold, 0.2);
+  assert.equal(lighting.preset.environment.intensity, 0.2);
+  lighting.dispose();
 });
