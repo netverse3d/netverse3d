@@ -13,11 +13,11 @@ Hệ thiết kế được dựng theo từng issue con của [#415](https://git
 | [#418](https://github.com/netverse3d/netverse3d/issues/418) | Component dùng chung, mục Component; HUD, hộp tài khoản, gợi ý ngồi máy và hộp xác nhận thuê, desktop khi thuê máy, hộp thư, nút PWA chuyển sang |
 | [#419](https://github.com/netverse3d/netverse3d/issues/419) | Trạng thái chờ khi ngồi máy, lớp khôi phục khi mất WebGL, mục Mẫu tương tác                                                                      |
 
-Trước khi #417 vào `staging`, biến CSS vẫn nằm ở `apps/web-3d/app/globals.css` với tên theo màu (`--cyan`, `--violet`…). Không thêm biến mới vào đó; việc mới chờ token của #417.
+Token và Thư viện giao diện có từ #417. `apps/web-3d` nạp `@netverse/ui/tokens.css` ở `app/layout.tsx`; `globals.css` không còn biến riêng.
 
 ## Token
 
-Từ #417, token là biến CSS trong `packages/ui/tokens/`. Màu, chữ, khoảng cách, bo góc và lớp chia ba tầng; chuyển động nằm riêng ở `motion.css` với các nhịp tức thì, nhanh, cơ bản, panel, chuyển cảnh, mọi component được dùng.
+Token là biến CSS trong `packages/ui/tokens/`. Màu, chữ, khoảng cách, bo góc và lớp chia ba tầng; chuyển động nằm riêng ở `motion.css` với các nhịp tức thì, nhanh, cơ bản, panel, chuyển cảnh, mọi component được dùng.
 
 | Tầng       | Tệp             | Đặt tên theo                                                     | Ai được dùng       |
 | ---------- | --------------- | ---------------------------------------------------------------- | ------------------ |
@@ -56,7 +56,7 @@ Thêm một component:
 
 ## Thư viện giao diện
 
-Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) khi `staging` đổi. Thư viện có từ #417, gồm ba mục:
+Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản tại [netverse3d.github.io/netverse3d/ui](https://netverse3d.github.io/netverse3d/ui/), cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/), mỗi khi `staging` đổi. Xem tại máy bằng `pnpm ui:library` rồi mở `http://localhost:4174/ui/`. Màu nhấn đọc từ chính công thức tiệm của `game-assets`. Thư viện gồm ba mục:
 
 - **Nền tảng:** mẫu màu kèm tên token, bảng tương phản tính trực tiếp, thang chữ, khoảng cách, bo góc, thứ tự lớp, chuyển động; đổi thử màu tiệm, mức chất lượng, giảm trong suốt, giảm chuyển động.
 - **Component:** mỗi component một bảng biến thể nhân trạng thái.

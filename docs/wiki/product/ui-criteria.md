@@ -32,13 +32,13 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 
 ### N. Ngữ nghĩa và màu
 
-| Mã     | Tiêu chí                                                                                                        | Cách kiểm                                                                     |
-| :----- | :-------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| **N1** | Component không ghi mã màu, cỡ chữ, khoảng cách hay thời lượng; chỉ dùng token ngữ nghĩa hoặc token thành phần. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417). |
-| **N2** | Màu riêng của tiệm chỉ đổi màu nhấn. Chữ, viền focus và màu trạng thái giữ nguyên với mọi tiệm.                 | Test "đổi accent tiệm không đổi màu trạng thái lỗi" (#417).                   |
-| **N3** | Trạng thái không chỉ nói bằng màu: lỗi, cảnh báo, thành công luôn có chữ hoặc biểu tượng đi kèm.                | Thư viện.                                                                     |
-| **N4** | Nền panel tối ở mọi màn, kể cả màn toàn trang.                                                                  | Thư viện, chạy thử.                                                           |
-| **N5** | HUD và gợi ý đọc rõ trên mọi loại cảnh: hẻm tối, đường sáng đèn, mưa, nhiều neon; không cạnh tranh với cảnh 3D. | Chạy thử ở các cảnh đó.                                                       |
+| Mã     | Tiêu chí                                                                                                        | Cách kiểm                                                                            |
+| :----- | :-------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| **N1** | Component không ghi mã màu, cỡ chữ, khoảng cách hay thời lượng; chỉ dùng token ngữ nghĩa hoặc token thành phần. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417).        |
+| **N2** | Màu riêng của tiệm chỉ đổi màu nhấn. Chữ, viền focus và màu trạng thái giữ nguyên với mọi tiệm.                 | Test "đổi accent tiệm không đổi màu trạng thái lỗi" (#417).                          |
+| **N3** | Trạng thái không chỉ nói bằng màu: lỗi, cảnh báo, thành công luôn có chữ hoặc biểu tượng đi kèm.                | Thư viện; test "chữ báo lỗi dùng màu lỗi, chỉ chữ từ chối dùng màu cảnh báo" (#417). |
+| **N4** | Nền panel tối ở mọi màn, kể cả màn toàn trang.                                                                  | Thư viện, chạy thử.                                                                  |
+| **N5** | HUD và gợi ý đọc rõ trên mọi loại cảnh: hẻm tối, đường sáng đèn, mưa, nhiều neon; không cạnh tranh với cảnh 3D. | Chạy thử ở các cảnh đó.                                                              |
 
 ### T. Tương tác
 
@@ -70,7 +70,7 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 | :----- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
 | **K1** | Chữ trên mọi mặt nền đạt tương phản 4.5:1.                                 | Test "chữ chính trên mọi mặt nền đạt tương phản 4.5:1" (#417).                    |
 | **K2** | Viền focus, viền điều khiển và màu trạng thái đạt 3:1 trên mặt nền.        | Test "viền focus, viền điều khiển và màu trạng thái đạt 3:1 trên mặt nền" (#417). |
-| **K3** | Mọi thao tác làm được bằng bàn phím; phần tử đang focus luôn thấy rõ.      | Thư viện, chạy thử.                                                               |
+| **K3** | Mọi thao tác làm được bằng bàn phím; phần tử đang focus luôn thấy rõ.      | Thư viện, chạy thử; test "viền lúc thường không dùng màu focus" (#417).           |
 | **K4** | Trên điện thoại, vùng chạm của mọi nút và ô chọn không nhỏ hơn 44 × 44 px. | Thư viện ở khổ điện thoại.                                                        |
 | **K5** | Chữ hiển thị nằm trong tệp ngôn ngữ, không nằm trong component.            | Duyệt mã theo luật ở [wiki client game](../engineering/web-client.md).            |
 
