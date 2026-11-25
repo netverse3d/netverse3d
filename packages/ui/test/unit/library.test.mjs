@@ -27,6 +27,9 @@ test('bản xuất bản có đủ trang, token, mã trình duyệt và phông k
     for (const file of [
       'index.html',
       'tokens/semantic.css',
+      'components/components.css',
+      'components/registry.json',
+      'library/components.mjs',
       'src/accent.mjs',
       'fonts/fonts.css',
       'fonts/LICENSE',

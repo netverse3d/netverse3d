@@ -15,6 +15,7 @@ const CONTENT_TYPES = {
   '.json': 'application/json',
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
+  '.jpg': 'image/jpeg',
 };
 
 function find(pathname) {
@@ -44,6 +45,7 @@ createServer((request, response) => {
     const body = found.body();
     response.writeHead(200, {
       'content-type': CONTENT_TYPES[found.type] ?? 'application/octet-stream',
+      'cache-control': 'no-store',
     });
     response.end(body);
   } catch {

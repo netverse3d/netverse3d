@@ -1,5 +1,7 @@
 import { readableAccent } from '../src/accent.mjs';
 import { contrastRatio } from '../src/contrast.mjs';
+import { componentShowcase } from './components.mjs';
+import { element } from './dom.mjs';
 import { CONTRAST_RULES, librarySections } from './sections.mjs';
 
 const root = document.documentElement;
@@ -11,18 +13,6 @@ const LINKS = {
   system: '../wiki/engineering/design-system.html',
   assets: '../game-assets/library/',
 };
-
-function element(tag, options = {}, children = []) {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(options)) {
-    if (key === 'text') node.textContent = value;
-    else if (key === 'style') Object.assign(node.style, value);
-    else if (key === 'dataset') Object.assign(node.dataset, value);
-    else node.setAttribute(key, value);
-  }
-  node.append(...children);
-  return node;
-}
 
 function tokenValue(token) {
   return getComputedStyle(root).getPropertyValue(token).trim();
@@ -139,7 +129,7 @@ function layers(tokens) {
             style: {
               zIndex: `var(${token})`,
               insetInlineStart: `calc(var(--ui-space-6) * ${index})`,
-              insetBlockStart: `calc(var(--ui-space-4) * ${index})`,
+              insetBlockStart: `calc(var(--ui-space-8) * ${index} + var(--ui-space-2) * ${index})`,
             },
           },
           [
@@ -252,8 +242,10 @@ function controls(text, recipes) {
 
 async function start() {
   let text;
+  let registry;
   try {
     text = await (await fetch(new URL('./text.json', import.meta.url))).json();
+    registry = await (await fetch(new URL('../components/registry.json', import.meta.url))).json();
   } catch {
     document.body.textContent = 'Library data could not be loaded.';
     return;
@@ -269,6 +261,7 @@ async function start() {
   document
     .getElementById('sections')
     .append(
+      componentShowcase(text.components, registry),
       ...librarySections().map((section) =>
         element('section', { id: section.id, class: 'panel' }, [
           element('h2', { text: text.sections[section.id] }),

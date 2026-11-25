@@ -7,9 +7,17 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const fontRoot = dirname(
   createRequire(import.meta.url).resolve('@fontsource/be-vietnam-pro/package.json'),
 );
-const PAGE_FILES = ['library.css', 'main.mjs', 'sections.mjs', 'text.json'];
+const PAGE_FILES = [
+  'components.mjs',
+  'dom.mjs',
+  'icons.mjs',
+  'library.css',
+  'main.mjs',
+  'sections.mjs',
+  'text.json',
+];
 const TOKEN_FILES = ['primitive.css', 'semantic.css', 'motion.css'];
-const BROWSER_MODULES = ['accent.mjs', 'catalog.mjs', 'contrast.mjs', 'tokens.mjs'];
+const BROWSER_MODULES = ['accent.mjs', 'catalog.mjs', 'contrast.mjs', 'registry.mjs'];
 const FONT_SUBSETS = ['vietnamese', 'latin'];
 const FONT_WEIGHTS = [400, 600, 700];
 const FONT_FORMATS = ['woff2', 'woff'];
@@ -30,6 +38,9 @@ export function libraryEntries() {
     { to: 'index.html', from: join(root, 'library', 'index.html') },
     ...PAGE_FILES.map((file) => ({ to: `library/${file}`, from: join(root, 'library', file) })),
     ...TOKEN_FILES.map((file) => ({ to: `tokens/${file}`, from: join(root, 'tokens', file) })),
+    { to: 'components/components.css', from: join(root, 'components', 'components.css') },
+    { to: 'components/registry.json', from: join(root, 'components', 'registry.json') },
+    { to: 'library/media/shop.jpg', from: join(root, 'library', 'media', 'shop.jpg') },
     ...BROWSER_MODULES.map((file) => ({ to: `src/${file}`, from: join(root, 'src', file) })),
     ...fontFiles.map((file) => ({
       to: `fonts/files/${file}`,

@@ -24,3 +24,7 @@ test('accent đã đủ tương phản thì giữ nguyên', () => {
 test('accent không đọc được thì trả về null', () => {
   assert.equal(readableAccent('tím', backgrounds), null);
 });
+
+test('không có màu nào đạt thì trả về null thay vì màu trắng', () => {
+  assert.equal(readableAccent('#8a2bff', ['#000000', '#ffffff'], { minimum: 12 }), null);
+});

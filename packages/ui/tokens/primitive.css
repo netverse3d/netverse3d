@@ -12,6 +12,8 @@
   --ui-core-amber: #ffc46b;
   --ui-core-rose: #ff8fb3;
   --ui-core-peach: #f6c79a;
+  --ui-core-magenta: #ff5ad8;
+  --ui-core-cyan: #4de8ff;
   --ui-core-scrim: #0d0a18b8;
   --ui-core-shadow: #00000080;
   --ui-core-tint: #ffffff09;
@@ -19,6 +21,7 @@
   --ui-text-xs: 12px;
   --ui-text-sm: 13px;
   --ui-text-base: 15px;
+  --ui-text-input: 16px;
   --ui-text-lg: 18px;
   --ui-text-xl: 22px;
   --ui-text-2xl: 28px;
@@ -38,4 +41,10 @@
   --ui-radius-3: 16px;
   --ui-radius-pill: 999px;
   --ui-blur-panel: blur(12px);
+  --ui-cut-sm: 6px;
+  --ui-cut-md: 12px;
+  --ui-cut-lg: 20px;
+  --ui-line-width: 1.5px;
+  --ui-glow-soft: 9px;
+  --ui-glow-strong: 18px;
 }

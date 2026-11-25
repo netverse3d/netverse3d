@@ -26,5 +26,5 @@ export function readableAccent(
     const candidate = step === 0 ? accent : mixColors(accent, '#ffffff', step * LIGHTEN_STEP);
     if (readable(candidate)) return candidate;
   }
-  return '#ffffff';
+  return null;
 }

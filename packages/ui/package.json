@@ -10,7 +10,8 @@
     "./catalog": "./src/catalog.mjs",
     "./contrast": "./src/contrast.mjs",
     "./token-files": "./src/token-files.mjs",
-    "./tokens": "./src/tokens.mjs"
+    "./tokens": "./src/tokens.mjs",
+    "./components.css": "./components/components.css"
   },
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",

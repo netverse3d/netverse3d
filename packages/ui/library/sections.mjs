@@ -28,6 +28,7 @@ export function librarySections() {
     { id: 'typography', kind: 'typography', tokens: TOKEN_GROUPS.typography },
     { id: 'spacing', kind: 'spacing', tokens: TOKEN_GROUPS.spacing },
     { id: 'radius', kind: 'radius', tokens: TOKEN_GROUPS.radius },
+    { id: 'shape', kind: 'values', tokens: TOKEN_GROUPS.shape },
     { id: 'layers', kind: 'layers', tokens: TOKEN_GROUPS.layers },
     { id: 'motion', kind: 'motion', tokens: TOKEN_GROUPS.motion },
   ];

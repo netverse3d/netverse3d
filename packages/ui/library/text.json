@@ -29,7 +29,8 @@
     "spacing": "Khoảng cách",
     "radius": "Bo góc",
     "layers": "Thứ tự lớp",
-    "motion": "Chuyển động"
+    "motion": "Chuyển động",
+    "shape": "Góc cắt, viền và phát sáng"
   },
   "contrast": {
     "pair": "Cặp",
@@ -40,5 +41,71 @@
     "fail": "Chưa đạt"
   },
   "sample": "Tiệm net Netverse, hẻm 28, quận 1",
-  "motionPlay": "Chạy thử"
+  "motionPlay": "Chạy thử",
+  "components": {
+    "title": "Component",
+    "intro": "Phong cách lai Neon Arcade × Saigon Soft-Future: góc cắt chéo, viền neon sáng dần về góc có quầng phát sáng, nền kính mềm. Mọi tham số đổi được ở bàn thử bên dưới.",
+    "scene": "Ghép như trong game",
+    "player": "netplayer",
+    "level": "Lv. 12",
+    "quests": "Nhiệm vụ",
+    "questCount": "1/2",
+    "questDone": "Khám phá khu phố",
+    "questOpen": "Vào một tiệm net",
+    "shopName": "Netverse Cybercafé",
+    "shopKind": "Tiệm net cộng đồng",
+    "shopSeats": "18/24 máy",
+    "shopOpen": "Đang mở",
+    "shopAbout": "Tiệm net 3D trong khu phố, chơi game, làm đồ hoạ, giao lưu.",
+    "interact": "Tương tác",
+    "actions": {
+      "run": "Chạy",
+      "chat": "Chat",
+      "camera": "Chụp"
+    },
+    "icons": {
+      "bell": "Thông báo",
+      "friends": "Bạn bè",
+      "bag": "Túi đồ",
+      "gear": "Cài đặt",
+      "chevron": "Xem tiệm",
+      "close": "Đóng"
+    },
+    "buttons": "Nút theo kiểu bề mặt và trạng thái",
+    "buttonLabel": "Vào tiệm",
+    "states": {
+      "idle": "Thường",
+      "pending": "Đang chờ",
+      "disabled": "Tắt"
+    },
+    "form": "Hộp đăng nhập",
+    "login": "Đăng nhập",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "emailPlaceholder": "Email đã đăng ký",
+    "passwordError": "Mật khẩu chưa đúng, thử lại.",
+    "signup": "Tạo tài khoản",
+    "forgot": "Quên mật khẩu?",
+    "playground": "Bàn thử tham số",
+    "playgroundTarget": "Component",
+    "props": {
+      "shape": "Hình góc",
+      "cut": "Cỡ góc cắt",
+      "tone": "Tông",
+      "duo": "Tông thứ hai",
+      "surface": "Bề mặt",
+      "glow": "Phát sáng",
+      "size": "Cỡ",
+      "state": "Trạng thái"
+    },
+    "code": "Tham số tương ứng",
+    "registry": "Sổ đăng ký component",
+    "registryIntro": "Chỉ component có trong sổ này mới được dùng trong mã giao diện. Cần component mới thì thêm vào packages/ui cùng mẫu ở đây trước, theo ADR-0041.",
+    "registryColumns": [
+      "Tên React",
+      "Class CSS",
+      "Tham số",
+      "Tiêu chí"
+    ]
+  }
 }
