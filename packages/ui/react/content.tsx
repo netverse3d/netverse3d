@@ -67,7 +67,11 @@ export function TextField(props: TextFieldProps) {
   const state = props.state ?? (input.disabled ? 'disabled' : 'idle');
   return (
     <FieldFrame label={label} message={message} state={state} className={className}>
-      <input {...input} aria-invalid={state === 'error' || undefined} />
+      <input
+        {...input}
+        disabled={input.disabled || state === 'disabled'}
+        aria-invalid={input['aria-invalid'] ?? (state === 'error' || undefined)}
+      />
     </FieldFrame>
   );
 }
@@ -84,7 +88,7 @@ export function SelectField(props: SelectFieldProps) {
   const state = props.state ?? (select.disabled ? 'disabled' : 'idle');
   return (
     <FieldFrame label={label} state={state} className={className}>
-      <select {...select}>
+      <select {...select} disabled={select.disabled || state === 'disabled'}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -119,7 +123,7 @@ export function Avatar({ label }: { label: string }) {
 }
 
 export type PlayerBadgeProps = PlayerBadgeVariants & {
-  name: ReactNode;
+  name: string;
   level: ReactNode;
   progress: number;
   progressLabel: string;
@@ -137,7 +141,7 @@ export function PlayerBadge(props: PlayerBadgeProps) {
   return (
     <div className={classNames('nv-shape nv-panel nv-profile', className)} {...data}>
       <div className="nv-profile__row">
-        <Avatar label={String(name)} />
+        <Avatar label={name} />
         <div className="nv-profile__text">
           <strong>{name}</strong>
           <span className="nv-panel__meta">{level}</span>

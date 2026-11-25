@@ -35,14 +35,14 @@ body {
   gap: var(--ui-space-4);
 }
 
-a {
+.masthead a {
   color: var(--ui-accent);
 }
 
-a:focus-visible,
-button:focus-visible,
-select:focus-visible,
-input:focus-visible {
+.masthead a:focus-visible,
+.controls :is(select, input):focus-visible,
+.nv-playground__controls select:focus-visible,
+.motion-row button:focus-visible {
   outline: 2px solid var(--ui-focus);
   outline-offset: 2px;
 }
@@ -71,8 +71,9 @@ input:focus-visible {
   font-size: var(--ui-text-sm);
 }
 
-select,
-button {
+.controls select,
+.nv-playground__controls select,
+.motion-row button {
   min-height: 44px;
   padding: var(--ui-space-1) var(--ui-space-3);
   background: var(--ui-action-neutral);

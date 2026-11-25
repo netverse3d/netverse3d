@@ -1,6 +1,7 @@
 import { useEffect, useRef, type HTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 import { IconButton } from './actions.tsx';
 import { Icon } from './icon.tsx';
+import { closesOnCancel } from '../src/interaction.mjs';
 import { classNames, splitVariants } from './shared.ts';
 import { Status } from './feedback.tsx';
 import {
@@ -62,17 +63,17 @@ export function Panel(props: PanelProps) {
   );
 }
 
-export type DialogProps = DialogVariants & {
-  open: boolean;
-  title: ReactNode;
-  titleId: string;
-  titleLevel?: 1 | 2 | 3;
-  closeLabel: string;
-  onClose: () => void;
-  busy?: boolean;
-  children: ReactNode;
-  className?: string;
-};
+export type DialogProps = DialogVariants &
+  Omit<HTMLAttributes<HTMLDialogElement>, 'style' | 'title' | 'onClose' | 'children'> & {
+    open: boolean;
+    title: ReactNode;
+    titleId: string;
+    titleLevel?: 1 | 2 | 3;
+    closeLabel: string;
+    onClose: () => void;
+    busy?: boolean;
+    children: ReactNode;
+  };
 
 export function Dialog({
   open,
@@ -85,6 +86,7 @@ export function Dialog({
   size,
   className,
   children,
+  ...native
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -94,6 +96,7 @@ export function Dialog({
   }, [open]);
   return (
     <dialog
+      {...native}
       ref={ref}
       className={classNames('nv-modal', className)}
       data-size={size === 'lg' ? 'lg' : undefined}
@@ -101,7 +104,10 @@ export function Dialog({
       onKeyDown={(event: KeyboardEvent) => event.stopPropagation()}
       onCancel={(event) => {
         event.preventDefault();
-        if (!busy) onClose();
+        if (closesOnCancel(busy)) onClose();
+      }}
+      onClose={() => {
+        if (open) onClose();
       }}
     >
       {open && (

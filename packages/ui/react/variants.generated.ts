@@ -74,12 +74,6 @@ export interface PlayerBadgeVariants {
 }
 
 export interface DialogVariants {
-  shape?: 'bevel' | 'bevel-all' | 'notch' | 'round' | 'pill' | 'hex';
-  cut?: 'md' | 'sm' | 'lg';
-  tone?: 'accent' | 'primary' | 'magenta' | 'cyan' | 'success' | 'warning' | 'danger' | 'neutral';
-  duo?: 'none' | 'magenta' | 'cyan';
-  surface?: 'glass' | 'solid' | 'neon' | 'filled' | 'ghost';
-  glow?: 'soft' | 'none' | 'strong';
   size?: 'md' | 'lg';
 }
 
@@ -137,7 +131,7 @@ export const VARIANTS = {
   Meter: {},
   Avatar: {},
   PlayerBadge: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},
-  Dialog: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"],"size":["md","lg"]},
+  Dialog: {"size":["md","lg"]},
   Overlay: {},
   Spinner: {},
   Heading: {"level":["2","1","3"]},

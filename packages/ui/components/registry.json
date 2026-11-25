@@ -169,8 +169,8 @@
       "id": "dialog",
       "kind": "component",
       "react": "Dialog",
-      "className": "nv-dialog",
-      "uses": ["shape"],
+      "className": "nv-modal",
+      "uses": [],
       "props": {
         "size": ["md", "lg"]
       },
@@ -204,16 +204,6 @@
       "uses": [],
       "props": {},
       "criteria": ["N5"]
-    },
-    {
-      "uses": [],
-      "props": {
-        "size": ["md", "lg"]
-      },
-      "id": "modal",
-      "kind": "part",
-      "className": "nv-modal",
-      "criteria": ["T5", "L1"]
     },
     {
       "uses": [],
@@ -307,6 +297,14 @@
       "className": "nv-tile",
       "criteria": ["P7"],
       "demo": "tile"
+    },
+    {
+      "id": "dialog-panel",
+      "kind": "part",
+      "className": "nv-dialog",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["T5", "L1"]
     }
   ]
 }

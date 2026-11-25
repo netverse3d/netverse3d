@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { buttonInteraction } from '../src/interaction.mjs';
 import { Icon, type IconName } from './icon.tsx';
 import { classNames, splitVariants } from './shared.ts';
 import {
@@ -23,8 +24,7 @@ export function Button(props: ButtonProps) {
     duo: 'magenta',
   });
   const { block, className, children, disabled, type = 'button', ...native } = rest as ButtonProps;
-  const state = props.state ?? 'idle';
-  const pending = state === 'pending';
+  const interaction = buttonInteraction(props.state ?? 'idle', disabled);
   return (
     <button
       {...native}
@@ -32,10 +32,10 @@ export function Button(props: ButtonProps) {
       className={classNames('nv-shape nv-button', className)}
       {...data}
       data-block={block ? '' : undefined}
-      disabled={disabled || state !== 'idle'}
-      aria-busy={pending || undefined}
+      disabled={interaction.disabled}
+      aria-busy={interaction.busy || undefined}
     >
-      {pending && <Spinner />}
+      {interaction.spinner && <Spinner />}
       {children}
     </button>
   );
@@ -88,7 +88,7 @@ export function ActionButton({ icon, label, keyLabel, className, ...native }: Ac
   return (
     <span className={classNames('nv-action', className)}>
       <IconButton {...native} icon={icon} label={label} shape="hex" duo="magenta" />
-      <span>{label}</span>
+      <span aria-hidden="true">{label}</span>
       <Keycap>{keyLabel}</Keycap>
     </span>
   );

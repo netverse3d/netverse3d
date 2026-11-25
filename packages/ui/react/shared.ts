@@ -14,7 +14,7 @@ export function splitVariants<P extends object>(
   const chosen: Record<string, string | undefined> = { ...defaults };
   const rest: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(props)) {
-    if (key in options) {
+    if (Object.hasOwn(options, key)) {
       if (value !== undefined) chosen[key] = value as string;
     } else {
       rest[key] = value;
