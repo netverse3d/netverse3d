@@ -91,6 +91,8 @@ export const vi = {
   seat: {
     key: 'E',
     prompt: 'Nhấn E để thuê máy miễn phí',
+    pendingSit: 'Đang chờ máy xác nhận…',
+    pendingLeave: 'Đang trả máy…',
     sit: 'Thuê miễn phí',
     rentPriceLabel: 'Giá thuê',
     rentTitle: 'Xác nhận thuê máy',
@@ -113,6 +115,10 @@ export const vi = {
       no_balance: 'Không đủ số dư để thuê máy',
     },
     roomError: 'Phòng chưa nhận được yêu cầu, thử lại sau',
+  },
+  recovery: {
+    title: 'Đang dựng lại đồ hoạ',
+    body: 'Trình duyệt vừa mất ngữ cảnh WebGL. Tài khoản và phiên thuê máy vẫn giữ nguyên; cảnh sẽ tự hiện lại.',
   },
   status: {
     loading: 'Đang tải tiệm…',

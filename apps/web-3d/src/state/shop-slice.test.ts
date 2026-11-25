@@ -101,6 +101,7 @@ test('chưa có phòng thì chuyện ngồi máy ở trạng thái tắt; phòng
     taken: [],
     denied: null,
     error: null,
+    pending: null,
   });
   const seated = {
     available: true,
@@ -110,7 +111,7 @@ test('chưa có phòng thì chuyện ngồi máy ở trạng thái tắt; phòng
     error: null,
   };
   store.dispatch(seatingChanged(seated));
-  assert.deepEqual(store.getState().shop.seating, seated);
+  assert.deepEqual(store.getState().shop.seating, { ...seated, pending: null });
   assert.deepEqual(JSON.parse(JSON.stringify(store.getState().shop)), store.getState().shop);
 });
 

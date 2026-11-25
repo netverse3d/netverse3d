@@ -14,6 +14,7 @@ export default function SeatDesktop() {
   const scene = useSelector((state: RootState) => state.shop.scene);
   const seated = useSelector((state: RootState) => state.shop.seating.seated);
   const session = useSelector((state: RootState) => state.shop.session);
+  const leaving = useSelector((state: RootState) => state.shop.seating.pending?.action === 'leave');
   const [minimized, setMinimized] = useState(false);
   const [now, setNow] = useState(Date.now);
   const active = Boolean(scene.seatReady && session && seated === session.seatId);
@@ -104,10 +105,11 @@ export default function SeatDesktop() {
       <Button
         surface="neon"
         tone="danger"
+        state={leaving ? 'pending' : 'idle'}
         onClick={() => dispatch(useRequested())}
         data-end-session
       >
-        {vi.seat.endSession}
+        {leaving ? vi.seat.pendingLeave : vi.seat.endSession}
       </Button>
     </Panel>
   );

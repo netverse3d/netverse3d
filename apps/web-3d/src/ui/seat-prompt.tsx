@@ -122,6 +122,7 @@ export default function SeatPrompt() {
 
   if (!ready || !seating.available || !seatId) return notice;
   const seated = seating.seated !== null;
+  const waiting = seating.pending?.action === 'sit' && seating.pending.seatId === seatId;
   if (seated) {
     if (seatReady) return notice;
     const seconds = session ? remainingSeconds(session.endsAt, now, session.offset) : 0;
@@ -153,8 +154,13 @@ export default function SeatPrompt() {
               {formatSessionDuration(seconds)}
             </Text>
           </div>
-          <Button surface="neon" tone="danger" onClick={() => dispatch(useRequested())}>
-            {vi.seat.endSession}
+          <Button
+            surface="neon"
+            tone="danger"
+            state={seating.pending?.action === 'leave' ? 'pending' : 'idle'}
+            onClick={() => dispatch(useRequested())}
+          >
+            {seating.pending?.action === 'leave' ? vi.seat.pendingLeave : vi.seat.endSession}
           </Button>
         </Panel>
       </>
@@ -163,16 +169,25 @@ export default function SeatPrompt() {
   return (
     <>
       {notice}
-      <div className={styles.prompt} data-seat={seatId} data-seated={String(seated)}>
+      <div
+        className={styles.prompt}
+        data-seat={seatId}
+        data-seated={String(seated)}
+        aria-busy={waiting || undefined}
+      >
         {!seated && seating.denied?.seatId === seatId && (
           <Alert tone="warning">{vi.seat.denied[seating.denied.reason]}</Alert>
         )}
         {seating.error && <Alert tone="error">{vi.seat.roomError}</Alert>}
         <KeyHint className={styles.hint} keyLabel={vi.seat.key} aria-live="polite">
-          {vi.seat.prompt}
+          {waiting ? vi.seat.pendingSit : vi.seat.prompt}
         </KeyHint>
-        <Button className={styles.button} onClick={() => dispatch(useRequested())}>
-          {vi.seat.sit}
+        <Button
+          className={styles.button}
+          state={waiting ? 'pending' : 'idle'}
+          onClick={() => dispatch(useRequested())}
+        >
+          {waiting ? vi.seat.pendingSit : vi.seat.sit}
         </Button>
       </div>
     </>

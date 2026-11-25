@@ -490,6 +490,22 @@ test('đăng ký, xác minh, vào tiệm, đọc thông báo và đặt lại m�
       await waitFor(`${accountButton}?.textContent === 'Đăng xuất' && !${dialog}`);
       if (realModels) await waitFor(`document.querySelector('#stage')?.dataset.ready === 'true'`);
       assert.equal(await browser.evaluate('window.location.pathname'), '/');
+      if (realModels) {
+        const recovery = `document.querySelector('[data-webgl-recovery] [role="alert"]')`;
+        await browser.evaluate(`(() => {
+          const gl = document.querySelector('#gl')?.getContext('webgl2');
+          window.__netverseLoseContext = gl?.getExtension('WEBGL_lose_context') ?? null;
+          window.__netverseLoseContext?.loseContext();
+        })()`);
+        await waitFor(`Boolean(${recovery})`);
+        assert.equal(
+          await browser.evaluate(`${accountButton}?.textContent`),
+          'Đăng xuất',
+          'mất WebGL hiện lớp khôi phục và tài khoản vẫn đăng nhập',
+        );
+        await browser.evaluate(`window.__netverseLoseContext?.restoreContext()`);
+        await waitFor(`!${recovery} && document.querySelector('#stage')?.dataset.ready === 'true'`);
+      }
     },
   );
   assert.match(page.dom, /<canvas[^>]*id="gl"/);

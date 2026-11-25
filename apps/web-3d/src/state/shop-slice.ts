@@ -38,12 +38,21 @@ export interface SeatDenial {
   reason: 'occupied' | 'too_far' | 'no_balance';
 }
 
-export interface SeatingState {
+export interface SeatPending {
+  seatId: string;
+  action: 'sit' | 'leave';
+}
+
+export interface RoomSeating {
   available: boolean;
   seated: string | null;
   taken: string[];
   denied: SeatDenial | null;
   error: string | null;
+}
+
+export interface SeatingState extends RoomSeating {
+  pending: SeatPending | null;
 }
 
 export interface RentalRequest {
@@ -65,7 +74,17 @@ export const NO_ROOM: SeatingState = {
   taken: [],
   denied: null,
   error: null,
+  pending: null,
 };
+
+function pendingAfter(pending: SeatPending | null, room: RoomSeating): SeatPending | null {
+  if (!pending || !room.available || room.error) return null;
+  if (pending.action === 'sit') {
+    const answered = room.seated === pending.seatId || room.denied?.seatId === pending.seatId;
+    return answered ? null : pending;
+  }
+  return room.seated === pending.seatId ? pending : null;
+}
 
 export interface ShopState {
   stats: SceneStats;
@@ -131,11 +150,30 @@ export const shopSlice = createSlice({
         state.rentalConfirmation = null;
       }
     },
-    seatingChanged(state, action: PayloadAction<SeatingState>) {
-      state.seating = action.payload;
+    seatingChanged(state, action: PayloadAction<RoomSeating>) {
+      const { available, seated, taken, denied, error } = action.payload;
+      state.seating = {
+        available,
+        seated,
+        taken,
+        denied,
+        error,
+        pending: pendingAfter(state.seating.pending, action.payload),
+      };
     },
     rentalConfirmationRequested(state, action: PayloadAction<RentalRequest>) {
+      if (state.seating.pending) return;
       state.rentalConfirmation = action.payload;
+    },
+    seatLeaveRequested(state) {
+      if (state.seating.pending || !state.seating.seated) return;
+      state.seating.pending = { seatId: state.seating.seated, action: 'leave' };
+    },
+    seatRequestTimedOut(state, action: PayloadAction<SeatPending>) {
+      const pending = state.seating.pending;
+      if (pending?.seatId === action.payload.seatId && pending.action === action.payload.action) {
+        state.seating.pending = null;
+      }
     },
     rentalConfirmationCancelled(state) {
       state.rentalConfirmation = null;
@@ -152,8 +190,10 @@ export const shopSlice = createSlice({
       state.sessionNotice = null;
     },
     rentalConfirmationAccepted: {
-      reducer(state) {
+      reducer(state, action: PayloadAction<RentalRequest>) {
         state.rentalConfirmation = null;
+        if (state.seating.pending) return;
+        state.seating.pending = { seatId: action.payload.seatId, action: 'sit' };
       },
       prepare: (request: RentalRequest) => ({ payload: request }),
     },
@@ -179,6 +219,8 @@ export const {
   rentalConfirmationRequested,
   rentalConfirmationCancelled,
   rentalConfirmationAccepted,
+  seatLeaveRequested,
+  seatRequestTimedOut,
   sessionChanged,
   sessionEnded,
   sessionNoticeCleared,

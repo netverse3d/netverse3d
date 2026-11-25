@@ -388,3 +388,43 @@ code {
 .nv-overlay-frame .nv-scrim {
   position: absolute;
 }
+
+.nv-patterns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--ui-space-4);
+}
+
+.nv-pattern {
+  display: grid;
+  gap: var(--ui-space-2);
+  margin: 0;
+}
+
+.nv-pattern__stage {
+  display: grid;
+  place-items: center;
+  gap: var(--ui-space-3);
+  min-height: 140px;
+  padding: var(--ui-space-4);
+  border-radius: var(--ui-radius-3);
+  background:
+    radial-gradient(
+      ellipse at 50% 40%,
+      color-mix(in srgb, var(--ui-neon-magenta) 14%, transparent),
+      transparent 65%
+    ),
+    var(--ui-canvas);
+}
+
+.nv-pattern figcaption {
+  color: var(--ui-text-muted);
+  font-size: var(--ui-text-xs);
+}
+
+.nv-pattern__session {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
