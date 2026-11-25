@@ -2,6 +2,7 @@ import * as RadioPrimitive from '@radix-ui/react-radio-group';
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import {
   useId,
+  useRef,
   type ComponentPropsWithoutRef,
   type InputHTMLAttributes,
   type ReactNode,
@@ -20,19 +21,22 @@ import {
 
 type FieldFrameProps = {
   label: ReactNode;
+  labelId?: string;
   message?: ReactNode;
   state?: string;
   className?: string;
   children: ReactNode;
 };
 
-function FieldFrame({ label, message, state, className, children }: FieldFrameProps) {
+function FieldFrame({ label, labelId, message, state, className, children }: FieldFrameProps) {
   return (
     <label
       className={classNames('nv-field', className)}
       data-state={state === 'idle' ? undefined : state}
     >
-      <span className="nv-field__label">{label}</span>
+      <span className="nv-field__label" id={labelId}>
+        {label}
+      </span>
       <span className="nv-shape nv-input">{children}</span>
       {message && <span className="nv-field__message">{message}</span>}
     </label>
@@ -92,12 +96,16 @@ export function SearchField(props: SearchFieldProps) {
   const { label, value, onValueChange, clearLabel, className, ...input } = rest as SearchFieldProps;
   const state = props.state ?? (input.disabled ? 'disabled' : 'idle');
   const disabled = input.disabled || state === 'disabled';
+  const labelId = useId();
+  const field = useRef<HTMLInputElement>(null);
   return (
-    <FieldFrame label={label} state={state} className={className}>
+    <FieldFrame label={label} labelId={labelId} state={state} className={className}>
       <Icon name="search" />
       <input
         {...input}
+        ref={field}
         type="search"
+        aria-labelledby={input['aria-labelledby'] ?? labelId}
         value={value}
         disabled={disabled}
         onChange={(event) => onValueChange(event.target.value)}
@@ -107,7 +115,10 @@ export function SearchField(props: SearchFieldProps) {
           type="button"
           className="nv-field__clear"
           aria-label={clearLabel}
-          onClick={() => onValueChange('')}
+          onClick={() => {
+            onValueChange('');
+            field.current?.focus();
+          }}
         >
           <Icon name="close" />
         </button>

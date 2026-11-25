@@ -788,25 +788,6 @@
     color: var(--ui-highlight);
   }
 
-  .nv-input select {
-    flex: 1;
-    min-width: 0;
-    height: 40px;
-    border: 0;
-    background: transparent;
-    color: var(--ui-text);
-    font: inherit;
-    font-size: var(--ui-text-sm);
-    outline: none;
-    appearance: none;
-    cursor: pointer;
-  }
-
-  .nv-input select option {
-    background: var(--ui-surface);
-    color: var(--ui-text);
-  }
-
   .nv-input svg {
     width: 16px;
     height: 16px;
@@ -1194,7 +1175,9 @@
       min-height: 44px;
     }
 
-    .nv-select__item {
+    .nv-select__item,
+    .nv-switch,
+    .nv-radio-group__item {
       min-height: 44px;
     }
 
@@ -1207,8 +1190,7 @@
       min-height: 46px;
     }
 
-    .nv-input input,
-    .nv-input select {
+    .nv-input input {
       height: 44px;
     }
   }

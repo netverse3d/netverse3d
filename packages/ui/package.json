@@ -12,7 +12,8 @@
     "./token-files": "./src/token-files.mjs",
     "./tokens": "./src/tokens.mjs",
     "./components.css": "./components/components.css",
-    "./react": "./react/index.ts"
+    "./react": "./react/index.ts",
+    "./keys": "./src/keys.mjs"
   },
   "scripts": {
     "lint": "tsc -p tsconfig.json",

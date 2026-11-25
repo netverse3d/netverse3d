@@ -1,5 +1,5 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { useId, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
+import { useCallback, useId, useState, type HTMLAttributes, type ReactNode } from 'react';
 import { Icon } from './icon.tsx';
 import { classNames, splitVariants } from './shared.ts';
 import { VARIANTS, type SelectVariants } from './variants.generated.ts';
@@ -37,11 +37,14 @@ export function Select(props: SelectProps) {
   const state = props.state ?? (disabled ? 'disabled' : 'idle');
   const labelId = useId();
   const triggerId = useId();
-  const trigger = useRef<HTMLButtonElement>(null);
   const [container, setContainer] = useState<HTMLElement | null>(null);
+  const findContainer = useCallback((node: HTMLDivElement | null) => {
+    setContainer(node?.closest('dialog') ?? null);
+  }, []);
   return (
     <div
       {...native}
+      ref={findContainer}
       className={classNames('nv-field nv-select', className)}
       {...data}
       data-state={state === 'idle' ? undefined : state}
@@ -55,12 +58,8 @@ export function Select(props: SelectProps) {
         onValueChange={onValueChange}
         disabled={state === 'disabled'}
         name={name}
-        onOpenChange={(open) => {
-          if (open) setContainer(trigger.current?.closest('dialog') ?? null);
-        }}
       >
         <SelectPrimitive.Trigger
-          ref={trigger}
           id={triggerId}
           aria-labelledby={`${labelId} ${triggerId}`}
           className="nv-shape nv-input nv-select__trigger"
@@ -76,9 +75,7 @@ export function Select(props: SelectProps) {
             position="popper"
             sideOffset={6}
             onCloseAutoFocus={(event) => {
-              if (returnFocus) return;
-              event.preventDefault();
-              trigger.current?.blur();
+              if (!returnFocus) event.preventDefault();
             }}
           >
             <SelectPrimitive.Viewport className="nv-select__viewport">

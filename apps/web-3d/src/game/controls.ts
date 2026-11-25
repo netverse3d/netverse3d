@@ -1,3 +1,4 @@
+import { isWidgetKey } from '@netverse/ui/keys';
 import { CONTROL_KEYS, STILL, USE_KEY, keysIntent, stickIntent } from './input.ts';
 import type { LocalIntent, StickPosition } from './input.ts';
 
@@ -56,37 +57,9 @@ interface Drag {
 
 export const STICK_RADIUS_PIXELS = 56;
 
-const TYPING_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const NO_TURN: Turn = { right: 0, down: 0 };
 const MAIN_BUTTON = 0;
 const WHEEL_PIXELS_PER_NOTCH = 100;
-
-const WIDGET_ROLES = [
-  'combobox',
-  'listbox',
-  'option',
-  'menu',
-  'menuitem',
-  'menuitemcheckbox',
-  'menuitemradio',
-  'radio',
-  'radiogroup',
-  'slider',
-  'spinbutton',
-  'switch',
-  'tab',
-  'tablist',
-  'textbox',
-];
-const WIDGET_SELECTOR = WIDGET_ROLES.map((role) => `[role="${role}"]`).join(', ');
-
-type KeyTarget = { tagName?: unknown; closest?: (selector: string) => unknown };
-
-function isTyping(event: Event): boolean {
-  const target = event.target as KeyTarget | null;
-  if (typeof target?.tagName === 'string' && TYPING_TAGS.has(target.tagName)) return true;
-  return typeof target?.closest === 'function' && Boolean(target.closest(WIDGET_SELECTOR));
-}
 
 function isShortcut(press: KeyPress): boolean {
   return Boolean(press.ctrlKey || press.metaKey || press.altKey);
@@ -122,7 +95,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       pressed.clear();
       return;
     }
-    if (isTyping(event)) return;
+    if (isWidgetKey(event)) return;
     if (press.code === USE_KEY) {
       if (!press.repeat) use = true;
       event.preventDefault();

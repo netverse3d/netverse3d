@@ -27,6 +27,7 @@ const PUBLIC_ENTRIES = new Set([
   '@netverse/ui/tokens.css',
   '@netverse/ui/components.css',
   '@netverse/ui/accent',
+  '@netverse/ui/keys',
 ]);
 
 const LAYOUT_PROPERTIES = [
