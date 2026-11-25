@@ -61,6 +61,7 @@ Thêm một component:
 
 - Import từ `@netverse/ui/react`: `Button`, `IconButton`, `Panel`, `Dialog`, `TextField`, `SelectField`, `Text`, `Heading`, `Alert`, `Toast`, `Badge`, `ListItem`… Danh sách đủ là bảng sổ đăng ký trong Thư viện giao diện.
 - Tham số có kiểu sinh từ sổ đăng ký (`packages/ui/react/variants.generated.ts`); truyền giá trị ngoài sổ thì `tsc` báo lỗi. Đổi sổ đăng ký thì chạy `pnpm --filter @netverse/ui types`; test của `packages/ui` đỏ nếu quên.
+- CSS của component nằm trong `@layer netverse-components`, nên quy tắc dàn trang trong `.module.css` của màn hình luôn thắng mà không cần tăng độ ưu tiên.
 - Component nhận `className` để màn hình đặt vị trí, cùng mọi thuộc tính `data-*`, `aria-*`, `role` và sự kiện. Không nhận `style`.
 - `.module.css` của màn hình chỉ dàn trang: vị trí, grid, flex, khoảng cách, kích thước, lớp z bằng token `--ui-layer-*`.
 - `pnpm ui:check` chạy trong `pnpm verify` và báo đỏ khi màn hình dùng thẻ không phải thẻ cấu trúc (`<button>`, `<input>`, `<dialog>`…), dùng `style` nội tuyến, tự gắn class `nv-*`, import component chưa đăng ký, hoặc đặt thuộc tính hình ảnh trong CSS.
