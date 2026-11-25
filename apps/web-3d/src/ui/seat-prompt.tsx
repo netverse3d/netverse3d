@@ -146,7 +146,7 @@ export default function SeatPrompt() {
               as="time"
               variant="value"
               tone={seconds < 60 ? 'warning' : 'info'}
-              className={styles.timer}
+              className={seconds < 60 ? styles.timerWarning : styles.timer}
               data-session-timer
               aria-live="polite"
             >

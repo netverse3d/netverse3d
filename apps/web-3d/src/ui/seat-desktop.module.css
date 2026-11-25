@@ -25,3 +25,8 @@
     top: 156px;
   }
 }
+
+.timer,
+.timerWarning {
+  white-space: nowrap;
+}

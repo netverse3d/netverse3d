@@ -44,7 +44,8 @@
   gap: var(--ui-space-1);
 }
 
-.timer {
+.timer,
+.timerWarning {
   white-space: nowrap;
 }
 

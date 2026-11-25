@@ -76,6 +76,7 @@ export default function SeatDesktop() {
           as="time"
           variant="value"
           tone={seconds < 60 ? 'warning' : 'info'}
+          className={seconds < 60 ? styles.timerWarning : styles.timer}
           aria-live="polite"
           data-session-timer
         >
