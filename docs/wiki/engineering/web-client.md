@@ -143,7 +143,7 @@ Kho trạng thái dùng Redux Toolkit.
 
 ## CSS
 
-- Mỗi component một tệp `.module.css` đặt cạnh nó.
+- Màn hình ghép component đã đăng ký của `@netverse/ui/react` ([ADR-0041](../../decisions/ADR-0041-registered-interface-components.md)); mỗi màn một tệp `.module.css` đặt cạnh nó, chỉ để dàn trang. `pnpm ui:check` giữ luật này.
 - Màu, cỡ chữ, độ đậm, khoảng cách, bo góc, lớp và thời lượng lấy từ token `--ui-*` của `@netverse/ui`, nạp một lần ở `app/layout.tsx`. Test `test/unit/ui/module-css.test.ts` chặn giá trị viết thẳng và biến chưa khai.
 - `globals.css` chỉ chứa phần đặt lại mặc định của trình duyệt.
 - Mức chất lượng và màu nhấn của tiệm gắn lên gốc trang qua `src/ui/interface-theme.ts`; component không tự đọc mức chất lượng để đổi kính.

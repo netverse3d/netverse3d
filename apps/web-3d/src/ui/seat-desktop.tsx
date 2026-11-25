@@ -1,5 +1,6 @@
 'use client';
 
+import { Button, IconButton, Panel, Text } from '@netverse/ui/react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { remainingSeconds, useRequested } from '../state/shop-slice.ts';
@@ -44,60 +45,70 @@ export default function SeatDesktop() {
   const machine = vi.seat.machine(session.seatId);
   if (minimized) {
     return (
-      <button
-        type="button"
+      <Button
         className={styles.restore}
+        surface="glass"
+        tone="cyan"
+        duo="magenta"
         onClick={() => setMinimized(false)}
         aria-label={vi.seat.restoreDesktop(machine)}
         data-desktop-restore
       >
         {vi.seat.restoreDesktop(machine)}
-      </button>
+      </Button>
     );
   }
 
   return (
-    <section
+    <Panel
       className={styles.desktop}
       aria-label={vi.seat.desktopLabel(machine)}
       data-seat-desktop
       data-desktop-open="true"
       data-seat={session.seatId}
-    >
-      <header className={styles.header}>
-        <h2 className={styles.machine}>{machine}</h2>
-        <time
+      shape="bevel-all"
+      cut="md"
+      tone="cyan"
+      duo="magenta"
+      title={machine}
+      meta={
+        <Text
+          as="time"
+          variant="value"
+          tone={seconds < 60 ? 'warning' : 'info'}
           className={seconds < 60 ? styles.timerWarning : styles.timer}
           aria-live="polite"
           data-session-timer
         >
           {formatSessionDuration(seconds)}
-        </time>
-        <button
-          type="button"
-          className={styles.minimize}
+        </Text>
+      }
+      action={
+        <IconButton
+          icon="minimize"
+          label={vi.seat.minimizeDesktop}
+          tone="neutral"
+          surface="glass"
           onClick={() => setMinimized(true)}
-          aria-label={vi.seat.minimizeDesktop}
           data-desktop-minimize
-        >
-          −
-        </button>
-      </header>
+        />
+      }
+    >
       <div className={styles.tiles}>
         {[1, 2, 3].map((number) => (
-          <button key={number} type="button" className={styles.tile} aria-disabled="true" disabled>
-            <span>{vi.seat.comingSoon}</span>
-          </button>
+          <Button key={number} surface="glass" tone="neutral" state="disabled" aria-disabled="true">
+            {vi.seat.comingSoon}
+          </Button>
         ))}
       </div>
-      <button
-        type="button"
-        className={styles.end}
+      <Button
+        surface="neon"
+        tone="danger"
         onClick={() => dispatch(useRequested())}
         data-end-session
       >
         {vi.seat.endSession}
-      </button>
-    </section>
+      </Button>
+    </Panel>
   );
 }

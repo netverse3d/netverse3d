@@ -1,3 +1,4 @@
+import { Alert, Button, Dialog, Text, TextField } from '@netverse/ui/react';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { vi } from './text/vi.ts';
 import styles from './account-panel.module.css';
@@ -40,7 +41,7 @@ export default function AccountPanel({
   logout,
   children,
 }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -49,18 +50,12 @@ export default function AccountPanel({
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (open && dialog && !dialog.open) dialog.showModal();
-    else if (!open && dialog?.open) dialog.close();
-  }, [open]);
-
-  useEffect(() => {
     if (!open) return;
-    dialogRef.current?.querySelector<HTMLInputElement>('[data-account-focus]')?.focus();
+    formRef.current?.querySelector<HTMLInputElement>('[data-account-focus]')?.focus();
   }, [mode, open]);
 
   function changeMode(next: Mode, message = '') {
-    const input = dialogRef.current?.querySelector<HTMLInputElement>('[name="email"]');
+    const input = formRef.current?.querySelector<HTMLInputElement>('[name="email"]');
     if (input) setEmail(input.value.trim());
     setMode(next);
     setError('');
@@ -133,20 +128,27 @@ export default function AccountPanel({
   const needsCode = mode === 'verify' || mode === 'reset';
   const needsNewPassword = mode === 'register' || mode === 'reset';
 
+  const linkProps = { size: 'sm', surface: 'ghost', tone: 'cyan' } as const;
+
   return (
     <>
       <div className={styles.accountBar} role="group" aria-label={text.accountLabel}>
-        {account && <span className={styles.accountName}>{account.label}</span>}
+        {account && (
+          <Text as="span" variant="meta" className={styles.accountName}>
+            {account.label}
+          </Text>
+        )}
         {account ? (
-          <button className={styles.outline} type="button" onClick={signOut}>
+          <Button surface="glass" tone="cyan" duo="magenta" onClick={signOut}>
             {text.signOut}
-          </button>
+          </Button>
         ) : (
-          <button
-            className={styles.outline}
-            type="button"
+          <Button
+            surface="neon"
+            tone="cyan"
+            duo="magenta"
             aria-haspopup="dialog"
-            disabled={checking}
+            state={checking ? 'pending' : 'idle'}
             onClick={() => {
               changeMode('login');
               if (sessionError) setError(messageFor(new Error(sessionError)));
@@ -154,132 +156,105 @@ export default function AccountPanel({
             }}
           >
             {checking ? text.checking : text.actions.login}
-          </button>
+          </Button>
         )}
         {children}
       </div>
-      <dialog
-        ref={dialogRef}
-        className={styles.dialog}
-        aria-labelledby="account-title"
-        onKeyDown={(event) => event.stopPropagation()}
-        onCancel={(event) => {
-          event.preventDefault();
-          if (!pending) setOpen(false);
-        }}
+      <Dialog
+        open={open}
+        title={text.titles[mode]}
+        titleId="account-title"
+        titleLevel={1}
+        closeLabel={text.close}
+        busy={pending}
+        onClose={() => setOpen(false)}
       >
-        {open && (
-          <>
-            <header className={styles.header}>
-              <h1 id="account-title">{text.titles[mode]}</h1>
-              <button
-                className={styles.close}
-                type="button"
-                aria-label={text.close}
-                disabled={pending}
-                onClick={() => setOpen(false)}
-              >
-                ×
-              </button>
-            </header>
-            <form key={mode} className={styles.form} onSubmit={submit} aria-busy={pending}>
-              <label className={styles.field}>
-                {text.email}
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="username"
-                  defaultValue={email}
-                  maxLength={320}
-                  required
-                  readOnly={needsCode || pending}
-                  data-account-focus={!needsCode || undefined}
-                />
-              </label>
-              {mode === 'register' && (
-                <label className={styles.field}>
-                  {text.displayName}
-                  <input
-                    name="displayName"
-                    autoComplete="nickname"
-                    maxLength={120}
-                    readOnly={pending}
-                  />
-                </label>
-              )}
-              {needsCode && (
-                <label className={styles.field}>
-                  {text.code}
-                  <input
-                    name="code"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    required
-                    readOnly={pending}
-                    data-account-focus
-                  />
-                </label>
-              )}
-              {(mode === 'login' || needsNewPassword) && (
-                <label className={styles.field}>
-                  {needsNewPassword ? text.newPassword : text.password}
-                  <input
-                    type="password"
-                    name="password"
-                    autoComplete={needsNewPassword ? 'new-password' : 'current-password'}
-                    minLength={needsNewPassword ? 8 : undefined}
-                    maxLength={72}
-                    required
-                    readOnly={pending}
-                  />
-                  {needsNewPassword && <span>{text.passwordHint}</span>}
-                </label>
-              )}
-              {error && (
-                <p className={styles.error} role="alert">
-                  {error}
-                </p>
-              )}
-              {notice && (
-                <p className={styles.notice} role="status">
-                  {notice}
-                </p>
-              )}
-              <button type="submit" className={styles.primary} disabled={pending}>
-                {pending ? text.processing : text.actions[mode]}
-              </button>
-            </form>
-            <div className={styles.links}>
-              {mode === 'login' ? (
-                <>
-                  <button type="button" disabled={pending} onClick={() => changeMode('register')}>
-                    {text.actions.register}
-                  </button>
-                  <button type="button" disabled={pending} onClick={() => changeMode('forgot')}>
-                    {text.titles.forgot}
-                  </button>
-                </>
-              ) : (
-                <button type="button" disabled={pending} onClick={() => changeMode('login')}>
-                  {text.backToLogin}
-                </button>
-              )}
-              {mode === 'verify' && (
-                <button type="button" disabled={pending} onClick={resendCode}>
-                  {text.resend}
-                </button>
-              )}
-              {mode === 'reset' && (
-                <button type="button" disabled={pending} onClick={() => changeMode('forgot')}>
-                  {text.resend}
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </dialog>
+        <form
+          ref={formRef}
+          key={mode}
+          className={styles.form}
+          onSubmit={submit}
+          aria-busy={pending}
+        >
+          <TextField
+            label={text.email}
+            type="email"
+            name="email"
+            autoComplete="username"
+            defaultValue={email}
+            maxLength={320}
+            required
+            readOnly={needsCode || pending}
+            data-account-focus={!needsCode || undefined}
+          />
+          {mode === 'register' && (
+            <TextField
+              label={text.displayName}
+              name="displayName"
+              autoComplete="nickname"
+              maxLength={120}
+              readOnly={pending}
+            />
+          )}
+          {needsCode && (
+            <TextField
+              label={text.code}
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              required
+              readOnly={pending}
+              data-account-focus
+            />
+          )}
+          {(mode === 'login' || needsNewPassword) && (
+            <TextField
+              label={needsNewPassword ? text.newPassword : text.password}
+              message={needsNewPassword ? text.passwordHint : undefined}
+              type="password"
+              name="password"
+              autoComplete={needsNewPassword ? 'new-password' : 'current-password'}
+              minLength={needsNewPassword ? 8 : undefined}
+              maxLength={72}
+              required
+              readOnly={pending}
+            />
+          )}
+          {error && <Alert tone="error">{error}</Alert>}
+          {notice && <Alert tone="info">{notice}</Alert>}
+          <Button type="submit" size="lg" block state={pending ? 'pending' : 'idle'}>
+            {pending ? text.processing : text.actions[mode]}
+          </Button>
+        </form>
+        <div className={styles.links}>
+          {mode === 'login' ? (
+            <>
+              <Button {...linkProps} disabled={pending} onClick={() => changeMode('register')}>
+                {text.actions.register}
+              </Button>
+              <Button {...linkProps} disabled={pending} onClick={() => changeMode('forgot')}>
+                {text.titles.forgot}
+              </Button>
+            </>
+          ) : (
+            <Button {...linkProps} disabled={pending} onClick={() => changeMode('login')}>
+              {text.backToLogin}
+            </Button>
+          )}
+          {mode === 'verify' && (
+            <Button {...linkProps} disabled={pending} onClick={resendCode}>
+              {text.resend}
+            </Button>
+          )}
+          {mode === 'reset' && (
+            <Button {...linkProps} disabled={pending} onClick={() => changeMode('forgot')}>
+              {text.resend}
+            </Button>
+          )}
+        </div>
+      </Dialog>
     </>
   );
 }

@@ -19,3 +19,4 @@ scripts/README.md
 tests/README.md
 services/*/generated
 services/*/src/generated
+packages/ui/react/variants.generated.ts

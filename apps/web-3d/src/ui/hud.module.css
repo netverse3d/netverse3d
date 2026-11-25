@@ -1,51 +1,19 @@
 .hud {
-  box-sizing: border-box;
   position: absolute;
-  left: var(--ui-space-3);
   top: var(--ui-space-3);
-  display: grid;
-  gap: var(--ui-space-2);
-  padding: var(--ui-space-2) var(--ui-space-3);
-  background: var(--ui-panel);
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-2);
-  font-size: var(--ui-text-sm);
-  max-width: calc(100% - var(--ui-space-3) * 2);
+  left: var(--ui-space-3);
+  z-index: var(--ui-layer-hud);
+  width: min(300px, calc(100% - var(--ui-space-6)));
 }
 
 .stats {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--ui-space-3);
-  color: var(--ui-text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
-.stats b {
-  color: var(--ui-text);
-  margin-left: var(--ui-space-1);
-}
-
-.field {
-  display: flex;
-  align-items: center;
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--ui-space-2);
-  color: var(--ui-text-muted);
-}
-
-.select {
-  box-sizing: border-box;
-  font: inherit;
-  color: var(--ui-text);
-  background: var(--ui-action-neutral);
-  border: 1px solid var(--ui-border);
-  border-radius: var(--ui-radius-1);
-  padding: var(--ui-space-1) var(--ui-space-2);
-}
-
-.status {
-  color: var(--ui-info);
-}
-
-.status[data-tone='error'] {
-  color: var(--ui-error);
 }

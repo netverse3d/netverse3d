@@ -1,5 +1,6 @@
 'use client';
 
+import { Panel, SelectField, Text } from '@netverse/ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   QUALITY_LEVELS,
@@ -27,57 +28,57 @@ export default function Hud() {
   const error = useSelector((state: RootState) => state.shop.error);
   const warn = Boolean(error) || scene.lost;
   return (
-    <div className={styles.hud} role="status">
+    <Panel
+      as="div"
+      className={styles.hud}
+      role="status"
+      shape="notch"
+      cut="sm"
+      tone="cyan"
+      duo="magenta"
+    >
       <div className={styles.stats}>
-        <span>
-          {vi.hud.fps}
-          <b>{stats.fps}</b>
-        </span>
-        <span>
-          {vi.hud.calls}
-          <b>{stats.calls}</b>
-        </span>
-        <span>
-          {vi.hud.triangles}
-          <b>{stats.triangles.toLocaleString('vi-VN')}</b>
-        </span>
+        <Text as="span" variant="meta">
+          {vi.hud.fps}{' '}
+          <Text as="strong" variant="value">
+            {stats.fps}
+          </Text>
+        </Text>
+        <Text as="span" variant="meta">
+          {vi.hud.calls}{' '}
+          <Text as="strong" variant="value">
+            {stats.calls}
+          </Text>
+        </Text>
+        <Text as="span" variant="meta">
+          {vi.hud.triangles}{' '}
+          <Text as="strong" variant="value">
+            {stats.triangles.toLocaleString('vi-VN')}
+          </Text>
+        </Text>
       </div>
-      <label className={styles.field}>
-        {vi.hud.shop}
-        <select
-          className={styles.select}
+      <div className={styles.fields}>
+        <SelectField
+          label={vi.hud.shop}
           value={scene.recipeId}
+          options={recipes.map((recipe) => ({ value: recipe.id, label: recipe.name }))}
           onChange={(event) => {
             dispatch(recipeRequested(event.target.value));
             event.target.blur();
           }}
-        >
-          {recipes.map((recipe) => (
-            <option key={recipe.id} value={recipe.id}>
-              {recipe.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className={styles.field}>
-        {vi.hud.quality}
-        <select
-          className={styles.select}
+        />
+        <SelectField
+          label={vi.hud.quality}
           value={scene.quality}
+          options={QUALITY_LEVELS.map((level) => ({ value: level, label: vi.quality[level] }))}
           onChange={(event) => {
             if (isQualityLevel(event.target.value)) dispatch(qualityRequested(event.target.value));
           }}
-        >
-          {QUALITY_LEVELS.map((level) => (
-            <option key={level} value={level}>
-              {vi.quality[level]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className={styles.status} data-tone={warn ? 'error' : 'ok'}>
-        {statusOf(scene, error)}
+        />
       </div>
-    </div>
+      <Text variant="meta" tone={warn ? 'error' : 'info'}>
+        {statusOf(scene, error)}
+      </Text>
+    </Panel>
   );
 }
