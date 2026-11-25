@@ -32,8 +32,7 @@ export interface TextFieldVariants {
   state?: 'idle' | 'error' | 'disabled';
 }
 
-export interface CheckboxVariants {
-}
+export type CheckboxVariants = Record<never, never>;
 
 export interface ShopCardVariants {
   shape?: 'bevel' | 'bevel-all' | 'notch' | 'round' | 'pill' | 'hex';
@@ -53,21 +52,17 @@ export interface KeyHintVariants {
   glow?: 'soft' | 'none' | 'strong';
 }
 
-export interface KeycapVariants {
-}
+export type KeycapVariants = Record<never, never>;
 
-export interface ActionButtonVariants {
-}
+export type ActionButtonVariants = Record<never, never>;
 
 export interface StatusVariants {
   tone?: 'success' | 'warning' | 'danger';
 }
 
-export interface MeterVariants {
-}
+export type MeterVariants = Record<never, never>;
 
-export interface AvatarVariants {
-}
+export type AvatarVariants = Record<never, never>;
 
 export interface PlayerBadgeVariants {
   shape?: 'bevel' | 'bevel-all' | 'notch' | 'round' | 'pill' | 'hex';
@@ -88,11 +83,9 @@ export interface DialogVariants {
   size?: 'md' | 'lg';
 }
 
-export interface OverlayVariants {
-}
+export type OverlayVariants = Record<never, never>;
 
-export interface SpinnerVariants {
-}
+export type SpinnerVariants = Record<never, never>;
 
 export interface HeadingVariants {
   level?: '2' | '1' | '3';
@@ -128,8 +121,7 @@ export interface ListItemVariants {
   state?: 'read' | 'unread';
 }
 
-export interface TileVariants {
-}
+export type TileVariants = Record<never, never>;
 
 export const VARIANTS = {
   Panel: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},
