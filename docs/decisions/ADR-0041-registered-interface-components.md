@@ -20,7 +20,7 @@ Thế giới 3D đã có luật tương tự ở ADR-0019: mọi thứ nhìn th�
 3. Mã ứng dụng (`apps/web-3d`, `apps/admin`) chỉ ghép component đã đăng ký, import từ `@netverse/ui`:
    - JSX chỉ dùng thẻ cấu trúc như `div`, `section`, `p`, `ul`, `canvas`. Nút, ô nhập, hộp chọn, hộp thoại, liên kết, phím phải là component đã đăng ký.
    - `.module.css` của ứng dụng chỉ dàn trang: vị trí, grid, flex, khoảng cách, kích thước, lớp z bằng token. Không đặt nền, viền, bóng, màu, phông, bo góc, `clip-path`, `filter`.
-   - Không dùng `style={{…}}` và không tự gắn class `nv-*`.
+   - Không dùng thuộc tính `style` nội tuyến và không tự gắn class `nv-*`.
    - Tham số component có kiểu TypeScript sinh từ sổ đăng ký; truyền giá trị ngoài sổ thì `tsc` báo lỗi.
 4. Lệnh `pnpm ui:check` kiểm điểm 3 và chạy trong `pnpm verify`.
 5. Cần một component mới thì PR vào `packages/ui` trước: mục đăng ký, CSS, React, mẫu thư viện, test. Màn hình chỉ dùng nó sau khi PR đó vào `staging`.

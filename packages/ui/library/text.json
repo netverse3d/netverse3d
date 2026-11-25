@@ -101,11 +101,6 @@
     "code": "Tham số tương ứng",
     "registry": "Sổ đăng ký component",
     "registryIntro": "Chỉ component có trong sổ này mới được dùng trong mã giao diện. Cần component mới thì thêm vào packages/ui cùng mẫu ở đây trước, theo ADR-0041.",
-    "registryColumns": [
-      "Tên React",
-      "Class CSS",
-      "Tham số",
-      "Tiêu chí"
-    ]
+    "registryColumns": ["Tên React", "Class CSS", "Tham số", "Tiêu chí"]
   }
 }
