@@ -373,6 +373,86 @@ function registryTable(text, registry) {
   ]);
 }
 
+function seatHint(text, label, state) {
+  return shape(
+    'span',
+    'nv-key-hint',
+    { shape: 'bevel', tone: 'accent', duo: 'cyan', surface: 'glass' },
+    [
+      element('kbd', { class: 'nv-keycap', text: 'E' }),
+      ...(state === 'pending'
+        ? [element('span', { class: 'nv-spinner', 'aria-hidden': 'true' })]
+        : []),
+      label,
+    ],
+  );
+}
+
+function patternRow(caption, children) {
+  return element('figure', { class: 'nv-pattern' }, [
+    element('div', { class: 'nv-pattern__stage' }, children),
+    element('figcaption', { text: caption }),
+  ]);
+}
+
+function interactionPatterns(text) {
+  const patterns = text.patterns;
+  return element('div', { class: 'nv-patterns' }, [
+    patternRow(patterns.idleCaption, [seatHint(text, patterns.idle, 'idle')]),
+    patternRow(patterns.pendingCaption, [
+      seatHint(text, patterns.pending, 'pending'),
+      button(patterns.pending, { state: 'pending' }),
+    ]),
+    patternRow(patterns.deniedCaption, [
+      element('p', { class: 'nv-alert', role: 'alert', dataset: { tone: 'warning' } }, [
+        patterns.denied,
+      ]),
+      seatHint(text, patterns.idle, 'idle'),
+    ]),
+    patternRow(patterns.errorCaption, [
+      element('p', { class: 'nv-alert', role: 'alert' }, [patterns.roomError]),
+    ]),
+    patternRow(patterns.sessionCaption, [
+      shape(
+        'section',
+        'nv-panel nv-pattern__session',
+        { shape: 'notch', cut: 'sm', tone: 'cyan', duo: 'magenta' },
+        [
+          element('span', {
+            class: 'nv-text',
+            dataset: { variant: 'label' },
+            text: patterns.sessionLabel,
+          }),
+          element('time', {
+            class: 'nv-text',
+            dataset: { variant: 'value', tone: 'warning' },
+            text: '00:42',
+          }),
+          button(patterns.leaving, { surface: 'neon', tone: 'danger', state: 'pending' }),
+        ],
+      ),
+    ]),
+    patternRow(patterns.recoveryCaption, [
+      shape(
+        'section',
+        'nv-panel',
+        { shape: 'bevel-all', tone: 'cyan', duo: 'magenta', surface: 'solid' },
+        [
+          element('header', { class: 'nv-panel__head' }, [
+            element('h3', { class: 'nv-panel__title nv-chevrons', text: patterns.recoveryTitle }),
+            element('span', { class: 'nv-spinner', 'aria-hidden': 'true' }),
+          ]),
+          element('p', {
+            class: 'nv-text',
+            dataset: { variant: 'meta' },
+            text: patterns.recoveryBody,
+          }),
+        ],
+      ),
+    ]),
+  ]);
+}
+
 export function componentShowcase(text, registry) {
   return element('section', { id: 'components', class: 'panel' }, [
     element('h2', { text: text.title }),
@@ -383,6 +463,9 @@ export function componentShowcase(text, registry) {
     buttonMatrix(text),
     element('h3', { class: 'library-subhead', text: text.form }),
     element('div', { class: 'nv-dialog-frame' }, [loginDialog(text)]),
+    element('h3', { class: 'library-subhead', text: text.patterns.title }),
+    element('p', { class: 'lead', text: text.patterns.intro }),
+    interactionPatterns(text),
     element('h3', { class: 'library-subhead', text: text.playground }),
     playground(text, registry),
     element('h3', { class: 'library-subhead', text: text.registry }),

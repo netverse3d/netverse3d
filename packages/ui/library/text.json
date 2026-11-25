@@ -111,6 +111,24 @@
     "toastSample": "Phiên thuê máy còn 5 phút.",
     "listTitle": "Chào mừng tới Netverse",
     "listBody": "Tài khoản của bạn đã sẵn sàng.",
-    "tileSample": "Đang phát triển"
+    "tileSample": "Đang phát triển",
+    "patterns": {
+      "title": "Mẫu tương tác",
+      "intro": "Vòng ngồi máy và khôi phục như trong game: mỗi bước dùng đúng component đã đăng ký, trạng thái chờ do phòng quyết định.",
+      "idle": "Nhấn E để thuê máy miễn phí",
+      "idleCaption": "Đứng gần máy trống",
+      "pending": "Đang chờ máy xác nhận…",
+      "pendingCaption": "Đã gửi yêu cầu, phòng chưa trả lời: không gửi thêm",
+      "denied": "Máy này đã có người dùng.",
+      "deniedCaption": "Phòng từ chối: báo ngay tại chỗ, được thử lại",
+      "roomError": "Không kết nối được với tiệm.",
+      "errorCaption": "Lỗi phòng",
+      "sessionLabel": "Phiên thuê",
+      "leaving": "Đang trả máy…",
+      "sessionCaption": "Đang trả máy, còn dưới một phút",
+      "recoveryTitle": "Đang dựng lại đồ hoạ",
+      "recoveryBody": "Trình duyệt vừa mất ngữ cảnh WebGL. Tài khoản và phiên thuê máy vẫn giữ nguyên.",
+      "recoveryCaption": "Mất WebGL: lớp khôi phục nằm trên mọi thứ"
+    }
   }
 }
