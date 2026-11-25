@@ -46,13 +46,16 @@ Bảng màu đi theo ảnh định hướng ở trang tiêu chí: nền tối ng
 - Logic trạng thái của component (khi nào tắt, khi nào báo bận, khi nào được đóng) viết thành hàm TypeScript thuần cạnh component để test bằng `node --test`; phần JSX chỉ vẽ theo kết quả của hàm đó.
 - Component gửi lệnh thì nhận trạng thái tương tác `idle`, `pending`, `confirmed`, `denied` hoặc `error` từ kho trạng thái. Đang `pending` thì không gửi thêm; `confirmed` chỉ do phòng hoặc server đặt.
 
+Mã màn hình không tự tạo component. Trước khi viết một màn, tra bảng sổ đăng ký trong Thư viện giao diện; component nào chưa có thì thêm vào `packages/ui` trong một PR riêng rồi mới dùng ([ADR-0041](../../decisions/ADR-0041-registered-interface-components.md)).
+
 Thêm một component:
 
-1. Tìm trong `packages/ui` và `apps/web-3d/src/ui/` xem đã có chưa.
-2. Viết test cho hàm trạng thái trước, theo tên ca ở cột cách kiểm của tiêu chí liên quan.
-3. Viết component, chỉ dùng token.
-4. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
-5. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
+1. Tra sổ đăng ký `packages/ui/components/registry.json` và Thư viện giao diện xem đã có chưa; thường chỉ cần một giá trị tham số mới.
+2. Thêm mục vào sổ đăng ký: tên React, class CSS, tham số, mã tiêu chí, mã mẫu thư viện.
+3. Viết test cho hàm trạng thái trước, theo tên ca ở cột cách kiểm của tiêu chí liên quan.
+4. Viết component, chỉ dùng token.
+5. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
+6. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
 
 ## Thư viện giao diện
 

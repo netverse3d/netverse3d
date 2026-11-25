@@ -9,6 +9,7 @@ on:
       - packages/game-assets/exported/**
       - packages/game-assets/tools/**
       - packages/ui/**
+      - packages/game-assets/recipes/**
       - .github/workflows/docs.yml
 
 permissions:

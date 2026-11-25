@@ -50,15 +50,15 @@ export default withMermaid(
             { text: 'Client game', link: '/wiki/engineering/web-client' },
             { text: 'Tài sản 3D', link: '/wiki/engineering/game-assets' },
             { text: 'Hệ thiết kế giao diện', link: '/wiki/engineering/design-system' },
-            {
-              text: 'Thư viện giao diện',
-              link: 'https://netverse3d.github.io/netverse3d/ui/',
-            },
             { text: 'Chuẩn ánh sáng', link: '/wiki/engineering/lighting' },
             { text: 'Ngân sách hiệu năng', link: '/wiki/engineering/performance-budget' },
             {
               text: 'Thư viện 3D',
               link: 'https://netverse3d.github.io/netverse3d/game-assets/library/',
+            },
+            {
+              text: 'Thư viện giao diện',
+              link: 'https://netverse3d.github.io/netverse3d/ui/',
             },
             { text: 'Quy ước', link: '/wiki/engineering/conventions' },
             { text: 'Nhánh và phát hành', link: '/wiki/engineering/branching-and-release' },
