@@ -1,0 +1,47 @@
+:root {
+  --ui-canvas: var(--ui-core-night);
+  --ui-surface: var(--ui-core-plum);
+  --ui-surface-raised: var(--ui-core-raised);
+  --ui-surface-glass: var(--ui-core-glass);
+  --ui-panel: var(--ui-surface-glass);
+  --ui-panel-filter: var(--ui-blur-panel);
+  --ui-text: var(--ui-core-white);
+  --ui-text-muted: var(--ui-core-silver);
+  --ui-border: var(--ui-core-line);
+  --ui-focus: var(--ui-core-sky);
+  --ui-action-primary: var(--ui-core-lavender);
+  --ui-action-neutral: var(--ui-surface-raised);
+  --ui-action-danger: var(--ui-core-rose);
+  --ui-on-action: var(--ui-core-night);
+  --ui-success: var(--ui-core-mint);
+  --ui-warning: var(--ui-core-amber);
+  --ui-error: var(--ui-core-rose);
+  --ui-info: var(--ui-core-sky);
+  --ui-accent: var(--ui-core-lavender);
+  --ui-highlight: var(--ui-core-peach);
+  --ui-neon-magenta: var(--ui-core-magenta);
+  --ui-neon-cyan: var(--ui-core-cyan);
+  --ui-scrim: var(--ui-core-scrim);
+  --ui-shadow: var(--ui-core-shadow);
+  --ui-tint: var(--ui-core-tint);
+  --ui-layer-canvas: 0;
+  --ui-layer-world: 5;
+  --ui-layer-chrome: 8;
+  --ui-layer-hud: 10;
+  --ui-layer-toast: 20;
+  --ui-layer-dialog: 30;
+  --ui-layer-recovery: 40;
+}
+
+:root[data-ui-quality='low'],
+:root[data-ui-transparency='reduced'] {
+  --ui-panel: var(--ui-surface);
+  --ui-panel-filter: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --ui-panel: var(--ui-surface);
+    --ui-panel-filter: none;
+  }
+}

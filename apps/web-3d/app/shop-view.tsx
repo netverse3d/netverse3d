@@ -29,6 +29,7 @@ import { createRoomSession, type RoomSession } from '../src/net/room-session.ts'
 import Hud from '../src/ui/hud.tsx';
 import SeatPrompt from '../src/ui/seat-prompt.tsx';
 import SeatDesktop from '../src/ui/seat-desktop.tsx';
+import { applyInterfaceTheme, readThemePalette } from '../src/ui/interface-theme.ts';
 import { vi } from '../src/ui/text/vi.ts';
 import styles from './shop-view.module.css';
 
@@ -64,6 +65,15 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
   const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
   const seating = useSelector((state: RootState) => state.shop.seating);
   const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
+  const recipes = useSelector((state: RootState) => state.shop.recipes);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const computed = getComputedStyle(root);
+    const palette = readThemePalette((name) => computed.getPropertyValue(name));
+    const accent = recipes.find((recipe) => recipe.id === scene.recipeId)?.accent ?? null;
+    return applyInterfaceTheme(root, { quality: scene.quality, accent }, palette);
+  }, [scene.quality, scene.recipeId, recipes]);
   const [lightingId, setLightingId] = useState('');
 
   useEffect(() => {
@@ -139,7 +149,13 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
         const canvas = canvasRef.current;
         if (cancelled || !canvas) return;
         store.dispatch(
-          recipesLoaded(assets.ids.map((id) => ({ id, name: assets.recipes[id]?.name ?? id }))),
+          recipesLoaded(
+            assets.ids.map((id) => ({
+              id,
+              name: assets.recipes[id]?.name ?? id,
+              accent: assets.recipes[id]?.palette.accent?.[0],
+            })),
+          ),
         );
         const params = new URLSearchParams(window.location.search);
         shop = createShopScene({

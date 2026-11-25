@@ -1,9 +1,11 @@
 # ui
 
-Package dùng chung: Thành phần giao diện dùng chung.
+Token và công cụ giao diện dùng chung của Netverse 3D theo [ADR-0040](../../docs/decisions/ADR-0040-saigon-soft-future-ui.md). Cách dùng ở [hệ thiết kế giao diện](../../docs/wiki/engineering/design-system.md), tiêu chí ở [tiêu chí giao diện](../../docs/wiki/product/ui-criteria.md).
 
-- Stack dự kiến: React
-- Milestone: M1
-- Trạng thái: chỉ giữ chỗ, chưa có mã
+- `tokens/`: biến CSS ba tầng (`primitive.css`, `semantic.css`) và chuyển động (`motion.css`). Ứng dụng nạp `@netverse/ui/tokens.css`.
+- `src/contrast.mjs`: tỉ lệ tương phản WCAG, nền trong suốt tính ở trường hợp xấu nhất trên nền đen và nền trắng.
+- `src/accent.mjs`: làm sáng màu nhấn của tiệm tới khi đạt 3:1 trên mặt nền.
+- `src/tokens.mjs`, `src/catalog.mjs`: đọc khai báo token và danh mục nhóm token cho test và thư viện.
+- `library/`: Thư viện giao diện. Xem tại máy bằng `pnpm ui:library`.
 
-Trước khi đưa mã vào đây, đọc [chuẩn thành phần](../../docs/wiki/engineering/component-standard.md).
+Test: `pnpm --filter @netverse/ui test`.

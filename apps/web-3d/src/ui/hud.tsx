@@ -75,7 +75,7 @@ export default function Hud() {
           ))}
         </select>
       </label>
-      <div className={styles.status} data-tone={warn ? 'warn' : 'ok'}>
+      <div className={styles.status} data-tone={warn ? 'error' : 'ok'}>
         {statusOf(scene, error)}
       </div>
     </div>

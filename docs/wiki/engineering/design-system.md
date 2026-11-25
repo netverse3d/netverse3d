@@ -13,11 +13,11 @@ Hệ thiết kế được dựng theo từng issue con của [#415](https://git
 | [#418](https://github.com/netverse3d/netverse3d/issues/418) | Component dùng chung, mục Component; HUD, hộp tài khoản, gợi ý ngồi máy và hộp xác nhận thuê, desktop khi thuê máy, hộp thư, nút PWA chuyển sang |
 | [#419](https://github.com/netverse3d/netverse3d/issues/419) | Trạng thái chờ khi ngồi máy, lớp khôi phục khi mất WebGL, mục Mẫu tương tác                                                                      |
 
-Trước khi #417 vào `staging`, biến CSS vẫn nằm ở `apps/web-3d/app/globals.css` với tên theo màu (`--cyan`, `--violet`…). Không thêm biến mới vào đó; việc mới chờ token của #417.
+Token và Thư viện giao diện có từ #417. `apps/web-3d` nạp `@netverse/ui/tokens.css` ở `app/layout.tsx`; `globals.css` không còn biến riêng.
 
 ## Token
 
-Từ #417, token là biến CSS trong `packages/ui/tokens/`. Màu, chữ, khoảng cách, bo góc và lớp chia ba tầng; chuyển động nằm riêng ở `motion.css` với các nhịp tức thì, nhanh, cơ bản, panel, chuyển cảnh, mọi component được dùng.
+Token là biến CSS trong `packages/ui/tokens/`. Màu, chữ, khoảng cách, bo góc và lớp chia ba tầng; chuyển động nằm riêng ở `motion.css` với các nhịp tức thì, nhanh, cơ bản, panel, chuyển cảnh, mọi component được dùng.
 
 | Tầng       | Tệp             | Đặt tên theo                                                     | Ai được dùng       |
 | ---------- | --------------- | ---------------------------------------------------------------- | ------------------ |
@@ -46,17 +46,20 @@ Bảng màu đi theo ảnh định hướng ở trang tiêu chí: nền tối ng
 - Logic trạng thái của component (khi nào tắt, khi nào báo bận, khi nào được đóng) viết thành hàm TypeScript thuần cạnh component để test bằng `node --test`; phần JSX chỉ vẽ theo kết quả của hàm đó.
 - Component gửi lệnh thì nhận trạng thái tương tác `idle`, `pending`, `confirmed`, `denied` hoặc `error` từ kho trạng thái. Đang `pending` thì không gửi thêm; `confirmed` chỉ do phòng hoặc server đặt.
 
+Mã màn hình không tự tạo component. Trước khi viết một màn, tra bảng sổ đăng ký trong Thư viện giao diện; component nào chưa có thì thêm vào `packages/ui` trong một PR riêng rồi mới dùng ([ADR-0041](../../decisions/ADR-0041-registered-interface-components.md)).
+
 Thêm một component:
 
-1. Tìm trong `packages/ui` và `apps/web-3d/src/ui/` xem đã có chưa.
-2. Viết test cho hàm trạng thái trước, theo tên ca ở cột cách kiểm của tiêu chí liên quan.
-3. Viết component, chỉ dùng token.
-4. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
-5. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
+1. Tra sổ đăng ký `packages/ui/components/registry.json` và Thư viện giao diện xem đã có chưa; thường chỉ cần một giá trị tham số mới.
+2. Thêm mục vào sổ đăng ký: tên React, class CSS, tham số, mã tiêu chí, mã mẫu thư viện.
+3. Viết test cho hàm trạng thái trước, theo tên ca ở cột cách kiểm của tiêu chí liên quan.
+4. Viết component, chỉ dùng token.
+5. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
+6. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
 
 ## Thư viện giao diện
 
-Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/) khi `staging` đổi. Thư viện có từ #417, gồm ba mục:
+Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản tại [netverse3d.github.io/netverse3d/ui](https://netverse3d.github.io/netverse3d/ui/), cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/), mỗi khi `staging` đổi. Xem tại máy bằng `pnpm ui:library` rồi mở `http://localhost:4174/ui/`. Màu nhấn đọc từ chính công thức tiệm của `game-assets`. Thư viện gồm ba mục:
 
 - **Nền tảng:** mẫu màu kèm tên token, bảng tương phản tính trực tiếp, thang chữ, khoảng cách, bo góc, thứ tự lớp, chuyển động; đổi thử màu tiệm, mức chất lượng, giảm trong suốt, giảm chuyển động.
 - **Component:** mỗi component một bảng biến thể nhân trạng thái.

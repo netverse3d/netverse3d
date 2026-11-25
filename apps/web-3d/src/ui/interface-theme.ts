@@ -1,0 +1,55 @@
+import { readableAccent } from '@netverse/ui/accent';
+import type { QualityLevel } from '../state/shop-slice.ts';
+
+export interface InterfaceTheme {
+  quality: QualityLevel;
+  accent: string | null;
+}
+
+export interface ThemePalette {
+  surfaces: readonly string[];
+  onAccent: string | null;
+}
+
+export interface ThemeRoot {
+  dataset: Record<string, string | undefined>;
+  style: {
+    setProperty(name: string, value: string): void;
+    removeProperty(name: string): string;
+  };
+}
+
+const ACCENT_PROPERTY = '--ui-accent';
+export const THEME_SURFACES = ['--ui-surface', '--ui-surface-raised', '--ui-surface-glass'];
+export const THEME_ON_ACCENT = '--ui-on-action';
+const HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6}|[\da-f]{8})$/i;
+
+export function readThemePalette(read: (name: string) => string): ThemePalette {
+  const color = (name: string) => {
+    const value = read(name).trim();
+    return HEX_COLOR.test(value) ? value : null;
+  };
+  return {
+    surfaces: THEME_SURFACES.map(color).filter((value): value is string => value !== null),
+    onAccent: color(THEME_ON_ACCENT),
+  };
+}
+
+export function applyInterfaceTheme(
+  root: ThemeRoot,
+  theme: InterfaceTheme,
+  palette: ThemePalette,
+): () => void {
+  root.dataset.uiQuality = theme.quality;
+  const complete = palette.surfaces.length === THEME_SURFACES.length && palette.onAccent !== null;
+  const accent =
+    theme.accent && complete
+      ? readableAccent(theme.accent, palette.surfaces, { onAccent: palette.onAccent ?? '' })
+      : null;
+  if (accent) root.style.setProperty(ACCENT_PROPERTY, accent);
+  else root.style.removeProperty(ACCENT_PROPERTY);
+  return () => {
+    delete root.dataset.uiQuality;
+    root.style.removeProperty(ACCENT_PROPERTY);
+  };
+}

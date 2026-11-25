@@ -45,7 +45,7 @@ Người dẫn dắt nhóm đã xem ảnh tham chiếu Style Direction 04 "Saigo
 - Component không ghi mã màu, cỡ chữ, khoảng cách, số lớp hay thời lượng; chỉ dùng token ngữ nghĩa hoặc thành phần.
 - Màu riêng của tiệm chỉ đổi token accent. Màu trạng thái, chữ và viền focus không đổi theo tiệm.
 - Cặp chữ trên mặt nền đạt tương phản 4.5:1; viền focus, viền điều khiển và màu trạng thái đạt 3:1 trên mặt nền. Test đọc chính tệp token để kiểm.
-- Thứ tự lớp cố định: canvas, gợi ý trong thế giới, HUD, thông báo nhanh, hộp thoại, lớp khôi phục.
+- Thứ tự lớp cố định: canvas, gợi ý trong thế giới, thanh ứng dụng, HUD, thông báo nhanh, hộp thoại, lớp khôi phục.
 
 **Kính và chuyển động**
 

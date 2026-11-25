@@ -56,6 +56,10 @@ export default withMermaid(
               text: 'Thư viện 3D',
               link: 'https://netverse3d.github.io/netverse3d/game-assets/library/',
             },
+            {
+              text: 'Thư viện giao diện',
+              link: 'https://netverse3d.github.io/netverse3d/ui/',
+            },
             { text: 'Quy ước', link: '/wiki/engineering/conventions' },
             { text: 'Nhánh và phát hành', link: '/wiki/engineering/branching-and-release' },
           ],

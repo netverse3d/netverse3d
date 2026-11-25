@@ -1,0 +1,24 @@
+{
+  "name": "@netverse/ui",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "exports": {
+    "./tokens.css": "./tokens/index.css",
+    "./accent": "./src/accent.mjs",
+    "./catalog": "./src/catalog.mjs",
+    "./contrast": "./src/contrast.mjs",
+    "./token-files": "./src/token-files.mjs",
+    "./tokens": "./src/tokens.mjs",
+    "./components.css": "./components/components.css"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "library": "node tools/serve-library.mjs",
+    "publish": "node tools/publish-library.mjs"
+  },
+  "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0"
+  }
+}

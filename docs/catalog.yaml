@@ -100,7 +100,7 @@ components:
   - id: ui
     path: packages/ui
     kind: package
-    stack: React
+    stack: CSS, JavaScript
     summary: Thành phần giao diện dùng chung
     milestone: M1
   - id: config

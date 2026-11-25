@@ -144,9 +144,10 @@ Kho trạng thái dùng Redux Toolkit.
 ## CSS
 
 - Mỗi component một tệp `.module.css` đặt cạnh nó.
-- Màu, cỡ chữ, khoảng cách lấy từ biến CSS khai ở `app/globals.css`, không ghi số màu trong component.
-- `globals.css` chỉ chứa biến và phần đặt lại mặc định của trình duyệt.
-- Giao diện theo [hệ thiết kế giao diện](./design-system.md) và [tiêu chí giao diện](../product/ui-criteria.md), quyết định gốc ở [ADR-0040](../../decisions/ADR-0040-saigon-soft-future-ui.md). Khi token của `packages/ui` có mặt, biến trong `globals.css` chuyển sang đó.
+- Màu, cỡ chữ, độ đậm, khoảng cách, bo góc, lớp và thời lượng lấy từ token `--ui-*` của `@netverse/ui`, nạp một lần ở `app/layout.tsx`. Test `test/unit/ui/module-css.test.ts` chặn giá trị viết thẳng và biến chưa khai.
+- `globals.css` chỉ chứa phần đặt lại mặc định của trình duyệt.
+- Mức chất lượng và màu nhấn của tiệm gắn lên gốc trang qua `src/ui/interface-theme.ts`; component không tự đọc mức chất lượng để đổi kính.
+- Giao diện theo [hệ thiết kế giao diện](./design-system.md) và [tiêu chí giao diện](../product/ui-criteria.md), quyết định gốc ở [ADR-0040](../../decisions/ADR-0040-saigon-soft-future-ui.md).
 
 ## Máy tối thiểu
 

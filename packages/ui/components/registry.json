@@ -1,0 +1,205 @@
+{
+  "propSets": {
+    "shape": {
+      "shape": ["bevel", "bevel-all", "notch", "round", "pill", "hex"],
+      "cut": ["md", "sm", "lg"],
+      "tone": ["accent", "primary", "magenta", "cyan", "success", "warning", "danger", "neutral"],
+      "duo": ["none", "magenta", "cyan"],
+      "surface": ["glass", "solid", "neon", "filled", "ghost"],
+      "glow": ["soft", "none", "strong"]
+    }
+  },
+  "components": [
+    {
+      "id": "shape",
+      "kind": "foundation",
+      "className": "nv-shape",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["N1", "N2", "H1", "H3"]
+    },
+    {
+      "id": "panel",
+      "kind": "component",
+      "react": "Panel",
+      "className": "nv-panel",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["N4", "N5", "H3"],
+      "demo": "panel"
+    },
+    {
+      "id": "button",
+      "kind": "component",
+      "react": "Button",
+      "className": "nv-button",
+      "uses": ["shape"],
+      "props": {
+        "size": ["md", "sm", "lg"],
+        "state": ["idle", "pending", "disabled"]
+      },
+      "criteria": ["T1", "T2", "T3", "K3", "K4"],
+      "demo": "button"
+    },
+    {
+      "id": "icon-button",
+      "kind": "component",
+      "react": "IconButton",
+      "className": "nv-icon-button",
+      "uses": ["shape"],
+      "props": {
+        "size": ["md", "lg"]
+      },
+      "criteria": ["T2", "K3", "K4"],
+      "demo": "icon"
+    },
+    {
+      "id": "text-field",
+      "kind": "component",
+      "react": "TextField",
+      "className": "nv-field",
+      "uses": [],
+      "props": {
+        "state": ["idle", "error", "disabled"]
+      },
+      "criteria": ["P3", "K1", "K3", "K4"],
+      "demo": "input"
+    },
+    {
+      "id": "input",
+      "kind": "part",
+      "className": "nv-input",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["K3"]
+    },
+    {
+      "id": "checkbox",
+      "kind": "component",
+      "react": "Checkbox",
+      "className": "nv-check",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "checkbox"
+    },
+    {
+      "id": "shop-card",
+      "kind": "component",
+      "react": "ShopCard",
+      "className": "nv-card",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["N3", "P5"],
+      "demo": "card"
+    },
+    {
+      "id": "key-hint",
+      "kind": "component",
+      "react": "KeyHint",
+      "className": "nv-key-hint",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["T2", "L2"],
+      "demo": "key-hint"
+    },
+    {
+      "id": "keycap",
+      "kind": "component",
+      "react": "Keycap",
+      "className": "nv-keycap",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2"],
+      "demo": "key-hint"
+    },
+    {
+      "id": "action",
+      "kind": "component",
+      "react": "ActionButton",
+      "className": "nv-action",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2", "K4"],
+      "demo": "action"
+    },
+    {
+      "id": "status",
+      "kind": "component",
+      "react": "Status",
+      "className": "nv-status",
+      "uses": [],
+      "props": {
+        "tone": ["success", "warning", "danger"]
+      },
+      "criteria": ["N3"],
+      "demo": "card"
+    },
+    {
+      "id": "meter",
+      "kind": "component",
+      "react": "Meter",
+      "className": "nv-meter",
+      "uses": [],
+      "props": {},
+      "criteria": ["P1"],
+      "demo": "profile"
+    },
+    {
+      "id": "avatar",
+      "kind": "component",
+      "react": "Avatar",
+      "className": "nv-avatar",
+      "uses": [],
+      "props": {},
+      "criteria": ["N3"],
+      "demo": "profile"
+    },
+    {
+      "id": "profile",
+      "kind": "component",
+      "react": "PlayerBadge",
+      "className": "nv-profile",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["N5"],
+      "demo": "profile"
+    },
+    {
+      "id": "dialog",
+      "kind": "component",
+      "react": "Dialog",
+      "className": "nv-dialog",
+      "uses": ["shape"],
+      "props": {},
+      "criteria": ["T5", "L1", "L2"],
+      "demo": "dialog"
+    },
+    {
+      "id": "scrim",
+      "kind": "part",
+      "className": "nv-scrim",
+      "uses": [],
+      "props": {},
+      "criteria": ["L1"]
+    },
+    {
+      "id": "spinner",
+      "kind": "component",
+      "react": "Spinner",
+      "className": "nv-spinner",
+      "uses": [],
+      "props": {},
+      "criteria": ["P1", "H2"],
+      "demo": "button"
+    },
+    {
+      "id": "chevrons",
+      "kind": "part",
+      "className": "nv-chevrons",
+      "uses": [],
+      "props": {},
+      "criteria": ["N5"]
+    }
+  ]
+}

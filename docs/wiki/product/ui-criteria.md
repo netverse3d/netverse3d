@@ -32,13 +32,13 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 
 ### N. Ngữ nghĩa và màu
 
-| Mã     | Tiêu chí                                                                                                        | Cách kiểm                                                                     |
-| :----- | :-------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| **N1** | Component không ghi mã màu, cỡ chữ, khoảng cách hay thời lượng; chỉ dùng token ngữ nghĩa hoặc token thành phần. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417). |
-| **N2** | Màu riêng của tiệm chỉ đổi màu nhấn. Chữ, viền focus và màu trạng thái giữ nguyên với mọi tiệm.                 | Test "đổi accent tiệm không đổi màu trạng thái lỗi" (#417).                   |
-| **N3** | Trạng thái không chỉ nói bằng màu: lỗi, cảnh báo, thành công luôn có chữ hoặc biểu tượng đi kèm.                | Thư viện.                                                                     |
-| **N4** | Nền panel tối ở mọi màn, kể cả màn toàn trang.                                                                  | Thư viện, chạy thử.                                                           |
-| **N5** | HUD và gợi ý đọc rõ trên mọi loại cảnh: hẻm tối, đường sáng đèn, mưa, nhiều neon; không cạnh tranh với cảnh 3D. | Chạy thử ở các cảnh đó.                                                       |
+| Mã     | Tiêu chí                                                                                                        | Cách kiểm                                                                            |
+| :----- | :-------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| **N1** | Component không ghi mã màu, cỡ chữ, khoảng cách hay thời lượng; chỉ dùng token ngữ nghĩa hoặc token thành phần. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417).        |
+| **N2** | Màu riêng của tiệm chỉ đổi màu nhấn. Chữ, viền focus và màu trạng thái giữ nguyên với mọi tiệm.                 | Test "đổi accent tiệm không đổi màu trạng thái lỗi" (#417).                          |
+| **N3** | Trạng thái không chỉ nói bằng màu: lỗi, cảnh báo, thành công luôn có chữ hoặc biểu tượng đi kèm.                | Thư viện; test "chữ báo lỗi dùng màu lỗi, chỉ chữ từ chối dùng màu cảnh báo" (#417). |
+| **N4** | Nền panel tối ở mọi màn, kể cả màn toàn trang.                                                                  | Thư viện, chạy thử.                                                                  |
+| **N5** | HUD và gợi ý đọc rõ trên mọi loại cảnh: hẻm tối, đường sáng đèn, mưa, nhiều neon; không cạnh tranh với cảnh 3D. | Chạy thử ở các cảnh đó.                                                              |
 
 ### T. Tương tác
 
@@ -70,16 +70,16 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 | :----- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
 | **K1** | Chữ trên mọi mặt nền đạt tương phản 4.5:1.                                 | Test "chữ chính trên mọi mặt nền đạt tương phản 4.5:1" (#417).                    |
 | **K2** | Viền focus, viền điều khiển và màu trạng thái đạt 3:1 trên mặt nền.        | Test "viền focus, viền điều khiển và màu trạng thái đạt 3:1 trên mặt nền" (#417). |
-| **K3** | Mọi thao tác làm được bằng bàn phím; phần tử đang focus luôn thấy rõ.      | Thư viện, chạy thử.                                                               |
+| **K3** | Mọi thao tác làm được bằng bàn phím; phần tử đang focus luôn thấy rõ.      | Thư viện, chạy thử; test "viền lúc thường không dùng màu focus" (#417).           |
 | **K4** | Trên điện thoại, vùng chạm của mọi nút và ô chọn không nhỏ hơn 44 × 44 px. | Thư viện ở khổ điện thoại.                                                        |
 | **K5** | Chữ hiển thị nằm trong tệp ngôn ngữ, không nằm trong component.            | Duyệt mã theo luật ở [wiki client game](../engineering/web-client.md).            |
 
 ### L. Lớp hiển thị
 
-| Mã     | Tiêu chí                                                                                                                                     | Cách kiểm                                                                     |
-| :----- | :------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
-| **L1** | Thứ tự lớp cố định từ dưới lên: canvas, gợi ý trong thế giới, HUD, thông báo nhanh, hộp thoại, lớp khôi phục. Component không tự đặt số lớp. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417). |
-| **L2** | Mọi hộp thoại nằm trên HUD; HUD không che lớp khôi phục; gợi ý tương tác không che vật đang tương tác.                                       | Chạy thử.                                                                     |
+| Mã     | Tiêu chí                                                                                                                                                                                                                                    | Cách kiểm                                                                     |
+| :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- |
+| **L1** | Thứ tự lớp cố định từ dưới lên: canvas, gợi ý trong thế giới, thanh ứng dụng (tài khoản, cài đặt), HUD, thông báo nhanh, hộp thoại, lớp khôi phục. Panel của phiên thuê máy là HUD, nằm trên thanh ứng dụng. Component không tự đặt số lớp. | Test "component không ghi giá trị trực tiếp và chỉ dùng biến đã khai" (#417). |
+| **L2** | Mọi hộp thoại nằm trên HUD; HUD không che lớp khôi phục; gợi ý tương tác không che vật đang tương tác.                                                                                                                                      | Chạy thử.                                                                     |
 
 ### H. Hiệu năng và chuyển động
 
@@ -90,10 +90,20 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 | **H3** | Kính mờ chỉ dùng cho panel cần cảm giác không gian, không phủ toàn bộ HUD.                                            | Thư viện.                                                                      |
 | **H4** | Chuyển động không chặn thao tác, không làm mất focus, không làm nhảy bố cục.                                          | Thư viện, chạy thử.                                                            |
 
+### R. Đăng ký component
+
+| Mã     | Tiêu chí                                                                                                                                       | Cách kiểm                                                                                                                                    |
+| :----- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R1** | Mọi component có mục trong sổ đăng ký `packages/ui/components/registry.json`, có khối CSS và mẫu trong Thư viện giao diện.                     | Test "mọi khối CSS component đều đã đăng ký", "mọi mục đăng ký có khối CSS tương ứng", "mọi component đăng ký có mẫu trong thư viện" (#417). |
+| **R2** | Mỗi giá trị tham số trong sổ đăng ký có quy tắc CSS; không có tham số ma.                                                                      | Test "mọi giá trị tham số trong sổ đăng ký có quy tắc CSS" (#417).                                                                           |
+| **R3** | Mã màn hình chỉ ghép component đã đăng ký: không tự dựng nút, ô nhập, hộp thoại, liên kết; không `style` nội tuyến; không tự gắn class `nv-*`. | `pnpm ui:check` (#418).                                                                                                                      |
+| **R4** | CSS của màn hình chỉ dàn trang; nền, viền, bóng, màu, phông, bo góc thuộc component.                                                           | `pnpm ui:check` (#418).                                                                                                                      |
+
 ## Bảng kiểm duyệt component
 
 Dùng khi thêm hoặc sửa một component trong `packages/ui` hay `apps/web-3d/src/ui/`:
 
+- [ ] **R1**, **R2**: component có mục trong sổ đăng ký và test của `packages/ui` đạt.
 - [ ] Component có mặt trong Thư viện giao diện với đủ trạng thái áp dụng: thường, hover, focus, chờ, tắt, lỗi. Component của `packages/ui` có test giữ điều này (#418); component riêng của game đưa vào mục Mẫu tương tác và duyệt bằng mắt.
 - [ ] **N1**, **L1**: không có mã màu, cỡ, khoảng cách, số lớp, thời lượng viết thẳng; test quét xanh.
 - [ ] **N2**, **K1**, **K2**: xem với ít nhất hai bộ màu tiệm; test tương phản xanh.

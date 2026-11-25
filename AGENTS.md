@@ -37,6 +37,7 @@ Không tự chọn thay người đang làm, không tự sửa REQ hoặc ADR đ
 - Không thêm chú thích mới. Khi sửa một hàm hoặc khai báo, xoá chú thích cũ trong đơn vị đó. Chỉ giữ chỉ dẫn cho công cụ như build tag, lint directive, migration marker, shebang.
 - Kiến thức để trong tên định danh, tên test, `docs/wiki`, ADR.
 - Tìm mã có sẵn trước khi viết mới.
+- Giao diện chỉ ghép từ component đã đăng ký trong `packages/ui/components/registry.json`, import từ `@netverse/ui`. Không tự dựng nút, ô nhập, hộp thoại, thẻ trong mã màn hình; CSS của màn hình chỉ dàn trang. Thiếu component thì thêm vào `packages/ui` trước. Xem ADR-0041 và Thư viện giao diện.
 - Tài sản 3D dựng tay sửa trên tệp `.blend` trong `packages/game-assets/source`; tài sản sinh từ script sửa script trong `packages/game-assets/pipeline` rồi sinh lại `.blend` bằng `pnpm assets:generate`. Sau đó xuất lại, không sửa tay tệp `.glb`. Xem `docs/wiki/engineering/game-assets.md` và ADR-0018.
 
 ## Repo public: những điều cấm
