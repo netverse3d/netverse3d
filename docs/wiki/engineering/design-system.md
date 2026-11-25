@@ -43,6 +43,7 @@ Bảng màu đi theo ảnh định hướng ở trang tiêu chí: nền tối ng
 
 - Component dùng chung nằm ở `packages/ui`: nút, hộp thoại, spinner, skeleton, thông báo nhanh, banner, lỗi tại chỗ.
 - Component riêng của game nằm ở `apps/web-3d/src/ui/` và dùng lại component của `packages/ui`: gợi ý ngồi máy, desktop khi thuê máy, hộp thư, màn tạo nhân vật. Component riêng của trang quản trị nằm ở `apps/admin` theo cùng luật.
+- Component cần phím mũi tên, giữ focus hay định vị lớp nổi (menu, tooltip, ô chọn, tab, công tắc, vùng thông báo) dựng trên primitive Radix headless; hình dáng vẫn do CSS của `packages/ui`. Mã ứng dụng không import `@radix-ui/*` ([ADR-0042](../../decisions/ADR-0042-radix-headless-behaviour.md)).
 - Logic trạng thái của component (khi nào tắt, khi nào báo bận, khi nào được đóng) viết thành hàm TypeScript thuần cạnh component để test bằng `node --test`; phần JSX chỉ vẽ theo kết quả của hàm đó.
 - Component gửi lệnh thì nhận trạng thái tương tác `idle`, `pending`, `confirmed`, `denied` hoặc `error` từ kho trạng thái. Đang `pending` thì không gửi thêm; `confirmed` chỉ do phòng hoặc server đặt.
 
