@@ -42,3 +42,4 @@ Trang này được sinh từ các tệp ADR trong `docs/decisions`.
 | [ADR-0036](./ADR-0036-pr-merge-policy.md) | Gộp PR theo tiêu chí issue và pipeline, không bắt approval | Đã chốt |
 | [ADR-0040](./ADR-0040-saigon-soft-future-ui.md) | Saigon Soft-Future là ngôn ngữ của giao diện 2D | Đã chốt |
 | [ADR-0041](./ADR-0041-registered-interface-components.md) | Giao diện chỉ ghép từ component đã đăng ký | Đã chốt |
+| [ADR-0042](./ADR-0042-radix-headless-behaviour.md) | Hành vi component giao diện dùng Radix headless | Đã chốt |

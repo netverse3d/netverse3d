@@ -1,50 +1,62 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { tmpdir } from 'node:os';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { libraryEntries, readEntry } from './library-files.mjs';
+import { watchLibrary } from './library-files.mjs';
 
 const PORT = Number(process.env.PORT ?? 4174);
 const LIBRARY_PREFIX = '/ui/';
 const RECIPES_PREFIX = '/game-assets/recipes/';
+const RECIPE_FILE = /^[\w-]+\.json$/;
 const recipes = fileURLToPath(new URL('../../game-assets/recipes/', import.meta.url));
+const output = mkdtempSync(join(tmpdir(), 'netverse-ui-library-'));
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
-  '.mjs': 'text/javascript',
+  '.js': 'text/javascript',
   '.json': 'application/json',
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
   '.jpg': 'image/jpeg',
+  '': 'text/plain; charset=utf-8',
 };
 
-function find(pathname) {
+function resolveFile(pathname) {
   if (pathname.startsWith(RECIPES_PREFIX)) {
-    const name = normalize(pathname.slice(RECIPES_PREFIX.length));
-    if (!/^[\w-]+\.json$/.test(name)) return null;
-    return { type: '.json', body: () => readFileSync(join(recipes, name)) };
+    const name = pathname.slice(RECIPES_PREFIX.length);
+    return RECIPE_FILE.test(name) ? join(recipes, name) : null;
   }
   if (!pathname.startsWith(LIBRARY_PREFIX)) return null;
-  const relative = pathname.slice(LIBRARY_PREFIX.length) || 'index.html';
-  const entry = libraryEntries().find((item) => item.to === relative);
-  return entry ? { type: extname(entry.to), body: () => readEntry(entry) } : null;
+  const relative = normalize(pathname.slice(LIBRARY_PREFIX.length) || 'index.html');
+  if (relative.startsWith('..')) return null;
+  return join(output, relative);
 }
 
-createServer((request, response) => {
+function removeOutput() {
+  rmSync(output, { recursive: true, force: true });
+}
+
+let watcher;
+try {
+  watcher = await watchLibrary(output);
+} catch (error) {
+  removeOutput();
+  throw error;
+}
+
+const server = createServer((request, response) => {
   const pathname = new URL(request.url ?? '/', 'http://localhost').pathname;
   if (pathname === '/') {
     response.writeHead(302, { location: LIBRARY_PREFIX }).end();
     return;
   }
-  const found = find(pathname);
-  if (!found) {
-    response.writeHead(404).end();
-    return;
-  }
+  const file = resolveFile(pathname);
   try {
-    const body = found.body();
+    if (!file) throw new Error('not found');
+    const body = readFileSync(file);
     response.writeHead(200, {
-      'content-type': CONTENT_TYPES[found.type] ?? 'application/octet-stream',
+      'content-type': CONTENT_TYPES[extname(file)] ?? 'application/octet-stream',
       'cache-control': 'no-store',
     });
     response.end(body);
@@ -54,3 +66,13 @@ createServer((request, response) => {
 }).listen(PORT, () =>
   console.log(`Interface library at http://localhost:${PORT}${LIBRARY_PREFIX}`),
 );
+
+async function stop() {
+  server.close();
+  await watcher.dispose();
+  removeOutput();
+  process.exit(0);
+}
+
+process.on('SIGINT', stop);
+process.on('SIGTERM', stop);

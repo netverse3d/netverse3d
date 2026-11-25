@@ -111,7 +111,7 @@
       "uses": [],
       "props": {},
       "criteria": ["T2"],
-      "demo": "key-hint"
+      "demo": "keycap"
     },
     {
       "id": "action",
@@ -133,7 +133,7 @@
         "tone": ["success", "warning", "danger"]
       },
       "criteria": ["N3"],
-      "demo": "card"
+      "demo": "status"
     },
     {
       "id": "meter",
@@ -143,7 +143,7 @@
       "uses": [],
       "props": {},
       "criteria": ["P1"],
-      "demo": "profile"
+      "demo": "meter"
     },
     {
       "id": "avatar",
@@ -153,7 +153,7 @@
       "uses": [],
       "props": {},
       "criteria": ["N3"],
-      "demo": "profile"
+      "demo": "avatar"
     },
     {
       "id": "profile",
@@ -195,7 +195,7 @@
       "uses": [],
       "props": {},
       "criteria": ["P1", "H2"],
-      "demo": "button"
+      "demo": "spinner"
     },
     {
       "id": "chevrons",
