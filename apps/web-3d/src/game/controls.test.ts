@@ -76,6 +76,21 @@ test('đang gõ trong ô nhập hay ô chọn thì phím không điều khiển 
   }
 });
 
+test('đang chọn trong danh sách thả xuống hay nhóm lựa chọn thì phím không điều khiển nhân vật', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  for (const role of ['option', 'combobox', 'radio', 'switch']) {
+    const target = {
+      tagName: 'DIV',
+      closest: (selector: string) => (selector.includes(`[role="${role}"]`) ? {} : null),
+    };
+    const event = key('keydown', 'ArrowDown', target);
+    keys.dispatchEvent(event);
+    assert.deepEqual(controls.intent(), STILL, role);
+    assert.equal(event.defaultPrevented, false, role);
+  }
+});
+
 test('cửa sổ mất tiêu điểm thì nhả hết phím, nhân vật không tự đi mãi', () => {
   const { keys, surface } = stage();
   const controls = createControls(surface, keys);

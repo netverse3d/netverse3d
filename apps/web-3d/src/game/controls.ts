@@ -61,9 +61,31 @@ const NO_TURN: Turn = { right: 0, down: 0 };
 const MAIN_BUTTON = 0;
 const WHEEL_PIXELS_PER_NOTCH = 100;
 
+const WIDGET_ROLES = [
+  'combobox',
+  'listbox',
+  'option',
+  'menu',
+  'menuitem',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'radio',
+  'radiogroup',
+  'slider',
+  'spinbutton',
+  'switch',
+  'tab',
+  'tablist',
+  'textbox',
+];
+const WIDGET_SELECTOR = WIDGET_ROLES.map((role) => `[role="${role}"]`).join(', ');
+
+type KeyTarget = { tagName?: unknown; closest?: (selector: string) => unknown };
+
 function isTyping(event: Event): boolean {
-  const tagName = (event.target as { tagName?: unknown } | null)?.tagName;
-  return typeof tagName === 'string' && TYPING_TAGS.has(tagName);
+  const target = event.target as KeyTarget | null;
+  if (typeof target?.tagName === 'string' && TYPING_TAGS.has(target.tagName)) return true;
+  return typeof target?.closest === 'function' && Boolean(target.closest(WIDGET_SELECTOR));
 }
 
 function isShortcut(press: KeyPress): boolean {

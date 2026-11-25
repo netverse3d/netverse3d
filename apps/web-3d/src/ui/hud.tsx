@@ -1,6 +1,6 @@
 'use client';
 
-import { Panel, SelectField, Text } from '@netverse/ui/react';
+import { Panel, Select, Text } from '@netverse/ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   QUALITY_LEVELS,
@@ -58,22 +58,25 @@ export default function Hud() {
         </Text>
       </div>
       <div className={styles.fields}>
-        <SelectField
+        <Select
           label={vi.hud.shop}
           value={scene.recipeId}
           options={recipes.map((recipe) => ({ value: recipe.id, label: recipe.name }))}
-          onChange={(event) => {
-            dispatch(recipeRequested(event.target.value));
-            event.target.blur();
+          onValueChange={(value) => {
+            dispatch(recipeRequested(value));
           }}
+          returnFocus={false}
+          data-hud-shop
         />
-        <SelectField
+        <Select
           label={vi.hud.quality}
           value={scene.quality}
           options={QUALITY_LEVELS.map((level) => ({ value: level, label: vi.quality[level] }))}
-          onChange={(event) => {
-            if (isQualityLevel(event.target.value)) dispatch(qualityRequested(event.target.value));
+          onValueChange={(value) => {
+            if (isQualityLevel(value)) dispatch(qualityRequested(value));
           }}
+          returnFocus={false}
+          data-hud-quality
         />
       </div>
       <Text variant="meta" tone={warn ? 'error' : 'info'}>

@@ -155,8 +155,10 @@ function browserReady(context: TestContext, needsModels = true): boolean {
   return true;
 }
 
+const KEY_CODES: Record<string, number> = { Enter: 13, Escape: 27, ArrowUp: 38, ArrowDown: 40 };
+
 async function pressKey(browser: BrowserSession, code: string, key: string, hold = 40) {
-  const keyCode = key === 'Enter' ? 13 : key === 'Escape' ? 27 : key.toUpperCase().charCodeAt(0);
+  const keyCode = KEY_CODES[key] ?? key.toUpperCase().charCodeAt(0);
   await browser.send('Input.dispatchKeyEvent', {
     type: 'keyDown',
     key,
@@ -172,6 +174,31 @@ async function pressKey(browser: BrowserSession, code: string, key: string, hold
     windowsVirtualKeyCode: keyCode,
     nativeVirtualKeyCode: keyCode,
   });
+}
+
+async function chooseOption(browser: BrowserSession, field: string, value: string) {
+  const focused = await browser.evaluate<boolean>(`(() => {
+    const trigger = document.querySelector('${field} [role="combobox"]');
+    if (!trigger) return false;
+    trigger.focus();
+    return document.activeElement === trigger;
+  })()`);
+  if (!focused) return false;
+  await pressKey(browser, 'Enter', 'Enter');
+  for (const direction of ['ArrowDown', 'ArrowUp']) {
+    for (let step = 0; step < 12; step += 1) {
+      await sleep(80);
+      const current = await browser.evaluate<string | null>(
+        'document.activeElement?.getAttribute("data-value") ?? null',
+      );
+      if (current === value) {
+        await pressKey(browser, 'Enter', 'Enter');
+        return true;
+      }
+      await pressKey(browser, direction, direction);
+    }
+  }
+  return false;
 }
 
 const SEAT_ROUTES = [
@@ -321,30 +348,19 @@ test('đổi tiệm cập nhật preset ánh sáng theo cả hai chiều', async
       (state) => state.ready === 'true' && Number(state.frames) >= 1,
     );
     assert.equal(initial.lighting, 'shop-neon');
-    const selected = await browser.evaluate(`(() => {
-      const select = [...document.querySelectorAll('select')].find((item) =>
-        [...item.options].some((option) => option.value === 'bien-sau'),
-      );
-      if (!select) return null;
-      select.value = 'bien-sau';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-      return select.value;
-    })()`);
-    assert.equal(selected, 'bien-sau');
+    assert.equal(await chooseOption(browser, '[data-hud-shop]', 'bien-sau'), true);
+    await sleep(200);
+    assert.equal(
+      await browser.evaluate(
+        'document.activeElement?.closest("[data-hud-shop]") ? "select" : null',
+      ),
+      null,
+    );
     const dim = await waitForStage(
       (state) => state.recipe === 'bien-sau' && state.lighting === 'shop-dim',
     );
     assert.equal(dim.ready, 'true', JSON.stringify(dim));
-    const restored = await browser.evaluate(`(() => {
-      const select = [...document.querySelectorAll('select')].find((item) =>
-        [...item.options].some((option) => option.value === 'tim-neon'),
-      );
-      if (!select) return null;
-      select.value = 'tim-neon';
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-      return select.value;
-    })()`);
-    assert.equal(restored, 'tim-neon');
+    assert.equal(await chooseOption(browser, '[data-hud-shop]', 'tim-neon'), true);
     const neon = await waitForStage(
       (state) => state.recipe === 'tim-neon' && state.lighting === 'shop-neon',
     );
