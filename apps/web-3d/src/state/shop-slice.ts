@@ -30,6 +30,7 @@ export interface SceneState {
 export interface RecipeOption {
   id: string;
   name: string;
+  accent?: string;
 }
 
 export interface SeatDenial {

@@ -7,7 +7,9 @@
   "exports": {
     "./tokens.css": "./tokens/index.css",
     "./accent": "./src/accent.mjs",
+    "./catalog": "./src/catalog.mjs",
     "./contrast": "./src/contrast.mjs",
+    "./token-files": "./src/token-files.mjs",
     "./tokens": "./src/tokens.mjs"
   },
   "scripts": {
