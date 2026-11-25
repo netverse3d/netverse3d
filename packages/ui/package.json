@@ -13,7 +13,9 @@
     "./tokens": "./src/tokens.mjs"
   },
   "scripts": {
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "library": "node tools/serve-library.mjs",
+    "publish": "node tools/publish-library.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "^5.3.0"

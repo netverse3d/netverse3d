@@ -1,0 +1,44 @@
+{
+  "title": "Thư viện giao diện",
+  "intro": "Token Saigon Soft-Future dùng chung cho mọi màn 2D của Netverse 3D. Mọi giá trị trên trang đọc trực tiếp từ token đang chạy, nên đổi token là trang đổi theo.",
+  "links": {
+    "criteria": "Tiêu chí giao diện",
+    "system": "Hệ thiết kế giao diện",
+    "assets": "Thư viện 3D"
+  },
+  "controls": {
+    "accent": "Màu nhấn của tiệm",
+    "accentDefault": "Mặc định",
+    "accentAdjusted": "Đã làm sáng từ {from} thành {to} để đạt 3:1",
+    "quality": "Mức chất lượng",
+    "quality-low": "Thấp",
+    "quality-medium": "Vừa",
+    "quality-high": "Cao",
+    "transparency": "Giảm trong suốt",
+    "motion": "Giảm chuyển động"
+  },
+  "sections": {
+    "palette": "Bảng màu gốc",
+    "surfaces": "Mặt nền",
+    "text": "Chữ",
+    "indicators": "Viền, focus và trạng thái",
+    "actions": "Hành động",
+    "overlays": "Lớp phủ và kính",
+    "contrast": "Tương phản",
+    "typography": "Chữ và cỡ chữ",
+    "spacing": "Khoảng cách",
+    "radius": "Bo góc",
+    "layers": "Thứ tự lớp",
+    "motion": "Chuyển động"
+  },
+  "contrast": {
+    "pair": "Cặp",
+    "ratio": "Tỉ lệ",
+    "minimum": "Tối thiểu",
+    "criterion": "Tiêu chí",
+    "pass": "Đạt",
+    "fail": "Chưa đạt"
+  },
+  "sample": "Tiệm net Netverse, hẻm 28, quận 1",
+  "motionPlay": "Chạy thử"
+}

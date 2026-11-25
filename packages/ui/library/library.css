@@ -1,0 +1,229 @@
+:where(*) {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ui-canvas);
+  color: var(--ui-text);
+  font-family: var(--ui-font-family);
+  font-size: var(--ui-text-base);
+  line-height: var(--ui-line-normal);
+}
+
+body {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-8);
+}
+
+.masthead h1 {
+  margin: 0 0 var(--ui-space-2);
+  font-size: var(--ui-text-2xl);
+  line-height: var(--ui-line-tight);
+}
+
+.masthead p {
+  margin: 0 0 var(--ui-space-3);
+  color: var(--ui-text-muted);
+}
+
+.masthead nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-4);
+}
+
+a {
+  color: var(--ui-accent);
+}
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+.controls {
+  position: sticky;
+  top: 0;
+  z-index: var(--ui-layer-hud);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ui-space-4);
+  margin: var(--ui-space-4) 0 var(--ui-space-2);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  background: var(--ui-panel);
+  backdrop-filter: var(--ui-panel-filter);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-2);
+}
+
+.controls label {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  color: var(--ui-text-muted);
+  font-size: var(--ui-text-sm);
+}
+
+select,
+button {
+  min-height: 36px;
+  padding: var(--ui-space-1) var(--ui-space-3);
+  background: var(--ui-action-neutral);
+  color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-1);
+  font: inherit;
+}
+
+.note {
+  min-height: var(--ui-line-normal);
+  margin: 0 0 var(--ui-space-4);
+  color: var(--ui-info);
+  font-size: var(--ui-text-sm);
+}
+
+.panel {
+  margin-bottom: var(--ui-space-6);
+  padding: var(--ui-space-4);
+  background: var(--ui-panel);
+  backdrop-filter: var(--ui-panel-filter);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-3);
+}
+
+.panel h2 {
+  margin: 0 0 var(--ui-space-3);
+  font-size: var(--ui-text-lg);
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--ui-space-3);
+}
+
+.swatch,
+.radius-sample {
+  margin: 0;
+}
+
+.chip,
+.corner {
+  display: block;
+  height: 56px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-1);
+}
+
+.corner {
+  background: var(--ui-surface-raised);
+}
+
+figcaption,
+.value-row,
+.bar-row,
+.motion-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ui-space-2);
+  margin: var(--ui-space-1) 0;
+  font-size: var(--ui-text-sm);
+}
+
+code {
+  color: var(--ui-text);
+}
+
+.value {
+  color: var(--ui-text-muted);
+}
+
+.contrast {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ui-text-sm);
+}
+
+.contrast th,
+.contrast td {
+  padding: var(--ui-space-1) var(--ui-space-2);
+  border-bottom: 1px solid var(--ui-border);
+  text-align: start;
+}
+
+.pair {
+  display: inline-block;
+  margin-inline-end: var(--ui-space-2);
+  padding: 0 var(--ui-space-2);
+  border-radius: var(--ui-radius-1);
+  font-weight: var(--ui-weight-bold);
+}
+
+.verdict[data-passed='true'] {
+  color: var(--ui-success);
+}
+
+.verdict[data-passed='false'] {
+  color: var(--ui-error);
+}
+
+.type-sample {
+  margin: var(--ui-space-2) 0;
+  line-height: var(--ui-line-tight);
+}
+
+.type-sample code {
+  font-size: var(--ui-text-xs);
+}
+
+.bar {
+  display: inline-block;
+  height: var(--ui-space-3);
+  background: var(--ui-accent);
+  border-radius: var(--ui-radius-1);
+}
+
+.layer-stack {
+  position: relative;
+  height: 280px;
+}
+
+.layer {
+  position: absolute;
+  width: 220px;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  background: var(--ui-surface-raised);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-2);
+  box-shadow: 0 8px 24px var(--ui-shadow);
+}
+
+.track {
+  position: relative;
+  width: 160px;
+  height: var(--ui-space-4);
+  background: var(--ui-tint);
+  border-radius: var(--ui-radius-pill);
+}
+
+.dot {
+  position: absolute;
+  inset-inline-start: 0;
+  width: var(--ui-space-4);
+  height: var(--ui-space-4);
+  background: var(--ui-accent);
+  border-radius: var(--ui-radius-pill);
+  transition-property: inset-inline-start;
+}
+
+.dot.moved {
+  inset-inline-start: calc(100% - var(--ui-space-4));
+}
