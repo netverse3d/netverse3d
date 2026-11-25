@@ -8,6 +8,7 @@ import { watchLibrary } from './library-files.mjs';
 const PORT = Number(process.env.PORT ?? 4174);
 const LIBRARY_PREFIX = '/ui/';
 const RECIPES_PREFIX = '/game-assets/recipes/';
+const RECIPE_FILE = /^[\w-]+\.json$/;
 const recipes = fileURLToPath(new URL('../../game-assets/recipes/', import.meta.url));
 const output = mkdtempSync(join(tmpdir(), 'netverse-ui-library-'));
 const CONTENT_TYPES = {
@@ -18,21 +19,31 @@ const CONTENT_TYPES = {
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
   '.jpg': 'image/jpeg',
+  '': 'text/plain; charset=utf-8',
 };
 
 function resolveFile(pathname) {
-  const [prefix, folder] = pathname.startsWith(RECIPES_PREFIX)
-    ? [RECIPES_PREFIX, recipes]
-    : pathname.startsWith(LIBRARY_PREFIX)
-      ? [LIBRARY_PREFIX, output]
-      : [null, null];
-  if (!prefix) return null;
-  const relative = normalize(pathname.slice(prefix.length) || 'index.html');
+  if (pathname.startsWith(RECIPES_PREFIX)) {
+    const name = pathname.slice(RECIPES_PREFIX.length);
+    return RECIPE_FILE.test(name) ? join(recipes, name) : null;
+  }
+  if (!pathname.startsWith(LIBRARY_PREFIX)) return null;
+  const relative = normalize(pathname.slice(LIBRARY_PREFIX.length) || 'index.html');
   if (relative.startsWith('..')) return null;
-  return join(folder, relative);
+  return join(output, relative);
 }
 
-const watcher = await watchLibrary(output);
+function removeOutput() {
+  rmSync(output, { recursive: true, force: true });
+}
+
+let watcher;
+try {
+  watcher = await watchLibrary(output);
+} catch (error) {
+  removeOutput();
+  throw error;
+}
 
 const server = createServer((request, response) => {
   const pathname = new URL(request.url ?? '/', 'http://localhost').pathname;
@@ -56,9 +67,12 @@ const server = createServer((request, response) => {
   console.log(`Interface library at http://localhost:${PORT}${LIBRARY_PREFIX}`),
 );
 
-process.on('SIGINT', async () => {
+async function stop() {
   server.close();
   await watcher.dispose();
-  rmSync(output, { recursive: true, force: true });
+  removeOutput();
   process.exit(0);
-});
+}
+
+process.on('SIGINT', stop);
+process.on('SIGTERM', stop);

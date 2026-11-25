@@ -46,10 +46,10 @@ test('mọi component đăng ký có mẫu React trong thư viện', async () =>
   const { DEMO_IDS, renderDemo } = await loadDemos();
   for (const entry of registeredComponents(registry)) {
     assert.ok(DEMO_IDS.includes(entry.demo), `${entry.id}: ${entry.demo}`);
-    assert.ok(
-      renderDemo(registry, entry).includes(entry.className),
-      `${entry.id}: ${entry.className}`,
+    const classes = [...renderDemo(registry, entry).matchAll(/class="([^"]*)"/g)].flatMap((match) =>
+      match[1].split(' '),
     );
+    assert.ok(classes.includes(entry.className), `${entry.id}: ${entry.className}`);
   }
 });
 
