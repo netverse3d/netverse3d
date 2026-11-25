@@ -1,3 +1,4 @@
+import { Alert, Badge, Button, Dialog, Heading, ListItem, Text } from '@netverse/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import type { InboxClient, InboxPage } from '../types/inbox.ts';
 import { vi } from './text/vi.ts';
@@ -8,7 +9,6 @@ const REFRESH_MS = 30000;
 const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' });
 
 export default function InboxPanel({ client }: { client: InboxClient }) {
-  const dialog = useRef<HTMLDialogElement>(null);
   const activeLoad = useRef<AbortController | null>(null);
   const writing = useRef(false);
   const [open, setOpen] = useState(false);
@@ -73,107 +73,130 @@ export default function InboxPanel({ client }: { client: InboxClient }) {
 
   return (
     <>
-      <button
+      <Button
         className={styles.toggle}
-        type="button"
+        surface="glass"
+        tone="cyan"
+        duo="magenta"
         aria-label={hasUnread ? text.withUnread(unread) : text.title}
         aria-haspopup="dialog"
         onClick={() => {
           setPageNumber(1);
           setFailure(null);
           setOpen(true);
-          dialog.current?.showModal();
         }}
       >
         {text.title}
         {hasUnread && (
-          <span className={styles.badge} aria-hidden="true">
+          <Badge tone="magenta" aria-hidden="true">
             {unread > 99 ? '99+' : unread}
-          </span>
+          </Badge>
         )}
-      </button>
-      <dialog
-        ref={dialog}
-        className={styles.dialog}
-        aria-labelledby="inbox-title"
-        aria-busy={saving}
+      </Button>
+      <Dialog
+        open={open}
+        size="lg"
+        title={text.title}
+        titleId="inbox-title"
+        closeLabel={text.close}
         onClose={() => setOpen(false)}
-        onKeyDown={(event) => event.stopPropagation()}
       >
-        <header className={styles.header}>
-          <h2 id="inbox-title">{text.title}</h2>
-          <button type="button" aria-label={text.close} onClick={() => dialog.current?.close()}>
-            ×
-          </button>
-        </header>
-        <div className={styles.toolbar}>
-          <p role="status">{unread !== null && text.unread(unread)}</p>
-          <button type="button" disabled={!hasUnread || saving} onClick={() => void mark()}>
+        <div className={styles.toolbar} aria-busy={saving}>
+          <Text variant="meta" role="status">
+            {unread !== null && text.unread(unread)}
+          </Text>
+          <Button
+            size="sm"
+            surface="glass"
+            tone="neutral"
+            state={!hasUnread || saving ? 'disabled' : 'idle'}
+            onClick={() => void mark()}
+          >
             {text.readAll}
-          </button>
+          </Button>
         </div>
         {failure && (
           <div className={styles.feedback}>
-            <p role="alert">{failure === 'load' ? text.loadError : text.markError}</p>
-            <button
-              type="button"
+            <Alert tone="error">{failure === 'load' ? text.loadError : text.markError}</Alert>
+            <Button
+              size="sm"
+              surface="glass"
+              tone="neutral"
               onClick={() => {
                 setFailure(null);
                 setRequest((value) => value + 1);
               }}
             >
               {text.retry}
-            </button>
+            </Button>
           </div>
         )}
         {!current && !failure && (
-          <p role="status" className={styles.feedback}>
+          <Text variant="meta" role="status">
             {text.loading}
-          </p>
+          </Text>
         )}
         {current &&
           (current.content.length === 0 ? (
-            <p className={styles.feedback}>{text.empty}</p>
+            <Text variant="meta">{text.empty}</Text>
           ) : (
             <ul className={styles.list}>
               {current.content.map((item) => (
-                <li className={styles.item} key={item.id} data-unread={item.readAt === null}>
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
+                <ListItem
+                  key={item.id}
+                  state={item.readAt === null ? 'unread' : 'read'}
+                  data-unread={item.readAt === null}
+                >
+                  <Heading level="3">{item.title}</Heading>
+                  <Text className={styles.body}>{item.body}</Text>
                   <div className={styles.meta}>
-                    <time dateTime={item.createdAt}>
-                      {dateFormat.format(new Date(item.createdAt))}
-                    </time>
+                    <Text as="span" variant="meta">
+                      <time dateTime={item.createdAt}>
+                        {dateFormat.format(new Date(item.createdAt))}
+                      </time>
+                    </Text>
                     {item.readAt === null && (
-                      <button type="button" disabled={saving} onClick={() => void mark(item.id)}>
+                      <Button
+                        size="sm"
+                        surface="ghost"
+                        tone="cyan"
+                        state={saving ? 'disabled' : 'idle'}
+                        onClick={() => void mark(item.id)}
+                      >
                         {text.markRead}
-                      </button>
+                      </Button>
                     )}
                   </div>
-                </li>
+                </ListItem>
               ))}
             </ul>
           ))}
         {current && current.totalPages > 1 && (
           <nav className={styles.pagination} aria-label={text.pages}>
-            <button
-              type="button"
-              disabled={pageNumber === 1 || saving}
+            <Button
+              size="sm"
+              surface="glass"
+              tone="neutral"
+              state={pageNumber === 1 || saving ? 'disabled' : 'idle'}
               onClick={() => setPageNumber(pageNumber - 1)}
             >
               {text.previous}
-            </button>
-            <span>{text.page(pageNumber, current.totalPages)}</span>
-            <button
-              type="button"
-              disabled={pageNumber >= current.totalPages || saving}
+            </Button>
+            <Text as="span" variant="meta">
+              {text.page(pageNumber, current.totalPages)}
+            </Text>
+            <Button
+              size="sm"
+              surface="glass"
+              tone="neutral"
+              state={pageNumber >= current.totalPages || saving ? 'disabled' : 'idle'}
               onClick={() => setPageNumber(pageNumber + 1)}
             >
               {text.next}
-            </button>
+            </Button>
           </nav>
         )}
-      </dialog>
+      </Dialog>
     </>
   );
 }

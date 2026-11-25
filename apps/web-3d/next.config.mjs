@@ -4,6 +4,7 @@ const roomMode =
 const nextConfig = {
   env: { NEXT_PUBLIC_ROOM: roomMode },
   output: 'export',
+  transpilePackages: ['@netverse/ui'],
   reactStrictMode: true,
   images: { unoptimized: true },
   ...(process.env.NODE_ENV === 'development'

@@ -1,5 +1,16 @@
 'use client';
 
+import {
+  Alert,
+  Badge,
+  Button,
+  Heading,
+  KeyHint,
+  Overlay,
+  Panel,
+  Text,
+  Toast,
+} from '@netverse/ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import {
@@ -57,27 +68,34 @@ export default function SeatPrompt() {
   }, [dispatch, rentalConfirmation]);
 
   const notice = sessionNotice ? (
-    <div className={styles.sessionNotice} role="status" aria-live="polite" data-session-notice>
+    <Toast className={styles.sessionNotice} aria-live="polite" data-session-notice>
       {sessionNotice === 'expired' ? vi.seat.expiredNotice : vi.seat.leftNotice}
-    </div>
+    </Toast>
   ) : null;
 
   if (rentalConfirmation) {
     return (
-      <div className={styles.dialogBackdrop}>
-        <section
+      <Overlay className={styles.overlay}>
+        <Panel
           className={styles.dialog}
           role="dialog"
           aria-modal="true"
           aria-labelledby="rental-title"
           data-rental-confirmation
+          shape="bevel-all"
+          cut="lg"
+          tone="primary"
+          duo="magenta"
+          surface="solid"
         >
-          <p className={styles.eyebrow}>{vi.seat.rentPriceLabel}</p>
-          <h2 className={styles.title} id="rental-title">
-            {vi.seat.rentTitle}
-          </h2>
-          <p className={styles.message}>{vi.seat.rentMessage}</p>
-          <strong className={styles.price}>{vi.seat.freePrice}</strong>
+          <Text variant="label" tone="info">
+            {vi.seat.rentPriceLabel}
+          </Text>
+          <Heading id="rental-title">{vi.seat.rentTitle}</Heading>
+          <Text variant="meta">{vi.seat.rentMessage}</Text>
+          <div>
+            <Badge tone="highlight">{vi.seat.freePrice}</Badge>
+          </div>
           <form
             className={styles.actions}
             onSubmit={(event) => {
@@ -85,20 +103,20 @@ export default function SeatPrompt() {
               dispatch(rentalConfirmationAccepted(rentalConfirmation));
             }}
           >
-            <button
-              type="button"
-              className={styles.cancelButton}
+            <Button
+              surface="glass"
+              tone="neutral"
               data-rental-cancel
               onClick={() => dispatch(rentalConfirmationCancelled())}
             >
               {vi.seat.cancel}
-            </button>
-            <button type="submit" className={styles.confirmButton} autoFocus>
+            </Button>
+            <Button type="submit" autoFocus>
               {vi.seat.rentConfirm}
-            </button>
+            </Button>
           </form>
-        </section>
-      </div>
+        </Panel>
+      </Overlay>
     );
   }
 
@@ -106,39 +124,39 @@ export default function SeatPrompt() {
   const seated = seating.seated !== null;
   if (seated) {
     if (seatReady) return notice;
+    const seconds = session ? remainingSeconds(session.endsAt, now, session.offset) : 0;
     return (
       <>
         {notice}
-        <section
+        <Panel
           className={styles.session}
           data-seat={seatId}
           data-seated="true"
           aria-label={vi.seat.sessionLabel}
+          shape="notch"
+          cut="sm"
+          tone="cyan"
+          duo="magenta"
         >
           <div className={styles.sessionDetails}>
-            <span className={styles.sessionLabel}>{vi.seat.sessionLabel}</span>
-            <time
-              className={
-                session && remainingSeconds(session.endsAt, now, session.offset) < 60
-                  ? styles.timerWarning
-                  : styles.timer
-              }
+            <Text as="span" variant="label">
+              {vi.seat.sessionLabel}
+            </Text>
+            <Text
+              as="time"
+              variant="value"
+              tone={seconds < 60 ? 'warning' : 'info'}
+              className={styles.timer}
               data-session-timer
               aria-live="polite"
             >
-              {formatSessionDuration(
-                session ? remainingSeconds(session.endsAt, now, session.offset) : 0,
-              )}
-            </time>
+              {formatSessionDuration(seconds)}
+            </Text>
           </div>
-          <button
-            type="button"
-            className={styles.endButton}
-            onClick={() => dispatch(useRequested())}
-          >
+          <Button surface="neon" tone="danger" onClick={() => dispatch(useRequested())}>
             {vi.seat.endSession}
-          </button>
-        </section>
+          </Button>
+        </Panel>
       </>
     );
   }
@@ -147,22 +165,15 @@ export default function SeatPrompt() {
       {notice}
       <div className={styles.prompt} data-seat={seatId} data-seated={String(seated)}>
         {!seated && seating.denied?.seatId === seatId && (
-          <span className={styles.denied} role="alert">
-            {vi.seat.denied[seating.denied.reason]}
-          </span>
+          <Alert tone="warning">{vi.seat.denied[seating.denied.reason]}</Alert>
         )}
-        {seating.error && (
-          <span className={styles.error} role="alert">
-            {vi.seat.roomError}
-          </span>
-        )}
-        <span className={styles.hint} aria-live="polite">
-          <kbd className={styles.key}>{vi.seat.key}</kbd>
+        {seating.error && <Alert tone="error">{vi.seat.roomError}</Alert>}
+        <KeyHint className={styles.hint} keyLabel={vi.seat.key} aria-live="polite">
           {vi.seat.prompt}
-        </span>
-        <button type="button" className={styles.button} onClick={() => dispatch(useRequested())}>
+        </KeyHint>
+        <Button className={styles.button} onClick={() => dispatch(useRequested())}>
           {vi.seat.sit}
-        </button>
+        </Button>
       </div>
     </>
   );

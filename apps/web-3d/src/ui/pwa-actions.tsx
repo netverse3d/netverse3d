@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@netverse/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { vi } from './text/vi.ts';
 import styles from './pwa-actions.module.css';
@@ -94,19 +95,21 @@ export default function PwaActions() {
   return (
     <div className={styles.actions} aria-live="polite">
       {update ? (
-        <button type="button" onClick={applyUpdate}>
+        <Button surface="neon" tone="cyan" duo="magenta" onClick={applyUpdate}>
           {vi.pwa.update}
-        </button>
+        </Button>
       ) : (
-        <button
-          type="button"
+        <Button
+          surface="neon"
+          tone="cyan"
+          duo="magenta"
           onClick={() => {
             setInstall(null);
             void install?.prompt().catch(() => undefined);
           }}
         >
           {vi.pwa.install}
-        </button>
+        </Button>
       )}
     </div>
   );

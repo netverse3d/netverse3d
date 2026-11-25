@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { vi } from '../src/ui/text/vi.ts';
 import '@netverse/ui/tokens.css';
+import '@netverse/ui/components.css';
 import './globals.css';
 
 export const metadata: Metadata = {
