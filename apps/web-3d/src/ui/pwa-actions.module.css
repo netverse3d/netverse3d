@@ -1,6 +1,6 @@
 .actions {
   position: absolute;
-  z-index: var(--ui-layer-hud);
+  z-index: var(--ui-layer-chrome);
   bottom: var(--ui-space-3);
   left: var(--ui-space-3);
 }

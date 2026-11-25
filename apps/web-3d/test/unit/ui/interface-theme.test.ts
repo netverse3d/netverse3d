@@ -87,3 +87,19 @@ test('đọc bảng màu từ token đang chạy và bỏ giá trị không ph�
   const palette = readThemePalette((name) => running[name] ?? '');
   assert.deepEqual(palette, { surfaces: ['#1a1530', '#262040'], onAccent: '#0d0a18' });
 });
+
+test('không đọc đủ bảng màu thì không đổi màu nhấn của tiệm', () => {
+  const root = fakeRoot();
+  applyInterfaceTheme(
+    root,
+    { quality: 'medium', accent: '#8a2bff' },
+    { surfaces: [], onAccent: null },
+  );
+  assert.equal(root.properties.has('--ui-accent'), false);
+  assert.equal(root.dataset.uiQuality, 'medium');
+});
+
+test('chỉ nhận mã màu ba, sáu hoặc tám chữ số khi đọc bảng màu', () => {
+  const palette = readThemePalette((name) => (name === '--ui-surface' ? '#12345' : '#1a1530'));
+  assert.equal(palette.surfaces.length, 2);
+});

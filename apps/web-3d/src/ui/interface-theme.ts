@@ -22,7 +22,7 @@ export interface ThemeRoot {
 const ACCENT_PROPERTY = '--ui-accent';
 export const THEME_SURFACES = ['--ui-surface', '--ui-surface-raised', '--ui-surface-glass'];
 export const THEME_ON_ACCENT = '--ui-on-action';
-const HEX_COLOR = /^#[\da-f]{3,8}$/i;
+const HEX_COLOR = /^#(?:[\da-f]{3}|[\da-f]{6}|[\da-f]{8})$/i;
 
 export function readThemePalette(read: (name: string) => string): ThemePalette {
   const color = (name: string) => {
@@ -41,9 +41,11 @@ export function applyInterfaceTheme(
   palette: ThemePalette,
 ): () => void {
   root.dataset.uiQuality = theme.quality;
-  const accent = theme.accent
-    ? readableAccent(theme.accent, palette.surfaces, { onAccent: palette.onAccent ?? '' })
-    : null;
+  const complete = palette.surfaces.length === THEME_SURFACES.length && palette.onAccent !== null;
+  const accent =
+    theme.accent && complete
+      ? readableAccent(theme.accent, palette.surfaces, { onAccent: palette.onAccent ?? '' })
+      : null;
   if (accent) root.style.setProperty(ACCENT_PROPERTY, accent);
   else root.style.removeProperty(ACCENT_PROPERTY);
   return () => {

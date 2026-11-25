@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { readTokenRules } from '@netverse/ui/token-files';
@@ -47,8 +47,11 @@ test('component không ghi giá trị trực tiếp và chỉ dùng biến đã 
         `${path}: ${property}: ${value}`,
       );
     }
-    for (const match of css.matchAll(/transition\s*:\s*([^;]+);/g)) {
-      assert.doesNotMatch(match[1] ?? '', DURATION, `${path}: transition: ${match[1]}`);
+    for (const match of css.matchAll(/(?:^|[;{\s])font\s*:\s*([^;]+);/g)) {
+      assert.doesNotMatch(match[1] ?? '', /(?:^|\s)\d|px|rem/, `${path}: font: ${match[1]}`);
+    }
+    for (const match of css.matchAll(/(?:transition|animation)\s*:\s*([^;]+);/g)) {
+      assert.doesNotMatch(match[1] ?? '', DURATION, `${path}: ${match[0]}`);
     }
     for (const [, variable] of css.matchAll(/var\((--[\w-]+)/g)) {
       assert.ok(declared.has(variable ?? ''), `${path}: ${variable}`);
@@ -72,5 +75,44 @@ test('chữ báo lỗi dùng màu lỗi, chỉ chữ từ chối dùng màu cả
         assert.match(body, /color\s*:\s*var\(--ui-error\)/, `${path}: ${selector}`);
       }
     }
+  }
+});
+
+function layerOf(css: string, selector: string): string | undefined {
+  return rules(css)
+    .find((rule) => rule.selector === selector)
+    ?.body.match(/z-index:\s*var\((--ui-layer-[\w-]+)\)/)?.[1];
+}
+
+test('thanh ứng dụng nằm dưới panel phiên thuê máy và desktop', () => {
+  const sheets = Object.fromEntries(
+    moduleSheets().map(({ path, css }) => [path.split(sep).join('/'), css]),
+  );
+  const order = [
+    '--ui-layer-canvas',
+    '--ui-layer-world',
+    '--ui-layer-chrome',
+    '--ui-layer-hud',
+    '--ui-layer-toast',
+    '--ui-layer-dialog',
+    '--ui-layer-recovery',
+  ];
+  const rank = (sheet: string, selector: string) =>
+    order.indexOf(layerOf(sheets[sheet] ?? '', selector) ?? '');
+  const chrome = [
+    rank('src/ui/account-panel.module.css', '.accountBar'),
+    rank('src/ui/pwa-actions.module.css', '.actions'),
+  ];
+  const play = [
+    rank('src/ui/seat-prompt.module.css', '.session'),
+    rank('src/ui/seat-desktop.module.css', '.desktop'),
+  ];
+  for (const value of [...chrome, ...play]) assert.ok(value >= 0);
+  assert.ok(Math.max(...chrome) < Math.min(...play));
+});
+
+test('màu nhấn của tiệm không dùng làm màu chữ', () => {
+  for (const { path, css } of moduleSheets()) {
+    assert.doesNotMatch(css, /(^|[;{\s])color\s*:\s*var\(--ui-accent\)/, path);
   }
 });

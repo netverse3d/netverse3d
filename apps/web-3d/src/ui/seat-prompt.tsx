@@ -152,7 +152,7 @@ export default function SeatPrompt() {
           </span>
         )}
         {seating.error && (
-          <span className={styles.denied} role="alert">
+          <span className={styles.error} role="alert">
             {vi.seat.roomError}
           </span>
         )}

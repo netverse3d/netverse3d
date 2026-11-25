@@ -1,6 +1,6 @@
 .accountBar {
   position: absolute;
-  z-index: var(--ui-layer-hud);
+  z-index: var(--ui-layer-chrome);
   top: var(--ui-space-3);
   right: var(--ui-space-3);
   display: flex;
@@ -107,7 +107,7 @@
   color: var(--ui-text);
   background: var(--ui-action-neutral);
   font-family: inherit;
-  font-size: var(--ui-text-base);
+  font-size: var(--ui-text-input);
 }
 
 .field span,

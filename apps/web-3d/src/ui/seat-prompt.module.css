@@ -40,7 +40,7 @@
 
 .eyebrow {
   margin: 0 0 var(--ui-space-1);
-  color: var(--ui-accent);
+  color: var(--ui-info);
   font-size: var(--ui-text-sm);
   font-weight: var(--ui-weight-medium);
 }
@@ -159,6 +159,10 @@
   color: var(--ui-warning);
 }
 
+.error {
+  color: var(--ui-error);
+}
+
 .hint {
   display: flex;
   align-items: center;
@@ -170,7 +174,7 @@
   padding: var(--ui-space-1) var(--ui-space-2);
   border: 1px solid var(--ui-accent);
   border-radius: var(--ui-radius-1);
-  color: var(--ui-accent);
+  color: var(--ui-text);
   font-family: var(--ui-font-family);
   font-weight: var(--ui-weight-medium);
   text-align: center;

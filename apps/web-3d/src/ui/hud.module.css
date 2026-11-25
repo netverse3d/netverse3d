@@ -46,6 +46,6 @@
   color: var(--ui-info);
 }
 
-.status[data-tone='warn'] {
-  color: var(--ui-warning);
+.status[data-tone='error'] {
+  color: var(--ui-error);
 }
