@@ -11,14 +11,23 @@
     "./contrast": "./src/contrast.mjs",
     "./token-files": "./src/token-files.mjs",
     "./tokens": "./src/tokens.mjs",
-    "./components.css": "./components/components.css"
+    "./components.css": "./components/components.css",
+    "./react": "./react/index.ts"
   },
   "scripts": {
     "test": "node --test \"test/**/*.test.mjs\"",
     "library": "node tools/serve-library.mjs",
-    "publish": "node tools/publish-library.mjs"
+    "publish": "node tools/publish-library.mjs",
+    "types": "node tools/generate-react-types.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "^5.3.0"
+  },
+  "peerDependencies": {
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "react": "19.3.1"
   }
 }
