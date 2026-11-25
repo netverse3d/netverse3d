@@ -12,7 +12,7 @@ body {
   line-height: var(--ui-line-normal);
 }
 
-body {
+#root {
   max-width: 1120px;
   margin: 0 auto;
   padding: var(--ui-space-6) var(--ui-space-4) var(--ui-space-8);
@@ -427,4 +427,10 @@ code {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--ui-space-3);
+}
+
+.nv-inputs-preview {
+  display: grid;
+  gap: var(--ui-space-4);
+  width: min(420px, 100%);
 }

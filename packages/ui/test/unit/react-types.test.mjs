@@ -43,3 +43,18 @@ test('giá trị tham số ngoài sổ đăng ký bị từ chối', () => {
   assert.throws(() => variantData({ tone: 'tím' }, variantOptions(registry, 'Button')));
   assert.throws(() => variantOptions(registry, 'FancyButton'));
 });
+
+test('ô nhập và ô chọn từ chối giá trị tham số ngoài sổ đăng ký', () => {
+  const cases = {
+    Select: { state: 'open' },
+    Switch: { tone: 'tím' },
+    RadioGroup: { direction: 'diagonal' },
+    Textarea: { state: 'busy' },
+    SearchField: { state: 'error' },
+  };
+  for (const [name, wrong] of Object.entries(cases)) {
+    const options = variantOptions(registry, name);
+    assert.throws(() => variantData(wrong, options), name);
+  }
+  assert.throws(() => variantOptions(registry, 'SelectField'));
+});

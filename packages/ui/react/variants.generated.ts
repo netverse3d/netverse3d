@@ -90,7 +90,23 @@ export interface TextVariants {
   tone?: 'default' | 'muted' | 'info' | 'success' | 'warning' | 'error' | 'highlight';
 }
 
-export interface SelectFieldVariants {
+export interface SelectVariants {
+  state?: 'idle' | 'disabled';
+}
+
+export interface SwitchVariants {
+  tone?: 'accent' | 'cyan' | 'magenta' | 'success';
+}
+
+export interface RadioGroupVariants {
+  direction?: 'column' | 'row';
+}
+
+export interface TextareaVariants {
+  state?: 'idle' | 'error' | 'disabled';
+}
+
+export interface SearchFieldVariants {
   state?: 'idle' | 'disabled';
 }
 
@@ -136,7 +152,11 @@ export const VARIANTS = {
   Spinner: {},
   Heading: {"level":["2","1","3"]},
   Text: {"variant":["body","meta","label","value"],"tone":["default","muted","info","success","warning","error","highlight"]},
-  SelectField: {"state":["idle","disabled"]},
+  Select: {"state":["idle","disabled"]},
+  Switch: {"tone":["accent","cyan","magenta","success"]},
+  RadioGroup: {"direction":["column","row"]},
+  Textarea: {"state":["idle","error","disabled"]},
+  SearchField: {"state":["idle","disabled"]},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

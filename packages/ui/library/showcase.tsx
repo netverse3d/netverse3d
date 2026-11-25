@@ -85,6 +85,30 @@ function ButtonMatrix({ text }: { text: ComponentText }) {
   );
 }
 
+const INPUT_DEMOS = ['select', 'search', 'switch', 'radio-group', 'textarea'] as const;
+
+function InputsPreview({ text }: { text: ComponentText }) {
+  return (
+    <div className="nv-dialog-frame">
+      <Panel
+        className="nv-inputs-preview"
+        shape="bevel-all"
+        cut="lg"
+        tone="cyan"
+        duo="magenta"
+        surface="glass"
+        title={text.inputsTitle}
+        titleLevel={3}
+      >
+        {INPUT_DEMOS.map((id) => {
+          const Demo = DEMOS[id];
+          return Demo ? <Demo key={id} text={text} values={{}} /> : null;
+        })}
+      </Panel>
+    </div>
+  );
+}
+
 function LoginPreview({ text }: { text: ComponentText }) {
   return (
     <div className="nv-dialog-frame">
@@ -279,6 +303,8 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <ButtonMatrix text={text} />
       <h3 className="library-subhead">{text.form}</h3>
       <LoginPreview text={text} />
+      <h3 className="library-subhead">{text.inputs}</h3>
+      <InputsPreview text={text} />
       <h3 className="library-subhead">{text.patterns.title}</h3>
       <p className="lead">{text.patterns.intro}</p>
       <InteractionPatterns text={text} />

@@ -16,6 +16,8 @@ export const ICON_PATHS = {
   minimize: 'M6 12h12',
   restore: 'M5 5h14v14H5z',
   mail: 'M3.5 5.5h17v13h-17z M3.5 6l8.5 7 8.5-7',
+  search: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z M15.3 15.3 20 20',
+  check: 'M5 12.5l4.5 4.5L19 7.5',
 };
 
 export const ICON_NAMES = Object.keys(ICON_PATHS);
