@@ -29,7 +29,7 @@ import { createRoomSession, type RoomSession } from '../src/net/room-session.ts'
 import Hud from '../src/ui/hud.tsx';
 import SeatPrompt from '../src/ui/seat-prompt.tsx';
 import SeatDesktop from '../src/ui/seat-desktop.tsx';
-import { THEME_ON_ACCENT, THEME_SURFACES, applyInterfaceTheme } from '../src/ui/interface-theme.ts';
+import { applyInterfaceTheme, readThemePalette } from '../src/ui/interface-theme.ts';
 import { vi } from '../src/ui/text/vi.ts';
 import styles from './shop-view.module.css';
 
@@ -70,17 +70,9 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
   useEffect(() => {
     const root = document.documentElement;
     const computed = getComputedStyle(root);
-    const color = (name: string) => {
-      const value = computed.getPropertyValue(name).trim();
-      return /^#[da-f]{3,8}$/i.test(value) ? value : null;
-    };
-    const surfaces = THEME_SURFACES.map(color).filter((value): value is string => value !== null);
+    const palette = readThemePalette((name) => computed.getPropertyValue(name));
     const accent = recipes.find((recipe) => recipe.id === scene.recipeId)?.accent ?? null;
-    return applyInterfaceTheme(
-      root,
-      { quality: scene.quality, accent },
-      { surfaces, onAccent: color(THEME_ON_ACCENT) },
-    );
+    return applyInterfaceTheme(root, { quality: scene.quality, accent }, palette);
   }, [scene.quality, scene.recipeId, recipes]);
   const [lightingId, setLightingId] = useState('');
 

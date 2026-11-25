@@ -4,7 +4,11 @@ import { test } from 'node:test';
 import { contrastRatio } from '@netverse/ui/contrast';
 import { readTokenRules } from '@netverse/ui/token-files';
 import { resolveToken, tokenDefaults } from '@netverse/ui/tokens';
-import { applyInterfaceTheme, type ThemeRoot } from '../../../src/ui/interface-theme.ts';
+import {
+  applyInterfaceTheme,
+  readThemePalette,
+  type ThemeRoot,
+} from '../../../src/ui/interface-theme.ts';
 
 const tokens = tokenDefaults(readTokenRules());
 const onAccent = resolveToken('--ui-on-action', tokens) as string;
@@ -71,4 +75,15 @@ test('accent tiệm đạt 3:1 trên mọi mặt nền và chữ trên accent đ
     cleanup();
     assert.equal(root.properties.has('--ui-accent'), false);
   }
+});
+
+test('đọc bảng màu từ token đang chạy và bỏ giá trị không phải mã màu', () => {
+  const running: Record<string, string> = {
+    '--ui-surface': ' #1a1530 ',
+    '--ui-surface-raised': '#262040',
+    '--ui-surface-glass': 'var(--ui-core-glass)',
+    '--ui-on-action': '#0d0a18',
+  };
+  const palette = readThemePalette((name) => running[name] ?? '');
+  assert.deepEqual(palette, { surfaces: ['#1a1530', '#262040'], onAccent: '#0d0a18' });
 });

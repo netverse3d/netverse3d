@@ -22,6 +22,18 @@ export interface ThemeRoot {
 const ACCENT_PROPERTY = '--ui-accent';
 export const THEME_SURFACES = ['--ui-surface', '--ui-surface-raised', '--ui-surface-glass'];
 export const THEME_ON_ACCENT = '--ui-on-action';
+const HEX_COLOR = /^#[\da-f]{3,8}$/i;
+
+export function readThemePalette(read: (name: string) => string): ThemePalette {
+  const color = (name: string) => {
+    const value = read(name).trim();
+    return HEX_COLOR.test(value) ? value : null;
+  };
+  return {
+    surfaces: THEME_SURFACES.map(color).filter((value): value is string => value !== null),
+    onAccent: color(THEME_ON_ACCENT),
+  };
+}
 
 export function applyInterfaceTheme(
   root: ThemeRoot,
