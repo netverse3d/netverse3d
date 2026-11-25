@@ -1,0 +1,8 @@
+.overlay {
+  z-index: var(--ui-layer-recovery);
+  pointer-events: auto;
+}
+
+.panel {
+  width: min(420px, 100%);
+}

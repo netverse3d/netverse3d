@@ -11,9 +11,9 @@ import {
   isQualityLevel,
   nearbySeatChanged,
   qualityRequested,
-  rentalConfirmationAccepted,
   rentalConfirmationCancelled,
   rentalConfirmationRequested,
+  seatLeaveRequested,
   recipeRequested,
   recipesLoaded,
   sceneChanged,
@@ -26,7 +26,9 @@ import {
 import { createAppStore, type RootState } from '../src/state/store.ts';
 import type { Seat } from '../src/game/seats.ts';
 import { createRoomSession, type RoomSession } from '../src/net/room-session.ts';
+import { connectSeatRequests } from '../src/game/seat-requests.ts';
 import Hud from '../src/ui/hud.tsx';
+import RecoveryOverlay from '../src/ui/recovery-overlay.tsx';
 import SeatPrompt from '../src/ui/seat-prompt.tsx';
 import SeatDesktop from '../src/ui/seat-desktop.tsx';
 import { applyInterfaceTheme, readThemePalette } from '../src/ui/interface-theme.ts';
@@ -135,10 +137,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       actionCreator: useRequested,
       effect: () => shop?.use(),
     });
-    const stopRentalConfirmation = listener.startListening({
-      actionCreator: rentalConfirmationAccepted,
-      effect: (action) => session?.requestSeat(action.payload.seatId, action.payload.from),
-    });
+    const stopSeatRequests = connectSeatRequests(listener, () => session);
     const stopQuality = listener.startListening({
       actionCreator: qualityRequested,
       effect: (action) => shop?.setQuality(action.payload),
@@ -170,7 +169,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
           onSeatRequest: (seatId, from) => {
             if (session) store.dispatch(rentalConfirmationRequested({ seatId, from }));
           },
-          onLeaveRequest: () => session?.leaveSeat(),
+          onLeaveRequest: () => store.dispatch(seatLeaveRequested()),
         });
         setLightingId(shop.lightingPresetId());
         const requested = params.get('quality');
@@ -197,7 +196,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       stopRecipe();
       stopQuality();
       stopUse();
-      stopRentalConfirmation();
+      stopSeatRequests();
       roomTurn += 1;
       session?.close();
       session = null;
@@ -228,6 +227,7 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       <Hud />
       <SeatPrompt />
       <SeatDesktop />
+      <RecoveryOverlay />
     </div>
   );
 }
