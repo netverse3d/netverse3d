@@ -57,6 +57,15 @@ Thêm một component:
 5. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
 6. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
 
+## Dùng component trong màn hình
+
+- Import từ `@netverse/ui/react`: `Button`, `IconButton`, `Panel`, `Dialog`, `TextField`, `SelectField`, `Text`, `Heading`, `Alert`, `Toast`, `Badge`, `ListItem`… Danh sách đủ là bảng sổ đăng ký trong Thư viện giao diện.
+- Tham số có kiểu sinh từ sổ đăng ký (`packages/ui/react/variants.generated.ts`); truyền giá trị ngoài sổ thì `tsc` báo lỗi. Đổi sổ đăng ký thì chạy `pnpm --filter @netverse/ui types`; test của `packages/ui` đỏ nếu quên.
+- Component nhận `className` để màn hình đặt vị trí, cùng mọi thuộc tính `data-*`, `aria-*`, `role` và sự kiện. Không nhận `style`.
+- `.module.css` của màn hình chỉ dàn trang: vị trí, grid, flex, khoảng cách, kích thước, lớp z bằng token `--ui-layer-*`.
+- `pnpm ui:check` chạy trong `pnpm verify` và báo đỏ khi màn hình dùng thẻ không phải thẻ cấu trúc (`<button>`, `<input>`, `<dialog>`…), dùng `style` nội tuyến, tự gắn class `nv-*`, import component chưa đăng ký, hoặc đặt thuộc tính hình ảnh trong CSS.
+- Hộp xác nhận cần cho người chơi vẫn đi lại trong thế giới (ví dụ xác nhận thuê máy) dùng `Overlay` cùng `Panel` có `role="dialog"`, không dùng `Dialog` vì `Dialog` chặn phím của game.
+
 ## Thư viện giao diện
 
 Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản tại [netverse3d.github.io/netverse3d/ui](https://netverse3d.github.io/netverse3d/ui/), cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/), mỗi khi `staging` đổi. Xem tại máy bằng `pnpm ui:library` rồi mở `http://localhost:4174/ui/`. Màu nhấn đọc từ chính công thức tiệm của `game-assets`. Thư viện gồm ba mục:
