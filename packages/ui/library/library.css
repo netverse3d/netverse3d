@@ -376,3 +376,14 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+.nv-overlay-frame {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border-radius: var(--ui-radius-3);
+}
+
+.nv-overlay-frame .nv-scrim {
+  position: absolute;
+}

@@ -101,6 +101,16 @@
     "code": "Tham số tương ứng",
     "registry": "Sổ đăng ký component",
     "registryIntro": "Chỉ component có trong sổ này mới được dùng trong mã giao diện. Cần component mới thì thêm vào packages/ui cùng mẫu ở đây trước, theo ADR-0041.",
-    "registryColumns": ["Tên React", "Class CSS", "Tham số", "Tiêu chí"]
+    "registryColumns": ["Tên React", "Class CSS", "Tham số", "Tiêu chí"],
+    "headingSample": "Hộp thư",
+    "textSample": "Tiệm mở cửa tới 23:00 tối nay.",
+    "selectLabel": "Chất lượng",
+    "selectOptions": ["Thấp", "Vừa", "Cao"],
+    "badgeSample": "3",
+    "alertSample": "Chưa tải được thông báo.",
+    "toastSample": "Phiên thuê máy còn 5 phút.",
+    "listTitle": "Chào mừng tới Netverse",
+    "listBody": "Tài khoản của bạn đã sẵn sàng.",
+    "tileSample": "Đang phát triển"
   }
 }

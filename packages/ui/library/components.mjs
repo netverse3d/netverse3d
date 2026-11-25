@@ -235,7 +235,53 @@ const DEMO_BUILDERS = {
   action: (text) => hexAction('run', text.actions.run, 'Shift'),
   profile: (text) => profile(text),
   dialog: (text) => loginDialog(text),
+  heading: (text, props) =>
+    element('h2', { class: 'nv-heading', dataset: dataFor(props) }, [text.headingSample]),
+  text: (text, props) =>
+    element('p', { class: 'nv-text', dataset: dataFor(props) }, [text.textSample]),
+  select: (text, props) =>
+    element('label', { class: 'nv-field', dataset: dataFor(props) }, [
+      element('span', { class: 'nv-field__label', text: text.selectLabel }),
+      shape('span', 'nv-input', { shape: 'bevel' }, [
+        element(
+          'select',
+          { disabled: props.state === 'disabled' },
+          text.selectOptions.map((option) => element('option', { text: option })),
+        ),
+        icon('chevronDown'),
+      ]),
+    ]),
+  badge: (text, props) =>
+    element('span', { class: 'nv-badge', dataset: dataFor(props) }, [text.badgeSample]),
+  alert: (text, props) =>
+    element('p', { class: 'nv-alert', role: 'alert', dataset: dataFor(props) }, [text.alertSample]),
+  toast: (text, props) =>
+    shape('div', 'nv-toast', { shape: 'bevel', tone: 'cyan', ...props }, [text.toastSample], {
+      role: 'status',
+    }),
+  'list-item': (text, props) =>
+    element('ul', { class: 'nv-demo-list' }, [
+      shape('li', 'nv-list-item', { state: props.state ?? 'unread' }, [
+        element('strong', { text: text.listTitle }),
+        element('span', { class: 'nv-text', dataset: { variant: 'meta' }, text: text.listBody }),
+      ]),
+    ]),
+  tile: (text) => shape('div', 'nv-tile', {}, [icon('monitor'), text.tileSample]),
+  overlay: (text) =>
+    element('div', { class: 'nv-overlay-frame' }, [
+      element('div', { class: 'nv-scrim' }, [
+        shape('div', 'nv-toast', { shape: 'bevel', tone: 'cyan' }, [text.toastSample]),
+      ]),
+    ]),
 };
+
+function dataFor(props) {
+  return Object.fromEntries(
+    Object.entries(props).filter(
+      ([, value]) => value !== undefined && !['none', 'idle', 'default'].includes(value),
+    ),
+  );
+}
 
 export const DEMO_IDS = Object.keys(DEMO_BUILDERS);
 

@@ -17,7 +17,7 @@ const PAGE_FILES = [
   'text.json',
 ];
 const TOKEN_FILES = ['primitive.css', 'semantic.css', 'motion.css'];
-const BROWSER_MODULES = ['accent.mjs', 'catalog.mjs', 'contrast.mjs', 'registry.mjs'];
+const BROWSER_MODULES = ['accent.mjs', 'catalog.mjs', 'contrast.mjs', 'icons.mjs', 'registry.mjs'];
 const FONT_SUBSETS = ['vietnamese', 'latin'];
 const FONT_WEIGHTS = [400, 600, 700];
 const FONT_FORMATS = ['woff2', 'woff'];

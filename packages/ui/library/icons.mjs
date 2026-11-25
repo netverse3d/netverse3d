@@ -1,19 +1,4 @@
-const PATHS = {
-  bell: 'M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z M10 20a2.2 2.2 0 0 0 4 0',
-  friends:
-    'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5 M16 4.3a3.5 3.5 0 0 1 0 6.4 M18 14.8c2 .8 3.2 2.5 3.5 5.2',
-  bag: 'M5 8h14l-1.2 12H6.2L5 8Z M9 8V6.5a3 3 0 0 1 6 0V8',
-  gear: 'M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z M12 2.8v2.4 M12 18.8v2.4 M2.8 12h2.4 M18.8 12h2.4 M5.5 5.5l1.7 1.7 M16.8 16.8l1.7 1.7 M5.5 18.5l1.7-1.7 M16.8 7.2l1.7-1.7',
-  run: 'M14 5.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z M7 21l3.2-5.5 3 2.3V22 M5.5 11.5 9 8l3.5.8 2.5 3.4 3 .8 M12.5 8.8l-2.3 6.7',
-  chat: 'M4 5h16v11H9l-5 4V5Z M8 9.5h8 M8 12.5h5',
-  camera: 'M4 7.5h3.5L9 5h6l1.5 2.5H20V19H4V7.5Z M12 16.2a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Z',
-  monitor: 'M3.5 4.5h17v11h-17z M9 20h6 M12 15.5V20',
-  seats:
-    'M5 11V6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5V11 M3.5 11h17v4.5h-17z M6 15.5V19 M18 15.5V19',
-  chevron: 'M9 5l7 7-7 7',
-  close: 'M6 6l12 12 M18 6 6 18',
-  mail: 'M3.5 5.5h17v13h-17z M3.5 6l8.5 7 8.5-7',
-};
+import { ICON_PATHS } from '../src/icons.mjs';
 
 export function icon(name) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -24,7 +9,7 @@ export function icon(name) {
   svg.setAttribute('stroke-linecap', 'round');
   svg.setAttribute('stroke-linejoin', 'round');
   svg.setAttribute('aria-hidden', 'true');
-  for (const segment of PATHS[name].split(' M')) {
+  for (const segment of ICON_PATHS[name].split(' M')) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', segment.startsWith('M') ? segment : `M${segment}`);
     svg.append(path);

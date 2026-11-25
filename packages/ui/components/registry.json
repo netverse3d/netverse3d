@@ -171,17 +171,21 @@
       "react": "Dialog",
       "className": "nv-dialog",
       "uses": ["shape"],
-      "props": {},
+      "props": {
+        "size": ["md", "lg"]
+      },
       "criteria": ["T5", "L1", "L2"],
       "demo": "dialog"
     },
     {
       "id": "scrim",
-      "kind": "part",
+      "kind": "component",
       "className": "nv-scrim",
       "uses": [],
       "props": {},
-      "criteria": ["L1"]
+      "criteria": ["L1", "L2"],
+      "react": "Overlay",
+      "demo": "overlay"
     },
     {
       "id": "spinner",
@@ -200,6 +204,109 @@
       "uses": [],
       "props": {},
       "criteria": ["N5"]
+    },
+    {
+      "uses": [],
+      "props": {
+        "size": ["md", "lg"]
+      },
+      "id": "modal",
+      "kind": "part",
+      "className": "nv-modal",
+      "criteria": ["T5", "L1"]
+    },
+    {
+      "uses": [],
+      "props": {
+        "level": ["2", "1", "3"]
+      },
+      "id": "heading",
+      "kind": "component",
+      "react": "Heading",
+      "className": "nv-heading",
+      "criteria": ["K1"],
+      "demo": "heading"
+    },
+    {
+      "uses": [],
+      "props": {
+        "variant": ["body", "meta", "label", "value"],
+        "tone": ["default", "muted", "info", "success", "warning", "error", "highlight"]
+      },
+      "id": "text",
+      "kind": "component",
+      "react": "Text",
+      "className": "nv-text",
+      "criteria": ["K1", "N3"],
+      "demo": "text"
+    },
+    {
+      "uses": [],
+      "props": {
+        "state": ["idle", "disabled"]
+      },
+      "id": "select-field",
+      "kind": "component",
+      "react": "SelectField",
+      "className": "nv-field",
+      "criteria": ["K3", "K4"],
+      "demo": "select"
+    },
+    {
+      "uses": [],
+      "props": {
+        "tone": ["accent", "highlight", "magenta"]
+      },
+      "id": "badge",
+      "kind": "component",
+      "react": "Badge",
+      "className": "nv-badge",
+      "criteria": ["N3"],
+      "demo": "badge"
+    },
+    {
+      "uses": [],
+      "props": {
+        "tone": ["error", "warning", "info", "success"]
+      },
+      "id": "alert",
+      "kind": "component",
+      "react": "Alert",
+      "className": "nv-alert",
+      "criteria": ["N3", "P3"],
+      "demo": "alert"
+    },
+    {
+      "uses": ["shape"],
+      "props": {},
+      "id": "toast",
+      "kind": "component",
+      "react": "Toast",
+      "className": "nv-toast",
+      "criteria": ["P4", "L1"],
+      "demo": "toast"
+    },
+    {
+      "uses": [],
+      "props": {
+        "state": ["read", "unread"]
+      },
+      "id": "list-item",
+      "kind": "component",
+      "react": "ListItem",
+      "className": "nv-list-item",
+      "criteria": ["P7"],
+      "demo": "list-item"
+    },
+    {
+      "uses": [],
+      "props": {},
+      "id": "tile",
+      "kind": "component",
+      "react": "Tile",
+      "className": "nv-tile",
+      "criteria": ["P7"],
+      "demo": "tile"
     }
   ]
 }
