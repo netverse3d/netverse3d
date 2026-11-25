@@ -7,7 +7,8 @@ import { resolveToken, tokenDefaults } from '@netverse/ui/tokens';
 import { applyInterfaceTheme, type ThemeRoot } from '../../../src/ui/interface-theme.ts';
 
 const tokens = tokenDefaults(readTokenRules());
-const surfaces = ['--ui-surface', '--ui-surface-raised', '--ui-panel'].map(
+const onAccent = resolveToken('--ui-on-action', tokens) as string;
+const surfaces = ['--ui-surface', '--ui-surface-raised', '--ui-surface-glass'].map(
   (name) => resolveToken(name, tokens) as string,
 );
 
@@ -41,23 +42,32 @@ function recipeAccents(): string[] {
 
 test('gắn mức chất lượng lên gốc trang và gỡ khi rời', () => {
   const root = fakeRoot();
-  const cleanup = applyInterfaceTheme(root, { quality: 'low', accent: null }, surfaces);
+  const cleanup = applyInterfaceTheme(
+    root,
+    { quality: 'low', accent: null },
+    { surfaces, onAccent },
+  );
   assert.equal(root.dataset.uiQuality, 'low');
   assert.equal(root.properties.has('--ui-accent'), false);
   cleanup();
   assert.equal(root.dataset.uiQuality, undefined);
 });
 
-test('accent tiệm luôn đạt 3:1 trên mặt nền sau khi gắn', () => {
+test('accent tiệm đạt 3:1 trên mọi mặt nền và chữ trên accent đạt 4.5:1 sau khi gắn', () => {
   const accents = recipeAccents();
   assert.ok(accents.length > 0);
   for (const accent of accents) {
     const root = fakeRoot();
-    const cleanup = applyInterfaceTheme(root, { quality: 'medium', accent }, surfaces);
+    const cleanup = applyInterfaceTheme(
+      root,
+      { quality: 'medium', accent },
+      { surfaces, onAccent },
+    );
     const applied = root.properties.get('--ui-accent');
     assert.ok(applied, accent);
     for (const surface of surfaces)
       assert.ok(contrastRatio(applied, surface) >= 3, `${accent} → ${applied} / ${surface}`);
+    assert.ok(contrastRatio(onAccent, applied) >= 4.5, `${onAccent} / ${applied}`);
     cleanup();
     assert.equal(root.properties.has('--ui-accent'), false);
   }

@@ -6,6 +6,11 @@ export interface InterfaceTheme {
   accent: string | null;
 }
 
+export interface ThemePalette {
+  surfaces: readonly string[];
+  onAccent: string | null;
+}
+
 export interface ThemeRoot {
   dataset: Record<string, string | undefined>;
   style: {
@@ -15,15 +20,18 @@ export interface ThemeRoot {
 }
 
 const ACCENT_PROPERTY = '--ui-accent';
-export const THEME_SURFACES = ['--ui-surface', '--ui-surface-raised', '--ui-panel'];
+export const THEME_SURFACES = ['--ui-surface', '--ui-surface-raised', '--ui-surface-glass'];
+export const THEME_ON_ACCENT = '--ui-on-action';
 
 export function applyInterfaceTheme(
   root: ThemeRoot,
   theme: InterfaceTheme,
-  surfaces: readonly string[],
+  palette: ThemePalette,
 ): () => void {
   root.dataset.uiQuality = theme.quality;
-  const accent = theme.accent ? readableAccent(theme.accent, surfaces) : null;
+  const accent = theme.accent
+    ? readableAccent(theme.accent, palette.surfaces, { onAccent: palette.onAccent ?? '' })
+    : null;
   if (accent) root.style.setProperty(ACCENT_PROPERTY, accent);
   else root.style.removeProperty(ACCENT_PROPERTY);
   return () => {
