@@ -45,6 +45,24 @@ test('style nội tuyến và class nv tự gắn bị chặn', () => {
   assert.equal(screen('const E = () => <div className="nv-shape nv-button" />;').length, 1);
 });
 
+test('tạo phần tử tương tác bằng createElement bị chặn, canvas thì được', () => {
+  assert.equal(screen("const b = React.createElement('button', null, 'Vào');").length, 1);
+  assert.equal(screen("const c = document.createElement('canvas');").length, 0);
+});
+
+test('thẻ tuỳ biến có gạch nối bị chặn', () => {
+  assert.equal(screen('const F = () => <x-btn>Vào</x-btn>;').length, 1);
+});
+
+test('import vào bên trong gói ui bằng ngoặc kép hoặc đường dẫn tương đối bị chặn', () => {
+  assert.equal(screen('import { Button } from "@netverse/ui/react/actions.tsx";').length, 1);
+  assert.equal(screen("import { Button } from '../../packages/ui/react/actions.tsx';").length, 1);
+});
+
+test('style truyền qua spread bị chặn', () => {
+  assert.equal(screen('const G = () => <div {...{ style: { color: "red" } }} />;').length, 1);
+});
+
 test('CSS của màn hình chỉ được dàn trang', () => {
   const layout =
     '.bar {\n  position: absolute;\n  top: var(--ui-space-3);\n  display: grid;\n  gap: var(--ui-space-2);\n  z-index: var(--ui-layer-chrome);\n}\n';

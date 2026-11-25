@@ -3,7 +3,10 @@ import { join, relative } from 'node:path';
 import { checkModuleCss, checkScreenSource } from './lib.mjs';
 
 const root = process.cwd();
-const SCREEN_ROOTS = ['apps/web-3d/app', 'apps/web-3d/src/ui', 'apps/admin/src'];
+const SCREEN_ROOTS = ['apps/web-3d/app', 'apps/web-3d/src', 'apps/admin/src'];
+const SOURCE = /\.(tsx|ts|jsx|js|mjs)$/;
+const JSX_SOURCE = /\.[jt]sx$/;
+const TEST_SOURCE = /\.test\.[cm]?[jt]sx?$/;
 const registry = JSON.parse(
   readFileSync(join(root, 'packages/ui/components/registry.json'), 'utf8'),
 );
@@ -23,8 +26,12 @@ const violations = [];
 for (const folder of SCREEN_ROOTS) {
   for (const file of filesUnder(folder)) {
     const path = relative(root, file).split('\\').join('/');
-    if (file.endsWith('.tsx')) {
-      violations.push(...checkScreenSource(readFileSync(file, 'utf8'), path, registeredNames));
+    if (SOURCE.test(file) && !TEST_SOURCE.test(file)) {
+      violations.push(
+        ...checkScreenSource(readFileSync(file, 'utf8'), path, registeredNames, {
+          jsx: JSX_SOURCE.test(file),
+        }),
+      );
     } else if (file.endsWith('.module.css')) {
       violations.push(...checkModuleCss(readFileSync(file, 'utf8'), path));
     }

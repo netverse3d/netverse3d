@@ -43,18 +43,31 @@ function lineOf(source, index) {
   return source.slice(0, index).split('\n').length;
 }
 
-export function checkScreenSource(source, path, registeredNames) {
+export function checkScreenSource(source, path, registeredNames, { jsx = true } = {}) {
   const violations = [];
-  for (const match of source.matchAll(/(?<![\w$.)\]])<([a-z][a-z0-9]*)(?=[\s/>])/g)) {
+  const tags = jsx ? source.matchAll(/(?<![\w$.)\]])<([a-z][a-z0-9-]*)(?=[\s/>])/g) : [];
+  for (const match of tags) {
     if (!STRUCTURAL_TAGS.has(match[1])) {
       violations.push(
         `${path}:${lineOf(source, match.index)} <${match[1]}> is not a structural tag; use a registered component from @netverse/ui/react`,
       );
     }
   }
-  for (const match of source.matchAll(/\sstyle=\{/g)) {
+  for (const match of source.matchAll(/\bcreateElement\(\s*['"`]([\w-]+)['"`]/g)) {
+    if (!STRUCTURAL_TAGS.has(match[1])) {
+      violations.push(
+        `${path}:${lineOf(source, match.index)} createElement('${match[1]}') builds an unregistered component`,
+      );
+    }
+  }
+  for (const match of source.matchAll(/\sstyle=\{|\{\.\.\.\{[^}]*\bstyle\s*:/g)) {
     violations.push(
       `${path}:${lineOf(source, match.index)} inline style is not allowed in screens`,
+    );
+  }
+  for (const match of source.matchAll(/from\s+['"]([^'"]*packages\/ui[^'"]*)['"]/g)) {
+    violations.push(
+      `${path}:${lineOf(source, match.index)} ${match[1]} reaches into packages/ui; import from @netverse/ui/react`,
     );
   }
   for (const match of source.matchAll(/['"`][^'"`\n]*\bnv-[a-z]/g)) {
@@ -63,7 +76,7 @@ export function checkScreenSource(source, path, registeredNames) {
     );
   }
   for (const match of source.matchAll(
-    /import\s+(type\s+)?(?:\{([^}]*)\}|[\w*\s]+)\s+from\s+'(@netverse\/ui[^']*)'/g,
+    /import\s+(type\s+)?(?:\{([^}]*)\}|[\w*\s]+)\s+from\s+['"](@netverse\/ui[^'"]*)['"]/g,
   )) {
     const [, typeOnly, names = '', specifier] = match;
     const line = lineOf(source, match.index);
