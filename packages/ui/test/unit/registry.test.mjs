@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { DEMO_IDS } from '../../library/components.mjs';
 import { loadRegistry } from '../../src/registry-file.mjs';
-import { componentProps } from '../../src/registry.mjs';
+import { componentProps, registeredComponents } from '../../src/registry.mjs';
+import { loadDemos } from '../support/demos.mjs';
 
 const registry = loadRegistry();
 const css = readFileSync(new URL('../../components/components.css', import.meta.url), 'utf8');
@@ -42,9 +42,14 @@ test('mọi giá trị tham số trong sổ đăng ký có quy tắc CSS', () =>
   }
 });
 
-test('mọi component đăng ký có mẫu trong thư viện', () => {
-  for (const entry of registry.components.filter((item) => item.kind === 'component')) {
+test('mọi component đăng ký có mẫu React trong thư viện', async () => {
+  const { DEMO_IDS, renderDemo } = await loadDemos();
+  for (const entry of registeredComponents(registry)) {
     assert.ok(DEMO_IDS.includes(entry.demo), `${entry.id}: ${entry.demo}`);
+    assert.ok(
+      renderDemo(registry, entry).includes(entry.className),
+      `${entry.id}: ${entry.className}`,
+    );
   }
 });
 

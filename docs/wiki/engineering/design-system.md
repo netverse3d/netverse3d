@@ -55,7 +55,7 @@ Thêm một component:
 2. Thêm mục vào sổ đăng ký: tên React, class CSS, tham số, mã tiêu chí, mã mẫu thư viện.
 3. Viết test cho hàm trạng thái trước, theo tên ca ở cột cách kiểm của tiêu chí liên quan.
 4. Viết component, chỉ dùng token.
-5. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, test của #418 đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
+5. Thêm vào Thư viện giao diện với đủ trạng thái áp dụng. Với component của `packages/ui`, thêm mẫu vào `library/demos.tsx`, test đỏ nếu thiếu; component riêng của game đưa vào mục Mẫu tương tác và người duyệt xem bằng mắt.
 6. Đi qua bảng kiểm duyệt component ở [tiêu chí giao diện](../product/ui-criteria.md#bang-kiem-duyet-component), chụp từng trạng thái vào PR.
 
 ## Dùng component trong màn hình
@@ -70,10 +70,10 @@ Thêm một component:
 
 ## Thư viện giao diện
 
-Thư viện giao diện là trang tĩnh vẽ bằng chính token và component của `packages/ui`, xuất bản tại [netverse3d.github.io/netverse3d/ui](https://netverse3d.github.io/netverse3d/ui/), cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/), mỗi khi `staging` đổi. Xem tại máy bằng `pnpm ui:library` rồi mở `http://localhost:4174/ui/`. Màu nhấn đọc từ chính công thức tiệm của `game-assets`. Thư viện gồm ba mục:
+Thư viện giao diện là trang tĩnh vẽ bằng chính token và component React của `packages/ui`, gói bằng esbuild, xuất bản tại [netverse3d.github.io/netverse3d/ui](https://netverse3d.github.io/netverse3d/ui/), cạnh [Thư viện 3D](https://netverse3d.github.io/netverse3d/game-assets/library/), mỗi khi `staging` đổi. Xem tại máy bằng `pnpm ui:library` rồi mở `http://localhost:4174/ui/`. Màu nhấn đọc từ chính công thức tiệm của `game-assets`. Thư viện gồm ba mục:
 
 - **Nền tảng:** mẫu màu kèm tên token, bảng tương phản tính trực tiếp, thang chữ, khoảng cách, bo góc, thứ tự lớp, chuyển động; đổi thử màu tiệm, mức chất lượng, giảm trong suốt, giảm chuyển động.
 - **Component:** mỗi component một bảng biến thể nhân trạng thái.
 - **Mẫu tương tác:** vòng gợi ý ngồi máy qua các bước chờ, từ chối, lỗi; lớp khôi phục khi mất WebGL.
 
-Thư viện chỉ để xem. Game thật vẫn viết trong `apps/web-3d`.
+Mỗi component đăng ký có một mẫu React trong `packages/ui/library/demos.tsx`, gọi đúng component mà game dùng; test của `packages/ui` dựng từng mẫu và đỏ khi thiếu mẫu hoặc mẫu không ra class của component. Thư viện chỉ để xem. Game thật vẫn viết trong `apps/web-3d`.
