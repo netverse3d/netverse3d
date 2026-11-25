@@ -21,6 +21,7 @@
   --ui-highlight: var(--ui-core-peach);
   --ui-scrim: var(--ui-core-scrim);
   --ui-shadow: var(--ui-core-shadow);
+  --ui-tint: var(--ui-core-tint);
   --ui-layer-canvas: 0;
   --ui-layer-world: 5;
   --ui-layer-hud: 10;

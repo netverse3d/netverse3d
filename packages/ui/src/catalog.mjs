@@ -2,13 +2,13 @@ const names = (list) => list.split(' ').map((name) => `--ui-${name}`);
 
 export const TOKEN_GROUPS = {
   palette: names(
-    'core-night core-plum core-raised core-glass core-white core-silver core-line core-lavender core-sky core-mint core-amber core-rose core-peach core-scrim core-shadow',
+    'core-night core-plum core-raised core-glass core-white core-silver core-line core-lavender core-sky core-mint core-amber core-rose core-peach core-scrim core-shadow core-tint',
   ),
   surfaces: names('canvas surface surface-raised surface-glass panel'),
   text: names('text text-muted'),
   indicators: names('border focus success warning error info accent highlight'),
   actions: names('action-primary action-neutral action-danger on-action'),
-  overlays: names('scrim shadow panel-filter blur-panel'),
+  overlays: names('scrim shadow tint panel-filter blur-panel'),
   typography: names(
     'font-family text-xs text-sm text-base text-lg text-xl text-2xl weight-normal weight-medium weight-bold line-tight line-normal',
   ),

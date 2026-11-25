@@ -1,13 +1,13 @@
 .accountBar {
   position: absolute;
-  z-index: 1;
-  top: var(--space-3);
-  right: var(--space-3);
+  z-index: var(--ui-layer-hud);
+  top: var(--ui-space-3);
+  right: var(--ui-space-3);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--ui-space-2);
   max-width: min(48vw, 400px);
-  font-size: var(--text-sm);
+  font-size: var(--ui-text-sm);
 }
 
 .accountName {
@@ -15,9 +15,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--panel);
-  border-radius: var(--radius-1);
-  padding: var(--space-1) var(--space-2);
+  background: var(--ui-panel);
+  border-radius: var(--ui-radius-1);
+  padding: var(--ui-space-1) var(--ui-space-2);
 }
 
 .outline,
@@ -33,15 +33,15 @@
 .outline,
 .close,
 .primary {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-1);
-  background: var(--control);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-1);
+  background: var(--ui-action-neutral);
 }
 
 .outline,
 .primary {
-  padding: var(--space-2) var(--space-3);
-  font-weight: 650;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  font-weight: var(--ui-weight-medium);
 }
 
 .outline {
@@ -50,37 +50,37 @@
 
 .dialog {
   box-sizing: border-box;
-  width: min(calc(100% - 2 * var(--space-3)), 440px);
-  max-height: calc(100dvh - 2 * var(--space-3));
+  width: min(calc(100% - 2 * var(--ui-space-3)), 440px);
+  max-height: calc(100dvh - 2 * var(--ui-space-3));
   overflow: auto;
   padding: clamp(16px, 5vw, 28px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2);
-  background: var(--bg);
-  color: var(--ink);
-  box-shadow: 0 18px 65px #0008;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-2);
+  background: var(--ui-canvas);
+  color: var(--ui-text);
+  box-shadow: 0 18px 65px var(--ui-shadow);
 }
 
 .dialog::backdrop {
-  background: #090614b8;
+  background: var(--ui-scrim);
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: calc(var(--space-3) * 1.5);
+  gap: var(--ui-space-3);
+  margin-bottom: calc(var(--ui-space-3) * 1.5);
 }
 
 .header h1 {
   margin: 0;
-  font-size: clamp(1.4rem, 6vw, 1.8rem);
+  font-size: var(--ui-text-2xl);
 }
 
 .close {
   min-width: 44px;
-  font-size: 1.5rem;
+  font-size: var(--ui-text-xl);
 }
 
 .form,
@@ -89,41 +89,41 @@
 }
 
 .form {
-  gap: var(--space-3);
+  gap: var(--ui-space-3);
 }
 
 .field {
-  gap: var(--space-1);
-  font-size: var(--text-sm);
+  gap: var(--ui-space-1);
+  font-size: var(--ui-text-sm);
 }
 
 .field input {
   box-sizing: border-box;
   width: 100%;
   min-height: 44px;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-1);
-  color: var(--ink);
-  background: var(--control);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-1);
+  color: var(--ui-text);
+  background: var(--ui-action-neutral);
   font-family: inherit;
-  font-size: 1rem;
+  font-size: var(--ui-text-base);
 }
 
 .field span,
 .links button {
-  color: var(--muted);
+  color: var(--ui-text-muted);
 }
 
 .dialog :focus-visible,
 .outline:focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--ui-focus);
   outline-offset: 2px;
 }
 
 .primary {
-  color: var(--bg);
-  background: var(--cyan);
+  color: var(--ui-on-action);
+  background: var(--ui-action-primary);
 }
 
 .outline:disabled,
@@ -135,24 +135,24 @@
 .error,
 .notice {
   margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: var(--ui-text-sm);
+  line-height: var(--ui-line-normal);
 }
 
 .error {
-  color: var(--warn);
+  color: var(--ui-error);
 }
 
 .notice {
-  color: var(--cyan);
+  color: var(--ui-info);
 }
 
 .links {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0 var(--space-3);
-  margin-top: var(--space-2);
+  gap: 0 var(--ui-space-3);
+  margin-top: var(--ui-space-2);
 }
 
 .links button {
@@ -165,8 +165,8 @@
 @media (max-width: 520px) {
   .accountBar {
     top: auto;
-    bottom: var(--space-3);
-    max-width: calc(100% - 2 * var(--space-3));
+    bottom: var(--ui-space-3);
+    max-width: calc(100% - 2 * var(--ui-space-3));
   }
 
   .accountName {
@@ -178,6 +178,6 @@
   }
 
   .outline {
-    padding-inline: var(--space-2);
+    padding-inline: var(--ui-space-2);
   }
 }
