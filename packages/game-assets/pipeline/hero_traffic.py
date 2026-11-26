@@ -485,7 +485,7 @@ def build_roadsign_rect():
     return sign
 
 
-def led_luminaire_head(part, cx, cy, cz, yaw=0.0, tilt_deg=8.0):
+def led_luminaire_head(part, led, cx, cy, cz, yaw=0.0, tilt_deg=8.0):
     rot_z = Matrix.Rotation(yaw, 4, 'Z')
     tilt = Matrix.Rotation(math.radians(tilt_deg), 4, 'X')
     xform = Matrix.Translation(Vector((cx, cy, cz))) @ rot_z @ tilt
@@ -509,9 +509,8 @@ def led_luminaire_head(part, cx, cy, cz, yaw=0.0, tilt_deg=8.0):
     glow_z = -hh - 0.003
     gw, gd = 0.11, 0.25
     glow_pts = [tuple(xform @ Vector(p)) for p in [(-gw, -gd, glow_z), (gw, -gd, glow_z), (gw, gd, glow_z), (-gw, gd, glow_z)]]
-    part.oriented_poly(glow_pts, tuple(rot_z @ tilt @ Vector((0, 0, -1))), GLOW_KEY_LAMP[0])
-    part.bm.faces.ensure_lookup_table()
-    part.bm.faces[-1][part.key_layer] = GLOW_KEY_LAMP[1]
+    led.oriented_poly(glow_pts, tuple(rot_z @ tilt @ Vector((0, 0, -1))), GLOW_KEY_LAMP[0])
+    set_key_u(led, GLOW_KEY_LAMP[1])
 
 
 def build_streetlight_single():
@@ -542,8 +541,9 @@ def build_streetlight_single():
         'metal',
         sides=6,
     )
-    led_luminaire_head(lamp, 0.0, -2.06, 8.98, yaw=0.0, tilt_deg=-8.0)
-    return lamp
+    led = HeroPart('streetlight_a_led')
+    led_luminaire_head(lamp, led, 0.0, -2.06, 8.98, yaw=0.0, tilt_deg=-8.0)
+    return lamp, [led]
 
 
 def build_streetlight_double():
@@ -565,6 +565,7 @@ def build_streetlight_double():
     )
     hand_hole_door(lamp, 0.118, 0.55)
     box(lamp, (0.0, 0.0, 8.2), (0.20, 0.20, 0.16), 'metal')
+    led = HeroPart('streetlight_b_led')
     for side in (-1, 1):
         lamp.tube([(side * 0.05, 0.0, 7.90), (side * 0.55, 0.0, 8.70)], 0.022, 'metal', sides=4)
         sweep_arm(
@@ -575,8 +576,8 @@ def build_streetlight_double():
             'metal',
             sides=6,
         )
-        led_luminaire_head(lamp, side * 1.88, 0.0, 8.96, yaw=side * math.pi / 2, tilt_deg=-8.0)
-    return lamp
+        led_luminaire_head(lamp, led, side * 1.88, 0.0, 8.96, yaw=side * math.pi / 2, tilt_deg=-8.0)
+    return lamp, [led]
 
 
 def add_camera_pod(part, cx, cy, cz, yaw_deg=0.0, pitch_deg=-14.0):

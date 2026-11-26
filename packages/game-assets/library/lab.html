@@ -327,6 +327,7 @@
       import { kitAnchors, paletteRows } from '../runtime/shop-look.mjs';
       import { kitLightmap, previewKitFiles, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
+      import { createStreetLampLook } from '../runtime/signal-look.mjs';
 
       const $ = (id) => document.getElementById(id);
       const UP = new THREE.Vector3(0, 1, 0);
@@ -664,6 +665,7 @@
       };
       let materials = null;
       let materialSets = {};
+      let lampLooks = [];
       let display = null;
       let decal = null;
       const roadsignDecals = {};
@@ -803,6 +805,7 @@
             }
             mesh.frustumCulled = false;
           });
+          lampLooks.push(createStreetLampLook(THREE, clone));
           return clone;
         }
         throw new Error(`kit has no part ${name}`);
@@ -902,6 +905,8 @@
       }
 
       function show() {
+        for (const look of lampLooks) look.dispose();
+        lampLooks = [];
         disposeGroup(stageGroup);
         stageGroup.rotation.y = 0;
         for (const [name, position, yaw] of placements()) {

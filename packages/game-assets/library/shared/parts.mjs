@@ -5,6 +5,7 @@ import { legendTextures } from '../../runtime/keyboard-legends.mjs';
 import { COLORWAYS, LED_MODES, keyboardOptions } from '../../runtime/keyboard-styles.mjs';
 import { applyLandmarkGlow, kitGlowBoost } from '../../runtime/landmark-look.mjs';
 import { paletteRows } from '../../runtime/shop-look.mjs';
+import { createStreetLampLook } from '../../runtime/signal-look.mjs';
 import { kitLightmap, previewKitFiles, shopMaterials } from '../../runtime/three-shop.mjs';
 import { catalogSection, pageHref, sectionKits } from './catalog.mjs';
 import {
@@ -194,8 +195,11 @@ async function main() {
   }
 
   let materialSets = {};
+  let lampLooks = [];
   const vacantNotice = kits['alley-parts.glb'] ? vacancyNoticeMaterial(THREE) : null;
   function paint() {
+    for (const look of lampLooks) look.dispose();
+    lampLooks = [];
     for (const set of Object.values(materialSets)) {
       for (const material of Object.values(set)) {
         material.map?.dispose();
@@ -226,6 +230,7 @@ async function main() {
         mesh.material =
           row === 'decal' && card.slot === 'notice' ? vacantNotice : (set[row] ?? set.surface);
       });
+      lampLooks.push(createStreetLampLook(THREE, card.group));
       card.node.dataset.chosen = String(chosen[card.slot] === card.variant);
     }
     stale = true;
