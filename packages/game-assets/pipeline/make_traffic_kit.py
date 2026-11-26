@@ -43,7 +43,7 @@ def main():
     parents = {}
     child_links = []
 
-    for builder in (build_signal, build_walk):
+    for builder in (build_signal, build_walk, build_streetlight_single, build_streetlight_double):
         parent_part, child_parts = builder()
         parent_ob = finish_hero(parent_part, collection, materials)
         built[parent_part.name] = parent_ob
@@ -57,8 +57,6 @@ def main():
         build_roadsign_round,
         build_roadsign_triangle,
         build_roadsign_rect,
-        build_streetlight_single,
-        build_streetlight_double,
         build_camera,
     ):
         part = builder()

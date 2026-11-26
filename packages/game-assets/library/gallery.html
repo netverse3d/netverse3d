@@ -179,6 +179,7 @@
       import * as THREE from 'three';
       import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
       import { paletteRows } from '../runtime/shop-look.mjs';
+      import { createStreetLampLook } from '../runtime/signal-look.mjs';
       import { kitLightmap, shopMaterials } from '../runtime/three-shop.mjs';
       import { legendTextures } from '../runtime/keyboard-legends.mjs';
       import { studioLights } from './shared/studio.mjs';
@@ -258,8 +259,11 @@
         ao: true,
       };
       let materialSets = {};
+      let lampLooks = [];
 
       function rebuildMaterials() {
+        for (const look of lampLooks) look.dispose();
+        lampLooks = [];
         for (const set of Object.values(materialSets)) {
           for (const material of Object.values(set)) {
             material.map?.dispose();
@@ -284,6 +288,7 @@
           card.group.traverse((mesh) => {
             if (mesh.isMesh) mesh.material = set[mesh.userData.row] ?? set.surface;
           });
+          lampLooks.push(createStreetLampLook(THREE, card.group));
         }
       }
 
