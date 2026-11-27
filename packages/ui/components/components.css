@@ -1533,8 +1533,14 @@
   }
 
   .nv-progress[data-state='indeterminate'] .nv-progress__fill {
-    width: 40%;
-    animation: nv-progress-sweep calc(var(--ui-motion-scene) * 2) ease-in-out infinite;
+    background: repeating-linear-gradient(
+        -45deg,
+        color-mix(in srgb, var(--nv-progress) 70%, transparent) 0 8px,
+        color-mix(in srgb, var(--nv-progress) 25%, transparent) 8px 16px
+      )
+      0 0 / 22.6px 100%;
+    box-shadow: none;
+    animation: nv-progress-sweep calc(var(--ui-motion-scene) * 2) linear infinite;
   }
 
   .nv-empty {
@@ -1617,12 +1623,8 @@
   }
 
   @keyframes nv-progress-sweep {
-    from {
-      transform: translateX(-100%);
-    }
-
     to {
-      transform: translateX(250%);
+      background-position: 22.6px 0;
     }
   }
 
