@@ -1,5 +1,6 @@
 'use client';
 
+import { isClaimedKey } from '@netverse/ui/keys';
 import {
   Alert,
   Badge,
@@ -49,7 +50,7 @@ export default function SeatPrompt() {
   useEffect(() => {
     if (!rentalConfirmation) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) return;
+      if (event.repeat || isClaimedKey(event)) return;
       if (event.key === 'Enter') {
         event.preventDefault();
         if (event.target instanceof Element && event.target.closest('[data-rental-cancel]')) {

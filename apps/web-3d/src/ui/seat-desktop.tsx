@@ -3,6 +3,7 @@
 import { Button, IconButton, Panel, Text } from '@netverse/ui/react';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { isClaimedKey } from '@netverse/ui/keys';
 import { remainingSeconds, useRequested } from '../state/shop-slice.ts';
 import type { AppDispatch, RootState } from '../state/store.ts';
 import { formatSessionDuration } from './session-time.ts';
@@ -32,7 +33,7 @@ export default function SeatDesktop() {
   useEffect(() => {
     if (!active || minimized) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || isClaimedKey(event)) return;
       event.preventDefault();
       setMinimized(true);
     };

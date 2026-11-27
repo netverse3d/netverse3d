@@ -16,11 +16,15 @@ import {
   Overlay,
   Panel,
   PlayerBadge,
-  SelectField,
+  RadioGroup,
+  SearchField,
+  Select,
   ShopCard,
   Spinner,
   Status,
+  Switch,
   Text,
+  Textarea,
   TextField,
   Tile,
   Toast,
@@ -125,6 +129,20 @@ export function LoginForm({ text }: { text: ComponentText }) {
   );
 }
 
+function SearchDemo({ text, values }: DemoProps) {
+  const [query, setQuery] = useState(text.searchSample);
+  return (
+    <SearchField
+      {...variants(values)}
+      label={text.searchLabel}
+      placeholder={text.searchPlaceholder}
+      value={query}
+      onValueChange={setQuery}
+      clearLabel={text.clear}
+    />
+  );
+}
+
 function DialogDemo({ text, values }: DemoProps) {
   const [open, setOpen] = useState(false);
   return (
@@ -184,12 +202,33 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   heading: ({ text, values }) => <Heading {...variants(values)}>{text.headingSample}</Heading>,
   text: ({ text, values }) => <Text {...variants(values)}>{text.textSample}</Text>,
   select: ({ text, values }) => (
-    <SelectField
+    <Select
       {...variants(values)}
       label={text.selectLabel}
+      defaultValue={text.selectOptions[1]}
       options={text.selectOptions.map((option) => ({ value: option, label: option }))}
     />
   ),
+  switch: ({ text, values }) => (
+    <Switch {...variants(values)} label={text.switchLabel} defaultChecked />
+  ),
+  'radio-group': ({ text, values }) => (
+    <RadioGroup
+      {...variants(values)}
+      label={text.radioLabel}
+      defaultValue={text.radioOptions[0]}
+      options={text.radioOptions.map((option) => ({ value: option, label: option }))}
+    />
+  ),
+  textarea: ({ text, values }) => (
+    <Textarea
+      {...variants(values)}
+      label={text.textareaLabel}
+      placeholder={text.textareaPlaceholder}
+      message={values.state === 'error' ? text.passwordError : undefined}
+    />
+  ),
+  search: (props) => <SearchDemo {...props} />,
   badge: ({ text, values }) => <Badge {...variants(values)}>{text.badgeSample}</Badge>,
   alert: ({ text, values }) => <Alert {...variants(values)}>{text.alertSample}</Alert>,
   toast: ({ text, values }) => (

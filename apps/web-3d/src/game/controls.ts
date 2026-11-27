@@ -1,3 +1,4 @@
+import { isWidgetKey } from '@netverse/ui/keys';
 import { CONTROL_KEYS, STILL, USE_KEY, keysIntent, stickIntent } from './input.ts';
 import type { LocalIntent, StickPosition } from './input.ts';
 
@@ -56,15 +57,9 @@ interface Drag {
 
 export const STICK_RADIUS_PIXELS = 56;
 
-const TYPING_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
 const NO_TURN: Turn = { right: 0, down: 0 };
 const MAIN_BUTTON = 0;
 const WHEEL_PIXELS_PER_NOTCH = 100;
-
-function isTyping(event: Event): boolean {
-  const tagName = (event.target as { tagName?: unknown } | null)?.tagName;
-  return typeof tagName === 'string' && TYPING_TAGS.has(tagName);
-}
 
 function isShortcut(press: KeyPress): boolean {
   return Boolean(press.ctrlKey || press.metaKey || press.altKey);
@@ -100,7 +95,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       pressed.clear();
       return;
     }
-    if (isTyping(event)) return;
+    if (isWidgetKey(event)) return;
     if (press.code === USE_KEY) {
       if (!press.repeat) use = true;
       event.preventDefault();

@@ -231,16 +231,64 @@
       "demo": "text"
     },
     {
+      "id": "select",
+      "kind": "component",
+      "react": "Select",
+      "className": "nv-select",
       "uses": [],
       "props": {
         "state": ["idle", "disabled"]
       },
-      "id": "select-field",
-      "kind": "component",
-      "react": "SelectField",
-      "className": "nv-field",
       "criteria": ["K3", "K4"],
       "demo": "select"
+    },
+    {
+      "id": "switch",
+      "kind": "component",
+      "react": "Switch",
+      "className": "nv-switch",
+      "uses": [],
+      "props": {
+        "tone": ["accent", "cyan", "magenta", "success"]
+      },
+      "criteria": ["K3", "K4"],
+      "demo": "switch"
+    },
+    {
+      "id": "radio-group",
+      "kind": "component",
+      "react": "RadioGroup",
+      "className": "nv-radio-group",
+      "uses": [],
+      "props": {
+        "direction": ["column", "row"]
+      },
+      "criteria": ["K3", "K4"],
+      "demo": "radio-group"
+    },
+    {
+      "id": "textarea",
+      "kind": "component",
+      "react": "Textarea",
+      "className": "nv-field",
+      "uses": [],
+      "props": {
+        "state": ["idle", "error", "disabled"]
+      },
+      "criteria": ["P3", "K1", "K3", "K4"],
+      "demo": "textarea"
+    },
+    {
+      "id": "search-field",
+      "kind": "component",
+      "react": "SearchField",
+      "className": "nv-field",
+      "uses": [],
+      "props": {
+        "state": ["idle", "disabled"]
+      },
+      "criteria": ["K3", "K4"],
+      "demo": "search"
     },
     {
       "uses": [],

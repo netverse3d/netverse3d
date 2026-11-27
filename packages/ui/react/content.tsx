@@ -1,13 +1,10 @@
-import type { HTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
-import { Icon } from './icon.tsx';
+import type { HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 import { Meter } from './feedback.tsx';
 import { classNames, splitVariants } from './shared.ts';
 import {
   VARIANTS,
   type HeadingVariants,
   type PlayerBadgeVariants,
-  type SelectFieldVariants,
-  type TextFieldVariants,
   type TextVariants,
 } from './variants.generated.ts';
 
@@ -34,69 +31,6 @@ export function Text(props: TextProps) {
     <Tag {...native} className={classNames('nv-text', className)} {...data}>
       {children}
     </Tag>
-  );
-}
-
-type FieldFrameProps = {
-  label: ReactNode;
-  message?: ReactNode;
-  state?: string;
-  className?: string;
-  children: ReactNode;
-};
-
-function FieldFrame({ label, message, state, className, children }: FieldFrameProps) {
-  return (
-    <label
-      className={classNames('nv-field', className)}
-      data-state={state === 'idle' ? undefined : state}
-    >
-      <span className="nv-field__label">{label}</span>
-      <span className="nv-shape nv-input">{children}</span>
-      {message && <span className="nv-field__message">{message}</span>}
-    </label>
-  );
-}
-
-export type TextFieldProps = TextFieldVariants &
-  Omit<InputHTMLAttributes<HTMLInputElement>, 'style'> & { label: ReactNode; message?: ReactNode };
-
-export function TextField(props: TextFieldProps) {
-  const { rest } = splitVariants(props, VARIANTS.TextField);
-  const { label, message, className, ...input } = rest as TextFieldProps;
-  const state = props.state ?? (input.disabled ? 'disabled' : 'idle');
-  return (
-    <FieldFrame label={label} message={message} state={state} className={className}>
-      <input
-        {...input}
-        disabled={input.disabled || state === 'disabled'}
-        aria-invalid={input['aria-invalid'] ?? (state === 'error' || undefined)}
-      />
-    </FieldFrame>
-  );
-}
-
-export type SelectFieldProps = SelectFieldVariants &
-  Omit<SelectHTMLAttributes<HTMLSelectElement>, 'style' | 'children'> & {
-    label: ReactNode;
-    options: ReadonlyArray<{ value: string; label: ReactNode }>;
-  };
-
-export function SelectField(props: SelectFieldProps) {
-  const { rest } = splitVariants(props, VARIANTS.SelectField);
-  const { label, options, className, ...select } = rest as SelectFieldProps;
-  const state = props.state ?? (select.disabled ? 'disabled' : 'idle');
-  return (
-    <FieldFrame label={label} state={state} className={className}>
-      <select {...select} disabled={select.disabled || state === 'disabled'}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <Icon name="chevronDown" />
-    </FieldFrame>
   );
 }
 
