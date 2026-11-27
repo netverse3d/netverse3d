@@ -19,3 +19,10 @@ test('ô tăng giảm số dừng ở biên và đi đúng bước', () => {
   assert.equal(stepNumber(9, 1, range), 10);
   assert.equal(stepNumber(Number.NaN, 1, range), 0);
 });
+
+test('giá trị gõ vào bám theo bước và không cộng dồn sai số thập phân', () => {
+  assert.equal(stepNumber(3, 0, { min: 0, max: 10, step: 2 }), 4);
+  assert.equal(stepNumber(0.2, 1, { min: 0, max: 1, step: 0.1 }), 0.3);
+  assert.equal(stepNumber(155, 0, { min: 150, max: 190, step: 1 }), 155);
+  assert.equal(stepNumber(-5, 0, { min: 150, max: 190, step: 1 }), 150);
+});
