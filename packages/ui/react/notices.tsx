@@ -1,5 +1,4 @@
-import * as ToastPrimitive from '@radix-ui/react-toast';
-import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useRef, type ButtonHTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 import { IconButton } from './actions.tsx';
 import { Badge } from './feedback.tsx';
 import { Icon } from './icon.tsx';
@@ -32,53 +31,56 @@ const SHAPE_TONE: Record<ToastTone, string> = {
 const TONE_ICON = { error: 'alert', warning: 'alert', info: 'bell' } as const;
 
 export function ToastStack({ items, label, closeLabel, onDismiss, className }: ToastStackProps) {
-  const escapedFromOutside = useRef(false);
+  const list = useRef<HTMLOListElement>(null);
+  const dismiss = (id: ToastItem['id']) => {
+    if (list.current?.contains(document.activeElement)) list.current.focus();
+    onDismiss(id);
+  };
+  const onKeyDown = (id: ToastItem['id']) => (event: KeyboardEvent<HTMLLIElement>) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    dismiss(id);
+  };
   return (
-    <ToastPrimitive.Provider label={label} duration={Number.POSITIVE_INFINITY} swipeDirection="up">
+    <ol
+      ref={list}
+      className={classNames('nv-toast-stack', className)}
+      aria-label={label}
+      aria-live="polite"
+      aria-relevant="additions text"
+      tabIndex={-1}
+    >
       {items.map((item) => (
-        <ToastPrimitive.Root
+        <li
           key={item.id}
-          open
-          type={item.tone === 'error' ? 'foreground' : 'background'}
-          onEscapeKeyDown={(event) => {
-            const target = event.target;
-            escapedFromOutside.current = !(
-              target instanceof Element && target.closest('.nv-toast-stack')
-            );
-          }}
-          onOpenChange={(open) => {
-            const ignored = escapedFromOutside.current;
-            escapedFromOutside.current = false;
-            if (!open && !ignored) onDismiss(item.id);
-          }}
+          role={item.tone === 'error' ? 'alert' : undefined}
           className="nv-shape nv-toast nv-toast-stack__item"
           data-tone={SHAPE_TONE[item.tone]}
           data-duo="magenta"
           data-notice-tone={item.tone}
           data-notice={item.name}
+          onKeyDown={onKeyDown(item.id)}
         >
           <span className="nv-toast-stack__icon" aria-hidden="true">
             <Icon name={TONE_ICON[item.tone]} />
           </span>
-          <ToastPrimitive.Description className="nv-toast-stack__message">
-            {item.message}
-          </ToastPrimitive.Description>
+          <span className="nv-toast-stack__message">{item.message}</span>
           {item.action && (
-            <ToastPrimitive.Action
-              altText={item.action.label}
-              className="nv-toast-stack__action"
-              onClick={item.action.onAction}
-            >
+            <button type="button" className="nv-toast-stack__action" onClick={item.action.onAction}>
               {item.action.label}
-            </ToastPrimitive.Action>
+            </button>
           )}
-          <ToastPrimitive.Close asChild>
-            <IconButton icon="close" label={closeLabel} surface="ghost" tone="neutral" />
-          </ToastPrimitive.Close>
-        </ToastPrimitive.Root>
+          <IconButton
+            icon="close"
+            label={closeLabel}
+            surface="ghost"
+            tone="neutral"
+            onClick={() => dismiss(item.id)}
+          />
+        </li>
       ))}
-      <ToastPrimitive.Viewport label={label} className={classNames('nv-toast-stack', className)} />
-    </ToastPrimitive.Provider>
+    </ol>
   );
 }
 

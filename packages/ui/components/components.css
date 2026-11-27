@@ -1669,10 +1669,6 @@
     outline: none;
   }
 
-  .nv-toast-stack:empty {
-    display: none;
-  }
-
   .nv-toast-stack__item {
     display: flex;
     width: 100%;
@@ -1686,10 +1682,6 @@
 
   .nv-toast-stack__item[data-notice-tone='warning'] {
     order: -1;
-  }
-
-  .nv-toast-stack__item[data-swipe='move'] {
-    transform: translateY(var(--radix-toast-swipe-move-y));
   }
 
   .nv-toast-stack__icon {
