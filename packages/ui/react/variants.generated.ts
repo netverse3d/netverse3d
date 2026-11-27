@@ -126,6 +126,24 @@ export interface TextLinkVariants {
   tone?: 'cyan' | 'accent';
 }
 
+export interface ChipVariants {
+  tone?: 'neutral' | 'accent' | 'cyan' | 'magenta';
+}
+
+export interface SkeletonVariants {
+  variant?: 'line' | 'block' | 'avatar';
+}
+
+export interface ProgressBarVariants {
+  tone?: 'accent' | 'success' | 'warning';
+}
+
+export type EmptyStateVariants = Record<never, never>;
+
+export interface DividerVariants {
+  orientation?: 'horizontal' | 'vertical';
+}
+
 export interface BadgeVariants {
   tone?: 'accent' | 'highlight' | 'magenta';
 }
@@ -180,6 +198,11 @@ export const VARIANTS = {
   SegmentedControl: {},
   Pagination: {},
   TextLink: {"tone":["cyan","accent"]},
+  Chip: {"tone":["neutral","accent","cyan","magenta"]},
+  Skeleton: {"variant":["line","block","avatar"]},
+  ProgressBar: {"tone":["accent","success","warning"]},
+  EmptyState: {},
+  Divider: {"orientation":["horizontal","vertical"]},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

@@ -363,6 +363,64 @@
       "demo": "text-link"
     },
     {
+      "id": "chip",
+      "kind": "component",
+      "react": "Chip",
+      "className": "nv-chip",
+      "uses": [],
+      "props": {
+        "tone": ["neutral", "accent", "cyan", "magenta"]
+      },
+      "criteria": ["N3", "T2", "K4"],
+      "demo": "chip"
+    },
+    {
+      "id": "skeleton",
+      "kind": "component",
+      "react": "Skeleton",
+      "className": "nv-skeleton",
+      "uses": [],
+      "props": {
+        "variant": ["line", "block", "avatar"]
+      },
+      "criteria": ["P2", "H2"],
+      "demo": "skeleton"
+    },
+    {
+      "id": "progress-bar",
+      "kind": "component",
+      "react": "ProgressBar",
+      "className": "nv-progress",
+      "uses": [],
+      "props": {
+        "tone": ["accent", "success", "warning"]
+      },
+      "criteria": ["P1", "H2"],
+      "demo": "progress-bar"
+    },
+    {
+      "id": "empty-state",
+      "kind": "component",
+      "react": "EmptyState",
+      "className": "nv-empty",
+      "uses": [],
+      "props": {},
+      "criteria": ["P7"],
+      "demo": "empty-state"
+    },
+    {
+      "id": "divider",
+      "kind": "component",
+      "react": "Divider",
+      "className": "nv-divider",
+      "uses": [],
+      "props": {
+        "orientation": ["horizontal", "vertical"]
+      },
+      "criteria": ["N1"],
+      "demo": "divider"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

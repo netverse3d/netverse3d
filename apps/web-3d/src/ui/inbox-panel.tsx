@@ -3,9 +3,11 @@ import {
   Badge,
   Button,
   Dialog,
+  EmptyState,
   Heading,
   ListItem,
   Pagination,
+  Skeleton,
   Text,
 } from '@netverse/ui/react';
 import { useEffect, useRef, useState } from 'react';
@@ -15,6 +17,7 @@ import styles from './inbox-panel.module.css';
 
 const text = vi.inbox;
 const REFRESH_MS = 30000;
+const PLACEHOLDER_ROWS = ['first', 'second', 'third'] as const;
 const dateFormat = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' });
 
 export default function InboxPanel({ client }: { client: InboxClient }) {
@@ -141,13 +144,24 @@ export default function InboxPanel({ client }: { client: InboxClient }) {
           </div>
         )}
         {!current && !failure && (
-          <Text variant="meta" role="status">
-            {text.loading}
-          </Text>
+          <>
+            <Text variant="meta" role="status">
+              {text.loading}
+            </Text>
+            <ul className={styles.list} aria-hidden="true">
+              {PLACEHOLDER_ROWS.map((row) => (
+                <ListItem key={row} state="read" className={styles.placeholder}>
+                  <Skeleton />
+                  <Skeleton />
+                  <Skeleton />
+                </ListItem>
+              ))}
+            </ul>
+          </>
         )}
         {current &&
           (current.content.length === 0 ? (
-            <Text variant="meta">{text.empty}</Text>
+            <EmptyState icon="mail" title={text.empty} message={text.emptyHint} />
           ) : (
             <ul className={styles.list}>
               {current.content.map((item) => (

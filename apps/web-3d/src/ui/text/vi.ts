@@ -17,6 +17,7 @@ export const vi = {
     readAll: 'Đọc tất cả',
     loading: 'Đang tải thông báo…',
     empty: 'Bạn chưa có thông báo nào.',
+    emptyHint: 'Thư từ tiệm và bạn bè sẽ hiện ở đây.',
     loadError: 'Chưa tải được thông báo.',
     markError: 'Chưa cập nhật được trạng thái đã đọc.',
     retry: 'Thử lại',

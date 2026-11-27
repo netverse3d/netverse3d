@@ -3,9 +3,14 @@ import {
   ActionButton,
   Alert,
   Button,
+  Chip,
+  Divider,
+  EmptyState,
   IconButton,
   KeyHint,
   Panel,
+  ProgressBar,
+  Skeleton,
   Spinner,
   Text,
 } from '../react/index.ts';
@@ -141,6 +146,76 @@ function NavigationPreview({ text }: { text: ComponentText }) {
           const Demo = DEMOS[id];
           return Demo ? <Demo key={id} text={text} values={{}} /> : null;
         })}
+      </Panel>
+    </div>
+  );
+}
+
+const CHIP_TONES = [
+  ['open', 'accent', 'monitor'],
+  ['vip', 'magenta', 'seats'],
+  ['friends', 'cyan', 'friends'],
+] as const;
+
+function DisplayPreview({ text }: { text: ComponentText }) {
+  const [chips, setChips] = useState<readonly string[]>(CHIP_TONES.map(([key]) => key));
+  return (
+    <div className="nv-display-preview">
+      <Panel
+        className="nv-inputs-preview"
+        shape="bevel-all"
+        cut="lg"
+        tone="cyan"
+        duo="magenta"
+        surface="glass"
+        title={text.displayTitle}
+        titleLevel={3}
+      >
+        <div className="nv-demo-chips">
+          {CHIP_TONES.filter(([key]) => chips.includes(key)).map(([key, tone, icon]) => (
+            <Chip
+              key={key}
+              tone={tone}
+              icon={icon}
+              removeLabel={`${text.removeChip}: ${text.chips[key]}`}
+              onRemove={() => setChips(chips.filter((chip) => chip !== key))}
+            >
+              {text.chips[key]}
+            </Chip>
+          ))}
+        </div>
+        <ProgressBar label={text.progressLabel} value={64} />
+        <ProgressBar label={text.waitingLabel} tone="warning" />
+        <Divider />
+        <div className="nv-demo-skeleton-row">
+          <Skeleton variant="avatar" />
+          <div className="nv-demo-skeleton-lines">
+            <Skeleton />
+            <Skeleton />
+          </div>
+        </div>
+        <Skeleton variant="block" />
+      </Panel>
+      <Panel
+        className="nv-inputs-preview"
+        shape="bevel-all"
+        cut="lg"
+        tone="magenta"
+        duo="cyan"
+        surface="glass"
+        title={text.emptyTitle}
+        titleLevel={3}
+      >
+        <EmptyState
+          icon="mail"
+          title={text.emptyTitle}
+          message={text.emptyMessage}
+          action={
+            <Button size="sm" surface="glass" tone="cyan">
+              {text.emptyAction}
+            </Button>
+          }
+        />
       </Panel>
     </div>
   );
@@ -347,6 +422,8 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <OverlaysPreview text={text} />
       <h3 className="library-subhead">{text.navigation}</h3>
       <NavigationPreview text={text} />
+      <h3 className="library-subhead">{text.display}</h3>
+      <DisplayPreview text={text} />
       <h3 className="library-subhead">{text.patterns.title}</h3>
       <p className="lead">{text.patterns.intro}</p>
       <InteractionPatterns text={text} />

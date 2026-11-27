@@ -124,6 +124,21 @@
     "next": "Trang sau",
     "pageOf": "Trang {page} / {total}",
     "linkSample": "Quên mật khẩu?",
+    "display": "Hiển thị",
+    "displayTitle": "Tải bản đồ khu phố",
+    "chips": {
+      "open": "Đang mở",
+      "vip": "Khu VIP",
+      "friends": "Có bạn bè"
+    },
+    "removeChip": "Bỏ bộ lọc",
+    "progressLabel": "Tải bản đồ khu phố",
+    "waitingLabel": "Đang chờ phòng xác nhận",
+    "dividerStart": "Tiệm net",
+    "dividerEnd": "Quán cà phê",
+    "emptyTitle": "Chưa có thông báo",
+    "emptyMessage": "Thư từ tiệm và bạn bè sẽ hiện ở đây.",
+    "emptyAction": "Dạo khu phố",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",
     "props": {
