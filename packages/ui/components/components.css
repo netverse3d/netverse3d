@@ -2264,6 +2264,10 @@
     font-weight: var(--ui-weight-bold);
   }
 
+  .nv-breadcrumb__text {
+    color: var(--ui-text-muted);
+  }
+
   .nv-breadcrumb__separator {
     display: inline-flex;
     color: var(--ui-text-muted);

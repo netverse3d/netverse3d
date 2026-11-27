@@ -27,11 +27,8 @@ export function Drawer(props: DrawerProps) {
   const [findContainer, container] = useLayerContainer();
   return (
     <DialogPrimitive.Root {...openState}>
-      {trigger && (
-        <DialogPrimitive.Trigger asChild ref={findContainer}>
-          {trigger}
-        </DialogPrimitive.Trigger>
-      )}
+      <span ref={findContainer} hidden />
+      {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}
       <DialogPrimitive.Portal container={container}>
         <DialogPrimitive.Overlay className="nv-drawer__scrim" />
         <DialogPrimitive.Content
@@ -186,12 +183,14 @@ export function Breadcrumb({ label, items, className }: BreadcrumbProps) {
           const last = index === items.length - 1;
           return (
             <li key={index} className="nv-breadcrumb__item">
-              {last || !item.href ? (
-                <span className="nv-breadcrumb__current" aria-current={last ? 'page' : undefined}>
+              {last ? (
+                <span className="nv-breadcrumb__current" aria-current="page">
                   {item.label}
                 </span>
-              ) : (
+              ) : item.href ? (
                 <TextLink href={item.href}>{item.label}</TextLink>
+              ) : (
+                <span className="nv-breadcrumb__text">{item.label}</span>
               )}
               {!last && (
                 <span className="nv-breadcrumb__separator" aria-hidden="true">

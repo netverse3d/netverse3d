@@ -389,7 +389,7 @@ function Playground({ text }: { text: ComponentText }) {
       </div>
       <div className="nv-playground__body">
         <div className="nv-playground__stage">
-          {Demo && <Demo key={target.id} text={text} values={values} />}
+          {Demo && <Demo key={target.id} text={text} values={values} closed />}
         </div>
         <figure>
           <figcaption>{text.code}</figcaption>
