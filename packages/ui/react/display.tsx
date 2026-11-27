@@ -14,12 +14,10 @@ import {
 
 type NativeSpan = Omit<HTMLAttributes<HTMLSpanElement>, 'style'>;
 
-export type ChipProps = ChipVariants &
-  NativeSpan & {
-    icon?: IconName;
-    onRemove?: () => void;
-    removeLabel?: string;
-  };
+type ChipRemoval =
+  { onRemove: () => void; removeLabel: string } | { onRemove?: undefined; removeLabel?: undefined };
+
+export type ChipProps = ChipVariants & NativeSpan & ChipRemoval & { icon?: IconName };
 
 export function Chip(props: ChipProps) {
   const { data, rest } = splitVariants(props, VARIANTS.Chip, { tone: 'neutral' });
@@ -28,7 +26,7 @@ export function Chip(props: ChipProps) {
     <span {...native} className={classNames('nv-chip', className)} {...data}>
       {icon && <Icon name={icon} />}
       <span className="nv-chip__label">{children}</span>
-      {onRemove && removeLabel && (
+      {onRemove && (
         <button
           type="button"
           className="nv-chip__remove"
@@ -74,7 +72,7 @@ export function ProgressBar(props: ProgressBarProps) {
       value={current}
       max={PROGRESS_MAX}
       aria-label={label}
-      aria-valuetext={valueText}
+      getValueLabel={valueText === undefined ? undefined : () => valueText}
       className={classNames('nv-progress', className)}
       {...data}
     >

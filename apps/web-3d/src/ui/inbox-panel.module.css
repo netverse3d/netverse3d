@@ -38,6 +38,7 @@
 
 .placeholder > :last-child {
   width: 35%;
+  height: 32px;
 }
 
 .body {

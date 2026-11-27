@@ -1448,7 +1448,7 @@
     --nv-chip: var(--ui-neon-magenta);
   }
 
-  .nv-chip svg {
+  .nv-chip > svg {
     width: 14px;
     height: 14px;
     color: var(--nv-chip);
@@ -1465,6 +1465,11 @@
     background: transparent;
     color: var(--ui-text-muted);
     cursor: pointer;
+  }
+
+  .nv-chip__remove svg {
+    width: 14px;
+    height: 14px;
   }
 
   .nv-chip__remove:hover {
