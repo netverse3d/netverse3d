@@ -1311,6 +1311,9 @@
 
   .nv-segmented {
     display: inline-flex;
+    justify-self: start;
+    width: max-content;
+    max-width: 100%;
     gap: var(--ui-space-1);
     padding: var(--ui-space-1);
     border: var(--ui-line-width) solid var(--ui-border);
