@@ -321,6 +321,48 @@
       "demo": "popover"
     },
     {
+      "id": "tabs",
+      "kind": "component",
+      "react": "Tabs",
+      "className": "nv-tabs",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "tabs"
+    },
+    {
+      "id": "segmented-control",
+      "kind": "component",
+      "react": "SegmentedControl",
+      "className": "nv-segmented",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "segmented-control"
+    },
+    {
+      "id": "pagination",
+      "kind": "component",
+      "react": "Pagination",
+      "className": "nv-pagination",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "K5"],
+      "demo": "pagination"
+    },
+    {
+      "id": "text-link",
+      "kind": "component",
+      "react": "TextLink",
+      "className": "nv-link",
+      "uses": [],
+      "props": {
+        "tone": ["cyan", "accent"]
+      },
+      "criteria": ["K3", "K4", "T2"],
+      "demo": "text-link"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

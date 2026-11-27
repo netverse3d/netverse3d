@@ -101,6 +101,29 @@
     "popoverTrigger": "Khu VIP",
     "popoverTitle": "Khu VIP",
     "popoverBody": "Ghế đua, màn 240 Hz, phòng cách âm. Còn ba máy trống.",
+    "navigation": "Điều hướng",
+    "tabsLabel": "Hồ sơ người chơi",
+    "tabs": {
+      "stats": "Chỉ số",
+      "items": "Túi đồ",
+      "friends": "Bạn bè"
+    },
+    "tabsBody": {
+      "stats": "Cấp 12 · 340 giờ chơi · 18 trận thắng.",
+      "items": "Tai nghe neon, áo khoác Sài Gòn, thẻ VIP.",
+      "friends": "Ba bạn đang trực tuyến trong tiệm."
+    },
+    "segmentedLabel": "Chế độ xem",
+    "segments": {
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng"
+    },
+    "pagesLabel": "Các trang",
+    "previous": "Trang trước",
+    "next": "Trang sau",
+    "pageOf": "Trang {page} / {total}",
+    "linkSample": "Quên mật khẩu?",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",
     "props": {

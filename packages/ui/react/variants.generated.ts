@@ -116,6 +116,16 @@ export type DropdownMenuVariants = Record<never, never>;
 
 export type PopoverVariants = Record<never, never>;
 
+export type TabsVariants = Record<never, never>;
+
+export type SegmentedControlVariants = Record<never, never>;
+
+export type PaginationVariants = Record<never, never>;
+
+export interface TextLinkVariants {
+  tone?: 'cyan' | 'accent';
+}
+
 export interface BadgeVariants {
   tone?: 'accent' | 'highlight' | 'magenta';
 }
@@ -166,6 +176,10 @@ export const VARIANTS = {
   Tooltip: {},
   DropdownMenu: {},
   Popover: {},
+  Tabs: {},
+  SegmentedControl: {},
+  Pagination: {},
+  TextLink: {"tone":["cyan","accent"]},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

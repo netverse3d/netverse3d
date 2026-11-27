@@ -713,15 +713,6 @@
     font-size: var(--ui-text-sm);
   }
 
-  .nv-dialog__links a {
-    color: var(--ui-text-muted);
-    text-underline-offset: 3px;
-  }
-
-  .nv-dialog__links a:hover {
-    color: var(--ui-text);
-  }
-
   .nv-heading {
     margin: 0;
     color: var(--ui-text);
@@ -1251,6 +1242,180 @@
     cursor: default;
   }
 
+  .nv-tabs {
+    display: grid;
+    gap: var(--ui-space-3);
+  }
+
+  .nv-tabs__list {
+    display: flex;
+    gap: var(--ui-space-1);
+    border-bottom: var(--ui-line-width) solid var(--ui-border);
+    overflow-x: auto;
+  }
+
+  .nv-tabs__tab {
+    position: relative;
+    min-height: 36px;
+    padding: 0 var(--ui-space-3);
+    border: 0;
+    background: transparent;
+    color: var(--ui-text-muted);
+    font: inherit;
+    font-size: var(--ui-text-sm);
+    font-weight: var(--ui-weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--ui-motion-fast);
+  }
+
+  .nv-tabs__tab::after {
+    content: '';
+    position: absolute;
+    inset: auto var(--ui-space-2) calc(var(--ui-line-width) * -1);
+    height: 2px;
+    background: transparent;
+    transition:
+      background var(--ui-motion-fast),
+      box-shadow var(--ui-motion-fast);
+  }
+
+  .nv-tabs__tab:hover {
+    color: var(--ui-text);
+  }
+
+  .nv-tabs__tab[data-state='active'] {
+    color: var(--ui-text);
+  }
+
+  .nv-tabs__tab[data-state='active']::after {
+    background: var(--ui-accent);
+    box-shadow: 0 0 var(--ui-glow-soft) var(--ui-accent);
+  }
+
+  .nv-tabs__tab:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: -2px;
+  }
+
+  .nv-tabs__tab[data-disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .nv-tabs__panel:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  .nv-segmented {
+    display: inline-flex;
+    gap: var(--ui-space-1);
+    padding: var(--ui-space-1);
+    border: var(--ui-line-width) solid var(--ui-border);
+    clip-path: polygon(
+      var(--ui-cut-sm) 0,
+      100% 0,
+      100% calc(100% - var(--ui-cut-sm)),
+      calc(100% - var(--ui-cut-sm)) 100%,
+      0 100%,
+      0 var(--ui-cut-sm)
+    );
+    background: color-mix(in srgb, var(--ui-panel) 80%, transparent);
+  }
+
+  .nv-segmented__item {
+    min-height: 32px;
+    padding: 0 var(--ui-space-3);
+    border: 0;
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    background: transparent;
+    color: var(--ui-text-muted);
+    font: inherit;
+    font-size: var(--ui-text-sm);
+    font-weight: var(--ui-weight-medium);
+    cursor: pointer;
+    transition:
+      background var(--ui-motion-fast),
+      color var(--ui-motion-fast);
+  }
+
+  .nv-segmented__item:hover {
+    color: var(--ui-text);
+  }
+
+  .nv-segmented__item[data-state='on'] {
+    background: color-mix(in srgb, var(--ui-accent) 32%, transparent);
+    color: var(--ui-text);
+    box-shadow: inset 0 -2px 0 var(--ui-accent);
+  }
+
+  .nv-segmented__item:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: -2px;
+  }
+
+  .nv-segmented__item:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .nv-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ui-space-3);
+  }
+
+  .nv-pagination svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .nv-pagination__current {
+    color: var(--ui-text-muted);
+    font-size: var(--ui-text-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nv-link {
+    --nv-link: var(--ui-info);
+    display: inline;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nv-link);
+    font: inherit;
+    font-size: var(--ui-text-sm);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--nv-link) 45%, transparent);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition:
+      text-decoration-color var(--ui-motion-fast),
+      text-shadow var(--ui-motion-fast);
+  }
+
+  .nv-link[data-tone='accent'] {
+    --nv-link: var(--ui-accent);
+  }
+
+  .nv-link:hover {
+    text-decoration-color: var(--nv-link);
+    text-shadow: 0 0 var(--ui-glow-soft) color-mix(in srgb, var(--nv-link) 60%, transparent);
+  }
+
+  .nv-link:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  .nv-link:disabled {
+    opacity: 0.55;
+    cursor: default;
+    text-decoration: none;
+  }
+
   @keyframes nv-layer-in {
     from {
       opacity: 0;
@@ -1265,6 +1430,8 @@
 
     .nv-select__item,
     .nv-menu__item,
+    .nv-tabs__tab,
+    .nv-segmented__item,
     .nv-switch,
     .nv-radio-group__item {
       min-height: 44px;
@@ -1273,6 +1440,12 @@
     .nv-field__clear {
       width: 44px;
       height: 44px;
+    }
+
+    .nv-link {
+      display: inline-block;
+      min-height: 44px;
+      line-height: 44px;
     }
 
     .nv-input {

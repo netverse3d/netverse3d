@@ -15,17 +15,21 @@ import {
   ListItem,
   Meter,
   Overlay,
+  Pagination,
   Panel,
   PlayerBadge,
   Popover,
   RadioGroup,
   SearchField,
+  SegmentedControl,
   Select,
   ShopCard,
   Spinner,
   Status,
   Switch,
+  Tabs,
   Text,
+  TextLink,
   Textarea,
   TextField,
   Tile,
@@ -125,8 +129,8 @@ export function LoginForm({ text }: { text: ComponentText }) {
         {text.login}
       </Button>
       <div className="nv-dialog__links">
-        <a href="#components">{text.signup}</a>
-        <a href="#components">{text.forgot}</a>
+        <TextLink href="#components">{text.signup}</TextLink>
+        <TextLink href="#components">{text.forgot}</TextLink>
       </div>
     </>
   );
@@ -180,6 +184,27 @@ function MenuDemo({ text, closed }: DemoProps) {
         label: text.menuItems[id as keyof typeof MENU_ICONS],
         onSelect: () => setChosen(text.menuItems[id as keyof typeof MENU_ICONS]),
       }))}
+    />
+  );
+}
+
+const TAB_KEYS = ['stats', 'items', 'friends'] as const;
+const SEGMENT_KEYS = ['day', 'week', 'month'] as const;
+const DEMO_PAGES = 5;
+
+function PaginationDemo({ text }: DemoProps) {
+  const [page, setPage] = useState(1);
+  return (
+    <Pagination
+      page={page}
+      totalPages={DEMO_PAGES}
+      onPageChange={setPage}
+      label={text.pagesLabel}
+      previousLabel={text.previous}
+      nextLabel={text.next}
+      pageLabel={(current, total) =>
+        text.pageOf.replace('{page}', String(current)).replace('{total}', String(total))
+      }
     />
   );
 }
@@ -257,6 +282,29 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     </Tooltip>
   ),
   'dropdown-menu': (props) => <MenuDemo {...props} />,
+  tabs: ({ text }) => (
+    <Tabs
+      label={text.tabsLabel}
+      items={TAB_KEYS.map((key) => ({
+        value: key,
+        label: text.tabs[key],
+        content: <Text>{text.tabsBody[key]}</Text>,
+      }))}
+    />
+  ),
+  'segmented-control': ({ text }) => (
+    <SegmentedControl
+      label={text.segmentedLabel}
+      defaultValue="week"
+      options={SEGMENT_KEYS.map((key) => ({ value: key, label: text.segments[key] }))}
+    />
+  ),
+  pagination: (props) => <PaginationDemo {...props} />,
+  'text-link': ({ text, values }) => (
+    <TextLink {...variants(values)} href="#components">
+      {text.linkSample}
+    </TextLink>
+  ),
   popover: ({ text, closed }) => (
     <Popover
       defaultOpen={!closed}

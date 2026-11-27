@@ -122,6 +122,30 @@ function OverlaysPreview({ text }: { text: ComponentText }) {
   );
 }
 
+const NAVIGATION_DEMOS = ['tabs', 'segmented-control', 'pagination', 'text-link'] as const;
+
+function NavigationPreview({ text }: { text: ComponentText }) {
+  return (
+    <div className="nv-dialog-frame">
+      <Panel
+        className="nv-inputs-preview"
+        shape="bevel-all"
+        cut="lg"
+        tone="cyan"
+        duo="magenta"
+        surface="glass"
+        title={text.tabsLabel}
+        titleLevel={3}
+      >
+        {NAVIGATION_DEMOS.map((id) => {
+          const Demo = DEMOS[id];
+          return Demo ? <Demo key={id} text={text} values={{}} /> : null;
+        })}
+      </Panel>
+    </div>
+  );
+}
+
 function LoginPreview({ text }: { text: ComponentText }) {
   return (
     <div className="nv-dialog-frame">
@@ -321,6 +345,8 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <h3 className="library-subhead">{text.overlays}</h3>
       <p className="lead">{text.overlaysIntro}</p>
       <OverlaysPreview text={text} />
+      <h3 className="library-subhead">{text.navigation}</h3>
+      <NavigationPreview text={text} />
       <h3 className="library-subhead">{text.patterns.title}</h3>
       <p className="lead">{text.patterns.intro}</p>
       <InteractionPatterns text={text} />

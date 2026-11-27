@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, Text, TextField } from '@netverse/ui/react';
+import { Alert, Button, Dialog, Text, TextField, TextLink } from '@netverse/ui/react';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { vi } from './text/vi.ts';
 import styles from './account-panel.module.css';
@@ -128,8 +128,6 @@ export default function AccountPanel({
   const needsCode = mode === 'verify' || mode === 'reset';
   const needsNewPassword = mode === 'register' || mode === 'reset';
 
-  const linkProps = { size: 'sm', surface: 'ghost', tone: 'cyan' } as const;
-
   return (
     <>
       <div className={styles.accountBar} role="group" aria-label={text.accountLabel}>
@@ -231,27 +229,27 @@ export default function AccountPanel({
         <div className={styles.links}>
           {mode === 'login' ? (
             <>
-              <Button {...linkProps} disabled={pending} onClick={() => changeMode('register')}>
+              <TextLink disabled={pending} onClick={() => changeMode('register')}>
                 {text.actions.register}
-              </Button>
-              <Button {...linkProps} disabled={pending} onClick={() => changeMode('forgot')}>
+              </TextLink>
+              <TextLink disabled={pending} onClick={() => changeMode('forgot')}>
                 {text.titles.forgot}
-              </Button>
+              </TextLink>
             </>
           ) : (
-            <Button {...linkProps} disabled={pending} onClick={() => changeMode('login')}>
+            <TextLink disabled={pending} onClick={() => changeMode('login')}>
               {text.backToLogin}
-            </Button>
+            </TextLink>
           )}
           {mode === 'verify' && (
-            <Button {...linkProps} disabled={pending} onClick={resendCode}>
+            <TextLink disabled={pending} onClick={resendCode}>
               {text.resend}
-            </Button>
+            </TextLink>
           )}
           {mode === 'reset' && (
-            <Button {...linkProps} disabled={pending} onClick={() => changeMode('forgot')}>
+            <TextLink disabled={pending} onClick={() => changeMode('forgot')}>
               {text.resend}
-            </Button>
+            </TextLink>
           )}
         </div>
       </Dialog>
