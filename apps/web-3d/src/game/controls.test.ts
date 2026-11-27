@@ -91,6 +91,21 @@ test('đang chọn trong danh sách thả xuống hay nhóm lựa chọn thì ph
   }
 });
 
+test('phím đã được nút mở menu hay lớp nổi xử lý thì không điều khiển nhân vật', () => {
+  const { keys, surface } = stage();
+  const controls = createControls(surface, keys);
+  const opener = key('keydown', 'ArrowDown', { tagName: 'BUTTON', closest: () => null });
+  opener.preventDefault();
+  keys.dispatchEvent(opener);
+  assert.deepEqual(controls.intent(), STILL);
+  const insideLayer = key('keydown', 'KeyW', {
+    tagName: 'DIV',
+    closest: (selector: string) => (selector.includes('.nv-popover') ? {} : null),
+  });
+  keys.dispatchEvent(insideLayer);
+  assert.deepEqual(controls.intent(), STILL);
+});
+
 test('cửa sổ mất tiêu điểm thì nhả hết phím, nhân vật không tự đi mãi', () => {
   const { keys, surface } = stage();
   const controls = createControls(surface, keys);

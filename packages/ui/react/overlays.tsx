@@ -126,6 +126,7 @@ export function DropdownMenu({
         <MenuPrimitive.Content
           className="nv-shape nv-menu"
           aria-label={label}
+          aria-labelledby={undefined}
           side={side}
           align={align}
           sideOffset={LAYER_GAP}

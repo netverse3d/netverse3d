@@ -1252,6 +1252,7 @@
     gap: var(--ui-space-1);
     border-bottom: var(--ui-line-width) solid var(--ui-border);
     overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .nv-tabs__tab {
@@ -1272,7 +1273,7 @@
   .nv-tabs__tab::after {
     content: '';
     position: absolute;
-    inset: auto var(--ui-space-2) calc(var(--ui-line-width) * -1);
+    inset: auto var(--ui-space-2) 0;
     height: 2px;
     background: transparent;
     transition:
@@ -1400,7 +1401,7 @@
     --nv-link: var(--ui-accent);
   }
 
-  .nv-link:hover {
+  .nv-link:not(:disabled):hover {
     text-decoration-color: var(--nv-link);
     text-shadow: 0 0 var(--ui-glow-soft) color-mix(in srgb, var(--nv-link) 60%, transparent);
   }
@@ -1443,9 +1444,7 @@
     }
 
     .nv-link {
-      display: inline-block;
-      min-height: 44px;
-      line-height: 44px;
+      padding-block: var(--ui-space-3);
     }
 
     .nv-input {

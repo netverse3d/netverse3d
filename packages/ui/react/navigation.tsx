@@ -1,6 +1,8 @@
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import {
+  useEffect,
+  useRef,
   useState,
   type AnchorHTMLAttributes,
   type ButtonHTMLAttributes,
@@ -114,6 +116,8 @@ export type PaginationProps = {
   className?: string;
 };
 
+type PageStep = 'previous' | 'next';
+
 export function Pagination({
   page,
   totalPages,
@@ -126,29 +130,43 @@ export function Pagination({
   className,
 }: PaginationProps) {
   const { previous, next } = pageSteps(page, totalPages);
+  const nav = useRef<HTMLElement>(null);
+  const refocus = useRef<PageStep | null>(null);
+  useEffect(() => {
+    const step = refocus.current;
+    refocus.current = null;
+    if (step) nav.current?.querySelector<HTMLElement>(`[data-page-step="${step}"]`)?.focus();
+  }, [page]);
+  const go = (target: number, step: PageStep) => {
+    if (pageSteps(target, totalPages)[step] === null)
+      refocus.current = step === 'next' ? 'previous' : 'next';
+    onPageChange(target);
+  };
   return (
-    <nav className={classNames('nv-pagination', className)} aria-label={label}>
+    <nav ref={nav} className={classNames('nv-pagination', className)} aria-label={label}>
       <Button
         size="sm"
         surface="glass"
         tone="neutral"
         state={previous === null || disabled ? 'disabled' : 'idle'}
         onClick={() => {
-          if (previous !== null) onPageChange(previous);
+          if (previous !== null) go(previous, 'previous');
         }}
         data-page-step="previous"
       >
         <Icon name="chevronLeft" />
         {previousLabel}
       </Button>
-      <span className="nv-pagination__current">{pageLabel(page, totalPages)}</span>
+      <span className="nv-pagination__current" aria-live="polite">
+        {pageLabel(page, totalPages)}
+      </span>
       <Button
         size="sm"
         surface="glass"
         tone="neutral"
         state={next === null || disabled ? 'disabled' : 'idle'}
         onClick={() => {
-          if (next !== null) onPageChange(next);
+          if (next !== null) go(next, 'next');
         }}
         data-page-step="next"
       >
