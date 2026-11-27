@@ -181,6 +181,66 @@
     "sliderUnit": "cm",
     "stepperLabel": "Số giờ thuê",
     "decrease": "Giảm một",
+    "layoutData": "Bố cục và dữ liệu",
+    "layoutIntro": "Bảng máy của chủ tiệm; Enter trên nút \"Chi tiết máy\" mở ngăn kéo cạnh màn, Esc đóng và focus quay về nút.",
+    "breadcrumbLabel": "Vị trí trang",
+    "breadcrumbItems": {
+      "district": "Quận 1",
+      "shop": "Netverse Cybercafé",
+      "machines": "Danh sách máy"
+    },
+    "tableCaption": "Máy trong tiệm",
+    "tableEmpty": "Tiệm chưa có máy nào.",
+    "tableColumns": {
+      "machine": "Máy",
+      "zone": "Khu",
+      "state": "Trạng thái",
+      "hours": "Giờ hôm nay"
+    },
+    "tableRows": [
+      {
+        "id": "pc-01",
+        "zone": "Thường",
+        "state": "Đang dùng",
+        "hours": "6,5"
+      },
+      {
+        "id": "pc-02",
+        "zone": "Thường",
+        "state": "Trống",
+        "hours": "2,0"
+      },
+      {
+        "id": "vip-01",
+        "zone": "VIP",
+        "state": "Đang dùng",
+        "hours": "9,0"
+      },
+      {
+        "id": "vip-02",
+        "zone": "VIP",
+        "state": "Bảo trì",
+        "hours": "0,0"
+      }
+    ],
+    "drawerTrigger": "Chi tiết máy",
+    "drawerTitle": "Máy VIP-01",
+    "drawerDescription": "Khu VIP · đang có người dùng.",
+    "drawerClose": "Đóng chi tiết máy",
+    "accordionItems": {
+      "specs": {
+        "title": "Cấu hình",
+        "body": "Card đồ hoạ tầm trung, màn 240 Hz, ghế đua."
+      },
+      "history": {
+        "title": "Lịch sử thuê",
+        "body": "Chín giờ thuê hôm nay, không có báo hỏng."
+      },
+      "rules": {
+        "title": "Giá và quy định",
+        "body": "Chủ tiệm đặt giá theo giờ cho từng khu."
+      }
+    },
     "increase": "Tăng một",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",

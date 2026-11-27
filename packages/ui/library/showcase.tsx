@@ -469,6 +469,14 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
           })}
         </Panel>
       </div>
+      <h3 className="library-subhead">{text.layoutData}</h3>
+      <p className="lead">{text.layoutIntro}</p>
+      <div className="nv-layout-preview">
+        {(['breadcrumb', 'table', 'drawer'] as const).map((id) => {
+          const Demo = DEMOS[id];
+          return Demo ? <Demo key={id} text={text} values={{}} closed /> : null;
+        })}
+      </div>
       <h3 className="library-subhead">{text.notices}</h3>
       <p className="lead">{text.noticesIntro}</p>
       <div className="nv-notices-preview">

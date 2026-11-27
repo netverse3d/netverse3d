@@ -567,3 +567,14 @@ code {
   color: var(--ui-text-muted);
   font-size: var(--ui-text-xs);
 }
+
+.nv-layout-preview {
+  display: grid;
+  justify-items: start;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-4) 0;
+}
+
+.nv-layout-preview .nv-table {
+  justify-self: stretch;
+}

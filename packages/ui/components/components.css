@@ -2033,6 +2033,265 @@
     outline: none;
   }
 
+  .nv-drawer__scrim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ui-layer-dialog);
+    background: color-mix(in srgb, var(--ui-surface) 60%, transparent);
+    animation: nv-fade-in var(--ui-motion-base) ease-out;
+  }
+
+  .nv-drawer {
+    --nv-cut: var(--ui-cut-lg);
+    --nv-drawer-width: 380px;
+    position: fixed;
+    top: var(--ui-space-3);
+    right: var(--ui-space-3);
+    bottom: var(--ui-space-3);
+    z-index: var(--ui-layer-dialog);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-space-3);
+    width: min(var(--nv-drawer-width), calc(100vw - var(--ui-space-3) * 2));
+    padding: var(--ui-space-4);
+    font-family: var(--ui-font-family);
+    outline: none;
+    animation: nv-drawer-in-right var(--ui-motion-panel) ease-out;
+  }
+
+  .nv-drawer[data-side='left'] {
+    right: auto;
+    left: var(--ui-space-3);
+    animation-name: nv-drawer-in-left;
+  }
+
+  .nv-drawer[data-size='lg'] {
+    --nv-drawer-width: 560px;
+  }
+
+  .nv-drawer__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ui-space-3);
+  }
+
+  .nv-drawer__title {
+    margin: 0;
+    color: var(--ui-text);
+    font-size: var(--ui-text-lg);
+    font-weight: var(--ui-weight-bold);
+  }
+
+  .nv-drawer__description {
+    margin: 0;
+    color: var(--ui-text-muted);
+    font-size: var(--ui-text-sm);
+  }
+
+  .nv-drawer__body {
+    display: grid;
+    align-content: start;
+    gap: var(--ui-space-3);
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .nv-accordion {
+    display: grid;
+    gap: var(--ui-space-2);
+    font-family: var(--ui-font-family);
+  }
+
+  .nv-accordion__item {
+    border: var(--ui-line-width) solid var(--ui-border);
+    clip-path: polygon(
+      var(--ui-cut-sm) 0,
+      100% 0,
+      100% calc(100% - var(--ui-cut-sm)),
+      calc(100% - var(--ui-cut-sm)) 100%,
+      0 100%,
+      0 var(--ui-cut-sm)
+    );
+    background: color-mix(in srgb, var(--ui-panel) 70%, transparent);
+  }
+
+  .nv-accordion__item[data-state='open'] {
+    border-color: color-mix(in srgb, var(--ui-accent) 70%, var(--ui-border));
+  }
+
+  .nv-accordion__header {
+    margin: 0;
+  }
+
+  .nv-accordion__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ui-space-2);
+    width: 100%;
+    min-height: 40px;
+    padding: 0 var(--ui-space-3);
+    border: 0;
+    background: transparent;
+    color: var(--ui-text);
+    font: inherit;
+    font-size: var(--ui-text-sm);
+    font-weight: var(--ui-weight-bold);
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .nv-accordion__trigger:hover {
+    background: color-mix(in srgb, var(--ui-accent) 12%, transparent);
+  }
+
+  .nv-accordion__trigger:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: -2px;
+  }
+
+  .nv-accordion__icon {
+    display: inline-flex;
+    color: var(--ui-accent);
+    transition: transform var(--ui-motion-fast);
+  }
+
+  .nv-accordion__icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .nv-accordion__trigger[data-state='open'] .nv-accordion__icon {
+    transform: rotate(180deg);
+  }
+
+  .nv-accordion__body {
+    padding: 0 var(--ui-space-3) var(--ui-space-3);
+    color: var(--ui-text-muted);
+    font-size: var(--ui-text-sm);
+  }
+
+  .nv-table {
+    --nv-tone: var(--ui-border);
+    --nv-glow: 0px;
+    --nv-cell-y: var(--ui-space-2);
+    overflow-x: auto;
+    padding: var(--ui-space-1);
+    font-family: var(--ui-font-family);
+  }
+
+  .nv-table[data-density='compact'] {
+    --nv-cell-y: var(--ui-space-1);
+  }
+
+  .nv-table__grid {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--ui-text);
+    font-size: var(--ui-text-sm);
+  }
+
+  .nv-table__caption {
+    padding: var(--ui-space-2) var(--ui-space-3);
+    color: var(--ui-text-muted);
+    font-size: var(--ui-text-xs);
+    font-weight: var(--ui-weight-medium);
+    letter-spacing: 0.06em;
+    text-align: start;
+    text-transform: uppercase;
+  }
+
+  .nv-table__grid th,
+  .nv-table__grid td {
+    padding: var(--nv-cell-y) var(--ui-space-3);
+    text-align: start;
+    white-space: nowrap;
+  }
+
+  .nv-table__grid th[data-align='end'],
+  .nv-table__grid td[data-align='end'] {
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  .nv-table__grid th {
+    border-bottom: var(--ui-line-width) solid
+      color-mix(in srgb, var(--ui-accent) 60%, var(--ui-border));
+    color: var(--ui-text-muted);
+    font-size: var(--ui-text-xs);
+    font-weight: var(--ui-weight-bold);
+  }
+
+  .nv-table__grid tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--ui-tint) 50%, transparent);
+  }
+
+  .nv-table__grid tbody tr:hover {
+    background: color-mix(in srgb, var(--ui-accent) 14%, transparent);
+  }
+
+  .nv-table__empty {
+    color: var(--ui-text-muted);
+    text-align: center;
+  }
+
+  .nv-breadcrumb {
+    display: block;
+  }
+
+  .nv-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ui-space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--ui-font-family);
+    font-size: var(--ui-text-sm);
+  }
+
+  .nv-breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ui-space-1);
+  }
+
+  .nv-breadcrumb__current {
+    color: var(--ui-text);
+    font-weight: var(--ui-weight-bold);
+  }
+
+  .nv-breadcrumb__separator {
+    display: inline-flex;
+    color: var(--ui-text-muted);
+  }
+
+  .nv-breadcrumb__separator svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  @keyframes nv-fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes nv-drawer-in-right {
+    from {
+      transform: translateX(var(--ui-space-8));
+    }
+  }
+
+  @keyframes nv-drawer-in-left {
+    from {
+      transform: translateX(calc(var(--ui-space-8) * -1));
+    }
+  }
+
   @keyframes nv-toast-in {
     from {
       transform: translateY(calc(var(--ui-space-2) * -1));
@@ -2077,6 +2336,10 @@
     .nv-stepper__button {
       width: 44px;
       height: 44px;
+    }
+
+    .nv-accordion__trigger {
+      min-height: 44px;
     }
 
     .nv-swatches__item {
