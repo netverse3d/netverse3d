@@ -1,4 +1,4 @@
-import { isWidgetKey } from '@netverse/ui/keys';
+import { isClaimedKey } from '@netverse/ui/keys';
 import { CONTROL_KEYS, STILL, USE_KEY, keysIntent, stickIntent } from './input.ts';
 import type { LocalIntent, StickPosition } from './input.ts';
 
@@ -95,7 +95,7 @@ export function createControls(surface: ControlSurface, keys: KeySource): Contro
       pressed.clear();
       return;
     }
-    if (isWidgetKey(event)) return;
+    if (isClaimedKey(event)) return;
     if (press.code === USE_KEY) {
       if (!press.repeat) use = true;
       event.preventDefault();

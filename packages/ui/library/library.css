@@ -429,6 +429,14 @@ code {
   gap: var(--ui-space-3);
 }
 
+.nv-overlays-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ui-space-6);
+  padding: var(--ui-space-6) 0;
+}
+
 .nv-inputs-preview {
   display: grid;
   gap: var(--ui-space-4);

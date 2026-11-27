@@ -291,6 +291,78 @@
       "demo": "search"
     },
     {
+      "id": "tooltip",
+      "kind": "component",
+      "react": "Tooltip",
+      "className": "nv-tooltip",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2", "T6", "L1"],
+      "demo": "tooltip"
+    },
+    {
+      "id": "dropdown-menu",
+      "kind": "component",
+      "react": "DropdownMenu",
+      "className": "nv-menu",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "T6", "L1"],
+      "demo": "dropdown-menu"
+    },
+    {
+      "id": "popover",
+      "kind": "component",
+      "react": "Popover",
+      "className": "nv-popover",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "T6", "L1"],
+      "demo": "popover"
+    },
+    {
+      "id": "tabs",
+      "kind": "component",
+      "react": "Tabs",
+      "className": "nv-tabs",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "tabs"
+    },
+    {
+      "id": "segmented-control",
+      "kind": "component",
+      "react": "SegmentedControl",
+      "className": "nv-segmented",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "segmented-control"
+    },
+    {
+      "id": "pagination",
+      "kind": "component",
+      "react": "Pagination",
+      "className": "nv-pagination",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "K5"],
+      "demo": "pagination"
+    },
+    {
+      "id": "text-link",
+      "kind": "component",
+      "react": "TextLink",
+      "className": "nv-link",
+      "uses": [],
+      "props": {
+        "tone": ["cyan", "accent"]
+      },
+      "criteria": ["K3", "K4", "T2"],
+      "demo": "text-link"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

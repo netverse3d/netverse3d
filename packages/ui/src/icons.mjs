@@ -11,6 +11,7 @@ export const ICON_PATHS = {
   seats:
     'M5 11V6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5V11 M3.5 11h17v4.5h-17z M6 15.5V19 M18 15.5V19',
   chevron: 'M9 5l7 7-7 7',
+  chevronLeft: 'M15 5l-7 7 7 7',
   close: 'M6 6l12 12 M18 6 6 18',
   chevronDown: 'M6 9l6 6 6-6',
   minimize: 'M6 12h12',

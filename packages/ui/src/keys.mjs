@@ -16,7 +16,9 @@ const WIDGET_ROLES = [
   'tablist',
   'textbox',
 ];
-const WIDGET_SELECTOR = WIDGET_ROLES.map((role) => `[role="${role}"]`).join(', ');
+const WIDGET_SELECTOR = [...WIDGET_ROLES.map((role) => `[role="${role}"]`), '.nv-popover'].join(
+  ', ',
+);
 
 export function isWidgetKey(event) {
   const target = event.target;

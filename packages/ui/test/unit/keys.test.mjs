@@ -24,6 +24,14 @@ test('phím gõ trong ô nhập hay đến từ mục của ô chọn thuộc v�
   assert.equal(isWidgetKey(keyFrom({ tagName: 'BUTTON', closest: () => null })), false);
 });
 
+test('phím gõ khi focus nằm trong popover thuộc về popover', () => {
+  const insidePopover = {
+    tagName: 'BUTTON',
+    closest: (selector) => (selector.split(', ').includes('.nv-popover') ? {} : null),
+  };
+  assert.equal(isWidgetKey(keyFrom(insidePopover)), true);
+});
+
 test('Enter và Esc đã được ô chọn đang mở xử lý thì hộp thuê máy không nhận', () => {
   assert.equal(isClaimedKey(keyFrom({ tagName: 'BODY', closest: () => null }, true)), true);
   assert.equal(isClaimedKey(keyFrom(insideRole('option'))), true);

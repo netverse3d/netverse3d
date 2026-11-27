@@ -42,13 +42,14 @@ Tiêu chí nào chuyển được từ duyệt sang test thì chuyển, và sử
 
 ### T. Tương tác
 
-| Mã     | Tiêu chí                                                                                                                                                | Cách kiểm                                                                                                                                         |
-| :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **T1** | Mỗi vùng thao tác có đúng một hành động chính nổi bật; các hành động khác ở mức phụ.                                                                    | Thư viện, chạy thử.                                                                                                                               |
-| **T2** | Mọi nút có nhãn đọc được. Nút chỉ có biểu tượng vẫn có nhãn cho trình đọc màn hình.                                                                     | Thư viện.                                                                                                                                         |
-| **T3** | Đang chờ kết quả thì không gửi thêm cùng một lệnh, dù bấm đúp hay giữ phím; nút báo bận trong lúc chờ.                                                  | Test "nút đang chờ không nhận lệnh và báo bận cho trình đọc màn hình" (#418); test "nhấn E hai lần khi đang chờ chỉ gửi một yêu cầu ngồi" (#419). |
-| **T4** | Giao diện chỉ báo thành công khi phòng hoặc server đã xác nhận. Giữ chỗ máy vẫn do phòng bảo đảm theo REQ-018, giao dịch Xèng theo REQ-028 và ADR-0010. | Test "chỉ phòng mới đặt được trạng thái đã ngồi" (#419); smoke "nút ngồi báo bận trong lúc chờ phòng xác nhận" (#419).                            |
-| **T5** | Hộp thoại thường đóng bằng Escape và trả focus về chỗ cũ; hộp thoại đang xử lý giao dịch không đóng bằng Escape.                                        | Test "hộp thoại đang xử lý không đóng bằng Escape" (#418); smoke "hộp đăng nhập giữ focus và đóng bằng Escape" (#418).                            |
+| Mã     | Tiêu chí                                                                                                                                                                         | Cách kiểm                                                                                                                                         |
+| :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **T1** | Mỗi vùng thao tác có đúng một hành động chính nổi bật; các hành động khác ở mức phụ.                                                                                             | Thư viện, chạy thử.                                                                                                                               |
+| **T2** | Mọi nút có nhãn đọc được. Nút chỉ có biểu tượng vẫn có nhãn cho trình đọc màn hình.                                                                                              | Thư viện.                                                                                                                                         |
+| **T3** | Đang chờ kết quả thì không gửi thêm cùng một lệnh, dù bấm đúp hay giữ phím; nút báo bận trong lúc chờ.                                                                           | Test "nút đang chờ không nhận lệnh và báo bận cho trình đọc màn hình" (#418); test "nhấn E hai lần khi đang chờ chỉ gửi một yêu cầu ngồi" (#419). |
+| **T4** | Giao diện chỉ báo thành công khi phòng hoặc server đã xác nhận. Giữ chỗ máy vẫn do phòng bảo đảm theo REQ-018, giao dịch Xèng theo REQ-028 và ADR-0010.                          | Test "chỉ phòng mới đặt được trạng thái đã ngồi" (#419); smoke "nút ngồi báo bận trong lúc chờ phòng xác nhận" (#419).                            |
+| **T5** | Hộp thoại thường đóng bằng Escape và trả focus về chỗ cũ; hộp thoại đang xử lý giao dịch không đóng bằng Escape.                                                                 | Test "hộp thoại đang xử lý không đóng bằng Escape" (#418); smoke "hộp đăng nhập giữ focus và đóng bằng Escape" (#418).                            |
+| **T6** | Lớp nổi (tooltip, menu, popover) mở được bằng phím, đóng bằng Escape hoặc bấm ra ngoài, rồi trả focus về nút mở. Tooltip chỉ bổ sung nhãn, không lấy focus, không chứa thao tác. | Thư viện, chạy thử.                                                                                                                               |
 
 ### P. Phản hồi và tải
 
@@ -109,7 +110,7 @@ Dùng khi thêm hoặc sửa một component trong `packages/ui` hay `apps/web-3
 - [ ] **N2**, **K1**, **K2**: xem với ít nhất hai bộ màu tiệm; test tương phản xanh.
 - [ ] **N3**, **T2**: trạng thái có chữ hoặc biểu tượng; nút có nhãn.
 - [ ] **T1**: vùng thao tác có đúng một hành động chính.
-- [ ] **T3**, **T5**: có trạng thái chờ nếu component gửi lệnh; hộp thoại đóng đúng luật.
+- [ ] **T3**, **T5**, **T6**: có trạng thái chờ nếu component gửi lệnh; hộp thoại và lớp nổi đóng đúng luật.
 - [ ] **K3**, **K4**: dùng được bằng bàn phím; vùng chạm đủ lớn ở khổ điện thoại.
 - [ ] **H1**, **H2**, **H4**: xem ở mức chất lượng thấp và khi bật giảm chuyển động.
 - [ ] Ảnh chụp từng trạng thái trong PR.

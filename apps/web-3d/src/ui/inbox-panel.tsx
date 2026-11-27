@@ -1,4 +1,13 @@
-import { Alert, Badge, Button, Dialog, Heading, ListItem, Text } from '@netverse/ui/react';
+import {
+  Alert,
+  Badge,
+  Button,
+  Dialog,
+  Heading,
+  ListItem,
+  Pagination,
+  Text,
+} from '@netverse/ui/react';
 import { useEffect, useRef, useState } from 'react';
 import type { InboxClient, InboxPage } from '../types/inbox.ts';
 import { vi } from './text/vi.ts';
@@ -172,29 +181,17 @@ export default function InboxPanel({ client }: { client: InboxClient }) {
             </ul>
           ))}
         {current && current.totalPages > 1 && (
-          <nav className={styles.pagination} aria-label={text.pages}>
-            <Button
-              size="sm"
-              surface="glass"
-              tone="neutral"
-              state={pageNumber === 1 || saving ? 'disabled' : 'idle'}
-              onClick={() => setPageNumber(pageNumber - 1)}
-            >
-              {text.previous}
-            </Button>
-            <Text as="span" variant="meta">
-              {text.page(pageNumber, current.totalPages)}
-            </Text>
-            <Button
-              size="sm"
-              surface="glass"
-              tone="neutral"
-              state={pageNumber >= current.totalPages || saving ? 'disabled' : 'idle'}
-              onClick={() => setPageNumber(pageNumber + 1)}
-            >
-              {text.next}
-            </Button>
-          </nav>
+          <Pagination
+            className={styles.pagination}
+            page={pageNumber}
+            totalPages={current.totalPages}
+            onPageChange={setPageNumber}
+            disabled={saving}
+            label={text.pages}
+            previousLabel={text.previous}
+            nextLabel={text.next}
+            pageLabel={text.page}
+          />
         )}
       </Dialog>
     </>

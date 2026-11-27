@@ -7,6 +7,7 @@ import {
   Button,
   Checkbox,
   Dialog,
+  DropdownMenu,
   Heading,
   IconButton,
   KeyHint,
@@ -14,20 +15,26 @@ import {
   ListItem,
   Meter,
   Overlay,
+  Pagination,
   Panel,
   PlayerBadge,
+  Popover,
   RadioGroup,
   SearchField,
+  SegmentedControl,
   Select,
   ShopCard,
   Spinner,
   Status,
   Switch,
+  Tabs,
   Text,
+  TextLink,
   Textarea,
   TextField,
   Tile,
   Toast,
+  Tooltip,
 } from '../react/index.ts';
 import { Icon } from '../react/icon.tsx';
 import { componentProps } from '../src/registry.mjs';
@@ -36,7 +43,7 @@ import type libraryText from './text.json';
 
 export type ComponentText = (typeof libraryText)['components'];
 export type DemoValues = Record<string, string>;
-export type DemoProps = { text: ComponentText; values: DemoValues };
+export type DemoProps = { text: ComponentText; values: DemoValues; closed?: boolean };
 export type RegistryEntry = {
   id: string;
   demo: string;
@@ -122,8 +129,8 @@ export function LoginForm({ text }: { text: ComponentText }) {
         {text.login}
       </Button>
       <div className="nv-dialog__links">
-        <a href="#components">{text.signup}</a>
-        <a href="#components">{text.forgot}</a>
+        <TextLink href="#components">{text.signup}</TextLink>
+        <TextLink href="#components">{text.forgot}</TextLink>
       </div>
     </>
   );
@@ -159,6 +166,46 @@ function DialogDemo({ text, values }: DemoProps) {
         <LoginForm text={text} />
       </Dialog>
     </>
+  );
+}
+
+const MENU_ICONS = { sit: 'monitor', invite: 'friends', report: 'gear' } as const;
+
+function MenuDemo({ text, closed }: DemoProps) {
+  const [chosen, setChosen] = useState<string | null>(null);
+  return (
+    <DropdownMenu
+      defaultOpen={!closed}
+      label={text.menuLabel}
+      trigger={<Button size="sm">{chosen ?? text.menuTrigger}</Button>}
+      items={Object.entries(MENU_ICONS).map(([id, icon]) => ({
+        id,
+        icon,
+        label: text.menuItems[id as keyof typeof MENU_ICONS],
+        onSelect: () => setChosen(text.menuItems[id as keyof typeof MENU_ICONS]),
+      }))}
+    />
+  );
+}
+
+const TAB_KEYS = ['stats', 'items', 'friends'] as const;
+const SEGMENT_KEYS = ['day', 'week', 'month'] as const;
+const DEMO_PAGES = 5;
+
+function PaginationDemo({ text }: DemoProps) {
+  const [page, setPage] = useState(1);
+  return (
+    <Pagination
+      page={page}
+      totalPages={DEMO_PAGES}
+      onPageChange={setPage}
+      label={text.pagesLabel}
+      previousLabel={text.previous}
+      nextLabel={text.next}
+      pageLabel={(current, total) =>
+        text.pageOf.replace('{page}', String(current)).replace('{total}', String(total))
+      }
+    />
   );
 }
 
@@ -229,6 +276,48 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     />
   ),
   search: (props) => <SearchDemo {...props} />,
+  tooltip: ({ text, closed }) => (
+    <Tooltip content={text.tooltipSample} defaultOpen={!closed}>
+      <IconButton icon="bell" label={text.icons.bell} />
+    </Tooltip>
+  ),
+  'dropdown-menu': (props) => <MenuDemo {...props} />,
+  tabs: ({ text }) => (
+    <Tabs
+      label={text.tabsLabel}
+      items={TAB_KEYS.map((key) => ({
+        value: key,
+        label: text.tabs[key],
+        content: <Text>{text.tabsBody[key]}</Text>,
+      }))}
+    />
+  ),
+  'segmented-control': ({ text }) => (
+    <SegmentedControl
+      label={text.segmentedLabel}
+      defaultValue="week"
+      options={SEGMENT_KEYS.map((key) => ({ value: key, label: text.segments[key] }))}
+    />
+  ),
+  pagination: (props) => <PaginationDemo {...props} />,
+  'text-link': ({ text, values }) => (
+    <TextLink {...variants(values)} href="#components">
+      {text.linkSample}
+    </TextLink>
+  ),
+  popover: ({ text, closed }) => (
+    <Popover
+      defaultOpen={!closed}
+      title={text.popoverTitle}
+      trigger={
+        <Button size="sm" surface="ghost">
+          {text.popoverTrigger}
+        </Button>
+      }
+    >
+      {text.popoverBody}
+    </Popover>
+  ),
   badge: ({ text, values }) => <Badge {...variants(values)}>{text.badgeSample}</Badge>,
   alert: ({ text, values }) => <Alert {...variants(values)}>{text.alertSample}</Alert>,
   toast: ({ text, values }) => (

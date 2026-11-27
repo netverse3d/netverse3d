@@ -1,6 +1,7 @@
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { useCallback, useId, useState, type HTMLAttributes, type ReactNode } from 'react';
+import { useId, type HTMLAttributes, type ReactNode } from 'react';
 import { Icon } from './icon.tsx';
+import { useLayerContainer } from './layer.ts';
 import { classNames, splitVariants } from './shared.ts';
 import { VARIANTS, type SelectVariants } from './variants.generated.ts';
 
@@ -37,10 +38,7 @@ export function Select(props: SelectProps) {
   const state = props.state ?? (disabled ? 'disabled' : 'idle');
   const labelId = useId();
   const triggerId = useId();
-  const [container, setContainer] = useState<HTMLElement | null>(null);
-  const findContainer = useCallback((node: HTMLDivElement | null) => {
-    setContainer(node?.closest('dialog') ?? null);
-  }, []);
+  const [findContainer, container] = useLayerContainer();
   return (
     <div
       {...native}
@@ -69,7 +67,7 @@ export function Select(props: SelectProps) {
             <Icon name="chevronDown" />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
-        <SelectPrimitive.Portal container={container ?? undefined}>
+        <SelectPrimitive.Portal container={container}>
           <SelectPrimitive.Content
             className="nv-shape nv-select__content"
             position="popper"
