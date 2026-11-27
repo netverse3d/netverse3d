@@ -7,16 +7,19 @@ import {
   Button,
   Checkbox,
   Chip,
+  ColorSwatch,
   Dialog,
   Divider,
   DropdownMenu,
   EmptyState,
   Heading,
+  ItemGrid,
   IconButton,
   KeyHint,
   Keycap,
   ListItem,
   NotificationBell,
+  NumberStepper,
   Meter,
   Overlay,
   Pagination,
@@ -30,6 +33,7 @@ import {
   Select,
   ShopCard,
   Skeleton,
+  Slider,
   Spinner,
   Status,
   Switch,
@@ -246,6 +250,21 @@ function ToastStackDemo({ text }: DemoProps) {
   );
 }
 
+const SWATCH_COLORS = {
+  magenta: 'var(--ui-neon-magenta)',
+  cyan: 'var(--ui-neon-cyan)',
+  accent: 'var(--ui-accent)',
+  peach: 'var(--ui-highlight)',
+  mint: 'var(--ui-success)',
+} as const;
+
+const OUTFIT = [
+  { id: 'hoodie', icon: 'run' },
+  { id: 'bag', icon: 'bag' },
+  { id: 'headset', icon: 'chat', locked: true },
+  { id: 'camera', icon: 'camera', locked: true },
+] as const;
+
 export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   panel: ({ text, values }) => <QuestPanel text={text} values={values} />,
   button: ({ text, values }) => <Button {...variants(values)}>{text.buttonLabel}</Button>,
@@ -338,6 +357,49 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   ),
   pagination: (props) => <PaginationDemo {...props} />,
   'toast-stack': (props) => <ToastStackDemo {...props} />,
+  'color-swatch': ({ text }) => (
+    <ColorSwatch
+      label={text.swatchLabel}
+      defaultValue="cyan"
+      options={Object.entries(SWATCH_COLORS).map(([value, color]) => ({
+        value,
+        color,
+        label: text.swatches[value as keyof typeof SWATCH_COLORS],
+      }))}
+    />
+  ),
+  'item-grid': ({ text, values }) => (
+    <ItemGrid
+      {...variants(values)}
+      label={text.itemsLabel}
+      lockedLabel={text.lockedLabel}
+      items={OUTFIT.map((item) => ({
+        id: item.id,
+        icon: item.icon,
+        locked: 'locked' in item,
+        label: text.items[item.id],
+      }))}
+    />
+  ),
+  slider: ({ text }) => (
+    <Slider
+      label={text.sliderLabel}
+      min={150}
+      max={190}
+      defaultValue={168}
+      valueText={(value) => `${value} ${text.sliderUnit}`}
+    />
+  ),
+  'number-stepper': ({ text }) => (
+    <NumberStepper
+      label={text.stepperLabel}
+      min={1}
+      max={8}
+      defaultValue={2}
+      decreaseLabel={text.decrease}
+      increaseLabel={text.increase}
+    />
+  ),
   'notification-bell': ({ text }) => (
     <NotificationBell count={3} label={text.bellLabel} aria-haspopup="dialog" />
   ),

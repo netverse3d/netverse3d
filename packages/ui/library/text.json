@@ -151,6 +151,29 @@
     "toastClose": "Đóng thông báo",
     "toastReset": "Hiện lại thông báo",
     "bellLabel": "Thông báo, 3 chưa đọc",
+    "pickers": "Chọn trong game",
+    "pickersTitle": "Tạo nhân vật",
+    "swatchLabel": "Màu áo",
+    "swatches": {
+      "magenta": "Hồng neon",
+      "cyan": "Xanh ngọc",
+      "accent": "Màu tiệm",
+      "peach": "Cam đào",
+      "mint": "Bạc hà"
+    },
+    "itemsLabel": "Trang phục",
+    "items": {
+      "hoodie": "Áo hoodie",
+      "bag": "Balo neon",
+      "headset": "Tai nghe",
+      "camera": "Máy ảnh"
+    },
+    "lockedLabel": "chưa mở khoá",
+    "sliderLabel": "Chiều cao",
+    "sliderUnit": "cm",
+    "stepperLabel": "Số giờ thuê",
+    "decrease": "Giảm một",
+    "increase": "Tăng một",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",
     "props": {

@@ -4,6 +4,7 @@ export { Chip, Divider, EmptyState, ProgressBar, Skeleton } from './display.tsx'
 export { RadioGroup, SearchField, Switch, Textarea, TextField } from './fields.tsx';
 export { Pagination, SegmentedControl, Tabs, TextLink } from './navigation.tsx';
 export { NotificationBell, ToastStack } from './notices.tsx';
+export { ColorSwatch, ItemGrid, NumberStepper, Slider } from './pickers.tsx';
 export { DropdownMenu, Popover, Tooltip } from './overlays.tsx';
 export { Select } from './select.tsx';
 export { Alert, Badge, Meter, Overlay, Status, Toast } from './feedback.tsx';
@@ -11,6 +12,7 @@ export { Dialog, ListItem, Panel, ShopCard, Tile } from './surfaces.tsx';
 export type { RadioOption } from './fields.tsx';
 export type { SegmentOption, TabItem } from './navigation.tsx';
 export type { ToastItem, ToastTone } from './notices.tsx';
+export type { GridItem, SwatchOption } from './pickers.tsx';
 export type { MenuItem, OverlayAlign, OverlaySide } from './overlays.tsx';
 export type { SelectOption } from './select.tsx';
 export type { IconName } from './icon.tsx';
