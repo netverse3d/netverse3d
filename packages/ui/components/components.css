@@ -884,6 +884,12 @@
     text-align: center;
   }
 
+  .nv-tile > svg {
+    width: 24px;
+    height: 24px;
+    color: var(--ui-accent);
+  }
+
   .nv-modal {
     width: min(452px, calc(100vw - var(--ui-space-4)));
     max-width: none;
@@ -988,6 +994,11 @@
   .nv-select__icon {
     display: inline-flex;
     transition: transform var(--ui-motion-fast);
+  }
+
+  .nv-select__icon svg {
+    width: 16px;
+    height: 16px;
   }
 
   .nv-select__trigger[data-state='open'] .nv-select__icon {
