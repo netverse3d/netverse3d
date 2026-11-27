@@ -1,10 +1,11 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
+import { noticeSlice } from './notice-slice.ts';
 import { shopSlice } from './shop-slice.ts';
 
 export function createAppStore() {
   const listener = createListenerMiddleware();
   const store = configureStore({
-    reducer: { shop: shopSlice.reducer },
+    reducer: { shop: shopSlice.reducer, notices: noticeSlice.reducer },
     middleware: (defaults) => defaults().prepend(listener.middleware),
   });
   return { store, listener };
