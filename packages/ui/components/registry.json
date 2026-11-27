@@ -441,6 +441,48 @@
       "demo": "notification-bell"
     },
     {
+      "id": "color-swatch",
+      "kind": "component",
+      "react": "ColorSwatch",
+      "className": "nv-swatches",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "N3"],
+      "demo": "color-swatch"
+    },
+    {
+      "id": "item-grid",
+      "kind": "component",
+      "react": "ItemGrid",
+      "className": "nv-item-grid",
+      "uses": [],
+      "props": {
+        "size": ["md", "lg"]
+      },
+      "criteria": ["K3", "K4", "N3"],
+      "demo": "item-grid"
+    },
+    {
+      "id": "slider",
+      "kind": "component",
+      "react": "Slider",
+      "className": "nv-slider",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "slider"
+    },
+    {
+      "id": "number-stepper",
+      "kind": "component",
+      "react": "NumberStepper",
+      "className": "nv-stepper",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "T2"],
+      "demo": "number-stepper"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

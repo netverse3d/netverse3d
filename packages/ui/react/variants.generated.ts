@@ -148,6 +148,16 @@ export type ToastStackVariants = Record<never, never>;
 
 export type NotificationBellVariants = Record<never, never>;
 
+export type ColorSwatchVariants = Record<never, never>;
+
+export interface ItemGridVariants {
+  size?: 'md' | 'lg';
+}
+
+export type SliderVariants = Record<never, never>;
+
+export type NumberStepperVariants = Record<never, never>;
+
 export interface BadgeVariants {
   tone?: 'accent' | 'highlight' | 'magenta';
 }
@@ -209,6 +219,10 @@ export const VARIANTS = {
   Divider: {"orientation":["horizontal","vertical"]},
   ToastStack: {},
   NotificationBell: {},
+  ColorSwatch: {},
+  ItemGrid: {"size":["md","lg"]},
+  Slider: {},
+  NumberStepper: {},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

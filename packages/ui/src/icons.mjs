@@ -20,6 +20,9 @@ export const ICON_PATHS = {
   search: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13Z M15.3 15.3 20 20',
   check: 'M5 12.5l4.5 4.5L19 7.5',
   alert: 'M12 3.5l9 16h-18z M12 10v4 M12 16.5v.5',
+  lock: 'M6.5 11h11v9h-11z M8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+  plus: 'M12 5v14 M5 12h14',
+  minus: 'M5 12h14',
 };
 
 export const ICON_NAMES = Object.keys(ICON_PATHS);

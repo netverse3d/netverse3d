@@ -424,6 +424,24 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <NavigationPreview text={text} />
       <h3 className="library-subhead">{text.display}</h3>
       <DisplayPreview text={text} />
+      <h3 className="library-subhead">{text.pickers}</h3>
+      <div className="nv-dialog-frame">
+        <Panel
+          className="nv-inputs-preview"
+          shape="bevel-all"
+          cut="lg"
+          tone="cyan"
+          duo="magenta"
+          surface="glass"
+          title={text.pickersTitle}
+          titleLevel={3}
+        >
+          {(['color-swatch', 'item-grid', 'slider', 'number-stepper'] as const).map((id) => {
+            const Demo = DEMOS[id];
+            return Demo ? <Demo key={id} text={text} values={{}} /> : null;
+          })}
+        </Panel>
+      </div>
       <h3 className="library-subhead">{text.notices}</h3>
       <p className="lead">{text.noticesIntro}</p>
       <div className="nv-notices-preview">
