@@ -1,5 +1,5 @@
 import * as ToastPrimitive from '@radix-ui/react-toast';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { IconButton } from './actions.tsx';
 import { Badge } from './feedback.tsx';
 import { Icon } from './icon.tsx';
@@ -32,6 +32,7 @@ const SHAPE_TONE: Record<ToastTone, string> = {
 const TONE_ICON = { error: 'alert', warning: 'alert', info: 'bell' } as const;
 
 export function ToastStack({ items, label, closeLabel, onDismiss, className }: ToastStackProps) {
+  const escapedFromOutside = useRef(false);
   return (
     <ToastPrimitive.Provider label={label} duration={Number.POSITIVE_INFINITY} swipeDirection="up">
       {items.map((item) => (
@@ -39,8 +40,16 @@ export function ToastStack({ items, label, closeLabel, onDismiss, className }: T
           key={item.id}
           open
           type={item.tone === 'error' ? 'foreground' : 'background'}
+          onEscapeKeyDown={(event) => {
+            const target = event.target;
+            escapedFromOutside.current = !(
+              target instanceof Element && target.closest('.nv-toast-stack')
+            );
+          }}
           onOpenChange={(open) => {
-            if (!open) onDismiss(item.id);
+            const ignored = escapedFromOutside.current;
+            escapedFromOutside.current = false;
+            if (!open && !ignored) onDismiss(item.id);
           }}
           className="nv-shape nv-toast nv-toast-stack__item"
           data-tone={SHAPE_TONE[item.tone]}
@@ -68,7 +77,7 @@ export function ToastStack({ items, label, closeLabel, onDismiss, className }: T
           </ToastPrimitive.Close>
         </ToastPrimitive.Root>
       ))}
-      <ToastPrimitive.Viewport className={classNames('nv-toast-stack', className)} />
+      <ToastPrimitive.Viewport label={label} className={classNames('nv-toast-stack', className)} />
     </ToastPrimitive.Provider>
   );
 }

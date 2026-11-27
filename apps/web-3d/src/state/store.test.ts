@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { sessionChanged, sessionEnded, seatRequestTimedOut } from './shop-slice.ts';
+import {
+  NO_ROOM,
+  rentalConfirmationAccepted,
+  seatingChanged,
+  seatRequestTimedOut,
+  sessionChanged,
+  sessionEnded,
+} from './shop-slice.ts';
 import { createAppStore } from './store.ts';
 
 test('kết thúc phiên đẩy một thông báo vào hàng đợi', () => {
@@ -28,9 +35,18 @@ test('phiên mới bắt đầu thì thông báo phiên cũ không còn treo', (
 
 test('phòng không phản hồi yêu cầu ngồi thì báo lỗi thay vì im lặng bỏ lệnh', () => {
   const { store } = createAppStore();
+  store.dispatch(rentalConfirmationAccepted({ seatId: 'seat-3', from: { x: 0, z: 0, yaw: 0 } }));
   store.dispatch(seatRequestTimedOut({ seatId: 'seat-3', action: 'sit' }));
   assert.deepEqual(
     store.getState().notices.queue.map((notice) => notice.kind),
     ['seat-timeout'],
   );
+});
+
+test('phòng đã trả lời trước khi hết hạn chờ thì không báo lỗi', () => {
+  const { store } = createAppStore();
+  store.dispatch(rentalConfirmationAccepted({ seatId: 'seat-4', from: { x: 0, z: 0, yaw: 0 } }));
+  store.dispatch(seatingChanged({ ...NO_ROOM, available: true, seated: 'seat-4' }));
+  store.dispatch(seatRequestTimedOut({ seatId: 'seat-4', action: 'sit' }));
+  assert.deepEqual(store.getState().notices.queue, []);
 });

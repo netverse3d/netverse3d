@@ -23,7 +23,7 @@ export default function Notices() {
   useEffect(() => {
     if (expiry === null) return;
     const timeout = window.setTimeout(
-      () => dispatch(noticesExpired(Date.now())),
+      () => dispatch(noticesExpired(Math.max(Date.now(), expiry))),
       Math.max(0, expiry - Date.now()),
     );
     return () => window.clearTimeout(timeout);

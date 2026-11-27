@@ -23,8 +23,11 @@ function connectNotices(listener: ListenerMiddlewareInstance) {
   });
   listener.startListening({
     actionCreator: seatRequestTimedOut,
-    effect: (_action, api) => {
-      api.dispatch(noticeAdded('seat-timeout'));
+    effect: (action, api) => {
+      const waiting = (api.getOriginalState() as RootState).shop.seating.pending;
+      const unanswered =
+        waiting?.seatId === action.payload.seatId && waiting.action === action.payload.action;
+      if (unanswered) api.dispatch(noticeAdded('seat-timeout'));
     },
   });
 }

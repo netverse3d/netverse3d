@@ -11,7 +11,7 @@ export const vi = {
     label: 'Thông báo nhanh',
     close: 'Đóng thông báo nhanh',
     messages: {
-      'seat-timeout': 'Phòng chưa phản hồi yêu cầu ngồi máy. Thử lại sau giây lát.',
+      'seat-timeout': 'Phòng chưa phản hồi yêu cầu của bạn. Thử lại sau giây lát.',
       'session-expired': 'Phiên thuê đã hết giờ, máy đã được trả lại.',
       'session-left': 'Bạn đã kết thúc phiên thuê, máy đã được trả lại.',
       'app-update': 'Đã có bản ứng dụng mới.',
