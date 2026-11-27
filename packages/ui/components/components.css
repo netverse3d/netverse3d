@@ -1170,12 +1170,101 @@
     transform: rotate(45deg);
   }
 
+  .nv-tooltip,
+  .nv-popover,
+  .nv-menu {
+    --nv-tone: var(--ui-neon-cyan);
+    --nv-tone-2: var(--ui-neon-magenta);
+    --nv-cut: var(--ui-cut-sm);
+    z-index: var(--ui-layer-dialog);
+    font-family: var(--ui-font-family);
+    transform-origin: var(--radix-popper-transform-origin);
+    animation: nv-layer-in var(--ui-motion-fast) ease-out;
+  }
+
+  .nv-tooltip__arrow,
+  .nv-popover__arrow,
+  .nv-menu__arrow {
+    fill: var(--nv-tone);
+  }
+
+  .nv-tooltip {
+    max-width: 240px;
+    padding: var(--ui-space-1) var(--ui-space-2);
+    font-size: var(--ui-text-xs);
+    line-height: 1.4;
+  }
+
+  .nv-popover {
+    display: grid;
+    gap: var(--ui-space-2);
+    width: max-content;
+    max-width: min(320px, var(--radix-popover-content-available-width));
+    padding: var(--ui-space-3) var(--ui-space-4);
+    font-size: var(--ui-text-sm);
+  }
+
+  .nv-popover:focus-visible {
+    outline: none;
+    --nv-tone: var(--ui-focus);
+  }
+
+  .nv-popover__title {
+    font-weight: var(--ui-weight-bold);
+  }
+
+  .nv-popover__body {
+    color: var(--ui-text-muted);
+  }
+
+  .nv-menu {
+    min-width: max(180px, var(--radix-dropdown-menu-trigger-width));
+    padding: var(--ui-space-1);
+  }
+
+  .nv-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--ui-space-2);
+    min-height: 36px;
+    padding: 0 var(--ui-space-3);
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    color: var(--ui-text);
+    font-size: var(--ui-text-sm);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+  }
+
+  .nv-menu__item svg {
+    width: 16px;
+    height: 16px;
+    color: var(--ui-accent);
+  }
+
+  .nv-menu__item[data-highlighted] {
+    background: color-mix(in srgb, var(--ui-accent) 24%, transparent);
+  }
+
+  .nv-menu__item[data-disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  @keyframes nv-layer-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
   @media (any-pointer: coarse) {
     .nv-button[data-size='sm'] {
       min-height: 44px;
     }
 
     .nv-select__item,
+    .nv-menu__item,
     .nv-switch,
     .nv-radio-group__item {
       min-height: 44px;

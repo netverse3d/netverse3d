@@ -291,6 +291,36 @@
       "demo": "search"
     },
     {
+      "id": "tooltip",
+      "kind": "component",
+      "react": "Tooltip",
+      "className": "nv-tooltip",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2", "T6", "L1"],
+      "demo": "tooltip"
+    },
+    {
+      "id": "dropdown-menu",
+      "kind": "component",
+      "react": "DropdownMenu",
+      "className": "nv-menu",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "T6", "L1"],
+      "demo": "dropdown-menu"
+    },
+    {
+      "id": "popover",
+      "kind": "component",
+      "react": "Popover",
+      "className": "nv-popover",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "T6", "L1"],
+      "demo": "popover"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

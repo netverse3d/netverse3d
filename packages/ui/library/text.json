@@ -88,6 +88,19 @@
     "forgot": "Quên mật khẩu?",
     "inputs": "Ô nhập và chọn",
     "inputsTitle": "Cài đặt",
+    "overlays": "Lớp nổi",
+    "overlaysIntro": "Di chuột hoặc Tab tới nút chuông để thấy tooltip. Enter mở menu và popover, mũi tên chọn mục, Esc đóng và focus quay về nút mở.",
+    "tooltipSample": "Thông báo mới",
+    "menuTrigger": "Thao tác",
+    "menuLabel": "Thao tác với máy",
+    "menuItems": {
+      "sit": "Ngồi vào máy",
+      "invite": "Mời bạn ngồi cạnh",
+      "report": "Báo máy hỏng"
+    },
+    "popoverTrigger": "Khu VIP",
+    "popoverTitle": "Khu VIP",
+    "popoverBody": "Ghế đua, màn 240 Hz, phòng cách âm. Còn ba máy trống.",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",
     "props": {

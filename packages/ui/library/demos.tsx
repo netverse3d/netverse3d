@@ -7,6 +7,7 @@ import {
   Button,
   Checkbox,
   Dialog,
+  DropdownMenu,
   Heading,
   IconButton,
   KeyHint,
@@ -16,6 +17,7 @@ import {
   Overlay,
   Panel,
   PlayerBadge,
+  Popover,
   RadioGroup,
   SearchField,
   Select,
@@ -28,6 +30,7 @@ import {
   TextField,
   Tile,
   Toast,
+  Tooltip,
 } from '../react/index.ts';
 import { Icon } from '../react/icon.tsx';
 import { componentProps } from '../src/registry.mjs';
@@ -36,7 +39,7 @@ import type libraryText from './text.json';
 
 export type ComponentText = (typeof libraryText)['components'];
 export type DemoValues = Record<string, string>;
-export type DemoProps = { text: ComponentText; values: DemoValues };
+export type DemoProps = { text: ComponentText; values: DemoValues; closed?: boolean };
 export type RegistryEntry = {
   id: string;
   demo: string;
@@ -162,6 +165,25 @@ function DialogDemo({ text, values }: DemoProps) {
   );
 }
 
+const MENU_ICONS = { sit: 'monitor', invite: 'friends', report: 'gear' } as const;
+
+function MenuDemo({ text, closed }: DemoProps) {
+  const [chosen, setChosen] = useState<string | null>(null);
+  return (
+    <DropdownMenu
+      defaultOpen={!closed}
+      label={text.menuLabel}
+      trigger={<Button size="sm">{chosen ?? text.menuTrigger}</Button>}
+      items={Object.entries(MENU_ICONS).map(([id, icon]) => ({
+        id,
+        icon,
+        label: text.menuItems[id as keyof typeof MENU_ICONS],
+        onSelect: () => setChosen(text.menuItems[id as keyof typeof MENU_ICONS]),
+      }))}
+    />
+  );
+}
+
 export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   panel: ({ text, values }) => <QuestPanel text={text} values={values} />,
   button: ({ text, values }) => <Button {...variants(values)}>{text.buttonLabel}</Button>,
@@ -229,6 +251,25 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     />
   ),
   search: (props) => <SearchDemo {...props} />,
+  tooltip: ({ text, closed }) => (
+    <Tooltip content={text.tooltipSample} defaultOpen={!closed}>
+      <IconButton icon="bell" label={text.icons.bell} />
+    </Tooltip>
+  ),
+  'dropdown-menu': (props) => <MenuDemo {...props} />,
+  popover: ({ text, closed }) => (
+    <Popover
+      defaultOpen={!closed}
+      title={text.popoverTitle}
+      trigger={
+        <Button size="sm" surface="ghost">
+          {text.popoverTrigger}
+        </Button>
+      }
+    >
+      {text.popoverBody}
+    </Popover>
+  ),
   badge: ({ text, values }) => <Badge {...variants(values)}>{text.badgeSample}</Badge>,
   alert: ({ text, values }) => <Alert {...variants(values)}>{text.alertSample}</Alert>,
   toast: ({ text, values }) => (

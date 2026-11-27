@@ -18,6 +18,25 @@ export function renderDemo(registry, entry) {
 }
 `;
 
+const SHARED_RUNTIME = /^react(-dom)?(\/|$)/;
+
+const inlinePortals = {
+  name: 'inline-portals',
+  setup(build) {
+    build.onResolve({ filter: /^@radix-ui\/react-portal$/ }, () => ({
+      path: 'portal',
+      namespace: 'inline-portals',
+    }));
+    build.onLoad({ filter: /.*/, namespace: 'inline-portals' }, () => ({
+      contents: 'export const Portal = ({ children }) => children; export const Root = Portal;',
+      loader: 'js',
+    }));
+    build.onResolve({ filter: /^[^./]/ }, (args) =>
+      SHARED_RUNTIME.test(args.path) ? { path: args.path, external: true } : undefined,
+    );
+  },
+};
+
 export async function loadDemos() {
   const cache = join(root, 'node_modules', '.cache');
   mkdirSync(cache, { recursive: true });
@@ -26,9 +45,12 @@ export async function loadDemos() {
     await build({
       stdin: { contents: ENTRY, resolveDir: root, loader: 'tsx', sourcefile: 'demos-entry.tsx' },
       bundle: true,
-      packages: 'external',
+      plugins: [inlinePortals],
       platform: 'node',
       format: 'esm',
+      banner: {
+        js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
+      },
       jsx: 'automatic',
       outfile: join(folder, 'demos.mjs'),
       loader: { '.jpg': 'file' },

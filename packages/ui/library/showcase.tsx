@@ -109,6 +109,19 @@ function InputsPreview({ text }: { text: ComponentText }) {
   );
 }
 
+const OVERLAY_DEMOS = ['tooltip', 'dropdown-menu', 'popover'] as const;
+
+function OverlaysPreview({ text }: { text: ComponentText }) {
+  return (
+    <div className="nv-overlays-preview">
+      {OVERLAY_DEMOS.map((id) => {
+        const Demo = DEMOS[id];
+        return Demo ? <Demo key={id} text={text} values={{}} closed /> : null;
+      })}
+    </div>
+  );
+}
+
 function LoginPreview({ text }: { text: ComponentText }) {
   return (
     <div className="nv-dialog-frame">
@@ -305,6 +318,9 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <LoginPreview text={text} />
       <h3 className="library-subhead">{text.inputs}</h3>
       <InputsPreview text={text} />
+      <h3 className="library-subhead">{text.overlays}</h3>
+      <p className="lead">{text.overlaysIntro}</p>
+      <OverlaysPreview text={text} />
       <h3 className="library-subhead">{text.patterns.title}</h3>
       <p className="lead">{text.patterns.intro}</p>
       <InteractionPatterns text={text} />
