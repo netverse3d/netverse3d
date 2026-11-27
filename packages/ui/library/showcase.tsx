@@ -424,6 +424,14 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
       <NavigationPreview text={text} />
       <h3 className="library-subhead">{text.display}</h3>
       <DisplayPreview text={text} />
+      <h3 className="library-subhead">{text.notices}</h3>
+      <p className="lead">{text.noticesIntro}</p>
+      <div className="nv-notices-preview">
+        {(['toast-stack', 'notification-bell'] as const).map((id) => {
+          const Demo = DEMOS[id];
+          return Demo ? <Demo key={id} text={text} values={{}} /> : null;
+        })}
+      </div>
       <h3 className="library-subhead">{text.patterns.title}</h3>
       <p className="lead">{text.patterns.intro}</p>
       <InteractionPatterns text={text} />

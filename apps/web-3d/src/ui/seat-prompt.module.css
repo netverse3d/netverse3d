@@ -49,15 +49,6 @@
   white-space: nowrap;
 }
 
-.sessionNotice {
-  position: absolute;
-  top: var(--ui-space-3);
-  left: 50%;
-  z-index: var(--ui-layer-toast);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
 .button {
   display: none;
   pointer-events: auto;
@@ -79,10 +70,5 @@
   .session {
     left: var(--ui-space-3);
     bottom: calc(44px + var(--ui-space-2) + var(--ui-space-3));
-  }
-
-  .sessionNotice {
-    left: var(--ui-space-3);
-    transform: none;
   }
 }

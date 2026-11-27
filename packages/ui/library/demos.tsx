@@ -16,6 +16,7 @@ import {
   KeyHint,
   Keycap,
   ListItem,
+  NotificationBell,
   Meter,
   Overlay,
   Pagination,
@@ -39,6 +40,7 @@ import {
   TextField,
   Tile,
   Toast,
+  ToastStack,
   Tooltip,
 } from '../react/index.ts';
 import { Icon } from '../react/icon.tsx';
@@ -214,6 +216,36 @@ function PaginationDemo({ text }: DemoProps) {
   );
 }
 
+const TOAST_TONES = ['error', 'warning', 'info'] as const;
+
+function ToastStackDemo({ text }: DemoProps) {
+  const [shown, setShown] = useState<readonly string[]>(TOAST_TONES);
+  return (
+    <div className="nv-demo-toasts">
+      <ToastStack
+        label={text.toastStackLabel}
+        closeLabel={text.toastClose}
+        onDismiss={(id) => setShown(shown.filter((tone) => tone !== id))}
+        items={TOAST_TONES.filter((tone) => shown.includes(tone)).map((tone) => ({
+          id: tone,
+          tone,
+          message: text.toastSamples[tone],
+          action:
+            tone === 'info'
+              ? {
+                  label: text.toastAction,
+                  onAction: () => setShown(shown.filter((t) => t !== tone)),
+                }
+              : undefined,
+        }))}
+      />
+      <Button size="sm" surface="ghost" onClick={() => setShown(TOAST_TONES)}>
+        {text.toastReset}
+      </Button>
+    </div>
+  );
+}
+
 export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   panel: ({ text, values }) => <QuestPanel text={text} values={values} />,
   button: ({ text, values }) => <Button {...variants(values)}>{text.buttonLabel}</Button>,
@@ -305,6 +337,10 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     />
   ),
   pagination: (props) => <PaginationDemo {...props} />,
+  'toast-stack': (props) => <ToastStackDemo {...props} />,
+  'notification-bell': ({ text }) => (
+    <NotificationBell count={3} label={text.bellLabel} aria-haspopup="dialog" />
+  ),
   chip: ({ text, values }) => (
     <Chip {...variants(values)} icon="monitor">
       {text.chips.open}

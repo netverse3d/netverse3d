@@ -421,6 +421,26 @@
       "demo": "divider"
     },
     {
+      "id": "toast-stack",
+      "kind": "component",
+      "react": "ToastStack",
+      "className": "nv-toast-stack",
+      "uses": [],
+      "props": {},
+      "criteria": ["P4", "P10", "L1", "K4"],
+      "demo": "toast-stack"
+    },
+    {
+      "id": "notification-bell",
+      "kind": "component",
+      "react": "NotificationBell",
+      "className": "nv-bell",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2", "N3", "K4"],
+      "demo": "notification-bell"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

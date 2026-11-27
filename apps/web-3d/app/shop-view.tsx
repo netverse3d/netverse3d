@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Provider, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { detectQuality } from '../src/scene/quality.ts';
 import { createShopScene, loadShopAssets, type ShopScene } from '../src/scene/shop-scene.ts';
 import {
@@ -23,7 +23,7 @@ import {
   useRequested,
   statsReported,
 } from '../src/state/shop-slice.ts';
-import { createAppStore, type RootState } from '../src/state/store.ts';
+import type { createAppStore, RootState } from '../src/state/store.ts';
 import type { Seat } from '../src/game/seats.ts';
 import { createRoomSession, type RoomSession } from '../src/net/room-session.ts';
 import { connectSeatRequests } from '../src/game/seat-requests.ts';
@@ -61,12 +61,11 @@ function pickRecipe(ids: string[], requested: string | null): string {
   return ids[0] ?? DEFAULT_RECIPE;
 }
 
-function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
+export default function ShopView({ app }: { app: ReturnType<typeof createAppStore> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useSelector((state: RootState) => state.shop.scene);
   const nearbySeat = useSelector((state: RootState) => state.shop.nearbySeat);
   const seating = useSelector((state: RootState) => state.shop.seating);
-  const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
   const recipes = useSelector((state: RootState) => state.shop.recipes);
 
   useEffect(() => {
@@ -215,7 +214,6 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       data-nearby-seat={nearbySeat ?? ''}
       data-room-available={String(seating.available)}
       data-session-seat={seating.seated ?? ''}
-      data-session-notice-reason={sessionNotice ?? ''}
       data-seat-ready={String(scene.seatReady)}
       data-lighting={lightingId}
       data-rebuilds={scene.rebuilds}
@@ -229,14 +227,5 @@ function ShopStage({ app }: { app: ReturnType<typeof createAppStore> }) {
       <SeatDesktop />
       <RecoveryOverlay />
     </div>
-  );
-}
-
-export default function ShopView() {
-  const [app] = useState(() => createAppStore());
-  return (
-    <Provider store={app.store}>
-      <ShopStage app={app} />
-    </Provider>
   );
 }

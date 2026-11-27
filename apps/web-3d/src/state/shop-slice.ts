@@ -95,7 +95,6 @@ export interface ShopState {
   seating: SeatingState;
   rentalConfirmation: RentalRequest | null;
   session: SeatSession | null;
-  sessionNotice: SessionEndReason | null;
 }
 
 export const DEFAULT_RECIPE = 'tim-neon';
@@ -124,7 +123,6 @@ export function initialShopState(recipeId = DEFAULT_RECIPE): ShopState {
     seating: NO_ROOM,
     rentalConfirmation: null,
     session: null,
-    sessionNotice: null,
   };
 }
 
@@ -180,14 +178,12 @@ export const shopSlice = createSlice({
     },
     sessionChanged(state, action: PayloadAction<SeatSession | null>) {
       state.session = action.payload;
-      if (action.payload) state.sessionNotice = null;
     },
-    sessionEnded(state, action: PayloadAction<SessionEndReason>) {
-      state.session = null;
-      state.sessionNotice = action.payload;
-    },
-    sessionNoticeCleared(state) {
-      state.sessionNotice = null;
+    sessionEnded: {
+      reducer(state) {
+        state.session = null;
+      },
+      prepare: (reason: SessionEndReason) => ({ payload: reason }),
     },
     rentalConfirmationAccepted: {
       reducer(state, action: PayloadAction<RentalRequest>) {
@@ -223,7 +219,6 @@ export const {
   seatRequestTimedOut,
   sessionChanged,
   sessionEnded,
-  sessionNoticeCleared,
   useRequested,
   recipeRequested,
   qualityRequested,

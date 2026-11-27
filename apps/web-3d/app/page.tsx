@@ -1,13 +1,5 @@
-import ShopView from './shop-view.tsx';
-import AccountEntry from './account-entry.tsx';
-import PwaActions from '../src/ui/pwa-actions.tsx';
+import GameRoot from './game-root.tsx';
 
 export default function Page() {
-  return (
-    <>
-      <ShopView />
-      <AccountEntry />
-      <PwaActions />
-    </>
-  );
+  return <GameRoot />;
 }

@@ -1633,6 +1633,102 @@
     }
   }
 
+  .nv-toast-stack {
+    position: fixed;
+    top: var(--ui-space-3);
+    left: 50%;
+    z-index: var(--ui-layer-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-space-2);
+    width: min(380px, calc(100vw - var(--ui-space-3) * 2));
+    max-width: 100vw;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    transform: translateX(-50%);
+    outline: none;
+  }
+
+  .nv-toast-stack:empty {
+    display: none;
+  }
+
+  .nv-toast-stack__item {
+    display: flex;
+    width: 100%;
+    padding-inline-end: var(--ui-space-1);
+    animation: nv-toast-in var(--ui-motion-base) ease-out;
+  }
+
+  .nv-toast-stack__item[data-notice-tone='error'] {
+    order: -2;
+  }
+
+  .nv-toast-stack__item[data-notice-tone='warning'] {
+    order: -1;
+  }
+
+  .nv-toast-stack__item[data-swipe='move'] {
+    transform: translateY(var(--radix-toast-swipe-move-y));
+  }
+
+  .nv-toast-stack__icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--nv-tone);
+  }
+
+  .nv-toast-stack__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .nv-toast-stack__message {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nv-toast-stack__action {
+    flex: none;
+    min-height: 32px;
+    padding: 0 var(--ui-space-3);
+    border: var(--ui-line-width) solid var(--nv-tone);
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    background: color-mix(in srgb, var(--nv-tone) 22%, transparent);
+    color: var(--ui-text);
+    font: inherit;
+    font-weight: var(--ui-weight-bold);
+    cursor: pointer;
+  }
+
+  .nv-toast-stack__action:hover {
+    background: color-mix(in srgb, var(--nv-tone) 36%, transparent);
+  }
+
+  .nv-toast-stack__action:focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  .nv-bell {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .nv-bell__count {
+    position: absolute;
+    top: calc(var(--ui-space-1) * -1);
+    right: calc(var(--ui-space-1) * -1);
+    pointer-events: none;
+  }
+
+  @keyframes nv-toast-in {
+    from {
+      transform: translateY(calc(var(--ui-space-2) * -1));
+    }
+  }
+
   @keyframes nv-layer-in {
     from {
       opacity: 0;
@@ -1662,6 +1758,10 @@
     .nv-chip__remove {
       width: 44px;
       height: 44px;
+    }
+
+    .nv-toast-stack__action {
+      min-height: 44px;
     }
 
     .nv-link {
