@@ -139,6 +139,18 @@
     "emptyTitle": "Chưa có thông báo",
     "emptyMessage": "Thư từ tiệm và bạn bè sẽ hiện ở đây.",
     "emptyAction": "Dạo khu phố",
+    "notices": "Thông báo nhanh",
+    "noticesIntro": "Một chỗ duy nhất trên màn: lỗi lên đầu, tối đa ba cái, tự ẩn đúng hạn, F8 đưa focus vào vùng thông báo.",
+    "toastStackLabel": "Thông báo nhanh",
+    "toastSamples": {
+      "error": "Phòng chưa phản hồi yêu cầu ngồi máy. Thử lại sau giây lát.",
+      "warning": "Phiên thuê máy đã hết giờ.",
+      "info": "Đã có bản ứng dụng mới."
+    },
+    "toastAction": "Cập nhật ứng dụng",
+    "toastClose": "Đóng thông báo",
+    "toastReset": "Hiện lại thông báo",
+    "bellLabel": "Thông báo, 3 chưa đọc",
     "playground": "Bàn thử tham số",
     "playgroundTarget": "Component",
     "props": {

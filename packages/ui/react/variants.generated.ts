@@ -144,6 +144,10 @@ export interface DividerVariants {
   orientation?: 'horizontal' | 'vertical';
 }
 
+export type ToastStackVariants = Record<never, never>;
+
+export type NotificationBellVariants = Record<never, never>;
+
 export interface BadgeVariants {
   tone?: 'accent' | 'highlight' | 'magenta';
 }
@@ -203,6 +207,8 @@ export const VARIANTS = {
   ProgressBar: {"tone":["accent","success","warning"]},
   EmptyState: {},
   Divider: {"orientation":["horizontal","vertical"]},
+  ToastStack: {},
+  NotificationBell: {},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

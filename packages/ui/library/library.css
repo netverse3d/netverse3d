@@ -485,6 +485,30 @@ code {
   min-height: 40px;
 }
 
+.nv-notices-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ui-space-8);
+  padding: var(--ui-space-6) 0;
+}
+
+.nv-demo-toasts {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--ui-space-3);
+  width: min(400px, 100%);
+  min-height: 240px;
+}
+
+.nv-demo-toasts .nv-toast-stack {
+  position: static;
+  width: 100%;
+  transform: none;
+}
+
 .nv-inputs-preview {
   display: grid;
   gap: var(--ui-space-4);
