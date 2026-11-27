@@ -46,6 +46,14 @@
     "title": "Component",
     "intro": "Phong cách lai Neon Arcade × Saigon Soft-Future: góc cắt chéo, viền neon sáng dần về góc có quầng phát sáng, nền kính mềm. Mọi tham số đổi được ở bàn thử bên dưới.",
     "scene": "Ghép như trong game",
+    "iconSet": "Bộ icon",
+    "iconSetIntro": "Phosphor Icons (MIT). Ba độ đậm cạnh nhau để chọn; hàng có dấu \"đang dùng\" là độ đậm mọi component đang vẽ.",
+    "iconWeights": {
+      "regular": "Thường",
+      "bold": "Đậm",
+      "duotone": "Hai lớp"
+    },
+    "iconWeightInUse": "đang dùng",
     "player": "netplayer",
     "level": "Lv. 12",
     "quests": "Nhiệm vụ",

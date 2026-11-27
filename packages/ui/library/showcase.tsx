@@ -14,6 +14,7 @@ import {
   Spinner,
   Text,
 } from '../react/index.ts';
+import { ICON_NAMES, ICON_WEIGHT, ICON_WEIGHTS, Icon } from '../react/icon.tsx';
 import { componentProps, registeredComponents } from '../src/registry.mjs';
 import registry from '../components/registry.json';
 import {
@@ -36,6 +37,29 @@ type Entry = Parameters<typeof initialValues>[1] & {
 const entries = registeredComponents(registry) as Entry[];
 const SURFACES = ['filled', 'glass', 'neon', 'ghost'] as const;
 const STATES = ['idle', 'pending', 'disabled'] as const;
+
+function IconSet({ text }: { text: ComponentText }) {
+  return (
+    <div className="library-icons">
+      {ICON_WEIGHTS.map((weight) => (
+        <section key={weight} className="library-icons__row" data-in-use={weight === ICON_WEIGHT}>
+          <h4 className="library-icons__weight">
+            {text.iconWeights[weight as keyof typeof text.iconWeights]}
+            {weight === ICON_WEIGHT && <span> · {text.iconWeightInUse}</span>}
+          </h4>
+          <ul className="library-icons__grid">
+            {ICON_NAMES.map((name) => (
+              <li key={name} className="library-icons__cell">
+                <Icon name={name} weight={weight} />
+                <code>{name}</code>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
 
 function Scene({ text }: { text: ComponentText }) {
   const icons = ['bell', 'friends', 'bag', 'gear'] as const;
@@ -409,6 +433,9 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
     <section id="components" className="panel">
       <h2>{text.title}</h2>
       <p className="lead">{text.intro}</p>
+      <h3 className="library-subhead">{text.iconSet}</h3>
+      <p className="lead">{text.iconSetIntro}</p>
+      <IconSet text={text} />
       <h3 className="library-subhead">{text.scene}</h3>
       <Scene text={text} />
       <h3 className="library-subhead">{text.buttons}</h3>

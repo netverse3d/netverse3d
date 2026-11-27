@@ -9,8 +9,13 @@ const ENTRY = `
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { DEMOS, initialValues } from './library/demos.tsx';
+import { Icon, ICON_NAMES } from './react/icon.tsx';
 import text from './library/text.json';
 export const DEMO_IDS = Object.keys(DEMOS);
+export { ICON_NAMES };
+export function renderIcon(name) {
+  return renderToStaticMarkup(createElement(Icon, { name }));
+}
 export function renderDemo(registry, entry) {
   return renderToStaticMarkup(
     createElement(DEMOS[entry.demo], { text: text.components, values: initialValues(registry, entry) }),

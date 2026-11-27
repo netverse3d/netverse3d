@@ -123,6 +123,10 @@
     --nv-inner: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   }
 
+  .nv-shape[data-shape='hex']::after {
+    inset: var(--nv-line) calc(var(--nv-line) * 1.155);
+  }
+
   .nv-shape[data-cut='sm'] {
     --nv-cut: var(--ui-cut-sm);
   }
@@ -357,12 +361,16 @@
 
   .nv-icon-button[data-shape='hex'] {
     width: 52px;
-    height: 46px;
+    height: calc(52px * 0.866);
   }
 
   .nv-icon-button[data-size='lg'] {
     width: 60px;
     height: 54px;
+  }
+
+  .nv-icon-button[data-shape='hex'][data-size='lg'] {
+    height: calc(60px * 0.866);
   }
 
   .nv-icon-button svg {
