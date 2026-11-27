@@ -158,6 +158,19 @@ export type SliderVariants = Record<never, never>;
 
 export type NumberStepperVariants = Record<never, never>;
 
+export interface DrawerVariants {
+  side?: 'right' | 'left';
+  size?: 'md' | 'lg';
+}
+
+export type AccordionVariants = Record<never, never>;
+
+export interface TableVariants {
+  density?: 'comfortable' | 'compact';
+}
+
+export type BreadcrumbVariants = Record<never, never>;
+
 export interface BadgeVariants {
   tone?: 'accent' | 'highlight' | 'magenta';
 }
@@ -223,6 +236,10 @@ export const VARIANTS = {
   ItemGrid: {"size":["md","lg"]},
   Slider: {},
   NumberStepper: {},
+  Drawer: {"side":["right","left"],"size":["md","lg"]},
+  Accordion: {},
+  Table: {"density":["comfortable","compact"]},
+  Breadcrumb: {},
   Badge: {"tone":["accent","highlight","magenta"]},
   Alert: {"tone":["error","warning","info","success"]},
   Toast: {"shape":["bevel","bevel-all","notch","round","pill","hex"],"cut":["md","sm","lg"],"tone":["accent","primary","magenta","cyan","success","warning","danger","neutral"],"duo":["none","magenta","cyan"],"surface":["glass","solid","neon","filled","ghost"],"glow":["soft","none","strong"]},

@@ -483,6 +483,51 @@
       "demo": "number-stepper"
     },
     {
+      "id": "drawer",
+      "kind": "component",
+      "react": "Drawer",
+      "className": "nv-drawer",
+      "uses": [],
+      "props": {
+        "side": ["right", "left"],
+        "size": ["md", "lg"]
+      },
+      "criteria": ["T5", "T6", "L1", "L2"],
+      "demo": "drawer"
+    },
+    {
+      "id": "accordion",
+      "kind": "component",
+      "react": "Accordion",
+      "className": "nv-accordion",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4"],
+      "demo": "accordion"
+    },
+    {
+      "id": "table",
+      "kind": "component",
+      "react": "Table",
+      "className": "nv-table",
+      "uses": [],
+      "props": {
+        "density": ["comfortable", "compact"]
+      },
+      "criteria": ["K1", "P7"],
+      "demo": "table"
+    },
+    {
+      "id": "breadcrumb",
+      "kind": "component",
+      "react": "Breadcrumb",
+      "className": "nv-breadcrumb",
+      "uses": [],
+      "props": {},
+      "criteria": ["K3", "K4", "T2"],
+      "demo": "breadcrumb"
+    },
+    {
       "uses": [],
       "props": {
         "tone": ["accent", "highlight", "magenta"]

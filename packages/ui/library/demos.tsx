@@ -1,15 +1,18 @@
 import { useState, type ReactNode } from 'react';
 import {
+  Accordion,
   ActionButton,
   Alert,
   Avatar,
   Badge,
+  Breadcrumb,
   Button,
   Checkbox,
   Chip,
   ColorSwatch,
   Dialog,
   Divider,
+  Drawer,
   DropdownMenu,
   EmptyState,
   Heading,
@@ -37,6 +40,7 @@ import {
   Spinner,
   Status,
   Switch,
+  Table,
   Tabs,
   Text,
   TextLink,
@@ -265,6 +269,23 @@ const OUTFIT = [
   { id: 'camera', icon: 'camera', locked: true },
 ] as const;
 
+const ACCORDION_KEYS = ['specs', 'history', 'rules'] as const;
+const BREADCRUMB_KEYS = ['district', 'shop', 'machines'] as const;
+const TABLE_KEYS = ['machine', 'zone', 'state', 'hours'] as const;
+
+function MachineDetails({ text }: { text: ComponentText }) {
+  return (
+    <Accordion
+      defaultValue={['specs']}
+      items={ACCORDION_KEYS.map((key) => ({
+        value: key,
+        title: text.accordionItems[key].title,
+        content: text.accordionItems[key].body,
+      }))}
+    />
+  );
+}
+
 export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
   panel: ({ text, values }) => <QuestPanel text={text} values={values} />,
   button: ({ text, values }) => <Button {...variants(values)}>{text.buttonLabel}</Button>,
@@ -388,6 +409,48 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
       max={190}
       defaultValue={168}
       valueText={(value) => `${value} ${text.sliderUnit}`}
+    />
+  ),
+  drawer: ({ text, values, closed }) => (
+    <Drawer
+      {...variants(values)}
+      defaultOpen={!closed}
+      title={text.drawerTitle}
+      description={text.drawerDescription}
+      closeLabel={text.drawerClose}
+      trigger={
+        <Button size="sm" surface="glass" tone="cyan" data-drawer-trigger>
+          {text.drawerTrigger}
+        </Button>
+      }
+    >
+      <MachineDetails text={text} />
+    </Drawer>
+  ),
+  accordion: ({ text }) => <MachineDetails text={text} />,
+  table: ({ text, values }) => (
+    <Table
+      {...variants(values)}
+      caption={text.tableCaption}
+      empty={text.tableEmpty}
+      rows={text.tableRows}
+      rowKey={(row) => row.id}
+      columns={TABLE_KEYS.map((key) => ({
+        key,
+        header: text.tableColumns[key],
+        align: key === 'hours' ? ('end' as const) : undefined,
+        cell: (row: (typeof text.tableRows)[number]) =>
+          key === 'machine' ? row.id.toUpperCase() : row[key],
+      }))}
+    />
+  ),
+  breadcrumb: ({ text }) => (
+    <Breadcrumb
+      label={text.breadcrumbLabel}
+      items={BREADCRUMB_KEYS.map((key, index) => ({
+        label: text.breadcrumbItems[key],
+        href: index < BREADCRUMB_KEYS.length - 1 ? '#components' : undefined,
+      }))}
     />
   ),
   'number-stepper': ({ text }) => (

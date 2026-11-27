@@ -389,7 +389,7 @@ function Playground({ text }: { text: ComponentText }) {
       </div>
       <div className="nv-playground__body">
         <div className="nv-playground__stage">
-          {Demo && <Demo key={target.id} text={text} values={values} />}
+          {Demo && <Demo key={target.id} text={text} values={values} closed />}
         </div>
         <figure>
           <figcaption>{text.code}</figcaption>
@@ -468,6 +468,14 @@ export function ComponentShowcase({ text }: { text: ComponentText }) {
             return Demo ? <Demo key={id} text={text} values={{}} /> : null;
           })}
         </Panel>
+      </div>
+      <h3 className="library-subhead">{text.layoutData}</h3>
+      <p className="lead">{text.layoutIntro}</p>
+      <div className="nv-layout-preview">
+        {(['breadcrumb', 'table', 'drawer'] as const).map((id) => {
+          const Demo = DEMOS[id];
+          return Demo ? <Demo key={id} text={text} values={{}} closed /> : null;
+        })}
       </div>
       <h3 className="library-subhead">{text.notices}</h3>
       <p className="lead">{text.noticesIntro}</p>

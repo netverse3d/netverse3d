@@ -2,6 +2,7 @@ export { ActionButton, Button, IconButton, KeyHint, Keycap, Spinner } from './ac
 export { Avatar, Checkbox, Heading, PlayerBadge, Text } from './content.tsx';
 export { Chip, Divider, EmptyState, ProgressBar, Skeleton } from './display.tsx';
 export { RadioGroup, SearchField, Switch, Textarea, TextField } from './fields.tsx';
+export { Accordion, Breadcrumb, Drawer, Table } from './layout.tsx';
 export { Pagination, SegmentedControl, Tabs, TextLink } from './navigation.tsx';
 export { NotificationBell, ToastStack } from './notices.tsx';
 export { ColorSwatch, ItemGrid, NumberStepper, Slider } from './pickers.tsx';
@@ -10,6 +11,7 @@ export { Select } from './select.tsx';
 export { Alert, Badge, Meter, Overlay, Status, Toast } from './feedback.tsx';
 export { Dialog, ListItem, Panel, ShopCard, Tile } from './surfaces.tsx';
 export type { RadioOption } from './fields.tsx';
+export type { AccordionItem, BreadcrumbItem, TableColumn } from './layout.tsx';
 export type { SegmentOption, TabItem } from './navigation.tsx';
 export type { ToastItem, ToastTone } from './notices.tsx';
 export type { GridItem, SwatchOption } from './pickers.tsx';
