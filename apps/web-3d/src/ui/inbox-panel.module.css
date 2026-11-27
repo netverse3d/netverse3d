@@ -27,6 +27,20 @@
   overflow-y: auto;
 }
 
+.placeholder {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.placeholder > :first-child {
+  width: 60%;
+}
+
+.placeholder > :last-child {
+  width: 35%;
+  height: 32px;
+}
+
 .body {
   white-space: pre-wrap;
 }

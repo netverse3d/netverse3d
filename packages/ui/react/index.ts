@@ -1,5 +1,6 @@
 export { ActionButton, Button, IconButton, KeyHint, Keycap, Spinner } from './actions.tsx';
 export { Avatar, Checkbox, Heading, PlayerBadge, Text } from './content.tsx';
+export { Chip, Divider, EmptyState, ProgressBar, Skeleton } from './display.tsx';
 export { RadioGroup, SearchField, Switch, Textarea, TextField } from './fields.tsx';
 export { Pagination, SegmentedControl, Tabs, TextLink } from './navigation.tsx';
 export { DropdownMenu, Popover, Tooltip } from './overlays.tsx';

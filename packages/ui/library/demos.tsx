@@ -6,8 +6,11 @@ import {
   Badge,
   Button,
   Checkbox,
+  Chip,
   Dialog,
+  Divider,
   DropdownMenu,
+  EmptyState,
   Heading,
   IconButton,
   KeyHint,
@@ -19,11 +22,13 @@ import {
   Panel,
   PlayerBadge,
   Popover,
+  ProgressBar,
   RadioGroup,
   SearchField,
   SegmentedControl,
   Select,
   ShopCard,
+  Skeleton,
   Spinner,
   Status,
   Switch,
@@ -300,6 +305,42 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     />
   ),
   pagination: (props) => <PaginationDemo {...props} />,
+  chip: ({ text, values }) => (
+    <Chip {...variants(values)} icon="monitor">
+      {text.chips.open}
+    </Chip>
+  ),
+  skeleton: ({ values }) => (
+    <div className="nv-demo-skeleton" data-variant={values.variant}>
+      <Skeleton {...variants(values)} />
+    </div>
+  ),
+  'progress-bar': ({ text, values }) => (
+    <ProgressBar {...variants(values)} label={text.progressLabel} value={64} />
+  ),
+  'empty-state': ({ text }) => (
+    <EmptyState
+      icon="mail"
+      title={text.emptyTitle}
+      message={text.emptyMessage}
+      action={
+        <Button size="sm" surface="glass" tone="cyan">
+          {text.emptyAction}
+        </Button>
+      }
+    />
+  ),
+  divider: ({ text, values }) => (
+    <div className="nv-demo-divider" data-orientation={values.orientation}>
+      <Text as="span" variant="meta">
+        {text.dividerStart}
+      </Text>
+      <Divider {...variants(values)} />
+      <Text as="span" variant="meta">
+        {text.dividerEnd}
+      </Text>
+    </div>
+  ),
   'text-link': ({ text, values }) => (
     <TextLink {...variants(values)} href="#components">
       {text.linkSample}

@@ -437,6 +437,54 @@ code {
   padding: var(--ui-space-6) 0;
 }
 
+.nv-display-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ui-space-6);
+  padding: var(--ui-space-6) 0;
+}
+
+.nv-demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+}
+
+.nv-demo-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+.nv-demo-skeleton-lines {
+  display: grid;
+  flex: 1;
+  gap: var(--ui-space-2);
+}
+
+.nv-demo-skeleton {
+  width: 240px;
+}
+
+.nv-demo-skeleton[data-variant='avatar'] {
+  width: auto;
+}
+
+.nv-demo-divider {
+  display: grid;
+  gap: var(--ui-space-2);
+  width: 240px;
+}
+
+.nv-demo-divider[data-orientation='vertical'] {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+  width: auto;
+  min-height: 40px;
+}
+
 .nv-inputs-preview {
   display: grid;
   gap: var(--ui-space-4);
