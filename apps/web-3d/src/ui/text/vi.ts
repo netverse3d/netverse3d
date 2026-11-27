@@ -6,7 +6,19 @@ export const vi = {
   },
   pwa: {
     install: 'Cài ứng dụng',
-    update: 'Cập nhật ứng dụng',
+  },
+  notices: {
+    label: 'Thông báo nhanh',
+    close: 'Đóng thông báo nhanh',
+    messages: {
+      'seat-timeout': 'Phòng chưa phản hồi yêu cầu ngồi máy. Thử lại sau giây lát.',
+      'session-expired': 'Phiên thuê đã hết giờ, máy đã được trả lại.',
+      'session-left': 'Bạn đã kết thúc phiên thuê, máy đã được trả lại.',
+      'app-update': 'Đã có bản ứng dụng mới.',
+    },
+    actions: {
+      'apply-update': 'Cập nhật ứng dụng',
+    },
   },
   inbox: {
     title: 'Thông báo',
@@ -103,8 +115,6 @@ export const vi = {
     cancel: 'Hủy',
     sessionLabel: 'Phiên đang mở',
     endSession: 'Kết thúc phiên',
-    expiredNotice: 'Phiên thuê đã hết giờ, máy đã được trả lại.',
-    leftNotice: 'Bạn đã kết thúc phiên thuê, máy đã được trả lại.',
     machine: (seatId: string) => `Máy ${seatId.replace(/^seat-/, '')}`,
     desktopLabel: (machine: string) => `Màn hình điều khiển ${machine}`,
     minimizeDesktop: 'Thu nhỏ màn hình điều khiển',

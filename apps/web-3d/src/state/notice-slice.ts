@@ -12,7 +12,7 @@ export interface NoticeSpec {
 
 export const NOTICE_SPECS: Record<NoticeKind, NoticeSpec> = {
   'seat-timeout': { tone: 'error', lifetimeMs: 6_000 },
-  'session-expired': { tone: 'warning', lifetimeMs: 4_000 },
+  'session-expired': { tone: 'warning', lifetimeMs: 3_000 },
   'session-left': { tone: 'info', lifetimeMs: 3_000 },
   'app-update': { tone: 'info', lifetimeMs: null, action: 'apply-update' },
 };

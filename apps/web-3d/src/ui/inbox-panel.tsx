@@ -1,11 +1,11 @@
 import {
   Alert,
-  Badge,
   Button,
   Dialog,
   EmptyState,
   Heading,
   ListItem,
+  NotificationBell,
   Pagination,
   Skeleton,
   Text,
@@ -85,26 +85,16 @@ export default function InboxPanel({ client }: { client: InboxClient }) {
 
   return (
     <>
-      <Button
-        className={styles.toggle}
-        surface="glass"
-        tone="cyan"
-        duo="magenta"
-        aria-label={hasUnread ? text.withUnread(unread) : text.title}
+      <NotificationBell
+        count={unread ?? 0}
+        label={hasUnread ? text.withUnread(unread) : text.title}
         aria-haspopup="dialog"
         onClick={() => {
           setPageNumber(1);
           setFailure(null);
           setOpen(true);
         }}
-      >
-        {text.title}
-        {hasUnread && (
-          <Badge tone="magenta" aria-hidden="true">
-            {unread > 99 ? '99+' : unread}
-          </Badge>
-        )}
-      </Button>
+      />
       <Dialog
         open={open}
         size="lg"

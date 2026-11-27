@@ -785,10 +785,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       await browser.send('Emulation.clearDeviceMetricsOverride');
       await browser.send('Emulation.setTouchEmulationEnabled', { enabled: false });
       await browser.evaluate(`document.querySelector('[data-end-session]')?.click()`);
-      await browser.waitFor(
-        `document.querySelector('#stage')?.dataset.sessionNoticeReason === 'left'`,
-      );
-      await browser.waitFor(`document.querySelector('[data-session-notice]')`);
+      await browser.waitFor(`document.querySelector('[data-notice="session-left"]')`);
       const endedState = await browser.evaluate<{
         stage: Record<string, string>;
         timerVisible: boolean;
@@ -796,7 +793,6 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
         stage: { ...(document.querySelector('#stage')?.dataset ?? {}) },
         timerVisible: Boolean(document.querySelector('[data-session-timer]')),
       })`);
-      assert.equal(endedState.stage.sessionNoticeReason, 'left', JSON.stringify(endedState));
       const endedNotice = await browser.evaluate<{
         text: string;
         top: number;
@@ -806,7 +802,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
         visibility: string;
         opacity: string;
       }>(`(() => {
-        const notice = document.querySelector('[data-session-notice]');
+        const notice = document.querySelector('[data-notice^="session-"]');
         const bounds = notice?.getBoundingClientRect();
         const style = notice ? getComputedStyle(notice) : null;
         return {
@@ -828,7 +824,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       assert.equal(endedState.stage.sessionSeat, '');
       assert.equal(endedState.timerVisible, false);
       await capture('03-session-ended-notice');
-      await browser.waitFor(`!document.querySelector('[data-session-notice]')`, 4000);
+      await browser.waitFor(`!document.querySelector('[data-notice^="session-"]')`, 4000);
       await capture('06-session-ended-actor-standing');
       await pressKey(browser, 'KeyE', 'e');
       await browser.waitFor(`Boolean(${dialog})`);
@@ -862,10 +858,10 @@ test('hết giờ theo đồng hồ phòng thì máy trống, actor đứng dậ
       await browser.waitFor(`document.querySelector('#stage')?.dataset.seatReady === 'true'`);
       await browser.waitFor(`document.querySelector('[data-session-timer]')`);
       assert.equal(
-        await browser.evaluate<string>(
-          `document.querySelector('#stage')?.dataset.sessionNoticeReason ?? ''`,
+        await browser.evaluate<boolean>(
+          `Boolean(document.querySelector('[data-notice^="session-"]'))`,
         ),
-        '',
+        false,
       );
       assert.match(
         await browser.evaluate<string>(
@@ -873,7 +869,7 @@ test('hết giờ theo đồng hồ phòng thì máy trống, actor đứng dậ
         ),
         /timerWarning/,
       );
-      await browser.waitFor(`document.querySelector('[data-session-notice]')`, 25000);
+      await browser.waitFor(`document.querySelector('[data-notice^="session-"]')`, 25000);
       const result = await browser.evaluate<{
         seat: string;
         notice: string;
@@ -881,7 +877,7 @@ test('hết giờ theo đồng hồ phòng thì máy trống, actor đứng dậ
         desktopVisible: boolean;
       }>(`(() => ({
         seat: document.querySelector('#stage')?.dataset.sessionSeat ?? '',
-        notice: document.querySelector('[data-session-notice]')?.textContent?.trim() ?? '',
+        notice: document.querySelector('[data-notice^="session-"]')?.textContent?.trim() ?? '',
         timerVisible: Boolean(document.querySelector('[data-session-timer]')),
         desktopVisible: Boolean(document.querySelector('[data-seat-desktop]')),
       }))()`);
@@ -899,7 +895,9 @@ test('hết giờ theo đồng hồ phòng thì máy trống, actor đứng dậ
       writeFileSync(join(directory, '05-session-expired.png'), Buffer.from(data, 'base64'));
       await sleep(1400);
       assert.equal(
-        await browser.evaluate<boolean>(`Boolean(document.querySelector('[data-session-notice]'))`),
+        await browser.evaluate<boolean>(
+          `Boolean(document.querySelector('[data-notice^="session-"]'))`,
+        ),
         false,
       );
     },

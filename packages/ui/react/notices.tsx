@@ -9,6 +9,7 @@ export type ToastTone = 'error' | 'warning' | 'info';
 
 export type ToastItem = {
   id: string | number;
+  name?: string;
   tone: ToastTone;
   message: ReactNode;
   action?: { label: string; onAction: () => void };
@@ -45,6 +46,7 @@ export function ToastStack({ items, label, closeLabel, onDismiss, className }: T
           data-tone={SHAPE_TONE[item.tone]}
           data-duo="magenta"
           data-notice-tone={item.tone}
+          data-notice={item.name}
         >
           <span className="nv-toast-stack__icon" aria-hidden="true">
             <Icon name={TONE_ICON[item.tone]} />

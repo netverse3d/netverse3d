@@ -1658,7 +1658,7 @@
     display: flex;
     width: 100%;
     padding-inline-end: var(--ui-space-1);
-    animation: nv-layer-in var(--ui-motion-fast) ease-out;
+    animation: nv-toast-in var(--ui-motion-base) ease-out;
   }
 
   .nv-toast-stack__item[data-swipe='move'] {
@@ -1713,6 +1713,12 @@
     top: calc(var(--ui-space-1) * -1);
     right: calc(var(--ui-space-1) * -1);
     pointer-events: none;
+  }
+
+  @keyframes nv-toast-in {
+    from {
+      transform: translateY(calc(var(--ui-space-2) * -1));
+    }
   }
 
   @keyframes nv-layer-in {

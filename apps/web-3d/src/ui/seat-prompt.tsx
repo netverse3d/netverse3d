@@ -1,24 +1,13 @@
 'use client';
 
 import { isClaimedKey } from '@netverse/ui/keys';
-import {
-  Alert,
-  Badge,
-  Button,
-  Heading,
-  KeyHint,
-  Overlay,
-  Panel,
-  Text,
-  Toast,
-} from '@netverse/ui/react';
+import { Alert, Badge, Button, Heading, KeyHint, Overlay, Panel, Text } from '@netverse/ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import {
   rentalConfirmationAccepted,
   rentalConfirmationCancelled,
   remainingSeconds,
-  sessionNoticeCleared,
   useRequested,
 } from '../state/shop-slice.ts';
 import type { AppDispatch, RootState } from '../state/store.ts';
@@ -32,7 +21,6 @@ export default function SeatPrompt() {
   const seating = useSelector((state: RootState) => state.shop.seating);
   const rentalConfirmation = useSelector((state: RootState) => state.shop.rentalConfirmation);
   const session = useSelector((state: RootState) => state.shop.session);
-  const sessionNotice = useSelector((state: RootState) => state.shop.sessionNotice);
   const ready = useSelector((state: RootState) => state.shop.scene.ready);
   const seatReady = useSelector((state: RootState) => state.shop.scene.seatReady);
   const [now, setNow] = useState(Date.now);
@@ -42,11 +30,6 @@ export default function SeatPrompt() {
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
   }, [seatReady, session]);
-  useEffect(() => {
-    if (!sessionNotice) return;
-    const timeout = window.setTimeout(() => dispatch(sessionNoticeCleared()), 3000);
-    return () => window.clearTimeout(timeout);
-  }, [dispatch, sessionNotice]);
   useEffect(() => {
     if (!rentalConfirmation) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -67,12 +50,6 @@ export default function SeatPrompt() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [dispatch, rentalConfirmation]);
-
-  const notice = sessionNotice ? (
-    <Toast className={styles.sessionNotice} aria-live="polite" data-session-notice>
-      {sessionNotice === 'expired' ? vi.seat.expiredNotice : vi.seat.leftNotice}
-    </Toast>
-  ) : null;
 
   if (rentalConfirmation) {
     return (
@@ -121,76 +98,70 @@ export default function SeatPrompt() {
     );
   }
 
-  if (!ready || !seating.available || !seatId) return notice;
+  if (!ready || !seating.available || !seatId) return null;
   const seated = seating.seated !== null;
   const waiting = seating.pending?.action === 'sit' && seating.pending.seatId === seatId;
   if (seated) {
-    if (seatReady) return notice;
+    if (seatReady) return null;
     const seconds = session ? remainingSeconds(session.endsAt, now, session.offset) : 0;
     return (
-      <>
-        {notice}
-        <Panel
-          className={styles.session}
-          data-seat={seatId}
-          data-seated="true"
-          aria-label={vi.seat.sessionLabel}
-          shape="notch"
-          cut="sm"
-          tone="cyan"
-          duo="magenta"
-        >
-          <div className={styles.sessionDetails}>
-            <Text as="span" variant="label">
-              {vi.seat.sessionLabel}
-            </Text>
-            <Text
-              as="time"
-              variant="value"
-              tone={seconds < 60 ? 'warning' : 'info'}
-              className={seconds < 60 ? styles.timerWarning : styles.timer}
-              data-session-timer
-              aria-live="polite"
-            >
-              {formatSessionDuration(seconds)}
-            </Text>
-          </div>
-          <Button
-            surface="neon"
-            tone="danger"
-            state={seating.pending?.action === 'leave' ? 'pending' : 'idle'}
-            onClick={() => dispatch(useRequested())}
+      <Panel
+        className={styles.session}
+        data-seat={seatId}
+        data-seated="true"
+        aria-label={vi.seat.sessionLabel}
+        shape="notch"
+        cut="sm"
+        tone="cyan"
+        duo="magenta"
+      >
+        <div className={styles.sessionDetails}>
+          <Text as="span" variant="label">
+            {vi.seat.sessionLabel}
+          </Text>
+          <Text
+            as="time"
+            variant="value"
+            tone={seconds < 60 ? 'warning' : 'info'}
+            className={seconds < 60 ? styles.timerWarning : styles.timer}
+            data-session-timer
+            aria-live="polite"
           >
-            {seating.pending?.action === 'leave' ? vi.seat.pendingLeave : vi.seat.endSession}
-          </Button>
-        </Panel>
-      </>
+            {formatSessionDuration(seconds)}
+          </Text>
+        </div>
+        <Button
+          surface="neon"
+          tone="danger"
+          state={seating.pending?.action === 'leave' ? 'pending' : 'idle'}
+          onClick={() => dispatch(useRequested())}
+        >
+          {seating.pending?.action === 'leave' ? vi.seat.pendingLeave : vi.seat.endSession}
+        </Button>
+      </Panel>
     );
   }
   return (
-    <>
-      {notice}
-      <div
-        className={styles.prompt}
-        data-seat={seatId}
-        data-seated={String(seated)}
-        aria-busy={waiting || undefined}
+    <div
+      className={styles.prompt}
+      data-seat={seatId}
+      data-seated={String(seated)}
+      aria-busy={waiting || undefined}
+    >
+      {!seated && seating.denied?.seatId === seatId && (
+        <Alert tone="warning">{vi.seat.denied[seating.denied.reason]}</Alert>
+      )}
+      {seating.error && <Alert tone="error">{vi.seat.roomError}</Alert>}
+      <KeyHint className={styles.hint} keyLabel={vi.seat.key} aria-live="polite">
+        {waiting ? vi.seat.pendingSit : vi.seat.prompt}
+      </KeyHint>
+      <Button
+        className={styles.button}
+        state={waiting ? 'pending' : 'idle'}
+        onClick={() => dispatch(useRequested())}
       >
-        {!seated && seating.denied?.seatId === seatId && (
-          <Alert tone="warning">{vi.seat.denied[seating.denied.reason]}</Alert>
-        )}
-        {seating.error && <Alert tone="error">{vi.seat.roomError}</Alert>}
-        <KeyHint className={styles.hint} keyLabel={vi.seat.key} aria-live="polite">
-          {waiting ? vi.seat.pendingSit : vi.seat.prompt}
-        </KeyHint>
-        <Button
-          className={styles.button}
-          state={waiting ? 'pending' : 'idle'}
-          onClick={() => dispatch(useRequested())}
-        >
-          {waiting ? vi.seat.pendingSit : vi.seat.sit}
-        </Button>
-      </div>
-    </>
+        {waiting ? vi.seat.pendingSit : vi.seat.sit}
+      </Button>
+    </div>
   );
 }

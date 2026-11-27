@@ -2,6 +2,9 @@
 
 import { Button } from '@netverse/ui/react';
 import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { noticeAdded } from '../state/notice-slice.ts';
+import type { AppDispatch, RootState } from '../state/store.ts';
 import { vi } from './text/vi.ts';
 import styles from './pwa-actions.module.css';
 
@@ -12,6 +15,8 @@ export default function PwaActions() {
   const [install, setInstall] = useState<InstallPrompt | null>(null);
   const [update, setUpdate] = useState<UpdateAction | null>(null);
   const activating = useRef(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const requested = useSelector((state: RootState) => state.notices.requestedAction);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) return;
@@ -80,37 +85,35 @@ export default function PwaActions() {
     };
   }, []);
 
-  function applyUpdate() {
-    if (!update || activating.current) return;
+  useEffect(() => {
+    if (update) dispatch(noticeAdded('app-update'));
+  }, [dispatch, update]);
+
+  useEffect(() => {
+    if (requested?.action !== 'apply-update' || !update || activating.current) return;
     if (update === 'reload' || update.state === 'activated') {
       window.location.reload();
       return;
     }
     activating.current = true;
     update.postMessage('NETVERSE_ACTIVATE_UPDATE');
-  }
+  }, [requested, update]);
 
-  if (!update && !install) return null;
+  if (update || !install) return null;
 
   return (
     <div className={styles.actions} aria-live="polite">
-      {update ? (
-        <Button surface="neon" tone="cyan" duo="magenta" onClick={applyUpdate}>
-          {vi.pwa.update}
-        </Button>
-      ) : (
-        <Button
-          surface="neon"
-          tone="cyan"
-          duo="magenta"
-          onClick={() => {
-            setInstall(null);
-            void install?.prompt().catch(() => undefined);
-          }}
-        >
-          {vi.pwa.install}
-        </Button>
-      )}
+      <Button
+        surface="neon"
+        tone="cyan"
+        duo="magenta"
+        onClick={() => {
+          setInstall(null);
+          void install.prompt().catch(() => undefined);
+        }}
+      >
+        {vi.pwa.install}
+      </Button>
     </div>
   );
 }
