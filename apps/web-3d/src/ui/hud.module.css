@@ -12,6 +12,12 @@
   gap: var(--ui-space-3);
 }
 
+.counter {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: end;
+}
+
 .fields {
   display: grid;
   grid-template-columns: 1fr 1fr;

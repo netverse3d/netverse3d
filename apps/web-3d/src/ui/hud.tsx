@@ -38,19 +38,19 @@ export default function Hud() {
       duo="magenta"
     >
       <div className={styles.stats}>
-        <Text as="span" variant="meta">
+        <Text as="span" variant="meta" data-hud-stat="fps">
           {vi.hud.fps}{' '}
-          <Text as="strong" variant="value">
+          <Text as="strong" variant="value" className={styles.counter}>
             {stats.fps}
           </Text>
         </Text>
-        <Text as="span" variant="meta">
+        <Text as="span" variant="meta" data-hud-stat="calls">
           {vi.hud.calls}{' '}
-          <Text as="strong" variant="value">
+          <Text as="strong" variant="value" className={styles.counter}>
             {stats.calls}
           </Text>
         </Text>
-        <Text as="span" variant="meta">
+        <Text as="span" variant="meta" data-hud-stat="triangles">
           {vi.hud.triangles}{' '}
           <Text as="strong" variant="value">
             {stats.triangles.toLocaleString('vi-VN')}

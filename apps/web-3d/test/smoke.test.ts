@@ -303,6 +303,27 @@ test('trang thử có canvas và nhân vật có mặt, không lỗi console', a
   assert.deepEqual(page.consoleErrors, []);
 });
 
+test('HUD không xê dịch khi số FPS đổi số chữ số', async (context) => {
+  if (!browserReady(context)) return;
+  let positions: number[] = [];
+  await renderPage(
+    '/',
+    (state) => state.ready === 'true' && Number(state.frames) >= 1,
+    async (browser) => {
+      positions = await browser.evaluate<number[]>(`(() => {
+        const fps = document.querySelector('[data-hud-stat="fps"] strong');
+        const calls = document.querySelector('[data-hud-stat="calls"]');
+        return ['9', '120', '60'].map((digits) => {
+          fps.textContent = digits;
+          return calls.getBoundingClientRect().left;
+        });
+      })()`);
+    },
+  );
+  assert.equal(positions.length, 3);
+  assert.equal(new Set(positions).size, 1, `mép trái ô lệnh vẽ: ${positions.join(', ')}`);
+});
+
 test('recipe không tồn tại quay về tiệm mặc định và preset shop-neon', async (context) => {
   if (!browserReady(context)) return;
   const page = await renderPage(
