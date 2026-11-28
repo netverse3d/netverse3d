@@ -965,14 +965,18 @@ test('bản PWA cài được, cập nhật theo yêu cầu và báo mất kết
       const updateButton = `[...document.querySelectorAll('button')].find(button => button.textContent === 'Cập nhật ứng dụng')`;
       await browser.waitFor(updateButton);
       assert.equal(await browser.evaluate('window.__pwaTestPage'), true);
-      await browser.send('Emulation.setDeviceMetricsOverride', {
-        width: 390,
-        height: 844,
-        deviceScaleFactor: 1,
-        mobile: true,
-      });
-      await sleep(300);
-      const narrow = await browser.evaluate<{ overlap: number; boxes: string }>(`(() => {
+      for (const [width, height] of [
+        [390, 844],
+        [844, 390],
+      ]) {
+        await browser.send('Emulation.setDeviceMetricsOverride', {
+          width,
+          height,
+          deviceScaleFactor: 1,
+          mobile: true,
+        });
+        await sleep(300);
+        const placement = await browser.evaluate<{ overlap: number; boxes: string }>(`(() => {
         const notice = document.querySelector('[data-notice="app-update"]')?.getBoundingClientRect();
         const hud = document.querySelector('[data-hud-stat]')?.closest('[role="status"]')?.getBoundingClientRect();
         if (!notice || !hud) return { overlap: -1, boxes: '' };
@@ -983,7 +987,12 @@ test('bản PWA cài được, cập nhật theo yêu cầu và báo mất kết
           boxes: JSON.stringify({ notice, hud }),
         };
       })()`);
-      assert.equal(narrow.overlap, 0, `thông báo che HUD ở khổ 390px: ${narrow.boxes}`);
+        assert.equal(
+          placement.overlap,
+          0,
+          `thông báo che HUD ở khổ ${width}×${height}: ${placement.boxes}`,
+        );
+      }
       await browser.send('Emulation.clearDeviceMetricsOverride');
       assert.equal(
         await browser.evaluate(

@@ -1,9 +1,9 @@
-@media (max-width: 440px) {
+@media (max-width: 1023px) {
   .stack {
     position: relative;
     top: auto;
     left: auto;
-    width: calc(100vw - var(--ui-space-6));
+    width: min(380px, calc(100vw - var(--ui-space-6)));
     transform: none;
   }
 }
