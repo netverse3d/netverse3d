@@ -112,6 +112,8 @@ export interface SearchFieldVariants {
 
 export type TooltipVariants = Record<never, never>;
 
+export type TooltipGroupVariants = Record<never, never>;
+
 export type DropdownMenuVariants = Record<never, never>;
 
 export type PopoverVariants = Record<never, never>;
@@ -219,6 +221,7 @@ export const VARIANTS = {
   Textarea: {"state":["idle","error","disabled"]},
   SearchField: {"state":["idle","disabled"]},
   Tooltip: {},
+  TooltipGroup: {},
   DropdownMenu: {},
   Popover: {},
   Tabs: {},

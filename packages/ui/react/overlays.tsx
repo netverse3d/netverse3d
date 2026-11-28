@@ -1,9 +1,10 @@
 import * as MenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { useId, type ReactElement, type ReactNode } from 'react';
+import { createContext, useContext, useId, type ReactElement, type ReactNode } from 'react';
 import { Icon, type IconName } from './icon.tsx';
 import { useLayerContainer } from './layer.ts';
+import { classNames } from './shared.ts';
 
 export type OverlaySide = 'top' | 'right' | 'bottom' | 'left';
 export type OverlayAlign = 'start' | 'center' | 'end';
@@ -21,6 +22,20 @@ const LAYER_GAP = 8;
 const SCREEN_EDGE = 8;
 const ARROW = { width: 14, height: 7 };
 
+const TooltipGroupContext = createContext(false);
+
+export type TooltipGroupProps = { children: ReactNode; className?: string };
+
+export function TooltipGroup({ children, className }: TooltipGroupProps) {
+  return (
+    <div className={classNames('nv-tooltip-group', className)}>
+      <TooltipPrimitive.Provider delayDuration={TOOLTIP_DELAY_MS}>
+        <TooltipGroupContext.Provider value={true}>{children}</TooltipGroupContext.Provider>
+      </TooltipPrimitive.Provider>
+    </div>
+  );
+}
+
 export type TooltipProps = OpenState & {
   content: ReactNode;
   children: ReactElement;
@@ -29,24 +44,30 @@ export type TooltipProps = OpenState & {
 
 export function Tooltip({ content, children, side = 'top', ...openState }: TooltipProps) {
   const [findContainer, container] = useLayerContainer();
-  return (
+  const grouped = useContext(TooltipGroupContext);
+  const tooltip = (
+    <TooltipPrimitive.Root {...openState}>
+      <TooltipPrimitive.Trigger asChild ref={findContainer}>
+        {children}
+      </TooltipPrimitive.Trigger>
+      <TooltipPrimitive.Portal container={container}>
+        <TooltipPrimitive.Content
+          className="nv-shape nv-tooltip"
+          side={side}
+          sideOffset={LAYER_GAP}
+          collisionPadding={SCREEN_EDGE}
+        >
+          {content}
+          <TooltipPrimitive.Arrow className="nv-tooltip__arrow" {...ARROW} />
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Portal>
+    </TooltipPrimitive.Root>
+  );
+  return grouped ? (
+    tooltip
+  ) : (
     <TooltipPrimitive.Provider delayDuration={TOOLTIP_DELAY_MS}>
-      <TooltipPrimitive.Root {...openState}>
-        <TooltipPrimitive.Trigger asChild ref={findContainer}>
-          {children}
-        </TooltipPrimitive.Trigger>
-        <TooltipPrimitive.Portal container={container}>
-          <TooltipPrimitive.Content
-            className="nv-shape nv-tooltip"
-            side={side}
-            sideOffset={LAYER_GAP}
-            collisionPadding={SCREEN_EDGE}
-          >
-            {content}
-            <TooltipPrimitive.Arrow className="nv-tooltip__arrow" {...ARROW} />
-          </TooltipPrimitive.Content>
-        </TooltipPrimitive.Portal>
-      </TooltipPrimitive.Root>
+      {tooltip}
     </TooltipPrimitive.Provider>
   );
 }
