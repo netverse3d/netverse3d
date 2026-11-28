@@ -7,6 +7,7 @@ const GROUP_BUTTONS = `[...document.querySelectorAll('.nv-tooltip-group button')
 const OPEN_TOOLTIP = `document.querySelector('.nv-tooltip[data-state$="open"]')?.firstChild?.textContent`;
 const OPEN_STATE = `document.querySelector('.nv-tooltip[data-state$="open"]')?.dataset.state`;
 const POINTER_FRAME_MS = 16;
+const HOVER_TIMEOUT_MS = 3000;
 
 const chrome = findChrome();
 let library;
@@ -17,15 +18,18 @@ before(async () => {
 
 after(() => library?.close());
 
-async function hover(browser, index) {
+async function hoverUntilOpen(browser, index, label) {
   const { x, y } = await browser.evaluate(`(() => {
     const bounds = ${GROUP_BUTTONS}[${index}].getBoundingClientRect();
     return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
   })()`);
-  for (const nudge of [0, 1, 2, 3]) {
+  const deadline = Date.now() + HOVER_TIMEOUT_MS;
+  for (let nudge = 0; Date.now() < deadline; nudge = (nudge + 1) % 4) {
     await browser.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: x + nudge, y });
+    if ((await browser.evaluate(OPEN_TOOLTIP)) === label) return;
     await sleep(POINTER_FRAME_MS);
   }
+  assert.fail(`tooltip ${label} không mở`);
 }
 
 test(
@@ -45,10 +49,8 @@ test(
       const labels = await browser.evaluate(
         `${GROUP_BUTTONS}.map((button) => button.getAttribute('aria-label'))`,
       );
-      await hover(browser, 0);
-      await browser.waitFor(`${OPEN_TOOLTIP} === ${JSON.stringify(labels[0])}`, 3000);
-      await hover(browser, 1);
-      await browser.waitFor(`${OPEN_TOOLTIP} === ${JSON.stringify(labels[1])}`, 3000);
+      await hoverUntilOpen(browser, 0, labels[0]);
+      await hoverUntilOpen(browser, 1, labels[1]);
       assert.equal(await browser.evaluate(OPEN_STATE), 'instant-open');
     } finally {
       await browser.close();

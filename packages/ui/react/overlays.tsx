@@ -28,11 +28,11 @@ export type TooltipGroupProps = { children: ReactNode; className?: string };
 
 export function TooltipGroup({ children, className }: TooltipGroupProps) {
   return (
-    <div className={classNames('nv-tooltip-group', className)}>
+    <span className={classNames('nv-tooltip-group', className)}>
       <TooltipPrimitive.Provider delayDuration={TOOLTIP_DELAY_MS}>
         <TooltipGroupContext.Provider value={true}>{children}</TooltipGroupContext.Provider>
       </TooltipPrimitive.Provider>
-    </div>
+    </span>
   );
 }
 

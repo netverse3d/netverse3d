@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { findChrome, launchChrome, sleep } from '../../../../scripts/browser/cdp.mjs';
+import { findChrome, launchChrome } from '../../../../scripts/browser/cdp.mjs';
 import { serveFixture } from '../support/library-browser.mjs';
 
 const SHOWN = {
@@ -43,7 +43,10 @@ test(
         await browser.evaluate(`window.fixture.control('${id}', ${JSON.stringify(next)})`);
         await browser.waitFor(`${SHOWN[id]} === '${shown}'`, 3000);
         await browser.evaluate(`window.fixture.release('${id}')`);
-        await sleep(100);
+        await browser.waitFor(
+          `document.querySelector('main').dataset.revision === String(window.fixture.revision())`,
+          3000,
+        );
         assert.equal(await browser.evaluate(SHOWN[id]), shown, name);
       }
     } finally {

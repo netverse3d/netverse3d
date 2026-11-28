@@ -42,6 +42,7 @@ function useControl<T extends string | number>(id: string): T | undefined {
 
 Object.assign(window, {
   fixture: {
+    revision: () => revision,
     control(id: string, value: string | number) {
       controls[id] = { controlled: true, value };
       publish();
@@ -55,8 +56,9 @@ Object.assign(window, {
 });
 
 function Fixture() {
+  const rendered = useSyncExternalStore(subscribe, () => revision);
   return (
-    <main>
+    <main data-revision={rendered}>
       <section data-fixture="segmented">
         <SegmentedControl
           label="Time"

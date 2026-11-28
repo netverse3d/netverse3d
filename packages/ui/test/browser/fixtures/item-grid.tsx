@@ -13,6 +13,11 @@ const container = document.getElementById('root');
 if (container)
   createRoot(container).render(
     <main style={{ width: 400 }}>
-      <ItemGrid label="Items" lockedLabel="Locked" items={ITEMS} />
+      <section data-fixture="plain">
+        <ItemGrid label="Items" lockedLabel="Locked" items={ITEMS} />
+      </section>
+      <form data-fixture="form">
+        <ItemGrid label="Items" lockedLabel="Locked" items={ITEMS} />
+      </form>
     </main>,
   );

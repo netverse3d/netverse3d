@@ -24,7 +24,7 @@ function moveAcrossRows(event: KeyboardEvent<HTMLButtonElement>): HTMLElement | 
   const direction = ROW_KEYS[event.key];
   const grid = event.currentTarget.parentElement;
   if (!direction || !grid) return undefined;
-  const cells = [...grid.children] as HTMLElement[];
+  const cells = [...grid.querySelectorAll<HTMLElement>(':scope > [role="radio"]')];
   const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
   const index = cells.indexOf(event.currentTarget);
   event.preventDefault();
@@ -159,7 +159,7 @@ export function ItemGrid(props: ItemGridProps) {
             data-item={item.id}
             onKeyDown={(event) => {
               const target = moveAcrossRows(event)?.dataset.item;
-              if (target) choose(chooseItem(items, current, target));
+              if (target && !event.repeat) choose(chooseItem(items, current, target));
             }}
           >
             <span className="nv-item-grid__media" aria-hidden="true">
