@@ -147,6 +147,7 @@ function pushWithLfs(cwd, sha, base, drift, lfsExitCode = 0) {
       env: {
         ...process.env,
         DRIFT_TTY: drift,
+        DRIFT_LFS: join(bin, 'git-lfs').replaceAll('\\', '/'),
         [pathKey]: `${bin}${delimiter}${process.env[pathKey]}`,
       },
     },

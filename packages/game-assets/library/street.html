@@ -328,6 +328,7 @@
       import { createVehicle } from '../runtime/vehicle-look.mjs';
       import { buildStreet } from '../runtime/street-instancing.mjs';
       import { createJunctionPlan, signalStateAt } from '../runtime/signal-phases.mjs';
+      import { junctionPlanFor, stopLinesFor } from '../runtime/city-map.mjs';
       import { createSignalLook } from '../runtime/signal-look.mjs';
 
       const $ = (id) => document.getElementById(id);
@@ -379,6 +380,26 @@
           ]),
         ),
       );
+      const mapId = new URLSearchParams(location.search).get('map') ?? 'khu-mau';
+      if (mapId !== 'khu-mau') throw new RangeError(`Unknown city map: ${mapId}`);
+      const cityMap = await fetchJson(`../city-maps/${mapId}.json`).catch((error) => {
+        showDataError(error);
+        throw error;
+      });
+      const district = cityMap.districts[0];
+      const junction = district.junctions[0];
+      const primaryBlock = district.blocks.find((entry) => entry.ref === 'hem-mau');
+      const blockOrigin = [
+        (district.origin[0] + primaryBlock.at[0] + (blocks['hem-mau'].cells[0] - 1) / 2) *
+          cityMap.grid,
+        (district.origin[1] + primaryBlock.at[1] + (blocks['hem-mau'].cells[1] - 1) / 2) *
+          cityMap.grid,
+      ];
+      const junctionPosition = [
+        (district.origin[0] + junction.at[0]) * cityMap.grid - blockOrigin[0],
+        (district.origin[1] + junction.at[1]) * cityMap.grid - blockOrigin[1],
+      ];
+      const westArm = junction.arms.find((arm) => arm.id === 'west');
       const loader = new GLTFLoader();
       const kit = await loader.loadAsync('../exported/street-parts.glb');
       const vehicleKit = await loader.loadAsync('../exported/vehicle-parts.glb');
@@ -460,13 +481,7 @@
       let movingVehicles = [];
       let plan = [];
       let signalLooks = [];
-      const junctionPlan = createJunctionPlan({
-        arms: ['west', 'north'],
-        green: 8,
-        yellow: 2,
-        allRed: 3,
-        crossings: [{ id: 'west', conflictingArms: ['west'] }],
-      });
+      const junctionPlan = createJunctionPlan(junctionPlanFor(junction));
       const clock = new THREE.Clock();
       let currentWeather = WEATHER_STATES.clear;
 
@@ -525,7 +540,11 @@
           duration: 16,
           count: 2,
           lateralOffset: 0.55,
-          stopLines: [{ distance: 10, arm: 'west', plan: junctionPlan }],
+          stopLines: stopLinesFor(
+            cityMap,
+            { points: roadLane(block).map(([x, z]) => [x + blockOrigin[0], z + blockOrigin[1]]) },
+            junctionPlan,
+          ),
         });
         for (const [index, part] of ['car_a', 'motorbike_b'].entries()) {
           const vehicle = createVehicle(
@@ -628,9 +647,18 @@
             THREE,
             kit.scene,
             [
-              { part: 'road_a', position: [10, 0, 4], yaw: 0 },
-              { part: 'road_a', position: [10, 0, 0], yaw: Math.PI / 2 },
-              { part: 'road_a', position: [10, 0, 8], yaw: Math.PI / 2 },
+              { part: 'road_a', position: [junctionPosition[0], 0, junctionPosition[1]], yaw: 0 },
+              ...junction.arms
+                .filter((arm) => arm.id === 'north' || arm.id === 'south')
+                .map((arm) => ({
+                  part: 'road_a',
+                  position: [
+                    junctionPosition[0],
+                    0,
+                    junctionPosition[1] + (arm.id === 'north' ? -cityMap.grid : cityMap.grid),
+                  ],
+                  yaw: Math.PI / 2,
+                })),
             ],
             materials,
             { instance: instanceStreet },
@@ -640,8 +668,24 @@
           THREE,
           trafficKit.scene,
           [
-            { part: 'signal_a', position: [4.6, 0.15, 1.9], yaw: -Math.PI / 2 },
-            { part: 'walk_a', position: [3.1, 0.15, 1.9], yaw: 0 },
+            {
+              part: 'signal_a',
+              position: [
+                junctionPosition[0] - westArm.stopLine + 0.6,
+                0.15,
+                junctionPosition[1] - 2.1,
+              ],
+              yaw: -Math.PI / 2,
+            },
+            {
+              part: 'walk_a',
+              position: [
+                junctionPosition[0] - westArm.stopLine - 0.9,
+                0.15,
+                junctionPosition[1] - 2.1,
+              ],
+              yaw: 0,
+            },
           ],
           materials,
           { instance: instanceStreet },
