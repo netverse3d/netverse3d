@@ -17,7 +17,7 @@
   },
   "scripts": {
     "lint": "tsc -p tsconfig.json",
-    "test": "node --test \"test/**/*.test.mjs\"",
+    "test": "node --test \"test/unit/**/*.test.mjs\" && node --test --test-concurrency=1 \"test/browser/**/*.test.mjs\"",
     "library": "node tools/serve-library.mjs",
     "publish": "node tools/publish-library.mjs",
     "types": "node tools/generate-react-types.mjs"
