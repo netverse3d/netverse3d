@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { chooseItem, stepNumber } from '../src/pickers.mjs';
+import { chooseItem, rowNeighbor, stepNumber } from '../src/pickers.mjs';
 import { Icon, type IconName } from './icon.tsx';
 import { classNames, splitVariants, useRememberedValue } from './shared.ts';
 import { VARIANTS, type ItemGridVariants } from './variants.generated.ts';
@@ -17,6 +17,21 @@ type NativeDiv = Omit<
   HTMLAttributes<HTMLDivElement>,
   'style' | 'defaultValue' | 'onChange' | 'dir' | 'children'
 >;
+
+const ROW_KEYS: Record<string, -1 | 1> = { ArrowUp: -1, ArrowDown: 1 };
+
+function moveAcrossRows(event: KeyboardEvent<HTMLButtonElement>): HTMLElement | undefined {
+  const direction = ROW_KEYS[event.key];
+  const grid = event.currentTarget.parentElement;
+  if (!direction || !grid) return undefined;
+  const cells = [...grid.children] as HTMLElement[];
+  const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').length;
+  const index = cells.indexOf(event.currentTarget);
+  event.preventDefault();
+  const target = cells[rowNeighbor(index, cells.length, columns, direction)];
+  target?.focus();
+  return target;
+}
 
 type Choice = {
   value?: string;
@@ -142,6 +157,10 @@ export function ItemGrid(props: ItemGridProps) {
             data-cut="sm"
             data-locked={item.locked ? '' : undefined}
             data-item={item.id}
+            onKeyDown={(event) => {
+              const target = moveAcrossRows(event)?.dataset.item;
+              if (target) choose(chooseItem(items, current, target));
+            }}
           >
             <span className="nv-item-grid__media" aria-hidden="true">
               {item.preview ?? (item.icon && <Icon name={item.icon} />)}
