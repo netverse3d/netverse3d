@@ -838,6 +838,47 @@
           "anchors": ["collision_main"]
         }
       }
+    },
+    {
+      "file": "road-parts.glb",
+      "source": "parts-road.blend",
+      "generator": "pipeline/make_road_kit.py",
+      "lightmap": true,
+      "slots": {
+        "lane": {
+          "variants": ["a", "b", "c"],
+          "maxTriangles": 300,
+          "size": [4.01, 0.25, 4.01],
+          "grid": {
+            "size": 4,
+            "axes": [0, 2]
+          }
+        },
+        "median": {
+          "variants": ["a", "b"],
+          "maxTriangles": 500,
+          "size": [4.01, 0.9, 0.85],
+          "grid": {
+            "size": 4,
+            "axes": [0]
+          },
+          "anchors": ["collision_main"]
+        },
+        "verge": {
+          "variants": ["a"],
+          "maxTriangles": 550,
+          "size": [4.01, 0.16, 2.01],
+          "grid": {
+            "size": 4,
+            "axes": [0]
+          }
+        },
+        "mark": {
+          "variants": ["a", "b", "c", "d"],
+          "maxTriangles": 250,
+          "size": [2.8, 0.02, 3.7]
+        }
+      }
     }
   ],
   "scenes": [

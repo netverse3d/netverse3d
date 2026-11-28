@@ -157,6 +157,7 @@
         createRainSystem,
         getHolidayEvent,
         isHolidayFireworks,
+        isRoadSurfacePart,
       } from '../runtime/street-look.mjs';
       import {
         createAlleyCameraEffects,
@@ -322,9 +323,7 @@
       let triangles = 0;
       gltf.scene.traverse((mesh) => {
         if (!mesh.isMesh) return;
-        const isRoad =
-          /^road_[abc]_\d+(?:_\d+)?$/.test(mesh.name) ||
-          /^road_[abc]_\d+$/.test(mesh.parent?.name ?? '');
+        const isRoad = isRoadSurfacePart(mesh.name) || isRoadSurfacePart(mesh.parent?.name);
         const material = materials[mesh.material.name];
         if (!material)
           throw new Error(`scene uses material ${mesh.material.name} without a showcase material`);

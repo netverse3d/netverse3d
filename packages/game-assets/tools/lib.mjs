@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { checkCoplanar, facadeAssemblies, roomAssemblies } from './coplanar.mjs';
+import { checkCoplanar, facadeAssemblies, roadAssemblies, roomAssemblies } from './coplanar.mjs';
 import { paletteRows } from '../runtime/shop-look.mjs';
 import { PREVIEW_SUFFIX } from '../runtime/three-shop.mjs';
 
@@ -458,6 +458,7 @@ export function checkModel(file, gltf, expected, bin) {
     for (const message of checkCoplanar(gltf, bin, parts, [
       ...roomAssemblies(parts),
       ...facadeAssemblies(parts),
+      ...roadAssemblies(parts),
     ]))
       fail(message);
   }
