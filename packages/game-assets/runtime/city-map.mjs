@@ -259,7 +259,10 @@ export function stopLinesFor(map, route, plan) {
                   ? 'north'
                   : 'south';
           if (arm.id !== direction || !plan.arms.includes(arm.id)) continue;
-          const at = scale(add(district.origin, junction.at), map.grid);
+          const at = add(
+            scale(add(district.origin, junction.at), map.grid),
+            scale(vectors[arm.id], arm.stopLine),
+          );
           const along =
             ((at[0] - from[0]) * (to[0] - from[0]) + (at[1] - from[1]) * (to[1] - from[1])) /
             length;
@@ -267,13 +270,8 @@ export function stopLinesFor(map, route, plan) {
             Math.abs(
               (at[0] - from[0]) * (to[1] - from[1]) - (at[1] - from[1]) * (to[0] - from[0]),
             ) / length;
-          if (
-            perpendicular < 0.001 &&
-            along >= 0 &&
-            along <= length &&
-            distance + along >= arm.stopLine
-          )
-            lines.push({ distance: distance + along - arm.stopLine, arm: arm.id, plan });
+          if (perpendicular < 0.001 && along >= 0 && along <= length && (i === 1 || along > 0))
+            lines.push({ distance: distance + along, arm: arm.id, plan });
         }
     distance += length;
   }

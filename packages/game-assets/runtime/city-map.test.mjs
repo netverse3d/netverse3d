@@ -335,3 +335,44 @@ test('phát hiện lô mới chồng lên lô trong khối phố', () => {
     cityMapIssues(invalid, { blocks, config }).some((issue) => issue.code === 'lot-overlap'),
   );
 });
+
+test('khu mẫu hợp lệ theo hợp đồng và không có lỗi bản đồ', async () => {
+  const { Ajv2020 } = await import('ajv/dist/2020.js');
+  const sample = JSON.parse(readFileSync(new URL('../city-maps/khu-mau.json', import.meta.url)));
+  const schema = JSON.parse(
+    readFileSync(new URL('../../contracts/world/v1/city-map.schema.json', import.meta.url)),
+  );
+  const validate = new Ajv2020({ strict: false }).compile(schema);
+  assert.equal(validate(sample), true, JSON.stringify(validate.errors));
+  assert.deepEqual(cityMapIssues(sample, { blocks, config }), []);
+});
+
+test('các vị trí đang chờ chỉ tham chiếu issue 251', () => {
+  const sample = JSON.parse(readFileSync(new URL('../city-maps/khu-mau.json', import.meta.url)));
+  const pending = cityPlan(sample, { blocks }).pendingPlacements;
+  assert.ok(pending.length > 0);
+  assert.deepEqual([...new Set(pending.map((item) => item.issue))], [251]);
+});
+
+test('tính vạch trong làn khi tâm nút nằm ngoài cuối làn', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      { origin: [0, 0], junctions: [{ at: [4, 0], arms: [{ id: 'west', stopLine: 6 }] }] },
+    ],
+  };
+  const plan = { arms: ['west'] };
+  assert.deepEqual(
+    stopLinesFor(
+      city,
+      {
+        points: [
+          [0, 0],
+          [12, 0],
+        ],
+      },
+      plan,
+    ),
+    [{ distance: 10, arm: 'west', plan }],
+  );
+});
