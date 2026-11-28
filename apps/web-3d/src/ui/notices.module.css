@@ -3,7 +3,7 @@
     position: relative;
     top: auto;
     left: auto;
-    width: 100%;
+    width: calc(100vw - var(--ui-space-6));
     transform: none;
   }
 }
