@@ -753,6 +753,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
         buttonName: string;
         pwaPresent: boolean;
         pwaOverlapArea: number;
+        hudOverlapArea: number;
       }>(`(() => {
         const panel = document.querySelector('[data-seat-desktop]');
         const button = panel?.querySelector('[data-end-session]');
@@ -761,6 +762,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
           /^(Cài ứng dụng|Cập nhật ứng dụng)$/.test(candidate.textContent?.trim() ?? '')
         );
         const pwaBounds = pwa?.getBoundingClientRect();
+        const hudBounds = document.querySelector('[data-hud-stat]')?.closest('[role="status"]')?.getBoundingClientRect();
         const overlapWidth = pwaBounds && bounds
           ? Math.max(0, Math.min(bounds.right, pwaBounds.right) - Math.max(bounds.left, pwaBounds.left))
           : 0;
@@ -778,6 +780,10 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
           buttonName: button?.textContent?.trim() ?? '',
           pwaPresent: Boolean(pwa),
           pwaOverlapArea: overlapWidth * overlapHeight,
+          hudOverlapArea: hudBounds && bounds
+            ? Math.max(0, Math.min(bounds.right, hudBounds.right) - Math.max(bounds.left, hudBounds.left)) *
+              Math.max(0, Math.min(bounds.bottom, hudBounds.bottom) - Math.max(bounds.top, hudBounds.top))
+            : -1,
         };
       })()`);
       assert.equal(mobileLayout.width, 390);
@@ -786,6 +792,7 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       assert.ok(mobileLayout.buttonHeight >= 44);
       assert.equal(mobileLayout.pwaPresent, true);
       assert.equal(mobileLayout.pwaOverlapArea, 0);
+      assert.equal(mobileLayout.hudOverlapArea, 0, 'bảng desktop che HUD ở khổ 390px');
       await capture('04-mobile-active-session');
       await pressKey(browser, 'Escape', 'Escape');
       await browser.waitFor(`document.querySelector('[data-desktop-restore]')`);

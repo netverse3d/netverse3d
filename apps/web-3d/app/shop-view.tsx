@@ -225,10 +225,10 @@ export default function ShopView({ app }: { app: ReturnType<typeof createAppStor
       <canvas id="gl" className={styles.canvas} ref={canvasRef} aria-label={vi.app.stageLabel} />
       <div className={styles.corner}>
         <Hud />
+        <SeatDesktop />
         <Notices />
       </div>
       <SeatPrompt />
-      <SeatDesktop />
       <RecoveryOverlay />
     </div>
   );
