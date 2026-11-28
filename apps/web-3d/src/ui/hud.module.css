@@ -6,7 +6,7 @@
   width: min(300px, calc(100% - var(--ui-space-6)));
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1123px) {
   .hud {
     position: relative;
     top: auto;

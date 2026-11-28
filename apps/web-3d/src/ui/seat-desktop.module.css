@@ -20,16 +20,28 @@
   z-index: var(--ui-layer-hud);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1123px) {
+  .desktop {
+    top: 0;
+    right: 0;
+    width: min(360px, calc(100% - 300px - var(--ui-space-3)));
+  }
+
+  .restore {
+    top: 0;
+    right: 0;
+  }
+}
+
+@media (max-width: 699px) and (orientation: portrait) {
   .desktop {
     position: relative;
-    top: auto;
-    right: auto;
     width: min(360px, 100%);
   }
 
   .restore {
-    position: fixed;
+    position: relative;
+    align-self: flex-end;
   }
 }
 

@@ -1,9 +1,15 @@
-@media (max-width: 1023px) {
+@media (max-width: 1123px) {
   .stack {
     position: relative;
     top: auto;
     left: auto;
-    width: min(380px, calc(100vw - var(--ui-space-6)));
+    width: min(300px, 100%);
     transform: none;
+  }
+}
+
+@media (max-width: 699px) and (orientation: portrait) {
+  .stack {
+    width: min(380px, 100%);
   }
 }
