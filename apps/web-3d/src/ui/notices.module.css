@@ -1,0 +1,9 @@
+@media (max-width: 440px) {
+  .stack {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    transform: none;
+  }
+}

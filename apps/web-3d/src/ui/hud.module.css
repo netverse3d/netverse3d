@@ -1,9 +1,6 @@
 .hud {
-  position: absolute;
-  top: var(--ui-space-3);
-  left: var(--ui-space-3);
+  position: relative;
   z-index: var(--ui-layer-hud);
-  width: min(300px, calc(100% - var(--ui-space-6)));
 }
 
 .stats {

@@ -12,6 +12,7 @@ import {
   visibleNotices,
 } from '../state/notice-slice.ts';
 import type { AppDispatch, RootState } from '../state/store.ts';
+import styles from './notices.module.css';
 import { vi } from './text/vi.ts';
 
 export default function Notices() {
@@ -31,6 +32,7 @@ export default function Notices() {
 
   return (
     <ToastStack
+      className={styles.stack}
       label={vi.notices.label}
       closeLabel={vi.notices.close}
       onDismiss={(id) => dispatch(noticeDismissed(Number(id)))}

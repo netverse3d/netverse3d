@@ -28,6 +28,7 @@ import type { Seat } from '../src/game/seats.ts';
 import { createRoomSession, type RoomSession } from '../src/net/room-session.ts';
 import { connectSeatRequests } from '../src/game/seat-requests.ts';
 import Hud from '../src/ui/hud.tsx';
+import Notices from '../src/ui/notices.tsx';
 import RecoveryOverlay from '../src/ui/recovery-overlay.tsx';
 import SeatPrompt from '../src/ui/seat-prompt.tsx';
 import SeatDesktop from '../src/ui/seat-desktop.tsx';
@@ -222,7 +223,10 @@ export default function ShopView({ app }: { app: ReturnType<typeof createAppStor
       data-quality={scene.quality}
     >
       <canvas id="gl" className={styles.canvas} ref={canvasRef} aria-label={vi.app.stageLabel} />
-      <Hud />
+      <div className={styles.corner}>
+        <Hud />
+        <Notices />
+      </div>
       <SeatPrompt />
       <SeatDesktop />
       <RecoveryOverlay />

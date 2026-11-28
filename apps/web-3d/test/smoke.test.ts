@@ -965,6 +965,26 @@ test('bản PWA cài được, cập nhật theo yêu cầu và báo mất kết
       const updateButton = `[...document.querySelectorAll('button')].find(button => button.textContent === 'Cập nhật ứng dụng')`;
       await browser.waitFor(updateButton);
       assert.equal(await browser.evaluate('window.__pwaTestPage'), true);
+      await browser.send('Emulation.setDeviceMetricsOverride', {
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 1,
+        mobile: true,
+      });
+      await sleep(300);
+      const narrow = await browser.evaluate<{ overlap: number; boxes: string }>(`(() => {
+        const notice = document.querySelector('[data-notice="app-update"]')?.getBoundingClientRect();
+        const hud = document.querySelector('[data-hud-stat]')?.closest('[role="status"]')?.getBoundingClientRect();
+        if (!notice || !hud) return { overlap: -1, boxes: '' };
+        const width = Math.min(notice.right, hud.right) - Math.max(notice.left, hud.left);
+        const height = Math.min(notice.bottom, hud.bottom) - Math.max(notice.top, hud.top);
+        return {
+          overlap: Math.max(0, width) * Math.max(0, height),
+          boxes: JSON.stringify({ notice, hud }),
+        };
+      })()`);
+      assert.equal(narrow.overlap, 0, `thông báo che HUD ở khổ 390px: ${narrow.boxes}`);
+      await browser.send('Emulation.clearDeviceMetricsOverride');
       assert.equal(
         await browser.evaluate(
           'navigator.serviceWorker.ready.then(registration => registration.waiting?.state)',
