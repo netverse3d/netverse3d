@@ -20,7 +20,15 @@ const CONFIG = {
 
 function makeRoot(glb = REAL_MODEL) {
   const root = mkdtempSync(join(tmpdir(), 'asset-library-'));
-  for (const folder of ['library/models', 'exported', 'source', 'runtime', 'recipes', 'blocks']) {
+  for (const folder of [
+    'library/models',
+    'exported',
+    'source',
+    'runtime',
+    'recipes',
+    'blocks',
+    'city-maps',
+  ]) {
     mkdirSync(join(root, folder), { recursive: true });
   }
   writeFileSync(join(root, 'assets.config.json'), JSON.stringify(CONFIG));
@@ -30,6 +38,7 @@ function makeRoot(glb = REAL_MODEL) {
   writeFileSync(join(root, 'runtime/shop-look.test.mjs'), 'test');
   writeFileSync(join(root, 'recipes/tim-neon.json'), '{}');
   writeFileSync(join(root, 'blocks/hem-mau.json'), '{}');
+  writeFileSync(join(root, 'city-maps/khu-mau.json'), '{"id":"khu-mau"}');
   writeFileSync(join(root, 'library/models/bot-d1.glb'), REAL_MODEL);
   writeFileSync(join(root, 'library/models/human-hoodie.glb'), REAL_MODEL);
   writeFileSync(join(root, 'exported/player.glb'), glb);
@@ -145,4 +154,15 @@ test('từ chối xuất bản khi mô hình mới là con trỏ LFS', () => {
   const target = join(root, 'out');
   assert.deepEqual(copyLibrary(root, target), ['exported/player.glb']);
   assert.equal(existsSync(target), false);
+});
+
+test('phục vụ và sao chép bản đồ thành phố', () => {
+  const root = makeRoot();
+  assert.equal(
+    resolveRequestPath(root, '/city-maps/khu-mau.json'),
+    join(root, 'city-maps/khu-mau.json'),
+  );
+  const target = join(root, 'out');
+  assert.deepEqual(copyLibrary(root, target), []);
+  assert.equal(readFileSync(join(target, 'city-maps/khu-mau.json'), 'utf8'), '{"id":"khu-mau"}');
 });
