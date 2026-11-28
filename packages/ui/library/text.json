@@ -97,7 +97,7 @@
     "inputs": "Ô nhập và chọn",
     "inputsTitle": "Cài đặt",
     "overlays": "Lớp nổi",
-    "overlaysIntro": "Di chuột hoặc Tab tới nút chuông để thấy tooltip. Enter mở menu và popover, mũi tên chọn mục, Esc đóng và focus quay về nút mở.",
+    "overlaysIntro": "Di chuột hoặc Tab tới nút chuông để thấy tooltip; ba nút kế bên chung một nhóm nên rê qua lại thì tooltip hiện ngay. Enter mở menu và popover, mũi tên chọn mục, Esc đóng và focus quay về nút mở.",
     "tooltipSample": "Thông báo mới",
     "menuTrigger": "Thao tác",
     "menuLabel": "Thao tác với máy",

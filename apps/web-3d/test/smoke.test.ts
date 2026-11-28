@@ -100,6 +100,21 @@ type BrowserSession = Awaited<ReturnType<typeof launchChrome>> & {
   waitFor(expression: string, timeout?: number): Promise<void>;
 };
 
+const HUD_PANEL = `document.querySelector('[data-hud-stat]')?.closest('[role="status"]')`;
+const SEAT_DESKTOP = `document.querySelector('[data-seat-desktop]')`;
+const DESKTOP_RESTORE = `document.querySelector('[data-desktop-restore]')`;
+const PWA_BUTTON = `[...document.querySelectorAll('button')].find((button) => /^(Cài ứng dụng|Cập nhật ứng dụng)$/.test(button.textContent?.trim() ?? ''))`;
+
+async function overlapArea(browser: BrowserSession, first: string, second: string) {
+  return browser.evaluate<number>(`(() => {
+    const a = (${first})?.getBoundingClientRect();
+    const b = (${second})?.getBoundingClientRect();
+    if (!a || !b) return -1;
+    return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+      Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+  })()`);
+}
+
 async function renderPage(
   path: string,
   settled: (state: StageState) => boolean,
@@ -301,6 +316,27 @@ test('trang thử có canvas và nhân vật có mặt, không lỗi console', a
   assert.equal(page.attribute('lighting'), 'shop-neon');
   assert.ok(Number(page.attribute('frames')) >= 1, `frames=${page.attribute('frames')}`);
   assert.deepEqual(page.consoleErrors, []);
+});
+
+test('HUD không xê dịch khi số FPS đổi số chữ số', async (context) => {
+  if (!browserReady(context)) return;
+  let positions: number[] = [];
+  await renderPage(
+    '/',
+    (state) => state.ready === 'true' && Number(state.frames) >= 1,
+    async (browser) => {
+      positions = await browser.evaluate<number[]>(`(() => {
+        const fps = document.querySelector('[data-hud-stat="fps"] strong');
+        const calls = document.querySelector('[data-hud-stat="calls"]');
+        return ['9', '120', '60'].map((digits) => {
+          fps.textContent = digits;
+          return calls.getBoundingClientRect().left;
+        });
+      })()`);
+    },
+  );
+  assert.equal(positions.length, 3);
+  assert.equal(new Set(positions).size, 1, `mép trái ô lệnh vẽ: ${positions.join(', ')}`);
 });
 
 test('recipe không tồn tại quay về tiệm mặc định và preset shop-neon', async (context) => {
@@ -765,6 +801,11 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       assert.ok(mobileLayout.buttonHeight >= 44);
       assert.equal(mobileLayout.pwaPresent, true);
       assert.equal(mobileLayout.pwaOverlapArea, 0);
+      assert.equal(
+        await overlapArea(browser, SEAT_DESKTOP, HUD_PANEL),
+        0,
+        'bảng desktop che HUD ở khổ 390px',
+      );
       await capture('04-mobile-active-session');
       await pressKey(browser, 'Escape', 'Escape');
       await browser.waitFor(`document.querySelector('[data-desktop-restore]')`);
@@ -780,8 +821,40 @@ test('thuê miễn phí cần xác nhận, đồng hồ chạy và kết thúc t
       );
       assert.ok(minimizedBounds.left >= mobileLayout.width / 2);
       assert.ok(minimizedBounds.height >= 44);
+      assert.equal(
+        await overlapArea(browser, DESKTOP_RESTORE, HUD_PANEL),
+        0,
+        'nút mở lại che HUD ở khổ 390px',
+      );
       await browser.evaluate(`document.querySelector('[data-desktop-restore]')?.click()`);
       await browser.waitFor(`document.querySelector('[data-seat-desktop]')`);
+      for (const [width, height] of [
+        [844, 390],
+        [667, 375],
+      ] as const) {
+        await browser.send('Emulation.setDeviceMetricsOverride', {
+          width,
+          height,
+          deviceScaleFactor: 1,
+          mobile: true,
+        });
+        await sleep(300);
+        const size = `${width}×${height}`;
+        const desktopBottom = await browser.evaluate<number>(
+          `${SEAT_DESKTOP}?.getBoundingClientRect().bottom ?? Infinity`,
+        );
+        assert.ok(desktopBottom <= height, `bảng desktop tràn khỏi màn hình ở khổ ${size}`);
+        assert.equal(
+          await overlapArea(browser, SEAT_DESKTOP, HUD_PANEL),
+          0,
+          `bảng desktop che HUD ở khổ ${size}`,
+        );
+        assert.equal(
+          await overlapArea(browser, SEAT_DESKTOP, PWA_BUTTON),
+          0,
+          `bảng desktop che nút ứng dụng ở khổ ${size}`,
+        );
+      }
       await browser.send('Emulation.clearDeviceMetricsOverride');
       await browser.send('Emulation.setTouchEmulationEnabled', { enabled: false });
       await browser.evaluate(`document.querySelector('[data-end-session]')?.click()`);
@@ -944,6 +1017,29 @@ test('bản PWA cài được, cập nhật theo yêu cầu và báo mất kết
       const updateButton = `[...document.querySelectorAll('button')].find(button => button.textContent === 'Cập nhật ứng dụng')`;
       await browser.waitFor(updateButton);
       assert.equal(await browser.evaluate('window.__pwaTestPage'), true);
+      for (const [width, height] of [
+        [390, 844],
+        [844, 390],
+        [1100, 700],
+      ] as const) {
+        await browser.send('Emulation.setDeviceMetricsOverride', {
+          width,
+          height,
+          deviceScaleFactor: 1,
+          mobile: true,
+        });
+        await sleep(300);
+        assert.equal(
+          await overlapArea(
+            browser,
+            `document.querySelector('[data-notice="app-update"]')`,
+            HUD_PANEL,
+          ),
+          0,
+          `thông báo che HUD ở khổ ${width}×${height}`,
+        );
+      }
+      await browser.send('Emulation.clearDeviceMetricsOverride');
       assert.equal(
         await browser.evaluate(
           'navigator.serviceWorker.ready.then(registration => registration.waiting?.state)',

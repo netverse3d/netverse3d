@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Provider } from 'react-redux';
 import { createAppStore } from '../src/state/store.ts';
-import Notices from '../src/ui/notices.tsx';
 import PwaActions from '../src/ui/pwa-actions.tsx';
 import AccountEntry from './account-entry.tsx';
 import ShopView from './shop-view.tsx';
@@ -15,7 +14,6 @@ export default function GameRoot() {
       <ShopView app={app} />
       <AccountEntry />
       <PwaActions />
-      <Notices />
     </Provider>
   );
 }

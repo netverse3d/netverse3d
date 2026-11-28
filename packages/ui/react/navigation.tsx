@@ -3,7 +3,6 @@ import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import {
   useEffect,
   useRef,
-  useState,
   type AnchorHTMLAttributes,
   type ButtonHTMLAttributes,
   type ReactNode,
@@ -11,7 +10,7 @@ import {
 import { pageSteps } from '../src/pagination.mjs';
 import { Button } from './actions.tsx';
 import { Icon } from './icon.tsx';
-import { classNames, splitVariants } from './shared.ts';
+import { classNames, splitVariants, useRememberedValue } from './shared.ts';
 import { VARIANTS, type TextLinkVariants } from './variants.generated.ts';
 
 export type TabItem = { value: string; label: ReactNode; content: ReactNode; disabled?: boolean };
@@ -74,8 +73,7 @@ export function SegmentedControl({
   disabled,
   className,
 }: SegmentedControlProps) {
-  const [chosen, setChosen] = useState(defaultValue ?? options[0]?.value ?? '');
-  const current = value ?? chosen;
+  const [current, remember] = useRememberedValue(value, defaultValue ?? options[0]?.value ?? '');
   return (
     <ToggleGroupPrimitive.Root
       type="single"
@@ -83,7 +81,7 @@ export function SegmentedControl({
       value={current}
       onValueChange={(next) => {
         if (!next) return;
-        setChosen(next);
+        remember(next);
         onValueChange?.(next);
       }}
       disabled={disabled}

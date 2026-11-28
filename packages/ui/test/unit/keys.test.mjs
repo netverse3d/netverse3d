@@ -37,3 +37,12 @@ test('Enter và Esc đã được ô chọn đang mở xử lý thì hộp thuê
   assert.equal(isClaimedKey(keyFrom(insideRole('option'))), true);
   assert.equal(isClaimedKey(keyFrom({ tagName: 'BODY', closest: () => null })), false);
 });
+
+test('phím gõ khi focus ở nút −/+ của NumberStepper thuộc về NumberStepper', () => {
+  const stepperButton = {
+    tagName: 'BUTTON',
+    closest: (selector) => (selector.split(', ').includes('.nv-stepper') ? {} : null),
+  };
+  assert.equal(isWidgetKey(keyFrom(stepperButton)), true);
+  assert.equal(isClaimedKey(keyFrom(stepperButton)), true);
+});

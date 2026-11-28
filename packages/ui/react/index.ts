@@ -6,7 +6,7 @@ export { Accordion, Breadcrumb, Drawer, Table } from './layout.tsx';
 export { Pagination, SegmentedControl, Tabs, TextLink } from './navigation.tsx';
 export { NotificationBell, ToastStack } from './notices.tsx';
 export { ColorSwatch, ItemGrid, NumberStepper, Slider } from './pickers.tsx';
-export { DropdownMenu, Popover, Tooltip } from './overlays.tsx';
+export { DropdownMenu, Popover, Tooltip, TooltipGroup } from './overlays.tsx';
 export { Select } from './select.tsx';
 export { Alert, Badge, Meter, Overlay, Status, Toast } from './feedback.tsx';
 export { Dialog, ListItem, Panel, ShopCard, Tile } from './surfaces.tsx';

@@ -62,7 +62,8 @@ Thêm một component:
 
 ## Dùng component trong màn hình
 
-- Import từ `@netverse/ui/react`: `Button`, `IconButton`, `Panel`, `Dialog`, `TextField`, `Textarea`, `SearchField`, `Select`, `Switch`, `RadioGroup`, `Tooltip`, `DropdownMenu`, `Popover`, `Tabs`, `Pagination`, `TextLink`, `Chip`, `Skeleton`, `ProgressBar`, `EmptyState`, `Divider`, `ToastStack`, `NotificationBell`, `ColorSwatch`, `ItemGrid`, `Slider`, `NumberStepper`, `Drawer`, `Accordion`, `Table`, `Breadcrumb`, `Text`, `Heading`, `Alert`, `Toast`, `Badge`, `ListItem`… Danh sách đủ là bảng sổ đăng ký trong Thư viện giao diện.
+- Import từ `@netverse/ui/react`: `Button`, `IconButton`, `Panel`, `Dialog`, `TextField`, `Textarea`, `SearchField`, `Select`, `Switch`, `RadioGroup`, `Tooltip`, `TooltipGroup`, `DropdownMenu`, `Popover`, `Tabs`, `Pagination`, `TextLink`, `Chip`, `Skeleton`, `ProgressBar`, `EmptyState`, `Divider`, `ToastStack`, `NotificationBell`, `ColorSwatch`, `ItemGrid`, `Slider`, `NumberStepper`, `Drawer`, `Accordion`, `Table`, `Breadcrumb`, `Text`, `Heading`, `Alert`, `Toast`, `Badge`, `ListItem`… Danh sách đủ là bảng sổ đăng ký trong Thư viện giao diện.
+- Nhiều nút có tooltip đứng cạnh nhau (thanh công cụ, hàng biểu tượng) bọc chung trong `TooltipGroup`: rê từ nút này sang nút kế bên thì tooltip hiện ngay, không chờ lại độ trễ.
 - Tham số có kiểu sinh từ sổ đăng ký (`packages/ui/react/variants.generated.ts`); truyền giá trị ngoài sổ thì `tsc` báo lỗi. Đổi sổ đăng ký thì chạy `pnpm --filter @netverse/ui types`; test của `packages/ui` đỏ nếu quên.
 - CSS của component nằm trong `@layer netverse-components`, nên quy tắc dàn trang trong `.module.css` của màn hình luôn thắng mà không cần tăng độ ưu tiên.
 - Component nhận `className` để màn hình đặt vị trí, cùng mọi thuộc tính `data-*`, `aria-*`, `role` và sự kiện. Không nhận `style`.

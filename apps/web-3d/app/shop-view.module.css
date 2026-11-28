@@ -4,6 +4,28 @@
   height: 100%;
 }
 
+.corner {
+  display: contents;
+}
+
+@media (max-width: 1123px) {
+  .corner {
+    position: absolute;
+    top: var(--ui-space-3);
+    right: var(--ui-space-3);
+    left: var(--ui-space-3);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ui-space-2);
+    pointer-events: none;
+  }
+
+  .corner > * {
+    pointer-events: auto;
+  }
+}
+
 .canvas {
   display: block;
   width: 100%;

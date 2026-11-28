@@ -1198,6 +1198,10 @@
     fill: var(--nv-tone);
   }
 
+  .nv-tooltip-group {
+    display: contents;
+  }
+
   .nv-tooltip {
     max-width: 240px;
     padding: var(--ui-space-1) var(--ui-space-2);

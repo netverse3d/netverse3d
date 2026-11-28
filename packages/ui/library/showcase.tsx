@@ -138,7 +138,7 @@ function InputsPreview({ text }: { text: ComponentText }) {
   );
 }
 
-const OVERLAY_DEMOS = ['tooltip', 'dropdown-menu', 'popover'] as const;
+const OVERLAY_DEMOS = ['tooltip', 'tooltip-group', 'dropdown-menu', 'popover'] as const;
 
 function OverlaysPreview({ text }: { text: ComponentText }) {
   return (

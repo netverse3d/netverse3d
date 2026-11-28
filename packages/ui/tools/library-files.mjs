@@ -9,9 +9,12 @@ const fontRoot = dirname(
   createRequire(import.meta.url).resolve('@fontsource/be-vietnam-pro/package.json'),
 );
 
-function bundleOptions(target, { production }) {
+function bundleOptions(
+  target,
+  { production, entryPoints = { library: join(root, 'library', 'main.tsx') } },
+) {
   return {
-    entryPoints: { library: join(root, 'library', 'main.tsx') },
+    entryPoints,
     bundle: true,
     format: 'esm',
     target: 'es2022',
@@ -30,6 +33,11 @@ function copyStatic(target) {
   mkdirSync(join(target, 'fonts'), { recursive: true });
   copyFileSync(join(root, 'library', 'index.html'), join(target, 'index.html'));
   copyFileSync(join(fontRoot, 'LICENSE'), join(target, 'fonts', 'LICENSE'));
+}
+
+export async function buildPage(target, name, entry) {
+  mkdirSync(target, { recursive: true });
+  await build(bundleOptions(target, { production: true, entryPoints: { [name]: entry } }));
 }
 
 export async function buildLibrary(target) {

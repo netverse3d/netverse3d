@@ -50,6 +50,7 @@ import {
   Toast,
   ToastStack,
   Tooltip,
+  TooltipGroup,
 } from '../react/index.ts';
 import { Icon } from '../react/icon.tsx';
 import { componentProps } from '../src/registry.mjs';
@@ -357,6 +358,15 @@ export const DEMOS: Record<string, (props: DemoProps) => ReactNode> = {
     <Tooltip content={text.tooltipSample} defaultOpen={!closed}>
       <IconButton icon="bell" label={text.icons.bell} />
     </Tooltip>
+  ),
+  'tooltip-group': ({ text }) => (
+    <TooltipGroup>
+      {(['friends', 'bag', 'gear'] as const).map((icon) => (
+        <Tooltip key={icon} content={text.icons[icon]}>
+          <IconButton icon={icon} label={text.icons[icon]} />
+        </Tooltip>
+      ))}
+    </TooltipGroup>
   ),
   'dropdown-menu': (props) => <MenuDemo {...props} />,
   tabs: ({ text }) => (

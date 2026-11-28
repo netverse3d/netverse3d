@@ -1,9 +1,17 @@
-import { createReadStream, existsSync, mkdtempSync, rmSync, statSync } from 'node:fs';
+import {
+  createReadStream,
+  existsSync,
+  mkdtempSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { extname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { sleep } from '../../../../scripts/browser/cdp.mjs';
-import { buildLibrary } from '../../tools/library-files.mjs';
+import { buildLibrary, buildPage } from '../../tools/library-files.mjs';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -13,14 +21,32 @@ const TYPES = {
   '.woff': 'font/woff',
   '.jpg': 'image/jpeg',
 };
+const FIXTURES = fileURLToPath(new URL('../browser/fixtures/', import.meta.url));
 const KEYS = {
   Enter: { code: 13, text: '\r' },
   Escape: { code: 27 },
+  ArrowUp: { code: 38 },
+  ArrowDown: { code: 40 },
 };
 
 export async function serveLibrary() {
+  return serveBuilt((folder) => buildLibrary(folder));
+}
+
+export async function serveFixture(name) {
+  return serveBuilt(async (folder) => {
+    await buildPage(folder, name, resolve(FIXTURES, `${name}.tsx`));
+    writeFileSync(resolve(folder, 'index.html'), fixtureHtml(name));
+  });
+}
+
+function fixtureHtml(name) {
+  return `<!doctype html><html lang="vi"><head><meta charset="utf-8" /><link rel="stylesheet" href="./${name}.css" /><script type="module" src="./${name}.js"></script></head><body><div id="root"></div></body></html>`;
+}
+
+async function serveBuilt(prepare) {
   const folder = mkdtempSync(resolve(tmpdir(), 'netverse-library-'));
-  await buildLibrary(folder);
+  await prepare(folder);
   const root = resolve(folder);
   const server = createServer((request, response) => {
     const path = decodeURIComponent(new URL(request.url, 'http://x').pathname);

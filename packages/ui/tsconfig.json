@@ -17,5 +17,11 @@
     "noEmit": true,
     "types": []
   },
-  "include": ["react/**/*.ts", "react/**/*.tsx", "library/**/*.ts", "library/**/*.tsx"]
+  "include": [
+    "react/**/*.ts",
+    "react/**/*.tsx",
+    "library/**/*.ts",
+    "library/**/*.tsx",
+    "test/**/*.tsx"
+  ]
 }

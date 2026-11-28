@@ -301,6 +301,16 @@
       "demo": "tooltip"
     },
     {
+      "id": "tooltip-group",
+      "kind": "component",
+      "react": "TooltipGroup",
+      "className": "nv-tooltip-group",
+      "uses": [],
+      "props": {},
+      "criteria": ["T2", "T6", "L1"],
+      "demo": "tooltip-group"
+    },
+    {
       "id": "dropdown-menu",
       "kind": "component",
       "react": "DropdownMenu",
