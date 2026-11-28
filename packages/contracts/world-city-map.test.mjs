@@ -80,3 +80,15 @@ for (const [name, mutate] of [
     assert.equal(validate(invalid), false);
   });
 }
+
+test('từ chối thời gian đỏ toàn phần bằng không', () => {
+  const invalid = structuredClone(map);
+  invalid.districts[0].junctions[0].signal = {
+    order: ['north'],
+    green: 8,
+    yellow: 2,
+    allRed: 0,
+    offset: 0,
+  };
+  assert.equal(validate(invalid), false);
+});

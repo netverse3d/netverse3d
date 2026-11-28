@@ -376,3 +376,337 @@ test('tính vạch trong làn khi tâm nút nằm ngoài cuối làn', () => {
     [{ distance: 10, arm: 'west', plan }],
   );
 });
+
+test('phát hiện lô hai khu chồng nhau trong tọa độ thế giới', () => {
+  const d = {
+    id: 'a',
+    name: 'A',
+    origin: [0, 0],
+    blocks: [],
+    roads: [],
+    junctions: [],
+    lots: [{ id: 'one', at: [2, 2], size: [1, 1], kind: 'empty', facing: 'north', components: [] }],
+  };
+  const city = {
+    grid: 4,
+    districts: [
+      d,
+      {
+        ...structuredClone(d),
+        id: 'b',
+        origin: [1, 0],
+        lots: [{ ...d.lots[0], id: 'two', at: [1, 2] }],
+      },
+    ],
+  };
+  assert.ok(cityMapIssues(city, { blocks, config }).some((issue) => issue.code === 'lot-overlap'));
+});
+
+test('lắp đường hẻm và ngã ba được khai trong bản đồ', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        blocks: [],
+        roads: [{ id: 'r', tier: 'alley', from: [0, 0], to: [2, 0] }],
+        junctions: [
+          {
+            id: 'j',
+            at: [2, 0],
+            kind: 'tee',
+            arms: [{ id: 'west' }, { id: 'north' }, { id: 'south' }],
+          },
+        ],
+        lots: [],
+      },
+    ],
+  };
+  const result = cityPlan(city, { blocks }).placements;
+  assert.ok(result.some((p) => p.part === 'road_a' && p.position[0] === 4));
+  assert.ok(result.some((p) => p.part === 'road_c' && p.position[0] === 8));
+});
+
+test('thứ tự pha thiếu một nhánh phải bị báo lỗi', () => {
+  const invalid = structuredClone(map);
+  invalid.districts[0].junctions.push({
+    id: 'j',
+    at: [0, 0],
+    arms: [
+      { id: 'west', road: 'x' },
+      { id: 'north', road: 'x' },
+    ],
+    signal: { order: ['west'] },
+  });
+  assert.ok(
+    cityMapIssues(invalid, { blocks, config }).some((issue) => issue.code === 'signal-order-arm'),
+  );
+});
+
+test('báo thành phần chưa đăng ký được khai trong khối', () => {
+  const bad = structuredClone(block);
+  bad.variants.sidewalk = 'notregistered';
+  assert.ok(
+    cityMapIssues(map, { blocks: { 'hem-mau': bad }, config }).some(
+      (issue) => issue.code === 'unregistered',
+    ),
+  );
+});
+
+test('phát hiện lô chồng một phần lên khối xoay', () => {
+  const invalid = structuredClone(map);
+  invalid.districts[0].blocks[0].rotation = 90;
+  invalid.districts[0].lots.push({
+    id: 'l',
+    at: [1, 2],
+    size: [1, 1],
+    kind: 'empty',
+    facing: 'north',
+    components: [],
+  });
+  assert.ok(
+    cityMapIssues(invalid, { blocks, config }).some(
+      (issue) => issue.code === 'lot-overlap' || issue.code === 'lot-on-road',
+    ),
+  );
+});
+
+test('giới hạn lô tính tới mép ngoài ô đầu và ô cuối', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        blocks: [],
+        roads: [],
+        junctions: [],
+        lots: [{ at: [0, 0], size: [1, 1] }],
+      },
+    ],
+  };
+  assert.deepEqual(mapBounds(city, { blocks }), { minX: -2, maxX: 2, minZ: -2, maxZ: 2 });
+});
+
+test('vạch tại hai nút không dùng nhầm pha đèn của nút khác', () => {
+  const make = (at, green) => ({
+    at,
+    arms: [{ id: 'west', crossing: false, stopLine: 1 }],
+    signal: { order: ['west'], green, yellow: 2, allRed: 3, offset: 0 },
+  });
+  const first = make([2, 0], 8),
+    second = make([4, 0], 12);
+  const city = { grid: 4, districts: [{ origin: [0, 0], junctions: [first, second] }] };
+  const plan = createJunctionPlan(junctionPlanFor(first));
+  const lines = stopLinesFor(
+    city,
+    {
+      points: [
+        [0, 0],
+        [20, 0],
+      ],
+    },
+    plan,
+  );
+  assert.equal(lines.length, 2);
+  assert.equal(lines[0].plan, plan);
+  assert.equal(lines[1].distance, 15);
+  assert.equal(lines[1].plan.green, 12);
+});
+
+test('báo lỗi lô trong khối khi đè lên đường', () => {
+  const bad = structuredClone(block);
+  bad.lots[0].cell = [0, 2];
+  assert.ok(
+    cityMapIssues(map, { blocks: { 'hem-mau': bad }, config }).some(
+      (item) => item.code === 'lot-on-road',
+    ),
+  );
+});
+
+test('không gắn vạch dừng vào nút giao không có đèn', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        junctions: [{ at: [2, 0], signal: null, arms: [{ id: 'west', stopLine: 1 }] }],
+      },
+    ],
+  };
+  assert.deepEqual(
+    stopLinesFor(
+      city,
+      {
+        points: [
+          [0, 0],
+          [12, 0],
+        ],
+      },
+      { arms: ['west'] },
+    ),
+    [],
+  );
+});
+
+test('đường nhiều làn dựng đủ ô và đối xứng qua trục', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        blocks: [],
+        roads: [
+          { id: 'r', tier: 'avenue', from: [0, 0], to: [2, 0], lanes: { forward: 2, backward: 1 } },
+        ],
+        junctions: [],
+        lots: [],
+      },
+    ],
+  };
+  const placements = cityPlan(city, { blocks }).placements;
+  assert.equal(placements.length, 9);
+  assert.deepEqual(
+    [...new Set(placements.map((item) => item.position[2]))].sort((a, b) => a - b),
+    [-4, 0, 4],
+  );
+});
+
+test('giới hạn đường gồm cả bề rộng mặt hẻm', () => {
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        blocks: [],
+        roads: [{ tier: 'alley', from: [0, 0], to: [2, 0], lanes: { forward: 1, backward: 1 } }],
+        junctions: [],
+        lots: [],
+      },
+    ],
+  };
+  assert.deepEqual(mapBounds(city, { blocks }), { minX: -2, maxX: 10, minZ: -2, maxZ: 2 });
+});
+
+test('phát hiện đường khu khác lấn lô trong khối', () => {
+  const first = structuredClone(map.districts[0]);
+  const second = {
+    id: 'other',
+    name: 'Other',
+    origin: [0, 0],
+    blocks: [],
+    roads: [{ id: 'r', from: [0, 0], to: [0, 1] }],
+    junctions: [],
+    lots: [],
+  };
+  assert.ok(
+    cityMapIssues({ grid: 4, districts: [first, second] }, { blocks, config }).some(
+      (item) => item.code === 'lot-on-road',
+    ),
+  );
+});
+
+test('mỗi nút giữ vạch người đi bộ của chính nó dù chu kỳ giống nhau', () => {
+  const signal = { order: ['west'], green: 8, yellow: 2, allRed: 3, offset: 0 };
+  const first = { at: [2, 0], arms: [{ id: 'west', crossing: true, stopLine: 1 }], signal };
+  const second = { at: [4, 0], arms: [{ id: 'west', crossing: false, stopLine: 1 }], signal };
+  const city = { grid: 4, districts: [{ origin: [0, 0], junctions: [first, second] }] };
+  const plan = createJunctionPlan(junctionPlanFor(first));
+  const lines = stopLinesFor(
+    city,
+    {
+      points: [
+        [0, 0],
+        [20, 0],
+      ],
+    },
+    plan,
+  );
+  assert.equal(lines[0].plan.crossings.length, 1);
+  assert.equal(lines[1].plan.crossings.length, 0);
+});
+
+test('lô chồng lên phần rìa đường nhiều làn bị báo lỗi', () => {
+  const d = {
+    id: 'd',
+    origin: [0, 0],
+    blocks: [],
+    roads: [
+      { id: 'r', tier: 'avenue', from: [0, 0], to: [4, 0], lanes: { forward: 2, backward: 2 } },
+    ],
+    junctions: [],
+    lots: [{ id: 'l', at: [2, 1], size: [1, 1], kind: 'empty', facing: 'north', components: [] }],
+  };
+  assert.ok(
+    cityMapIssues({ grid: 4, districts: [d] }, { blocks, config }).some(
+      (i) => i.code === 'lot-on-road',
+    ),
+  );
+});
+
+test('hai khối đặt chồng được báo lỗi', () => {
+  const city = structuredClone(map);
+  city.districts[0].blocks.push(structuredClone(city.districts[0].blocks[0]));
+  assert.ok(cityMapIssues(city, { blocks, config }).some((i) => i.code === 'lot-overlap'));
+});
+
+test('làn lệch tâm vẫn nhận vạch dừng cùng nhánh', () => {
+  const junction = {
+    at: [2, 0],
+    signal: { order: ['west'], green: 8, yellow: 2, allRed: 3, offset: 0 },
+    arms: [{ id: 'west', road: 'r', crossing: false, stopLine: 1 }],
+  };
+  const city = {
+    grid: 4,
+    districts: [
+      {
+        origin: [0, 0],
+        roads: [
+          { id: 'r', tier: 'avenue', from: [0, 0], to: [2, 0], lanes: { forward: 1, backward: 1 } },
+        ],
+        junctions: [junction],
+      },
+    ],
+  };
+  const plan = createJunctionPlan(junctionPlanFor(junction));
+  assert.deepEqual(
+    stopLinesFor(
+      city,
+      {
+        points: [
+          [0, 2],
+          [12, 2],
+        ],
+      },
+      plan,
+    ),
+    [{ distance: 7, arm: 'west', plan }],
+  );
+});
+
+test('phát hiện đường cùng khu lấn lô trong khối', () => {
+  const city = structuredClone(map);
+  city.districts[0].roads.push({
+    id: 'r',
+    tier: 'alley',
+    from: [0, 0],
+    to: [0, 1],
+    lanes: { forward: 1, backward: 1 },
+  });
+  assert.ok(cityMapIssues(city, { blocks, config }).some((i) => i.code === 'lot-on-road'));
+});
+
+test('hai đoạn đường ở hai khu nối nhau tại một điểm', () => {
+  const d = {
+    id: 'a',
+    origin: [0, 0],
+    blocks: [],
+    roads: [
+      { id: 'r', tier: 'alley', from: [0, 0], to: [1, 0], lanes: { forward: 1, backward: 1 } },
+    ],
+    junctions: [],
+    lots: [],
+  };
+  const e = { ...structuredClone(d), id: 'b', origin: [1, 0] };
+  const issues = cityMapIssues({ grid: 4, districts: [d, e] }, { blocks, config });
+  assert.equal(issues.filter((item) => item.code === 'road-gap').length, 2);
+});

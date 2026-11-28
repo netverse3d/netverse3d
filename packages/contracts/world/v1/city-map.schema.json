@@ -70,19 +70,10 @@
                   "maxItems": 2
                 },
                 "rotation": {
-                  "enum": [
-                    0,
-                    90,
-                    180,
-                    270
-                  ]
+                  "enum": [0, 90, 180, 270]
                 }
               },
-              "required": [
-                "ref",
-                "at",
-                "rotation"
-              ]
+              "required": ["ref", "at", "rotation"]
             }
           },
           "roads": {
@@ -96,11 +87,7 @@
                   "minLength": 1
                 },
                 "tier": {
-                  "enum": [
-                    "alley",
-                    "two-lane",
-                    "avenue"
-                  ]
+                  "enum": ["alley", "two-lane", "avenue"]
                 },
                 "from": {
                   "type": "array",
@@ -145,19 +132,10 @@
                       "maximum": 4
                     }
                   },
-                  "required": [
-                    "forward",
-                    "backward"
-                  ]
+                  "required": ["forward", "backward"]
                 }
               },
-              "required": [
-                "id",
-                "tier",
-                "from",
-                "to",
-                "lanes"
-              ]
+              "required": ["id", "tier", "from", "to", "lanes"]
             }
           },
           "junctions": {
@@ -185,10 +163,7 @@
                   "maxItems": 2
                 },
                 "kind": {
-                  "enum": [
-                    "tee",
-                    "cross"
-                  ]
+                  "enum": ["tee", "cross"]
                 },
                 "arms": {
                   "type": "array",
@@ -197,12 +172,7 @@
                     "additionalProperties": false,
                     "properties": {
                       "id": {
-                        "enum": [
-                          "north",
-                          "east",
-                          "south",
-                          "west"
-                        ]
+                        "enum": ["north", "east", "south", "west"]
                       },
                       "road": {
                         "type": "string",
@@ -216,12 +186,7 @@
                         "minimum": 0
                       }
                     },
-                    "required": [
-                      "id",
-                      "road",
-                      "crossing",
-                      "stopLine"
-                    ]
+                    "required": ["id", "road", "crossing", "stopLine"]
                   }
                 },
                 "signal": {
@@ -233,12 +198,7 @@
                         "order": {
                           "type": "array",
                           "items": {
-                            "enum": [
-                              "north",
-                              "east",
-                              "south",
-                              "west"
-                            ]
+                            "enum": ["north", "east", "south", "west"]
                           },
                           "minItems": 1,
                           "uniqueItems": true
@@ -253,19 +213,13 @@
                         },
                         "allRed": {
                           "type": "number",
-                          "minimum": 0
+                          "exclusiveMinimum": 0
                         },
                         "offset": {
                           "type": "number"
                         }
                       },
-                      "required": [
-                        "order",
-                        "green",
-                        "yellow",
-                        "allRed",
-                        "offset"
-                      ]
+                      "required": ["order", "green", "yellow", "allRed", "offset"]
                     },
                     {
                       "type": "null"
@@ -273,13 +227,7 @@
                   ]
                 }
               },
-              "required": [
-                "id",
-                "at",
-                "kind",
-                "arms",
-                "signal"
-              ]
+              "required": ["id", "at", "kind", "arms", "signal"]
             }
           },
           "lots": {
@@ -323,21 +271,10 @@
                   "maxItems": 2
                 },
                 "kind": {
-                  "enum": [
-                    "shop",
-                    "house",
-                    "landmark",
-                    "park",
-                    "empty"
-                  ]
+                  "enum": ["shop", "house", "landmark", "park", "empty"]
                 },
                 "facing": {
-                  "enum": [
-                    "north",
-                    "east",
-                    "south",
-                    "west"
-                  ]
+                  "enum": ["north", "east", "south", "west"]
                 },
                 "shop": {
                   "type": "string",
@@ -376,42 +313,18 @@
                         "maxItems": 2
                       },
                       "facing": {
-                        "enum": [
-                          "north",
-                          "east",
-                          "south",
-                          "west"
-                        ]
+                        "enum": ["north", "east", "south", "west"]
                       }
                     },
-                    "required": [
-                      "kit",
-                      "slot",
-                      "variant"
-                    ]
+                    "required": ["kit", "slot", "variant"]
                   }
                 }
               },
-              "required": [
-                "id",
-                "at",
-                "size",
-                "kind",
-                "facing",
-                "components"
-              ]
+              "required": ["id", "at", "size", "kind", "facing", "components"]
             }
           }
         },
-        "required": [
-          "id",
-          "name",
-          "origin",
-          "blocks",
-          "roads",
-          "junctions",
-          "lots"
-        ]
+        "required": ["id", "name", "origin", "blocks", "roads", "junctions", "lots"]
       }
     },
     "pending": {
@@ -437,18 +350,9 @@
             "minimum": 1
           }
         },
-        "required": [
-          "kit",
-          "slot",
-          "issue"
-        ]
+        "required": ["kit", "slot", "issue"]
       }
     }
   },
-  "required": [
-    "id",
-    "name",
-    "grid",
-    "districts"
-  ]
+  "required": ["id", "name", "grid", "districts"]
 }
