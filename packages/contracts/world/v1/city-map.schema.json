@@ -1,0 +1,454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netverse3d.github.io/contracts/world/v1/city-map.schema.json",
+  "title": "City map",
+  "x-status": "draft",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "grid": {
+      "const": 4
+    },
+    "districts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "rotation": {
+                  "enum": [
+                    0,
+                    90,
+                    180,
+                    270
+                  ]
+                }
+              },
+              "required": [
+                "ref",
+                "at",
+                "rotation"
+              ]
+            }
+          },
+          "roads": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tier": {
+                  "enum": [
+                    "alley",
+                    "two-lane",
+                    "avenue"
+                  ]
+                },
+                "from": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "to": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "lanes": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "forward": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 4
+                    },
+                    "backward": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4
+                    }
+                  },
+                  "required": [
+                    "forward",
+                    "backward"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "tier",
+                "from",
+                "to",
+                "lanes"
+              ]
+            }
+          },
+          "junctions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "kind": {
+                  "enum": [
+                    "tee",
+                    "cross"
+                  ]
+                },
+                "arms": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "enum": [
+                          "north",
+                          "east",
+                          "south",
+                          "west"
+                        ]
+                      },
+                      "road": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "crossing": {
+                        "type": "boolean"
+                      },
+                      "stopLine": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "road",
+                      "crossing",
+                      "stopLine"
+                    ]
+                  }
+                },
+                "signal": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "order": {
+                          "type": "array",
+                          "items": {
+                            "enum": [
+                              "north",
+                              "east",
+                              "south",
+                              "west"
+                            ]
+                          },
+                          "minItems": 1,
+                          "uniqueItems": true
+                        },
+                        "green": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "yellow": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "allRed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "offset": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "order",
+                        "green",
+                        "yellow",
+                        "allRed",
+                        "offset"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "at",
+                "kind",
+                "arms",
+                "signal"
+              ]
+            }
+          },
+          "lots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "at": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "size": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "kind": {
+                  "enum": [
+                    "shop",
+                    "house",
+                    "landmark",
+                    "park",
+                    "empty"
+                  ]
+                },
+                "facing": {
+                  "enum": [
+                    "north",
+                    "east",
+                    "south",
+                    "west"
+                  ]
+                },
+                "shop": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "components": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "kit": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "slot": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "variant": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "at": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "facing": {
+                        "enum": [
+                          "north",
+                          "east",
+                          "south",
+                          "west"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kit",
+                      "slot",
+                      "variant"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "at",
+                "size",
+                "kind",
+                "facing",
+                "components"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "origin",
+          "blocks",
+          "roads",
+          "junctions",
+          "lots"
+        ]
+      }
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slot": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant": {
+            "type": "string",
+            "minLength": 1
+          },
+          "issue": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "kit",
+          "slot",
+          "issue"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "grid",
+    "districts"
+  ]
+}

@@ -38,6 +38,7 @@ Mỗi loại hợp đồng có thư mục phiên bản: `<loại>/v<N>/<tên>`, 
 | `realtime/v1/protocol.schema.json`   | game         | nháp       |
 | `world/v1/shop-look.schema.json`     | game-assets  | nháp       |
 | `world/v1/street-block.schema.json`  | game-assets  | nháp       |
+| `world/v1/city-map.schema.json`      | game-assets  | nháp       |
 
 ## Kiểm tra
 
