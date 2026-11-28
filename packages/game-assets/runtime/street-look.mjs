@@ -71,6 +71,11 @@ export const STREET_CELL = 4;
 export const STOREY_HEIGHT = 3.8;
 export const LOT_CELLS = 2;
 export const SIDEWALK_TOP = 0.15;
+const ROAD_SURFACE_PATTERN = /^(road|lane)_[abc](?:_\d+(?:_\d+)?)?$/;
+
+export function isRoadSurfacePart(name) {
+  return ROAD_SURFACE_PATTERN.test(name ?? '');
+}
 const SIDEWALK_DEPTH = 1;
 const ROAD_VARIANT = { straight: 'a', corner: 'b', tee: 'c' };
 const OUTWARD = { south: [0, 1], north: [0, -1], east: [1, 0], west: [-1, 0] };

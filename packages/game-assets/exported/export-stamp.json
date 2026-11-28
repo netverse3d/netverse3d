@@ -1,5 +1,5 @@
 {
-  "config": "279855936d474e4d29e08ff50cb2eb3868e58098b60fc1b8f587fed3c5122e94",
+  "config": "38da106b7a12fe7c4b6731e69c2025142ffe55b24234b5c0ccfec0bd60696f74",
   "sources": {
     "character-base.blend": "d95d6a4244635eb30bb06af70a11946ba1091dce9676af811f9d910123f1b445",
     "clips.blend": "99383511e93e0cab91a401957c879dd4889c5ebd1c446689319f28de676cddfb",
@@ -20,6 +20,7 @@
     "parts-park.blend": "da2eeb395c20a95900504101ebfe275752c74263142fd7b8802a49ca1167c2b9",
     "parts-landmark.blend": "1a0aedb7d7fc16dfa0f19cacb1b25dbfb74e76145c8e5ffe798bda8fbda8fc9f",
     "parts-alley.blend": "fb3808661644b82ee0c33c1e48f58aee40969a27b2be2fa91cf2e0c38321eeeb",
+    "parts-road.blend": "d447400e73f5068130e7a5bf72c529fc19817548bf4166d23ef9a0e3083b4839",
     "showcase-tim-neon.blend": "1c893d1ac8aefae926fd49d979500cfd2b8079cc837b472610afd96771ccdf70",
     "showcase-hem-mau.blend": "ce9b39dbea236414c7a7f888f30803b38dc31c1676a1dc49646a5da5c6ce8012"
   },
@@ -41,6 +42,7 @@
     "park-parts.glb": "30207ce21cae206f4c7b03ff04665554d3d69587c26d7eb68a0f7ce09faae3c7",
     "landmark-parts.glb": "82ea48b0aad0b06c23c18e48fc084a5bae18a59a6a6fd8131027fd64d9db43bf",
     "alley-parts.glb": "55ebb70430377429cdc225d74adac43883c6d6a5344ab0d5f6a652bf7731210a",
+    "road-parts.glb": "d59dc4db1276d2a8dafb934fd7f6354910c1eb64f44e48fabdb76ac916a41e94",
     "showcase-tim-neon.glb": "2c5acfe482d39e88881cbea75257c054cafea21bd19a65356744b3d9b780e4d7",
     "showcase-tim-neon-base.jpg": "a5766f32c59ca74f54b2431a17acd0f067768e556289d33d964cd36837d4cec0",
     "showcase-tim-neon-spill.jpg": "64a0e9d62da6f2b90eb30720c4b15fa821ba096ae81982ea66fecad037bff684",

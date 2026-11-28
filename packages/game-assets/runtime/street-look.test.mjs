@@ -22,6 +22,7 @@ import {
   createFireworksSystem,
   getHolidayEvent,
   isHolidayFireworks,
+  isRoadSurfacePart,
   sidewalkPlacements,
   sidewalkWaypoints,
   streetPlan,
@@ -326,6 +327,34 @@ test('applyWeatherToOutdoor gửi bộ thay đổi qua handle và cập nhật �
     exposure: weather.exposure,
   });
   assert.equal(materials.surface.roughness, 0.15);
+});
+
+test('isRoadSurfacePart nhận diện cả mặt đường hẻm road_* và làn đường lớn lane_*', () => {
+  for (const name of [
+    'road_a',
+    'road_b',
+    'road_c',
+    'road_a_01',
+    'road_b_03_1',
+    'lane_a',
+    'lane_b',
+    'lane_c',
+    'lane_a_01',
+    'lane_c_04_2',
+  ]) {
+    assert.equal(isRoadSurfacePart(name), true, `${name} phải được nhận là mặt đường`);
+  }
+  for (const name of [
+    'verge_a',
+    'median_a',
+    'median_b',
+    'mark_a',
+    'mark_d',
+    'sidewalk_a',
+    'lamp_a',
+  ]) {
+    assert.equal(isRoadSurfacePart(name), false, `${name} không phải mặt nhựa đường`);
+  }
 });
 
 test('street-look tái xuất các hàm pháo hoa và lịch sự kiện lễ Tết', () => {

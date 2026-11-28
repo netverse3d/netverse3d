@@ -330,6 +330,69 @@ export function facadeAssemblies(parts) {
   return assemblies;
 }
 
+export function roadAssemblies(parts) {
+  const variants = (slot) => parts.filter((name) => name.startsWith(`${slot}_`));
+  const assemblies = [];
+  const lanes = variants('lane');
+  for (const lane of lanes) {
+    assemblies.push({
+      name: `${lane} beside ${lane}`,
+      places: [
+        [lane, [0, 0, 0], 0],
+        [lane, [LOT, 0, 0], 0],
+        [lane, [0, 0, LOT], 0],
+      ],
+    });
+    for (const mark of variants('mark')) {
+      assemblies.push({
+        name: `${mark} on ${lane}`,
+        places: [
+          [lane, [0, 0, 0], 0],
+          [mark, [0, 0, 0], 0],
+        ],
+      });
+    }
+  }
+  for (const median of variants('median')) {
+    assemblies.push({
+      name: `${median} beside ${median}`,
+      places: [
+        [median, [0, 0, 0], 0],
+        [median, [LOT, 0, 0], 0],
+      ],
+    });
+    if (lanes.length > 0) {
+      assemblies.push({
+        name: `${median} on ${lanes[0]}`,
+        places: [
+          [lanes[0], [0, 0, -2], Math.PI],
+          [lanes[0], [0, 0, 2], 0],
+          [median, [0, 0, 0], 0],
+        ],
+      });
+    }
+  }
+  for (const verge of variants('verge')) {
+    assemblies.push({
+      name: `${verge} beside ${verge}`,
+      places: [
+        [verge, [0, 0, 0], 0],
+        [verge, [LOT, 0, 0], 0],
+      ],
+    });
+    if (lanes.length > 0) {
+      assemblies.push({
+        name: `${verge} beside ${lanes[0]}`,
+        places: [
+          [lanes[0], [0, 0, 0], 0],
+          [verge, [0, 0, 3], Math.PI],
+        ],
+      });
+    }
+  }
+  return assemblies;
+}
+
 export function kitOverlaps(gltf, bin, parts, assemblies = []) {
   const cache = new Map();
   const trianglesOf = (name) => {

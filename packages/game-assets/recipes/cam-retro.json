@@ -111,7 +111,11 @@
     "crescent_shaft": "a",
     "crescent_podium": "a",
     "bundled_shaft": "a",
-    "bundled_podium": "a"
+    "bundled_podium": "a",
+    "lane": "b",
+    "median": "a",
+    "verge": "a",
+    "mark": "c"
   },
   "layout": {
     "cells": [3, 3],

@@ -10,6 +10,7 @@ import {
   partTriangles,
   placeTriangles,
   facadeAssemblies,
+  roadAssemblies,
   roomAssemblies,
 } from './coplanar.mjs';
 import { isLfsPointer, loadConfig, readGlb, readGlbBinary } from './lib.mjs';
@@ -202,4 +203,19 @@ test('bộ phòng thật không có mặt trùng phẳng chồng nhau, kể cả
   const gltf = readGlb(buffer);
   const errors = checkCoplanar(gltf, readGlbBinary(buffer), parts, roomAssemblies(parts));
   assert.deepEqual(errors, []);
+});
+
+test('bộ đường lớn sinh ra đủ cụm ghép làn đường, vạch kẻ, dải phân cách và vỉa hè trên lưới 4 m', () => {
+  const names = roadAssemblies(['lane_a', 'median_a', 'verge_a', 'mark_a']).map(
+    (item) => item.name,
+  );
+  assert.deepEqual(names, [
+    'lane_a beside lane_a',
+    'mark_a on lane_a',
+    'median_a beside median_a',
+    'median_a on lane_a',
+    'verge_a beside verge_a',
+    'verge_a beside lane_a',
+  ]);
+  assert.deepEqual(roadAssemblies(['wall_a']), []);
 });

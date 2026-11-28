@@ -43,9 +43,14 @@
       "river-parts.glb": "Sông và cầu",
       "park-parts.glb": "Công viên và quảng trường",
       "landmark-parts.glb": "Hai tháp điểm nhấn",
-      "alley-parts.glb": "Đồ hẻm"
+      "alley-parts.glb": "Đồ hẻm",
+      "road-parts.glb": "Đường lớn"
     },
     "slots": {
+      "lane": "Làn đường lớn",
+      "median": "Dải phân cách",
+      "verge": "Vỉa hè đường lớn",
+      "mark": "Vạch kẻ đường",
       "tree": "Cây đường phố",
       "pit": "Bồn gốc cây",
       "plot": "Nền lô trống",
