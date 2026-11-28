@@ -25,6 +25,8 @@ const FIXTURES = fileURLToPath(new URL('../browser/fixtures/', import.meta.url))
 const KEYS = {
   Enter: { code: 13, text: '\r' },
   Escape: { code: 27 },
+  ArrowUp: { code: 38 },
+  ArrowDown: { code: 40 },
 };
 
 export async function serveLibrary() {

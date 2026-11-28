@@ -74,3 +74,31 @@ test(
     }
   },
 );
+
+test(
+  'mục gấp mở trong ngăn kéo đi giữa các hàng bằng mũi tên lên xuống, phím không lọt xuống game',
+  { timeout: 120000 },
+  async (context) => {
+    if (!chrome) {
+      context.skip('không có Chrome');
+      return;
+    }
+    const browser = await launchChrome({ width: 1280, height: 800 });
+    const focusedRow = `[...document.querySelectorAll('.nv-accordion__trigger')].indexOf(document.activeElement)`;
+    try {
+      await loadLibrary(browser);
+      await openDrawer(browser);
+      await browser.evaluate(`document.querySelector('.nv-accordion__trigger').focus()`);
+      await browser.evaluate(
+        `window.claimed = []; window.addEventListener('keydown', (event) => window.claimed.push(event.defaultPrevented))`,
+      );
+      await press(browser, 'ArrowDown');
+      assert.equal(await browser.evaluate(focusedRow), 1);
+      await press(browser, 'ArrowUp');
+      assert.equal(await browser.evaluate(focusedRow), 0);
+      assert.deepEqual(await browser.evaluate('window.claimed'), [true, true]);
+    } finally {
+      await browser.close();
+    }
+  },
+);

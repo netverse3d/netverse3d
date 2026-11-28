@@ -1,12 +1,11 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { findChrome, launchChrome, sleep } from '../../../../scripts/browser/cdp.mjs';
-import { serveFixture } from '../support/library-browser.mjs';
+import { findChrome, launchChrome } from '../../../../scripts/browser/cdp.mjs';
+import { press, serveFixture } from '../support/library-browser.mjs';
 
 const ITEMS = `[...document.querySelectorAll('.nv-item-grid__item')]`;
 const FOCUSED = `${ITEMS}.indexOf(document.activeElement)`;
 const CHECKED = `${ITEMS}.findIndex((item) => item.getAttribute('aria-checked') === 'true')`;
-const ARROWS = { ArrowUp: 38, ArrowDown: 40 };
 
 const chrome = findChrome();
 let fixture;
@@ -18,16 +17,7 @@ before(async () => {
 after(() => fixture?.close());
 
 async function arrow(browser, key) {
-  for (const type of ['keyDown', 'keyUp']) {
-    await browser.send('Input.dispatchKeyEvent', {
-      type,
-      key,
-      code: key,
-      windowsVirtualKeyCode: ARROWS[key],
-      nativeVirtualKeyCode: ARROWS[key],
-    });
-    await sleep(60);
-  }
+  await press(browser, key);
   return [await browser.evaluate(FOCUSED), await browser.evaluate(CHECKED)];
 }
 
