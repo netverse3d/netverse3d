@@ -17,12 +17,12 @@
 ## Rollup
 
 - Status: partial
-- Summary: H5 correction is in draft PR #467; seven open related issues link the criteria page. Windows pnpm verify remains red in test:scripts; the user's read acknowledgment is pending.
+- Summary: H5 correction is in draft PR #467; seven open related issues link the criteria page. GitHub CI passed at dc9601b; local Windows pnpm verify remains red in test:scripts. The user's read acknowledgment is pending.
 
 ## Progress
 
 - Done: Verified GitHub issue #258, corrected H5 in draft PR #467, added/read back the approved page link in open issues #234, #237, #238, #244, #248, #251, and #256, and asked @baodhg for another assignment in issue comment 7239885770.
-- Next step: Review PR #467 and decide how to resolve the Windows test failure before merge.
+- Next step: Review PR #467, account for the local Windows-only test failures, and wait for the user's personal read acknowledgment before merging.
 - Blocked on: The user has not read all criteria and images, so their personal acknowledgment must remain unchecked.
 
 ## Open questions
@@ -31,4 +31,4 @@
 
 ## Handoff note
 
-- Issue #258 was reopened after PR #402 because H5 names a nonexistent HeroPart.bevel and related issue bodies lacked a direct art-criteria.md link. Draft PR #467 addresses H5. The user explicitly said they have not read all criteria and images; do not check their acknowledgment. The full Windows verify remains red due test environment behavior, recorded in PR #467.
+- Issue #258 was reopened after PR #402 because H5 names a nonexistent HeroPart.bevel and related issue bodies lacked a direct art-criteria.md link. Draft PR #467 addresses H5. GitHub Actions checks docs, plan, repo, secrets, trace, and verify passed on dc9601b. The user explicitly said they have not read all criteria and images; do not check their acknowledgment. The full local Windows verify remains red due test environment behavior, recorded in PR #467.

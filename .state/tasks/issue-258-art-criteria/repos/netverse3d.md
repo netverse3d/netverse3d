@@ -20,13 +20,13 @@
 
 - Pushed: yes -> origin/docs/258-art-criteria
 - PR: #467 -> staging (draft)
-- Gate: failed -> pnpm verify stopped at test:scripts on Windows (12 of 373 failed); 11 pre-push tests need Git Bash sh in PATH, and one CDP test had a transient EBUSY error. With sh in PATH, pre-push tests pass 12/13; the remaining Git LFS fake-remote case fails on Windows. CDP retest passes 3/3.
-- Gate evidence: tok run -- pnpm verify; node --test scripts/drift/pre-push.test.mjs with Git Bash in PATH; node --test scripts/browser/cdp.test.mjs; pnpm docs:check; pnpm trace:check; pnpm format:check; git diff --check, 2026-11-28
+- Gate: local Windows pnpm verify failed at test:scripts (12 of 373 failed); 11 pre-push tests need Git Bash sh in PATH, and one CDP test had a transient EBUSY error. With sh in PATH, pre-push tests pass 12/13; the remaining Git LFS fake-remote case fails on Windows. CDP retest passes 3/3. GitHub CI passed docs, plan, repo, secrets, trace, and verify on dc9601b.
+- Gate evidence: tok run -- pnpm verify; node --test scripts/drift/pre-push.test.mjs with Git Bash in PATH; node --test scripts/browser/cdp.test.mjs; pnpm docs:check; pnpm trace:check; pnpm format:check; git diff --check; GitHub PR #467 checks at dc9601b, 2026-11-28
 
 ## Repo progress
 
 - Done: New working clone at D:/Coding_learning/netverse3d, branch cut from staging. H5 correction pushed in fd68a10; draft PR #467 opened and read back. Seven related open issue bodies updated and read back from GitHub; @baodhg mentioned in issue comment 7239885770.
-- Next repo step: Review PR #467 and resolve or accept the documented Windows test failure before merge.
+- Next repo step: Review PR #467 and wait for the user's personal read acknowledgment before merge; source change already passed GitHub CI at dc9601b.
 - Blocked on: Personal read acknowledgment remains unchecked by user request.
 
 ## Shared path ownership
