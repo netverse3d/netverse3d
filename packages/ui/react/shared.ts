@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { variantData } from '../src/variants.mjs';
 
 export type VariantOptions = Readonly<Record<string, readonly string[]>>;
@@ -24,4 +25,10 @@ export function splitVariants<P extends object>(
     data: variantData(chosen, options) as Record<string, string>,
     rest: rest as Omit<P, keyof typeof options>,
   };
+}
+
+export function useRememberedValue<T>(value: T | undefined, initial: T) {
+  const [remembered, setRemembered] = useState<T>(value ?? initial);
+  if (value !== undefined && !Object.is(value, remembered)) setRemembered(value);
+  return [value ?? remembered, setRemembered] as const;
 }

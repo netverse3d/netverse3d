@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { chooseItem, stepNumber } from '../src/pickers.mjs';
 import { Icon, type IconName } from './icon.tsx';
-import { classNames, splitVariants } from './shared.ts';
+import { classNames, splitVariants, useRememberedValue } from './shared.ts';
 import { VARIANTS, type ItemGridVariants } from './variants.generated.ts';
 
 type NativeDiv = Omit<
@@ -28,11 +28,11 @@ function useChoice(
   { value, defaultValue, onValueChange }: Choice,
   accept: (candidate: string | undefined) => string,
 ) {
-  const [chosen, setChosen] = useState<string | undefined>(defaultValue);
-  const current = accept(value ?? chosen);
+  const [chosen, remember] = useRememberedValue(value, defaultValue);
+  const current = accept(chosen);
   const choose = (next: string) => {
     if (next === current) return;
-    setChosen(next);
+    remember(next);
     onValueChange?.(next);
   };
   return [current, choose] as const;
@@ -176,12 +176,12 @@ type NumberChoice = {
 
 function useNumber({ value, defaultValue, onValueChange, min, max, step = 1 }: NumberChoice) {
   const limits = { min, max, step };
-  const [chosen, setChosen] = useState(defaultValue ?? min);
-  const current = stepNumber(value ?? chosen, 0, limits);
+  const [chosen, remember] = useRememberedValue(value, defaultValue ?? min);
+  const current = stepNumber(chosen, 0, limits);
   const choose = (next: number) => {
     const settled = stepNumber(next, 0, limits);
     if (settled === current) return;
-    setChosen(settled);
+    remember(settled);
     onValueChange?.(settled);
   };
   return [current, choose, limits] as const;
